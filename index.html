@@ -646,8 +646,18 @@
 
   <!-- ============ GAME MODES ============ -->
   <div class="tabpane" id="pane-modes">
-    <h2>Game modes — weekly goals</h2>
+    <h2>Game modes</h2>
     <div class="h2sub">Current state of the game: Order 66 + Naboo raids · Rise of the Empire TB · GAC (3v3 season) · Era 09 “Myths &amp; Legends” to 20 Oct 2026</div>
+
+    <div class="cardtitle" style="margin-top:2px">Raids <span class="sub">— squad recommendations, per raid</span></div>
+    <div class="cqnav" id="raidNav"></div>
+    <div id="raidBody"></div>
+
+    <div class="cardtitle" style="margin-top:22px">Assault Battles <span class="sub">— squad recommendations, per battle</span></div>
+    <div class="cqnav" id="abNav"></div>
+    <div id="abBody"></div>
+
+    <div class="cardtitle" style="margin-top:22px">Weekly goals</div>
     <div class="sortable" id="modes" data-pane="modes"></div>
   </div>
 
@@ -885,22 +895,73 @@ const GROUND_WAR_TIERS = [
   { tier: "Challenge II", gate: "Relic 5+, 6-dot mods" },
   { tier: "Challenge III", gate: "Relic 7, 6-dot mods" }
 ];
-function groundWarUnitRow(reqs, u) {
+/* Assault Battles reference (Ground War researched 22 Aug 2026; Military Might and Rebel Roundup
+   researched 22 Aug 2026 via swgoh.wiki + swgoh.gg's own event pages + a community-guide sweep) —
+   same honesty rule as RAID_INTEL/RAID_NOTES: only Ground War had specific named units consistently
+   called out as top picks across sources, so only it gets a roster-ownership table below; Military
+   Might and Rebel Roundup's own sources (including swgoh.gg's event pages directly) never name
+   specific characters, only faction eligibility + generic strategy tips — that's shown as-is rather
+   than inventing a squad. units:[] is the signal an ownership table isn't shown for that battle. */
+const ASSAULT_BATTLES = [
+  { key: "groundwar", label: "Ground War",
+    factionNote: "Only Jedi, Ewok and Ugnaught units are usable here — everything else is locked out regardless of power, so this isn't the place for GL/GAC squads.",
+    mechanicNote: "\"Moment of Glory\" is the allies' shared buff mechanic in this event; watch for Shield Droid waves before committing cooldowns.",
+    units: GROUND_WAR_UNITS,
+    tiers: GROUND_WAR_TIERS,
+    strategyNotes: [],
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "community walkthroughs (22 Aug 2026)"] },
+  { key: "militarymight", label: "Military Might",
+    factionNote: "Only Rebel and Clone Trooper units are usable here — vs. Empire waves.",
+    mechanicNote: "Allies get a unique \"Counterwatch\" ability during battles — timing it well is the main mechanic called out for Tier II.",
+    units: [],
+    tiers: [
+      { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+, 3-dot mods" },
+      { tier: "Very Hard", gate: "Level 80+, 7★, Gear 10+, 4-dot mods — after clearing Hard at 5★" },
+      { tier: "Bonus", gate: "Level 85, Gear 11+, 5-dot mods — after clearing Very Hard at 7★" },
+      { tier: "Mythic", gate: "Level 85, Gear 11+, 5-dot mods, zeta abilities — after clearing Bonus at 7★" },
+      { tier: "Challenge I", gate: "Relic 3+, 6-dot mods — after clearing Mythic at 7★" },
+      { tier: "Challenge II", gate: "Relic 5+, 6-dot mods — after clearing Challenge I at 7★" },
+      { tier: "Challenge III", gate: "Relic 7, 6-dot mods — after clearing Challenge II at 7★" }
+    ],
+    strategyNotes: [
+      "No specific named units or fixed squad turned up as a top pick across sources (unlike Ground War) — swgoh.gg's own event page lists all 68 eligible Rebel/Clone Trooper units without singling any out, so there's no ownership table below to check against. Build from whichever Rebel/Clone Trooper units you have geared/relic'd highest.",
+      "Challenge tiers are reported as \"extremely difficult\" — the only guidance found is to experiment with different squad synergies rather than one fixed comp."
+    ],
+    sources: ["swgoh.wiki Military Might", "swgoh.gg event page"] },
+  { key: "rebelroundup", label: "Rebel Roundup",
+    factionNote: "Only Bounty Hunter and Imperial Trooper units are usable here.",
+    mechanicNote: "Imperial Troopers get a \"Rapid Fire\" ability and Bounty Hunters get \"Many Disintegrations\" as unique mechanics in this event.",
+    units: [],
+    tiers: [
+      { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+" },
+      { tier: "Very Hard", gate: "Level 80+, 7★, Gear 10+ — after clearing Hard" },
+      { tier: "Bonus", gate: "Level 85, Gear 11+, 7★ — after clearing Very Hard" },
+      { tier: "Mythic", gate: "Level 85, Gear 11+, 7★, zeta abilities — after clearing Bonus" },
+      { tier: "Challenge I", gate: "Relic 3+, 7★ — after clearing Mythic" },
+      { tier: "Challenge II", gate: "Relic 5+, 7★ — after clearing Challenge I" },
+      { tier: "Challenge III", gate: "Relic 7, 7★ — after clearing Challenge II" }
+    ],
+    strategyNotes: [
+      "No specific named units or fixed squad turned up as a top pick across sources — swgoh.gg's own event page lists all 36 eligible units per faction without singling any out, so there's no ownership table below. Any 5 Bounty Hunters and/or Imperial Troopers are eligible; build from whichever you have geared/relic'd highest.",
+      "One single, unverified community source (a YouTube video title) reports an Admiral Piett-led Imperial Trooper team clearing Challenge Tier III — not corroborated by a second source, so it isn't treated as a confirmed pick here. Worth trying if Piett is already built for other modes.",
+      "Per-tier tips found in sources: Challenge I — experiment with different leaders; Challenge II — a solid tank with strong support is called out as key; Challenge III — mod optimisation matters as much as roster at this point."
+    ],
+    sources: ["swgoh.wiki Rebel Roundup", "swgoh.gg event page", "community video guides (unverified single-source note above)"] }
+];
+function assaultUnitRow(reqs, u) {
   const rec = u.id ? reqs[u.id] : findUnitByName(reqs, u.name);
   const owned = !!rec;
   const cur = !rec ? "Not owned" : (((rec.s || 0) < 7) ? (rec.s || 0) + "★" : (rec.r ? "R" + rec.r : "G" + (rec.g || 1)));
   const ready = owned && (rec.s || 0) >= 7 && (rec.g || 1) >= 11;
   return { ...u, owned, cur, ready };
 }
-function groundWarCoachHtml() {
+function assaultBattleHtml(ab) {
   const reqsFor = key => ((state.pulls[key] || BASELINE[key] || {}).reqs) || {};
-  return `<div class="cardtitle">Ground War (Assault Battle) — recommended units <span class="sub">live now, per this event's own calendar entry</span></div>
-    <div class="mnote">Only <b>Jedi, Ewok and Ugnaught</b> units are usable here — everything else is locked out regardless of power, so this isn't the place for GL/GAC squads. No single confirmed 5-unit team turned up across sources for the harder tiers (community reports disagree or are single-source), so below is roster readiness on the individual units most consistently named as top picks — build a squad from whichever you have geared/relic'd highest. "Moment of Glory" is the allies' shared buff mechanic in this event; watch for Shield Droid waves before committing cooldowns.</div>
-    <table class="cqspeedtable" style="width:100%;margin-top:8px">
+  const unitTable = ab.units.length ? `<div style="overflow-x:auto;margin-top:8px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
       <tr><th style="text-align:left">Unit</th><th style="text-align:left">Faction</th><th>Ollietank</th><th>Tiny</th></tr>
-      ${GROUND_WAR_UNITS.map(u => {
-        const rOllie = groundWarUnitRow(reqsFor("ollie"), u);
-        const rTiny = groundWarUnitRow(reqsFor("tiny"), u);
+      ${ab.units.map(u => {
+        const rOllie = assaultUnitRow(reqsFor("ollie"), u);
+        const rTiny = assaultUnitRow(reqsFor("tiny"), u);
         const cellStyle = r => r.ready ? "color:var(--good);font-weight:600" : r.owned ? "" : "color:var(--ink-3);font-style:italic";
         return `<tr title="${escapeHtml(u.note)}">
           <td style="text-align:left">${escapeHtml(u.name)}</td>
@@ -909,10 +970,23 @@ function groundWarCoachHtml() {
           <td style="${cellStyle(rTiny)}">${escapeHtml(rTiny.cur)}</td>
         </tr>`;
       }).join("")}
-    </table>
+    </table></div>` : `<div class="mnote" style="margin-top:8px;font-style:italic">No specific named units to check against your roster for this battle — see notes below.</div>`;
+  return `<div class="cardtitle">${escapeHtml(ab.label)} <span class="sub">— squad recommendations</span></div>
+    <div class="mnote">${escapeHtml(ab.factionNote)} ${escapeHtml(ab.mechanicNote)}</div>
+    ${unitTable}
+    ${ab.strategyNotes.map(n => `<div class="mnote" style="margin-top:6px">${escapeHtml(n)}</div>`).join("")}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
-    <div class="cqteams">${GROUND_WAR_TIERS.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
-    <div class="mnote" style="margin-top:6px;font-style:italic;opacity:0.7">Sources: swgoh.gg event page, swgoh.wiki, EA forums, community walkthroughs (22 Aug 2026) — verify in-game, CG occasionally adjusts event gates.</div>`;
+    <div class="cqteams">${ab.tiers.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
+    <div class="mnote" style="margin-top:6px;font-style:italic;opacity:0.7">Sources: ${escapeHtml(ab.sources.join(" · "))} — verify in-game, CG occasionally adjusts event gates.</div>`;
+}
+function abView(v) { state.modesnav.abView = v; store.write(state); renderAssaultBattles(); }
+function renderAssaultBattles() {
+  const nav = document.getElementById("abNav");
+  if (!nav) return;
+  const cur = ASSAULT_BATTLES.find(b => b.key === state.modesnav.abView) || ASSAULT_BATTLES[0];
+  nav.innerHTML = ASSAULT_BATTLES.map(b => `<button class="${cur.key === b.key ? "active" : ""}" onclick="abView('${b.key}')">${escapeHtml(b.label)}</button>`).join("");
+  const body = document.getElementById("abBody");
+  if (body) body.innerHTML = `<div class="card">${assaultBattleHtml(cur)}</div>`;
 }
 /* Galactic Legend roadmap: every currently-released GL's unlock requirements.
    base_id/display-name pairs verified 8 Aug 2026 against swgoh.gg's full character list API
@@ -1065,7 +1139,7 @@ const RAID_NOTES = [
    above (raidTier: "top" = the aspirational/max-score build to work towards, "budget" = the cheaper
    accessible option that still clears well) and carries free-text notes for anything this research pass
    could not confidently pin to an exact roster/base_id — same honesty rule as RAID_NOTES: no fabricated
-   squad-check cards. Used by raidCoachHtml() below, surfaced in the Game modes tab. */
+   squad-check cards. Used by raidCoachHtmlForRaid() below, surfaced as a Raids sub-tab per key on the Game modes tab. */
 const RAID_INTEL = [
   { key: "o66", label: "Order 66 Raid",
     squads: ["Jedi Purge Squad (Order 66 raid, top-score)", "Dark Side Clones (Order 66 raid, budget)"],
@@ -1441,6 +1515,7 @@ function defaultState() {
       showEnemyIntel: false,                    // "Enemies" display preference (plan view)
       showDiskIntel: false                      // "Data Disks" display preference (plan view)
     },
+    modesnav: { raidView: "o66", abView: "groundwar" },  // Game modes tab: selected Raids/Assault Battles sub-tab
     glTarget: {},                               // per-account currently-viewed GL on the GL Roadmap tab, e.g. { ollie: "GLLEIA" }
     tb: {},                                     // TB planner: { [`${phase}-${zone}`]: { assigned: "ollie"|"tiny"|"both"|"", done: bool } }
     tw: { zones: [] },                          // TW coordination: zones = [{ name, assigned, squad, status }]
@@ -3005,7 +3080,6 @@ function renderEvents() {
   if (!grid) return;
   grid.innerHTML = wrapCards("events", [
     { id: "list", html: eventsListHtml() },
-    { id: "groundwar", w: 12, html: groundWarCoachHtml() },
     { id: "executor", html: executorReadinessHtml() }
   ], "events");
 }
@@ -3213,17 +3287,14 @@ function squadArenaCoachHtml(acctKey) {
    anything this research pass couldn't pin to a confident, checkable roster. Built from "add best
    recommended teams for the game mode, best available based on roster, and best to work towards for the
    specific raids" request, 17 Aug 2026. */
-function raidCoachForAccount(acctKey) {
+function raidCoachForRaid(ri, acctKey) {
   const reqs = (accountView(acctKey).src || {}).reqs || {};
   const bucketRank = { ready: 0, close: 1, started: 2, notstarted: 3 };
-  return RAID_INTEL.map(ri => {
-    const squads = ri.squads
-      .map(name => META_SQUADS.find(sq => sq.name === name))
-      .filter(Boolean)
-      .map(sq => ({ sq, st: squadStatus(sq, reqs) }))
-      .sort((a, b) => bucketRank[a.st.bucket] - bucketRank[b.st.bucket] || b.st.ownedN - a.st.ownedN);
-    return { ri, squads };
-  });
+  return ri.squads
+    .map(name => META_SQUADS.find(sq => sq.name === name))
+    .filter(Boolean)
+    .map(sq => ({ sq, st: squadStatus(sq, reqs) }))
+    .sort((a, b) => bucketRank[a.st.bucket] - bucketRank[b.st.bucket] || b.st.ownedN - a.st.ownedN);
 }
 function raidCoachRowHtml(x) {
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
@@ -3236,25 +3307,27 @@ function raidCoachRowHtml(x) {
     <span style="color:var(--ink-3);font-size:12px">${x.st.ownedN}/${x.st.total} owned</span>
   </div>`;
 }
-function raidCoachBodyHtml() {
-  return ACCOUNTS.map(a => {
-    const rows = raidCoachForAccount(a.key);
-    return `<div style="margin-top:12px">
-      <div style="font-weight:700;color:var(--accent);font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">${escapeHtml(a.label)}</div>
-      ${rows.map(r => `
-        <div style="margin-top:9px">
-          <div style="font-weight:600;color:var(--ink-1);font-size:13px">${escapeHtml(r.ri.label)}</div>
-          ${r.squads.length ? r.squads.map(raidCoachRowHtml).join("") : `<div class="mnote" style="margin-top:2px">No single fixed squad — see notes below.</div>`}
-          ${r.ri.notes.map(n => `<div class="mnote" style="margin-top:3px">${escapeHtml(n)}</div>`).join("")}
-          <div class="mnote" style="margin-top:2px;font-style:italic;opacity:0.7">Sources: ${escapeHtml(r.ri.sources.join(" · "))}</div>
-        </div>`).join("")}
-    </div>`;
-  }).join("");
+function raidCoachHtmlForRaid(ri) {
+  return `<div class="cardtitle">${escapeHtml(ri.label)} <span class="sub">— best available now vs. what to build towards</span></div>
+    <div class="mnote">Chip-checked squads are cross-referenced against each account's pulled roster (7★ G12+ = battle-ready) — same readiness logic as Roster Gaps. "Work towards" marks the aspirational/max-score build; "budget option" is the cheaper alternative that still clears well. Notes below cover alternatives this research pass couldn't confidently pin to an exact roster, plus mechanics for raids with no single fixed squad — verify anything not chip-checked before committing relic investment.</div>
+    ${ACCOUNTS.map(a => {
+      const rows = raidCoachForRaid(ri, a.key);
+      return `<div style="margin-top:12px">
+        <div style="font-weight:700;color:var(--accent);font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">${escapeHtml(a.label)}</div>
+        ${rows.length ? rows.map(raidCoachRowHtml).join("") : `<div class="mnote" style="margin-top:2px">No single fixed squad — see notes below.</div>`}
+      </div>`;
+    }).join("")}
+    ${ri.notes.map(n => `<div class="mnote" style="margin-top:3px">${escapeHtml(n)}</div>`).join("")}
+    <div class="mnote" style="margin-top:2px;font-style:italic;opacity:0.7">Sources: ${escapeHtml(ri.sources.join(" · "))}</div>`;
 }
-function raidCoachHtml() {
-  return `<div class="cardtitle">Raid team coach <span class="sub">— best available now vs. what to build towards, per raid</span></div>
-    <div class="mnote">Chip-checked squads are cross-referenced against each account's pulled roster (7★ G12+ = battle-ready) — same readiness logic as Roster Gaps. "Work towards" marks the aspirational/max-score build; "budget option" is the cheaper alternative that still clears well. Notes below each raid cover alternatives this research pass couldn't confidently pin to an exact roster, plus mechanics for raids with no single fixed squad — verify anything not chip-checked before committing relic investment.</div>
-    ${raidCoachBodyHtml()}`;
+function raidView(v) { state.modesnav.raidView = v; store.write(state); renderRaids(); }
+function renderRaids() {
+  const nav = document.getElementById("raidNav");
+  if (!nav) return;
+  const cur = RAID_INTEL.find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];
+  nav.innerHTML = RAID_INTEL.map(r => `<button class="${cur.key === r.key ? "active" : ""}" onclick="raidView('${r.key}')">${escapeHtml(r.label)}</button>`).join("");
+  const body = document.getElementById("raidBody");
+  if (body) body.innerHTML = `<div class="card">${raidCoachHtmlForRaid(cur)}</div>`;
 }
 function renderGac() {
   const grid = document.getElementById("gacGrid");
@@ -3988,7 +4061,6 @@ function render() {
   /* ---- modes tab ---- */
   safeRender("Game modes", "modes", () => {
     document.getElementById("modes").innerHTML = wrapCards("modes", [
-      { id: "raidcoach", w: 12, html: raidCoachHtml() },
       ...g.modes.map((m, mi) => ({
         id: m.t.split(" — ")[0].split(" (")[0].toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
         html: `<div class="mode"><div class="cardtitle">${m.t}</div><div class="mnote">${m.n}</div>
@@ -3996,6 +4068,10 @@ function render() {
       }))
     ], "mode");
   });
+
+  /* ---- game modes: raids + assault battles sub-nav ---- */
+  safeRender("Raids", "raidBody", () => renderRaids());
+  safeRender("Assault Battles", "abBody", () => renderAssaultBattles());
 
   /* ---- roster gaps tab ---- */
   safeRender("Roster gaps", "gapsGrid", () => renderGaps(s));

@@ -190,7 +190,7 @@
               flex-wrap: wrap; gap: 8px; }
   header h1 .sub { color: var(--ink-3); font-size: 13px; font-weight: 500; letter-spacing: normal;
                    text-transform: none; text-shadow: none; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
-  .hbtns { display: flex; gap: 8px; align-items: flex-start; }
+  .hbtns { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
   .pullbtn, .editbtn { font: inherit; font-size: 13px; font-weight: 650; border-radius: 8px;
                        padding: 9px 15px; cursor: pointer; border: 1px solid var(--border); }
   .pullbtn { color: #001018; background: var(--accent); border-color: transparent; }
@@ -472,7 +472,7 @@
   .daychips button { font: 700 11.5px/1 system-ui, sans-serif; min-width: 34px; padding: 7px 6px; cursor: pointer;
     color: var(--ink-2); background: rgba(255,255,255,0.04); border: 1px solid var(--grid); border-radius: 8px; }
   .daychips button.active { color: #06131a; background: var(--accent); border-color: var(--accent); }
-  .cqline { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--grid); }
+  .cqline { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--grid); flex-wrap: wrap; }
   .cqline:last-child { border-bottom: none; }
   .cqline.cqline-event { flex-wrap: wrap; }
   .cqline .txt { flex: 1; font-size: 13px; color: var(--ink-2); line-height: 1.45; }
@@ -1690,6 +1690,18 @@ const POPULAR_MODS = ["Supreme Leader Kylo Ren", "Rey", "Jabba the Hutt", "Gener
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
+/* For a value going inside onclick="fn('${...}')" — a single-quoted JS-string argument embedded in a
+   double-quoted HTML attribute. JS-escaping has to happen FIRST (backslash, then quote) so the literal
+   apostrophe in names like "Qi'ra" becomes \' before escapeHtml() ever sees it; escapeHtml() then HTML-
+   entity-encodes that apostrophe for the attribute, and the browser decodes it back to a literal `'`
+   when parsing the attribute — reconstructing the correct `\'` JS escape. Doing it in the other order
+   (escapeHtml then a bare .replace(/'/g,"\\'")) is a no-op, since escapeHtml already converted every `'`
+   to `&#39;` and there's no literal quote character left for the second replace to find — that was the
+   actual bug this fixes (broke the Mod Optimiser's "full report" link for any character with an
+   apostrophe in their name, e.g. Qi'ra). */
+function jsAttr(s) {
+  return escapeHtml(String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'"));
+}
 
 async function ensureCharList(onStatus) {
   if (state.modsChars && state.modsChars.list && (Date.now() - state.modsChars.fetchedAt < CHAR_LIST_TTL)) {
@@ -1722,7 +1734,7 @@ function populateCharDatalist(list) {
 function renderModChips() {
   const el = document.getElementById("modChips");
   if (el) el.innerHTML = POPULAR_MODS.map(n =>
-    `<button class="modchip" onclick="quickLookupMods('${n.replace(/'/g, "\\'")}')">${n}</button>`).join("");
+    `<button class="modchip" onclick="quickLookupMods('${jsAttr(n)}')">${escapeHtml(n)}</button>`).join("");
 }
 function quickLookupMods(name) {
   const input = document.getElementById("modSearch");
@@ -2182,7 +2194,7 @@ function optResultCardHtml(r, pull, content, squadSize) {
   const snapHit = snapshotFind(r.name);
   const community = snapHit && (BESTMODS.chars[snapHit.slug].sets || [])[0]
     ? `<div class="mnote">Community favourite: <b>${escapeHtml(BESTMODS.chars[snapHit.slug].sets[0].set)}</b> —
-        <a href="#" style="color:var(--accent)" onclick="optSeeBest('${escapeHtml(r.name).replace(/'/g, "\\'")}');return false;">full Best Mods report →</a></div>` : "";
+        <a href="#" style="color:var(--accent)" onclick="optSeeBest('${jsAttr(r.name)}');return false;">full Best Mods report →</a></div>` : "";
   const reserved = squadSize > 1 ? ` · earlier squad picks reserved` : "";
   return head + community +
     `<div class="optslots">${OPT_SLOT_KEYS.map(sl => optSlotHtml(sl, r.res.picks[sl], r.baseId, pull)).join("")}</div>
@@ -2577,9 +2589,9 @@ function renderTB() {
         const k = tbKey(ph.phase, m.zone);
         const v = state.tb[k] || { assigned: "", done: false };
         return `<div class="cqline ${v.done ? "done" : ""}">
-          <input type="checkbox" ${v.done ? "checked" : ""} onchange="tbSet(${ph.phase},'${escapeHtml(m.zone).replace(/'/g, "\\'")}','done',this.checked)">
+          <input type="checkbox" ${v.done ? "checked" : ""} onchange="tbSet(${ph.phase},'${jsAttr(m.zone)}','done',this.checked)">
           <div class="txt"><b>${escapeHtml(m.zone)}:</b> ${escapeHtml(m.need)}</div>
-          <select class="cqselect" style="max-width:150px" onchange="tbSet(${ph.phase},'${escapeHtml(m.zone).replace(/'/g, "\\'")}','assigned',this.value)">
+          <select class="cqselect" style="max-width:150px" onchange="tbSet(${ph.phase},'${jsAttr(m.zone)}','assigned',this.value)">
             <option value="" ${v.assigned === "" ? "selected" : ""}>Unassigned</option>
             <option value="ollie" ${v.assigned === "ollie" ? "selected" : ""}>Ollietank</option>
             <option value="tiny" ${v.assigned === "tiny" ? "selected" : ""}>Tiny</option>

@@ -858,6 +858,62 @@ const EXECUTOR_REQ = {
   chars: [["Admiral Piett", 8], ["Boba Fett", 8], ["Darth Vader", 7], ["Dengar", 5], ["IG-88", 5], ["Bossk", 5], ["TIE Fighter Pilot", 5]],
   ships: [["Razor Crest", 5], ["TIE Advanced x1", 4], ["Imperial TIE Bomber", 4], ["Hound's Tooth", 4], ["Slave I", 4], ["IG-2000", 4], ["Imperial TIE Fighter", 4]]
 };
+/* Ground War (Assault Battle) — researched 22 Aug 2026 via live web search (swgoh.gg's event page,
+   swgoh.wiki, EA forums, community walkthroughs) while this event is live on the calendar. Faction-
+   restricted event (Jedi/Ewok/Ugnaught only vs Separatist waves) with no single confidently-sourced
+   5-unit team across sources for the harder tiers — same honesty rule as RAID_NOTES/RAID_INTEL: this
+   checks the roster against the INDIVIDUAL units most consistently named as top picks rather than
+   fabricating one fixed squad. base_id used where already verified elsewhere in this file (Grand Master
+   Yoda, General Kenobi, Jedi Master Kenobi, Jedi Knight Luke Skywalker, Jedi Knight Revan, Chief Chirpa);
+   Ewok Elder has no verified base_id anywhere in this file, so it's matched by name via findUnitByName()
+   instead, same safety pattern used for fleets. */
+const GROUND_WAR_UNITS = [
+  { name: "Grand Master Yoda", id: "GRANDMASTERYODA", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
+  { name: "General Kenobi", id: "GENERALKENOBI", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
+  { name: "Jedi Master Kenobi", id: "JEDIMASTERKENOBI", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
+  { name: "Jedi Knight Luke Skywalker", id: "JEDIKNIGHTLUKE", faction: "Jedi", note: "A community-reported Mythic-tier clear used a Jedi Knight Luke-led team (YouTube, unverified against a second source)." },
+  { name: "Jedi Knight Revan", id: "JEDIKNIGHTREVAN", faction: "Jedi", note: "One player-forum report: clears most tiers short of Mythic." },
+  { name: "Chief Chirpa", id: "CHIEFCHIRPA", faction: "Ewok", note: "Named among swgoh.gg's top Ewok picks for this event." },
+  { name: "Ewok Elder", faction: "Ewok", note: "Named among swgoh.gg's top Ewok picks for this event." }
+];
+const GROUND_WAR_TIERS = [
+  { tier: "Hard", gate: "Player level 75, units level 75+, Gear 8+" },
+  { tier: "Very Hard", gate: "Units level 80+, Gear 10+" },
+  { tier: "Bonus", gate: "Units level 85, Gear 11+, 5-dot mods" },
+  { tier: "Mythic", gate: "Gear 11+, 5-dot mods, zeta abilities — hardest reported: manual play vs Grievous" },
+  { tier: "Challenge I", gate: "Relic 3+, 6-dot mods, zetas" },
+  { tier: "Challenge II", gate: "Relic 5+, 6-dot mods" },
+  { tier: "Challenge III", gate: "Relic 7, 6-dot mods" }
+];
+function groundWarUnitRow(reqs, u) {
+  const rec = u.id ? reqs[u.id] : findUnitByName(reqs, u.name);
+  const owned = !!rec;
+  const cur = !rec ? "Not owned" : (((rec.s || 0) < 7) ? (rec.s || 0) + "★" : (rec.r ? "R" + rec.r : "G" + (rec.g || 1)));
+  const ready = owned && (rec.s || 0) >= 7 && (rec.g || 1) >= 11;
+  return { ...u, owned, cur, ready };
+}
+function groundWarCoachHtml() {
+  const reqsFor = key => ((state.pulls[key] || BASELINE[key] || {}).reqs) || {};
+  return `<div class="cardtitle">Ground War (Assault Battle) — recommended units <span class="sub">live now, per this event's own calendar entry</span></div>
+    <div class="mnote">Only <b>Jedi, Ewok and Ugnaught</b> units are usable here — everything else is locked out regardless of power, so this isn't the place for GL/GAC squads. No single confirmed 5-unit team turned up across sources for the harder tiers (community reports disagree or are single-source), so below is roster readiness on the individual units most consistently named as top picks — build a squad from whichever you have geared/relic'd highest. "Moment of Glory" is the allies' shared buff mechanic in this event; watch for Shield Droid waves before committing cooldowns.</div>
+    <table class="cqspeedtable" style="width:100%;margin-top:8px">
+      <tr><th style="text-align:left">Unit</th><th style="text-align:left">Faction</th><th>Ollietank</th><th>Tiny</th></tr>
+      ${GROUND_WAR_UNITS.map(u => {
+        const rOllie = groundWarUnitRow(reqsFor("ollie"), u);
+        const rTiny = groundWarUnitRow(reqsFor("tiny"), u);
+        const cellStyle = r => r.ready ? "color:var(--good);font-weight:600" : r.owned ? "" : "color:var(--ink-3);font-style:italic";
+        return `<tr title="${escapeHtml(u.note)}">
+          <td style="text-align:left">${escapeHtml(u.name)}</td>
+          <td style="text-align:left;color:var(--ink-3)">${escapeHtml(u.faction)}</td>
+          <td style="${cellStyle(rOllie)}">${escapeHtml(rOllie.cur)}</td>
+          <td style="${cellStyle(rTiny)}">${escapeHtml(rTiny.cur)}</td>
+        </tr>`;
+      }).join("")}
+    </table>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
+    <div class="cqteams">${GROUND_WAR_TIERS.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
+    <div class="mnote" style="margin-top:6px;font-style:italic;opacity:0.7">Sources: swgoh.gg event page, swgoh.wiki, EA forums, community walkthroughs (22 Aug 2026) — verify in-game, CG occasionally adjusts event gates.</div>`;
+}
 /* Galactic Legend roadmap: every currently-released GL's unlock requirements.
    base_id/display-name pairs verified 8 Aug 2026 against swgoh.gg's full character list API
    (https://swgoh.gg/api/characters/); relic targets researched from swgoh.wiki/swgohevents.com —
@@ -1510,7 +1566,24 @@ async function fetchRaw(url, ms, asText) {
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), ms);
   try {
-    const r = await fetch(url, { signal: ctl.signal });
+    let r;
+    try {
+      r = await fetch(url, { signal: ctl.signal });
+    } catch (e) {
+      /* Some browser extensions (and a few proxy front-ends) intercept fetch() and try to relay the call
+         — including its options object — via window.postMessage for logging/inspection. AbortSignal isn't
+         structured-clone-able, so that relay throws "Failed to execute 'postMessage' on 'Window':
+         AbortSignal object could not be cloned" before the real network request ever fires — this is the
+         interceptor's bug, not something fixable from here, and it was hitting every single pull attempt
+         regardless of which proxy route ran (real-world report, 22 Aug 2026). The compatible workaround is
+         retrying the exact same request without an abort signal, so the fetch can still go through — that
+         one retry just isn't interruptible by FETCH_TIMEOUT if it hangs. */
+      if (e && /AbortSignal object could not be cloned/i.test(e.message || "")) {
+        r = await fetch(url);
+      } else {
+        throw e;
+      }
+    }
     if (!r.ok) throw new Error("HTTP " + r.status);
     return asText ? await r.text() : await r.json();
   } finally { clearTimeout(t); }
@@ -2932,6 +3005,7 @@ function renderEvents() {
   if (!grid) return;
   grid.innerHTML = wrapCards("events", [
     { id: "list", html: eventsListHtml() },
+    { id: "groundwar", w: 12, html: groundWarCoachHtml() },
     { id: "executor", html: executorReadinessHtml() }
   ], "events");
 }

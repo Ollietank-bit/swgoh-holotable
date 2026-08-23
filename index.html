@@ -1190,6 +1190,8 @@ function assaultTeamHtml(team) {
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span style="font-weight:700;color:var(--ink-1);font-size:13px">${escapeHtml(team.label)}</span>
       <span class="chip ${ASSAULT_CONF_CHIP[team.confidence] || "watch"}">${escapeHtml(team.confidence)}</span>
+      <button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-left:auto" title="Loads this team's owned members (for the current account) into the Mod Optimiser, pre-set for Raids/Assault Battle content"
+        onclick="${optLoadTeamAttr(team.members.map(m => m[1]), "raids")}">⚙ Optimize mods</button>
     </div>
     <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
       <tr><th style="text-align:left">Unit</th><th>Ollietank</th><th>Tiny</th></tr>
@@ -1219,10 +1221,16 @@ function assaultBattleHtml(ab) {
         </tr>`;
       }).join("")}
     </table></div>` : (ab.teams ? "" : `<div class="mnote" style="margin-top:8px;font-style:italic">No specific named units to check against your roster for this battle — see notes below.</div>`);
+  /* Fixed-squad battles (Duel of the Fates, Peridea Patrol) have no `teams` block to carry the
+     Optimize-mods button — offer it once here instead, against the mandatory `units` roster. */
+  const fixedSquadOptBtn = (!ab.teams && ab.units && ab.units.length)
+    ? `<button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-top:8px" title="Loads this event's mandatory squad into the Mod Optimiser, pre-set for Raids/Assault Battle content"
+        onclick="${optLoadTeamAttr(ab.units.map(u => u.name), "raids")}">⚙ Optimize mods</button>` : "";
   return `<div class="cardtitle">${escapeHtml(ab.label)} <span class="sub">— squad recommendations</span></div>
     <div class="mnote">${escapeHtml(ab.factionNote)} ${escapeHtml(ab.mechanicNote)}</div>
     ${teamsBlock}
     ${unitTable}
+    ${fixedSquadOptBtn}
     ${ab.strategyNotes.map(n => `<div class="mnote" style="margin-top:6px">${escapeHtml(n)}</div>`).join("")}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
     <div class="cqteams">${ab.tiers.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
@@ -2736,6 +2744,35 @@ function optDel(id) {
 }
 function optContent(k) { state.modopt.content = k; store.write(state); render(); }
 function optArch(k) { state.modopt.arch = k; store.write(state); render(); }
+/* One-click "Optimize mods" for a specific, already-known team — Assault Battle/Raid team cards,
+   Squad Arena recs, and GAC/TW defense recs each call this with their own member NAMES (not base_ids:
+   several of those team lists carry members with no independently-verified base_id in this file, so
+   matching by name against the CURRENT account's actual pulled roster — same lookup optAdd() already
+   uses — is both simpler and more correct than trusting a possibly-missing id). Loads up to 5 owned
+   members into the Mod Optimiser's squad slot, pre-selects the content bucket that matches where the
+   team is used (arena/gac/raids), clears any manual role override so each member auto-infers, and
+   jumps straight to the Mod Optimiser tab already computed. Built from "an optimize button that
+   automatically choose/aligns the mods required for the different game modes & specific teams"
+   request, 23 Aug 2026. */
+function optLoadTeam(names, contentKey) {
+  const pull = state.pulls[current];
+  const ids = [];
+  if (pull) {
+    (names || []).forEach(n => {
+      const hit = optFindRoster(pull, n);
+      if (hit && !ids.includes(hit.id)) ids.push(hit.id);
+    });
+  }
+  state.modopt.squad[current] = ids.slice(0, 5);
+  state.modopt.content = OPT_CONTENT.some(c => c.key === contentKey) ? contentKey : "arena";
+  state.modopt.arch = "";
+  store.write(state);
+  switchTab("modopt");
+}
+/* Builds the onclick= for an optLoadTeam() call from a list of display names, safely escaped. */
+function optLoadTeamAttr(names, contentKey) {
+  return `optLoadTeam([${(names || []).map(n => `'${jsAttr(n)}'`).join(",")}],'${contentKey}')`;
+}
 function optSeeBest(name) {
   switchTab("mods");
   const input = document.getElementById("modSearch");
@@ -3532,10 +3569,15 @@ function gacDefenseForAccount(acctKey) {
 function gacDefenseRowHtml(x) {
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
   const bucketLabel = { ready: "✓ ready", close: "→ 1 away", started: "⛭ in progress", notstarted: "· not started" };
+  /* Fleets share this row renderer but ships don't carry mods — [name, reqStars] members (2nd item a
+     number) mark a fleet, so the Optimize-mods button only appears for character squads. */
+  const isFleet = x.sq.members.length && typeof x.sq.members[0][1] === "number";
   return `<div class="cqline" style="align-items:center">
     <span class="chip ${bucketChip[x.st.bucket]}" style="min-width:82px;justify-content:center">${bucketLabel[x.st.bucket]}</span>
     <span style="flex:1;color:var(--ink-1);font-weight:600">${escapeHtml(x.sq.name)}</span>
     ${x.tl ? `<span class="chip ${TIER_CHIP[x.tl.tier] || "watch"}" style="min-width:26px;justify-content:center" title="${x.tl.wr}% WR · ${x.tl.battles} battles, live Tier List">${x.tl.tier}</span>` : ""}
+    ${isFleet ? "" : `<button class="pullbtn" style="padding:3px 8px;font-size:11px" title="Optimize mods for ${escapeHtml(x.sq.name)} (Mod Optimiser, GAC/TW content)"
+      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "gac")}">⚙</button>`}
   </div>`;
 }
 function gacDefenseBodyHtml() {
@@ -3592,8 +3634,10 @@ function squadArenaBlockHtml(x, label, v) {
       <span class="chip ${bucketChip[x.st.bucket]}">${bucketLabel[x.st.bucket]}</span>
       ${x.tl ? `<span class="chip ${TIER_CHIP[x.tl.tier] || "watch"}" title="${x.tl.wr}% WR · ${x.tl.battles} battles, live GAC Tier List — used here as a Squad Arena proxy">${x.tl.tier}</span>` : ""}
     </div>
-    <div class="cqteams">${x.st.rows.map(r => `<div class="cqteam" style="${r.geared ? "color:var(--ink-1)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span></div>`).join("")}</div>
+    <div class="cqteams">${x.st.rows.map((r, i) => `<div class="cqteam" style="${r.geared ? "color:var(--ink-1)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">${i === 0 ? '<span style="color:var(--accent);font-weight:700">(L)</span> ' : ""}${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span></div>`).join("")}</div>
     ${x.overlap.length ? `<div class="prog-summary" style="color:var(--good)">✓ ${x.overlap.length} of these members also count toward ${escapeHtml(v.gl.name)} — gearing this squad is double-duty.</div>` : ""}
+    <button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-top:6px" title="Loads this team's owned members into the Mod Optimiser, pre-set for Squad Arena content"
+      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "arena")}">⚙ Optimize mods</button>
   </div>`;
 }
 function squadArenaCoachHtml(acctKey) {
@@ -3645,6 +3689,8 @@ function raidCoachRowHtml(x) {
     <div class="cqteams" style="margin-top:4px">${memberRows}</div>
     ${x.sq.notes ? `<div class="mnote" style="margin-top:3px">${escapeHtml(x.sq.notes)}</div>` : ""}
     ${x.sq.sources ? `<div class="mnote" style="margin-top:2px;font-size:11px;opacity:0.7">Sources: ${escapeHtml(x.sq.sources.join(" · "))}</div>` : ""}
+    <button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-top:6px" title="Loads this team's owned members into the Mod Optimiser, pre-set for Raids content"
+      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "raids")}">⚙ Optimize mods</button>
   </div>`;
 }
 function raidCoachHtmlForRaid(ri) {

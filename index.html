@@ -631,8 +631,11 @@
   <!-- ============ COACH ============ -->
   <div class="tabpane" id="pane-coach">
     <h2>Coach's corner — flagged priorities</h2>
-    <div class="h2sub">Red flags first, then improvements, watch-items, and what's already right. Check items off as you action them.</div>
+    <div class="h2sub">Red flags first, then improvements, watch-items, and what's already right — plus this week's goal checklist below. Check items off as you action them.</div>
     <div class="sortable" id="tips" data-pane="coach"></div>
+
+    <div class="cardtitle" style="margin-top:22px">Weekly goals</div>
+    <div class="sortable" id="modes" data-pane="modes"></div>
   </div>
 
   <!-- ============ FARM PLAN ============ -->
@@ -660,9 +663,6 @@
       <div class="cqnav" id="abNav"></div>
       <div id="abBody"></div>
     </div>
-
-    <div class="cardtitle" style="margin-top:22px">Weekly goals</div>
-    <div class="sortable" id="modes" data-pane="modes"></div>
   </div>
 
   <!-- ============ TIER LIST ============ -->
@@ -885,9 +885,7 @@ const GROUND_WAR_UNITS = [
   { name: "Grand Master Yoda", id: "GRANDMASTERYODA", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
   { name: "General Kenobi", id: "GENERALKENOBI", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
   { name: "Jedi Master Kenobi", id: "JEDIMASTERKENOBI", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
-  { name: "Jedi Knight Luke Skywalker", id: "JEDIKNIGHTLUKE", faction: "Jedi", note: "The confirmed Challenge Tier III leader — corroborated by 2 swgoh.tv guides, a YouTube guide, and two separate EA forum threads (one quotes \"JKL lead is pretty much a requirement to 3★ this event on all tiers\"). Exact supporting members vary by source (Kenobi/GMY/Jolee Bindo/Shaak Ti show up in different combinations), so treat only \"JKL as leader\" as strongly confirmed." },
-  { name: "Jedi Knight Revan", id: "JEDIKNIGHTREVAN", faction: "Jedi", note: "A single EA forum post names a JKR-led alternative (with JKL, GMY, General Kenobi, Grogu) for Challenge Tier III — unverified against a second source." },
-  { name: "Chief Chirpa", id: "CHIEFCHIRPA", faction: "Ewok", note: "Named among swgoh.gg's top Ewok picks for this event." },
+  { name: "Chief Chirpa", id: "CHIEFCHIRPA", faction: "Ewok", note: "Named among swgoh.gg's top Ewok picks for this event — viable leader for the earlier general/Hard-through-Mythic tiers, not CT3 specifically." },
   { name: "Ewok Elder", faction: "Ewok", note: "Named among swgoh.gg's top Ewok picks for this event." }
 ];
 const GROUND_WAR_TIERS = [
@@ -906,26 +904,45 @@ const GROUND_WAR_TIERS = [
    titles/descriptions (video content itself couldn't be watched, so a title/description-only find is
    always flagged unverified/single-source until a second independent source corroborates it — same
    honesty rule as RAID_INTEL/RAID_NOTES throughout this file: no invented squads, no fabricated
-   "confirmed" status). units:[] means no named unit cleared this file's confidence bar for that
-   battle — general strategy notes only, no ownership table. Where a squad's full membership is
-   disputed/variant across sources but its LEADER is well-corroborated, only the leader (and any
-   consistently-named co-members) get their own checkable row — the notes below spell out exactly
-   what's confirmed vs. what varies by source. */
+   "confirmed" status).
+
+   `teams`: a second, deeper research pass (23 Aug 2026, "find FULL teams not just leaders") added a
+   structured `teams` array to each battle where the web turned up enough to assemble one — up to 3
+   full lineups, each an array of [base_id-or-null, display name] pairs, member[0] is ALWAYS the leader
+   (rendered with an "(L)" tag) matching this file's existing META_SQUADS convention. Members with a
+   null base_id aren't independently verified against this file's own confirmed-id list, so they're
+   matched by name via findUnitByName() rather than a guessed id — same safe pattern used elsewhere.
+   `confidence` (HIGH/MODERATE-HIGH/MODERATE/LOW-MODERATE/LOW) and `unconfirmed`/`notes` on each team
+   spell out exactly what's corroborated vs. what's a single source or a genuinely open gap — a team is
+   NEVER padded to 5 members with a guessed unit; a short roster with an honest `unconfirmed` note beats
+   a fabricated complete one. Battles where the whole squad is fixed by the event itself (Duel of the
+   Fates, Peridea Patrol) keep only the older flat `units` reference instead, since there's no team
+   choice to make. units:[] means no named unit cleared this file's confidence bar for that battle. */
 const ASSAULT_BATTLES = [
   { key: "groundwar", label: "Ground War",
     factionNote: "Only Jedi, Ewok and Ugnaught units are usable here — everything else is locked out regardless of power, so this isn't the place for GL/GAC squads.",
     mechanicNote: "\"Moment of Glory\" is the allies' shared buff mechanic in this event; watch for Shield Droid waves (\"Overcharge\" buff — dispel it) before committing cooldowns.",
+    teams: [
+      { label: "Team 1: JKL Jedi Core", confidence: "MODERATE",
+        members: [["JEDIKNIGHTLUKE", "Jedi Knight Luke Skywalker"], ["GRANDMASTERYODA", "Grand Master Yoda"], ["JOLEEBINDO", "Jolee Bindo"]],
+        unconfirmed: "Only 3 of 5 slots agree across 2 independent EA forum posters (JKL lead, GMY, Jolee Bindo). They disagree on the other 2: one adds General Kenobi plus a garbled 4th name (\"Hoda\"/\"HY\" — not a recognized SWGOH unit, most likely a Yoda typo, left unresolved rather than guessed); the other adds General Anakin Skywalker instead. Not filling those 2 slots with a guess.",
+        sources: ["EA Forums \"Ground War Event (Last tier) - Suggestions please\"", "EA Forums \"Is Ground War challenge 3 beatable at all?\""] }
+    ],
     units: GROUND_WAR_UNITS,
     tiers: GROUND_WAR_TIERS,
     strategyNotes: [
-      "Jedi Knight Luke Skywalker (chip-checked above) is the confirmed Challenge Tier III leader — see his note for sourcing. Chief Chirpa, Teebo and Finn are named as viable leaders for the earlier general/Hard-through-Mythic tiers, not CT3 specifically."
+      "Jedi Knight Luke Skywalker (Team 1 above) is the confirmed Challenge Tier III leader — corroborated by 2 swgoh.tv guides, a YouTube guide, and multiple EA forum threads.",
+      "Jedi Knight Revan is also named as a CT3 lead by 2 independent EA forum posters, but they disagree on the supporting roster (one pairs him with JKL/GMY/General Kenobi/Grogu, the other with JKL/GMY/General Anakin Skywalker/a garbled 4th unit) — not tracked as its own team above until a cleaner match turns up."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "swgoh.tv", "EA forums", "YouTube guides (23 Aug 2026 sweep)"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "swgoh.tv", "EA Answers HQ forums", "YouTube guides (23 Aug 2026 sweep)"] },
   { key: "militarymight", label: "Military Might",
     factionNote: "Only Rebel and Clone Trooper units are usable here — vs. Empire waves.",
     mechanicNote: "Allies get a unique \"Counterwatch\" ability during battles — timing it well is the main mechanic called out for Tier II.",
-    units: [
-      { name: "Commander Luke Skywalker", faction: "Rebel", note: "Named as the Challenge Tier III leader by 2 independent YouTube creators (\"CLS + Double Chewies Destroy Challenge Tier 3\"; a second video titled \"...Challenge Tier 3 w/ CLS Chewpio\"), both pairing him with Chewbacca-heavy Rebel units. Two independent sources agreeing on the leader is a real signal, but neither gives a confirmed full 5-member roster — treat as a strong leader hint, not a finished squad." }
+    teams: [
+      { label: "Team 1: CLS Chewpio (Rebel Fighters)", confidence: "MODERATE-HIGH",
+        members: [["COMMANDERLUKESKYWALKER", "Commander Luke Skywalker"], ["HANSOLO", "Han Solo (\"Raid Han\")"], ["CHEWBACCALEGENDARY", "Chewbacca"], ["C3POLEGENDARY", "C-3PO"]],
+        unconfirmed: "3 independent EA forum posters (in one thread) and 2 YouTube titles all agree on CLS + Han Solo + Chewbacca + C-3PO, but every one of those sources also lists a 5th token, \"Chewpio\" — not a real SWGOH unit. Most likely players' shorthand for the Chewbacca/C-3PO pairing rather than a distinct 5th character, but reported verbatim rather than resolved: the true 5th squad slot is genuinely unresolved.",
+        sources: ["EA Forums \"Military Might CT3 at g12?\" (3 posters)", "YouTube \"CLS + Double Chewies Destroy Challenge Tier 3\"", "YouTube \"...Challenge Tier 3 w/ CLS Chewpio\""] }
     ],
     tiers: [
       { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+, 3-dot mods" },
@@ -938,19 +955,27 @@ const ASSAULT_BATTLES = [
     ],
     strategyNotes: [
       "A separate EA forums thread titled \"WORLD'S FIRST Military Might Challenge Tier 3 and 3★ with Five Rebel Fighters!\" only confirms Mon Mothma by name (and other posters dispute whether she even qualifies as a \"Rebel Fighter\") — the image with the actual roster was unreadable, so it isn't tracked as a pick here.",
+      "A \"zCody Lead Clones\" video/forum team surfaced in this round's research but is explicitly for Challenge Tier 2, not Tier 3 — excluded as not meeting the CT3 bar.",
       "Action counts are not shared between tiers — each tier is a fresh budget, so a Hard-tier clear doesn't cost you Challenge III attempts."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA Answers HQ forums", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
   { key: "rebelroundup", label: "Rebel Roundup",
     factionNote: "Only Bounty Hunter and Imperial Trooper units are usable here.",
     mechanicNote: "Imperial Troopers get a \"Rapid Fire\" ability and Bounty Hunters get \"Many Disintegrations\" as unique mechanics in this event.",
-    units: [
-      { name: "General Veers", faction: "Imperial Trooper", note: "The best-corroborated Challenge Tier III leader found for this event — an Imperial Trooper squad with Colonel Starck, Admiral Piett, and a Death/Shore Trooper agrees across 3 independent EA forum threads (one gives explicit relic levels: R3–R5 on most units). Treat this as the strongest lead in this whole research pass." },
-      { name: "Colonel Starck", faction: "Imperial Trooper", note: "Named alongside General Veers in the corroborated Challenge Tier III Trooper squad above." },
-      { name: "Admiral Piett", id: "ADMIRALPIETT", faction: "Imperial Trooper", note: "Named as a squad member (not leader) in the corroborated Veers-led Trooper squad — separately, two YouTube titles put Piett front-and-center (\"Admiral Piett is INSANE!... Auto 3 Stars\"; \"Imperial Troopers with Piett Steamroll Challenge Tier 3\"), but neither video's content was viewable, so it's unconfirmed whether those runs were actually Piett-led or just featured him for his stacking buff under a Veers lead." },
-      { name: "Death Trooper", id: "DEATHTROOPER", faction: "Imperial Trooper", note: "Named in the corroborated Veers-led Trooper squad (one source lists Shore Trooper or Snowtrooper as an alternative to this slot)." },
-      { name: "Bossk", id: "BOSSK", faction: "Bounty Hunter", note: "A separate Bounty Hunter path: Bossk-led, reported to clear Challenge Tier III with full health/protection to spare. Corroborated by 2 independent sources (a swgoh.tv video titled \"Rebel Roundup CT3 Victory With Bossk Lead\" + an EA forums thread), but only Boba Fett is named as a supporting member — the rest of the 5-unit roster isn't specified." },
-      { name: "Boba Fett", id: "BOBAFETT", faction: "Bounty Hunter", note: "Named supporting member of the Bossk-led Bounty Hunter path above." }
+    teams: [
+      { label: "Team 1: Veers Trooper (w/ Piett)", confidence: "MODERATE-HIGH",
+        members: [["VEERS", "General Veers"], ["COLONELSTARCK", "Colonel Starck"], ["ADMIRALPIETT", "Admiral Piett"], ["DEATHTROOPER", "Death Trooper"]],
+        unconfirmed: "4 of 5 slots agree across 3 independent EA forum threads (one gives explicit relic levels, R3–R5 on most units) — the single best-corroborated lead in this whole battle. The 5th slot is unconfirmed: one source lists Shore Trooper as an alternative to the Death Trooper slot instead of a true 5th member. Separately, 2 YouTube titles put Piett front-and-center — unconfirmed whether those runs are Piett-led instead of Veers-led.",
+        sources: ["3 independent EA Forums threads (Veers squad + relic levels)", "swgoh.wiki"] },
+      { label: "Team 2: Embo Bounty Hunters", confidence: "MODERATE",
+        members: [["EMBO", "Embo"], ["GREEFKARGA", "Greef Karga"], ["THEMANDALORIAN", "The Mandalorian"], ["BOSSK", "Bossk"], ["BOBAFETT", "Boba Fett"]],
+        notes: "Recommended 7★/Gear 13+ on Greef Karga and The Mandalorian for survivability via counter-attack + health-steal, per the source.",
+        unconfirmed: "Embo, Greef Karga and The Mandalorian are corroborated across 2 independent EA forum threads; Bossk and Boba Fett as the final 2 slots come from only 1 of those threads.",
+        sources: ["EA Forums thread 4339327 (\"Rebel roundup\")", "prior research's 2-source partial (Embo/Greef/Mando)"] },
+      { label: "Team 3: Veers Trooper (no Piett)", confidence: "MODERATE",
+        members: [["VEERS", "General Veers"], ["COLONELSTARCK", "Colonel Starck"], ["DEATHTROOPER", "Death Trooper"], [null, "Shore Trooper"], [null, "Snowtrooper"]],
+        notes: "Described as the \"most common setup\" by multiple posters in that thread. Conflicts with Team 1 by dropping Piett entirely — treat as a documented alternative build, not the same squad. Shore Trooper/Snowtrooper aren't independently base_id-verified in this app, so they're matched by name only.",
+        sources: ["EA Forums thread 4015838 (\"Rebel Roundup\")"] }
     ],
     tiers: [
       { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+" },
@@ -962,17 +987,24 @@ const ASSAULT_BATTLES = [
       { tier: "Challenge III", gate: "Relic 7, 7★, zeta abilities — after clearing Challenge II" }
     ],
     strategyNotes: [
-      "A third path, Embo-led Bounty Hunters (with Greef Karga and Din Djarin/Mando, 7★ Gear 13+), is named by 2 sources but only 3 of 5 slots are specified — not tracked as its own row above, mentioned here as a lead worth digging into further if the Veers or Bossk squads aren't close.",
+      "A separate Bossk-led Bounty Hunter path (Boba Fett, Dengar, Greedo, 5th slot disputed between Zam Wesell/Cad Bane) is reported to clear CT3 with health/protection to spare, but never reached a clean enough full roster to rank in the top 3 above — worth digging into if your Bounty Hunter bench beats your Embo squad's.",
       "Fennec Shand (relic) is separately called out as helping Bounty Hunter Protection-Up reliability; a Jango-lead Mando/Bossk/Jango combo was reported as a failed attempt on one forum thread — not recommended.",
       "Piett needs to take damage early to build his stacking bonus; the opening enemy salvo is described as the swingiest moment for Trooper squads."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "3 independent EA forums threads (Veers squad + relic levels)", "swgoh.tv (Bossk lead)", "YouTube guide titles (23 Aug 2026 sweep)"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "5+ independent EA Answers HQ forum threads", "swgoh.tv (Bossk lead)", "YouTube guide titles (23 Aug 2026 sweep)"] },
   { key: "forestmoon", label: "Forest Moon",
     factionNote: "Any Empire and/or Droid units are usable here (mixed squads allowed) — vs. Ewok defenders (Ewok Scout/Warrior/Elder, Chief Chirpa, Teebo as end boss).",
     mechanicNote: "Allies get a unique \"DEFEND\" ability; enemies can gain a \"DEADLY\" buff that hits hard but Ewoks are easy to kill once you spot which one has it.",
-    units: [
-      { name: "Admiral Piett", id: "ADMIRALPIETT", faction: "Imperial Trooper", note: "The best-corroborated Challenge Tier III lead — 2 independent creators (\"Conquer Challenge Tier 3 with Piett and Imperial Troopers\"; a second guide tagged #ewok #troopers) both point to a Piett-led Imperial Trooper approach, and the same pairing has a documented Challenge Tier II clear too, suggesting it scales across tiers. Neither source enumerates which other Trooper units fill the remaining slots." },
-      { name: "Darth Vader", id: "VADER", faction: "Empire", note: "A second, lower-confidence lead: one EA forums poster and one small YouTube channel (905 views) both describe a Vader-led (as an Imperial Trooper-tagged unit) clear that \"trivialises\" Challenge Tier III — plausible but thinner sourcing than the Piett path above, and no full roster given." }
+    teams: [
+      { label: "Team 1: Thrawn Droid Battalion", confidence: "MODERATE",
+        members: [["GRANDADMIRALTHRAWN", "Grand Admiral Thrawn"], [null, "B1 Battle Droid"], [null, "Droideka"], [null, "B2 Super Battle Droid"], ["MAGNAGUARD", "Magnaguard"]],
+        notes: "Mod Magnaguard for protection (arrow, triangle, cross, circle) — tanking Magnaguard is described as the key to the clear.",
+        unconfirmed: "Full 5-unit roster reproduced verbatim from one EA forum poster (NicWester), verified via 2 independent fetches of the same page, but still effectively one source — no second independent corroboration found despite a dedicated search this round.",
+        sources: ["EA Forums \"Tier 3 forest moon completion\""] },
+      { label: "Team 2: Admiral Piett Imperial Trooper", confidence: "LOW",
+        members: [["ADMIRALPIETT", "Admiral Piett"]],
+        unconfirmed: "The best-corroborated CT3 LEADER for this battle — 2 independent creators point to a Piett-led Imperial Trooper approach with a documented Challenge Tier II clear too — but neither names the other 4 Trooper units, and this round's dedicated research still couldn't extract them (YouTube fetches were blocked). Leader only, not a finished squad — listed to flag the strongest signal found even though the roster is incomplete.",
+        sources: ["YouTube \"Conquer Challenge Tier 3 with Piett and Imperial Troopers\"", "YouTube \"GUIDE | Challenge tier 3 - Assault Battles: Forest Moon\""] }
     ],
     tiers: [
       { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+, 3-dot mods" },
@@ -984,10 +1016,10 @@ const ASSAULT_BATTLES = [
       { tier: "Challenge III", gate: "Relic 7, 6-dot mods, zeta abilities — after clearing Challenge II at 7★" }
     ],
     strategyNotes: [
-      "A single EA forums post separately describes a Thrawn-led droid \"Battalion\" squad (B1 Battle Droid, Droideka, B2 Super Battle Droid, Magnaguard) clearing Challenge Tier III with careful Magnaguard tanking/mod setup — not corroborated by any second source, so not tracked as a pick here.",
+      "A Darth Vader-led (as an Imperial Trooper-tagged unit) alternative is described by one EA forums poster (\"Lord Vader is actually an Imperial Trooper. He never actually gets to take a turn but this trivialised CT3.\") — no member names could be verified even after a repeat search, so it's a leader-only mention, not tracked as its own team.",
       "No source found used the words \"3-star\" for a Challenge Tier III clear specifically — titles say \"Conquer,\" \"Flawlessly Completes,\" \"Trivialised,\" which strongly implies a clean clear but isn't the same as a confirmed max-star claim."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "swgoh.tv / YouTube guide titles (23 Aug 2026 sweep)"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA Answers HQ forums", "swgoh.tv / YouTube guide titles (23 Aug 2026 sweep)"] },
   { key: "dueloffates", label: "Duel of the Fates",
     factionNote: "Not a faction choice — this event locks you to exactly two specific units as your only allies, no substitutes: Padawan Obi-Wan and Qui-Gon Jinn (the event calls him \"Master Qui-Gon\"; any owned version of the character qualifies per swgoh.gg).",
     mechanicNote: "Solo boss fight vs. Darth Maul, who has \"Power of Hatred\" (reduced damage from health-% effects, turn-meter gain + debuff cleanse with a bonus turn) and \"We Will Have Our Revenge\" (boosted offense via Advantage/Whirling Blades stacks).",
@@ -1004,16 +1036,29 @@ const ASSAULT_BATTLES = [
       { tier: "Tier 6", gate: "7★, Relic 9+ — highest tier, per EA forums" }
     ],
     strategyNotes: [
-      "This event uses 6 numbered tiers, not the Hard/Challenge I-III structure most other Assault Battles use.",
-      "One YouTube title (\"Tier 3 | 3★ | Low Gear Padawan Obi-Wan & Master Qui-Gon\") claims a 3-star Tier 3 clear at gear well below the official 7★/Gear 11+ gate listed above — the video's content wasn't viewable to confirm the discrepancy, so treat the official gate as authoritative until verified in-game.",
+      "This event uses 6 numbered tiers, not the Hard/Challenge I-III structure most other Assault Battles use — and being a fixed 2-unit squad, there's no team choice to research, only a leader pick.",
+      "No source states a leader preference between Padawan Obi-Wan and Master Qui-Gon — pick either; nothing found ties a specific one to better Tier 6 results.",
+      "The best concrete data point found is a YouTube title implying a Relic 8 pair cleared through Tier 5 (\"Duel of the Fates w/ R8 POW MQG — Tier 1-5 Assault Battle\") — no source documents a confirmed 3-star Tier 6 clear with stated gear/relic levels.",
+      "One YouTube title (\"Tier 3 | 3★ | Low Gear Padawan Obi-Wan & Master Qui-Gon\") claims a 3-star Tier 3 clear at gear well below the official 7★/Gear 11+ gate listed above — the video (channel \"Below Average Gamer\") was identified this round but its description/comments remain unreachable (persistent YouTube fetch blocks), so the discrepancy stays unresolved. Treat the official gate as authoritative until verified in-game.",
       "Rewards are drawn from a pool per tier, not a guaranteed full set, per a developer quote on swgoh.gg's own news post. The event recurs roughly monthly."
     ],
-    sources: ["swgoh.gg event page", "swgoh.gg news post", "swgoh.wiki", "EA forums", "YouTube guide titles (23 Aug 2026 sweep)"] },
+    sources: ["swgoh.gg event page", "swgoh.gg news post", "swgoh.wiki", "EA Answers HQ forums", "YouTube guide titles (23 Aug 2026 sweep)"] },
   { key: "fanaticaldevotion", label: "Fanatical Devotion",
     factionNote: "Inquisitorius and/or Tusken Raider units are usable here (can mix both factions) — vs. Force User/Jedi waves (Grand Master Yoda, General Kenobi, Ezra Bridger/Kanan Jarrus among the bosses).",
     mechanicNote: "Inquisitorius allies get \"Our Prey Nears\" (stacking Purge debuff + a bonus turn with +50% Crit Chance/Damage); Tusken allies get \"Tusken Storm\" (Momentum stacks, buffs, and health recovery with bonus turns).",
-    units: [
-      { name: "Grand Inquisitor", faction: "Inquisitorius", note: "Named as the Challenge Tier III key unlock by 4+ independent YouTube video titles (\"Purge the Jedi with Grand Inquisitor Challenge Tier 3 Guide\"; \"The Greatest Challenge in SWGoH History - CT3... with Grand Inquisitor\"; two more referencing a GI-led clear) plus an EA forums comment (\"ct3 you would be best off with gi\"). None of these sources gave a viewable full roster, so this is title/anecdote-level corroboration only — real, but not a finished squad." }
+    teams: [
+      { label: "Team 1: GI + Reva", confidence: "MODERATE",
+        members: [[null, "Grand Inquisitor"], [null, "Third Sister (Reva)"]],
+        unconfirmed: "4 independent signals (3 YouTube titles + 1 EA forums reply: \"ct2 yes, ct3 you would be best off with gi... once all reva ready then you will beat ct3\") tie Reva to CT3 success alongside Grand Inquisitor, but none names the remaining 3 slots.",
+        sources: ["EA Forums thread 3713158", "YouTube \"Fanatical Devotion Assault Battle - Challenge Tier 3 w/ Reva & GI\"", "YouTube \"How to three star Fanatical Devotion with Reva!\"", "YouTube \"SWGOH inquisitors Assault Battle CT3 - Reva makes it easier!\""] },
+      { label: "Team 2: Cantina Advanced Inquisitorius", confidence: "MODERATE",
+        members: [[null, "Grand Inquisitor"], [null, "Ninth Sister"], [null, "Fifth Brother"], [null, "Seventh Sister"], [null, "Eighth Brother"]],
+        unconfirmed: "Full 5-unit roster, but it's swgoh-cantina.com's general-purpose \"best squad\" reference for this leader — not confirmed against Challenge Tier III for this event specifically.",
+        sources: ["swgoh-cantina.com Grand Inquisitor page"] },
+      { label: "Team 3: Cantina Initial Inquisitorius", confidence: "MODERATE",
+        members: [[null, "Grand Inquisitor"], [null, "Ninth Sister"], [null, "Fifth Brother"], [null, "Seventh Sister"], [null, "Second Sister"]],
+        unconfirmed: "Same caveat as Team 2 (general reference, not CT3-verified) — cantina itself labels this the earlier/pre-Eighth-Brother variant, ranked below Team 2.",
+        sources: ["swgoh-cantina.com Grand Inquisitor page"] }
     ],
     tiers: [
       { tier: "Hard", gate: "Level 75+, Gear 8+, 3-dot mods" },
@@ -1026,14 +1071,14 @@ const ASSAULT_BATTLES = [
     ],
     strategyNotes: [
       "Challenge Tier II is reported as doable with just the base 5 Inquisitors (no Grand Inquisitor needed) per a \"No GI - No Problem!\" guide title and a matching EA forums comment — Challenge Tier III is where sources consistently say you need either Grand Inquisitor or a fully-built Reva.",
-      "A general (not CT3-specific) Inquisitorius roster from swgoh-cantina.com's \"best squads\" reference: Grand Inquisitor, Ninth Sister, Fifth Brother, Seventh Sister, Second Sister (Eighth Brother sometimes swapped in) — useful as a starting point, not confirmed against this event specifically."
+      "A companion video, \"...w/o Reva - 8th Brother Rocks!!\", implies Eighth Brother is a viable Reva substitute rather than a co-member — worth trying if Reva isn't built."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "swgoh-cantina.com", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA Answers HQ forums", "swgoh-cantina.com", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
   { key: "peridea", label: "Peridea Patrol",
     factionNote: "Not a faction choice — this event locks you to exactly three specific Imperial Remnant units as your only allies, no substitutes: Captain Enoch, Night Trooper, and Death Trooper (Peridea).",
     mechanicNote: "Solo boss fight vs. a boosted Ezra Bridger (Exile) with very large health pools (500K+ reported at Tier 1) that regenerates health/protection quickly — guides emphasize timing debuff-dispels for right after Ezra buffs himself, and using Captain Enoch's special often.",
     units: [
-      { name: "Captain Enoch", id: "CAPTAINENOCH", faction: "Imperial Remnant", note: "One of the three mandatory allies for this entire event — squad size is locked at 3, there's no roster choice to make, only leader pick and investment level." },
+      { name: "Captain Enoch", id: "CAPTAINENOCH", faction: "Imperial Remnant", note: "One of the three mandatory allies for this entire event — squad size is locked at 3, there's no roster choice to make. Every successful-clear report that names a leader uses him — not stated as proven-optimal over the other two, just the only leader anyone actually describes using." },
       { name: "Night Trooper", id: "NIGHTTROOPER", faction: "Imperial Remnant", note: "One of the three mandatory allies. Guides note his second special is risky if the enemy has Tenacity Up." },
       { name: "Death Trooper (Peridea)", id: "DEATHTROOPERPERIDEA", faction: "Imperial Remnant", note: "One of the three mandatory allies — distinct from the regular \"Death Trooper\" unit used in other Assault Battles." }
     ],
@@ -1046,18 +1091,28 @@ const ASSAULT_BATTLES = [
       { tier: "Tier VI", gate: "7★, Relic 9+, 6-dot mods — highest tier" }
     ],
     strategyNotes: [
-      "This event uses 6 Roman-numeral tiers (I–VI), not the Hard/Challenge I-III structure most other Assault Battles use — a YouTube title referencing \"Tier 4 | 3★\" may be using a looser tier-naming convention, so don't assume it maps directly onto the table above.",
-      "No source gave a full, verified leader/mod breakdown for a Tier VI (highest-tier) clear — an EA forums post describes Enoch-led with two Night Troopers around Relic 5–6 as generally workable, but doesn't confirm which tier that clears or specify a 3-star result.",
+      "This event uses 6 Roman-numeral tiers (I–VI), not the Hard/Challenge I-III structure most other Assault Battles use.",
+      "The clearest confirmed data point found is a Relic 7 clear (Tier V, not the highest Tier VI) with specific mods: Captain Enoch on all-health mods at 316 speed, Night Trooper on Revan offense/health/protection mods at 300+ speed, Death Trooper (Peridea) on CD/CC mods at 300+ speed, no zetas/omicrons. A separate poster reports 3-starring \"all the way to the Relic 7 tier with ease,\" with the final Relic 9/Tier VI stage needing \"some retry attempts\" — implying a clear but not confirming a 3-star at Tier VI specifically.",
+      "A prior note about \"two Night Troopers\" appears to be a misread — both swgoh.gg and swgoh.wiki confirm this event locks the squad to exactly one each of the three mandatory units, no duplicates possible.",
       "Multiple EA forums threads describe this event as overtuned at entry-level gear relative to its stated requirements — expect Tier I/II to feel harder than the numbers suggest."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums (3 threads)", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA Answers HQ forums (5+ threads)", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
   { key: "placesofpower", label: "Places of Power",
     factionNote: "Any First Order and/or Sith units are usable here (mixed squads allowed) — vs. Jedi defenders (Jedi Temple Guards, Jedi Sentinels, Grand Master Yoda as a boss-tier unit).",
     mechanicNote: "Allies get access to \"Dark Gambit\" (+30% Health Steal, +50% Offense, +25% Speed, −50% Defense); the Jedi defenders are noticeably faster than your squad, so turn-meter control is the core challenge-tier skill.",
-    units: [
-      { name: "Emperor Palpatine", id: "EMPERORPALPATINE", faction: "Sith", note: "The best-corroborated Challenge Tier III lead — named across 2 independent EA forums threads (5 player-reported variants between them), with one thread noting \"T3 seems designed for Vader,\" who's consistently paired alongside him. Supporting members vary by poster (Bastila Shan, Darth Revan, Darth Malak, and Darth Nihilus all show up in different combinations), so only the Palpatine+Vader core is confirmed here." },
-      { name: "Darth Vader", id: "VADER", faction: "Sith", note: "Consistently paired with Emperor Palpatine in the Challenge Tier III reports above — see his note for sourcing." },
-      { name: "Sith Eternal Emperor", id: "SITHPALPATINE", faction: "Sith", note: "A second, separate lead: one EA forums poster and one YouTube title (\"3★ PLACES OF POWER CHALLENGE TIER 3 w/SITH ETERNAL EMPEROR SQUAD\") both point to a Sith Eternal Emperor-led clear (with Darth Traya, Darth Malak, Darth Nihilus, Darth Sion at Relic 3-7 reported by the forum poster). Two independent sources, but the video's content wasn't viewable to fully confirm — moderate-high confidence, not as strong as the Palpatine path above." }
+    teams: [
+      { label: "Team 1: Palpatine Sith Empire (w/ Vader)", confidence: "HIGH",
+        members: [["EMPERORPALPATINE", "Emperor Palpatine"], ["VADER", "Darth Vader"], [null, "Darth Revan"], [null, "Darth Malak"], ["BASTILASHANDARK", "Bastila Shan (Fallen)"]],
+        notes: "Relic levels reported vary (R2–R7 across posters) but unit identities are consistent — the best-corroborated full roster found across this entire research pass, any battle.",
+        sources: ["EA Forums thread 3661480 (3 posters)", "EA Forums thread 4554839 (2 posters)"] },
+      { label: "Team 2: Palpatine Old Republic Sith (no Vader)", confidence: "HIGH",
+        members: [["EMPERORPALPATINE", "Emperor Palpatine"], [null, "Darth Revan"], [null, "Darth Malak"], ["BASTILASHANDARK", "Bastila Shan (Fallen)"], [null, "Darth Nihilus"]],
+        notes: "A viable Vader-less alternative to Team 1 — swaps Vader for Darth Nihilus. Same exact 5-unit set reported by 4 separate posters, near-tied with Team 1.",
+        sources: ["EA Forums thread 3661480 (2 posters)", "EA Forums thread 4554839 (2 posters)"] },
+      { label: "Team 3: Traya Triumvirate + SEE", confidence: "LOW-MODERATE",
+        members: [[null, "Darth Traya"], [null, "Darth Nihilus"], [null, "Darth Sion"], ["SITHPALPATINE", "Sith Eternal Emperor"], [null, "Darth Malak"]],
+        unconfirmed: "Corrects a prior assumption in this file — the leader here is Darth Traya, not Sith Eternal Emperor (SEE is a member). Full roster is from a single poster (\"Traya lead triumvirate plus SEE and Malak\") appearing twice in one thread — not independent corroboration. \"Triumvirate\" (Nihilus + Sion) is inferred from that phrasing rather than spelled out name-by-name. A YouTube video referencing a Sith Eternal Emperor-led CT3 squad exists but its actual roster remains unconfirmed and may not match this team.",
+        sources: ["EA Forums thread 4554839"] }
     ],
     tiers: [
       { tier: "Challenge I", gate: "7★, Relic 3+, 6-dot mods, zeta abilities" },
@@ -1065,18 +1120,22 @@ const ASSAULT_BATTLES = [
       { tier: "Challenge III", gate: "7★, Relic 7+, 6-dot mods, zeta abilities" }
     ],
     strategyNotes: [
-      "A Darth Traya-led alternative is mentioned once each by a forum post and a YouTube title (\"PLACES OF POWER 3★ CHALLENGE TIER 3 with TRAYA SQUAD\") — thinner sourcing than the two picks above, worth trying if you're built for Traya but not tracked as its own confirmed row.",
       "A Supreme Leader Kylo Ren-led team (with Kylo Ren Unmasked) is named once by a single forum poster with the rest of the roster unspecified — flagged as unverified, not a serious lead.",
       "This is one of the older Assault Battles (2018-era) so pre-Challenge-tier-system guides exist but don't reliably map onto the current structure — the picks above are all from posts explicitly discussing today's Challenge Tier III."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "2 independent EA forums threads (5 reported variants)", "YouTube guide titles (23 Aug 2026 sweep)"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "2 independent EA Answers HQ forums threads (9+ reported variants)", "YouTube guide titles (23 Aug 2026 sweep)"] },
   { key: "secretsandshadows", label: "Secrets and Shadows",
     factionNote: "Nightsister and/or Phoenix units are usable here (mixed squads allowed) — vs. Dark Side/Sith defenders, with Darth Sidious and Darth Nihilus recurring across tiers.",
     mechanicNote: "\"Celerity\" is the shared mechanic — the activating unit gains Taunt + Defense Up and other allies gain Speed Up (Phoenix members also get Health Steal Up, Nightsister members get Crit Damage Up), resetting all Celerity cooldowns when it triggers.",
-    units: [
-      { name: "Great Mothers", faction: "Nightsister", note: "The best-corroborated Challenge Tier III lead — 3 independent YouTube titles agree on a Great Mothers + Morgan Elsbeth pairing clearing Challenge Tier III (one explicitly claims \"All Tiers\"), though the full 5-unit roster is only sourced from a general (non-CT3-specific) squad reference, and no source confirms a 3-star result specifically." },
-      { name: "Mother Talzin", id: "MOTHERTALZIN", faction: "Nightsister", note: "Confirmed (with Old Daka) as the standard Challenge Tier I clear per rgamereview.com's guide. For Challenge Tier III specifically, two YouTube titles reference Talzin/Daka gearing (\"Challenge Tier 3 with G12 Talzin R4 Daka\"; \"Only Need Relics on Daka\") but neither confirms a full CT3 roster or clear — treat CT3 use as a promising lead, not confirmed the way CT1 is." },
-      { name: "Old Daka", id: "DAKA", faction: "Nightsister", note: "Paired with Mother Talzin in the confirmed Challenge Tier I squad and the unconfirmed Challenge Tier III lead above." }
+    teams: [
+      { label: "Team 1: Mother Talzin Nightsisters", confidence: "MODERATE-HIGH",
+        members: [["MOTHERTALZIN", "Mother Talzin"], ["ASAJVENTRESS", "Asajj Ventress"], ["MERRIN", "Merrin"], ["NIGHTSISTERZOMBIE", "Nightsister Zombie"], ["DAKA", "Old Daka"]],
+        notes: "Reported relic/mod loadout: Talzin R6, Ventress R5, Merrin R6, Nightsister Zombie R7, Daka R8, all with 6-dot mods. gaming-fans.com's CT3-specific walkthrough (initially JS-gated, successfully reloaded this round) describes clearing all 8 battles with this exact roster; leader + Daka-gearing focus corroborated by 2 more CT3-titled YouTube videos from different creators.",
+        sources: ["gaming-fans.com \"Secrets & Shadows – Challenge Tier 3 Tips & Walkthrough\"", "YouTube \"Only Need Relics on Daka\"", "YouTube \"How to three star...with a relic 5 Daka\""] },
+      { label: "Team 2: Great Mothers + Morgan Elsbeth", confidence: "LOW-MODERATE",
+        members: [[null, "Great Mothers"], [null, "Morgan Elsbeth"]],
+        unconfirmed: "Leader pairing reconfirmed by 2 more CT3-titled YouTube videos this round (4 total now), but none of them lists a roster. The only full 5-unit list available (Nightsister Spirit, Nightsister Acolyte, Talia) is swgoh-cantina.com's GENERAL squad reference, not tied to this event or tier, so it isn't shown here as if it were CT3-confirmed. No source confirms a 3-star result for this pairing.",
+        sources: ["YouTube \"Great Mothers + Morgan vs Sidious...CT3\" (BitDynasty)", "YouTube \"...CT3 with Great Mothers\" (PlasticandRage)"] }
     ],
     tiers: [
       { tier: "Hard", gate: "Level 75+, Gear 8+, 3-dot mods" },
@@ -1089,10 +1148,10 @@ const ASSAULT_BATTLES = [
     ],
     strategyNotes: [
       "A single, untitled-leader YouTube video (Polish-language title) confirms a general Nightsisters clear of Challenge Tier III but names no specific leader or members — not tracked as a pick here.",
-      "gaming-fans.com has a guide specifically titled \"Secrets & Shadows – Challenge Tier 3 Tips & Walkthrough\" that couldn't be loaded this pass (JS-gated redirect) — worth a manual check next time this file gets refreshed, it's likely the single best lead for this event.",
-      "An EA forums bug report flags inconsistent Great Mothers ability behaviour between Challenge Tier I and II — worth knowing about if a Great Mothers run behaves unexpectedly."
+      "An EA forums bug report flags inconsistent Great Mothers ability behaviour between Challenge Tier I and II — worth knowing about if a Great Mothers run behaves unexpectedly.",
+      "rgamereview.com's guide covers Challenge Tier I/II only and explicitly states Challenge Tier III isn't written yet."
     ],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "rgamereview.com (confirmed CT1 squad)", "EA forums", "swgoh-cantina.com", "YouTube guide titles (23 Aug 2026 sweep)"] }
+    sources: ["swgoh.gg event page", "swgoh.wiki", "rgamereview.com (confirmed CT1 squad)", "gaming-fans.com (CT3 walkthrough)", "EA Answers HQ forums", "swgoh-cantina.com", "YouTube guide titles (23 Aug 2026 sweep)"] }
 ];
 function assaultUnitRow(reqs, u) {
   const rec = u.id ? reqs[u.id] : findUnitByName(reqs, u.name);
@@ -1101,9 +1160,52 @@ function assaultUnitRow(reqs, u) {
   const ready = owned && (rec.s || 0) >= 7 && (rec.g || 1) >= 11;
   return { ...u, owned, cur, ready };
 }
+/* Shared by assaultTeamHtml's per-member rows — same ready/owned rule assaultUnitRow uses (7★, Gear 11+),
+   just for a [base_id-or-null, name] pair instead of a {id,name} unit object. */
+function teamMemberRow(reqs, bid, name) {
+  const u = bid ? reqs[bid] : findUnitByName(reqs, name);
+  const owned = !!u;
+  const cur = !owned ? "Not owned" : (((u.s || 0) < 7) ? (u.s || 0) + "★" : (u.r ? "R" + u.r : "G" + (u.g || 1)));
+  const ready = owned && (u.s || 0) >= 7 && (u.g || 1) >= 11;
+  return { name, owned, ready, cur };
+}
+const ASSAULT_CONF_CHIP = { "HIGH": "done", "MODERATE-HIGH": "done", "MODERATE": "close", "LOW-MODERATE": "grind", "LOW": "stargate" };
+/* Renders one full team card: label + confidence chip, then a member table (leader — always members[0],
+   matching this file's META_SQUADS convention — tagged "(L)") with per-account readiness, then any
+   unconfirmed-slot caveat, free-text notes, and the sources specific to that team. */
+function assaultTeamHtml(team) {
+  const reqsOllie = ((state.pulls.ollie || BASELINE.ollie || {}).reqs) || {};
+  const reqsTiny = ((state.pulls.tiny || BASELINE.tiny || {}).reqs) || {};
+  const rows = team.members.map((m, i) => {
+    const rO = teamMemberRow(reqsOllie, m[0], m[1]);
+    const rT = teamMemberRow(reqsTiny, m[0], m[1]);
+    const cellStyle = r => r.ready ? "color:var(--good);font-weight:600" : r.owned ? "" : "color:var(--ink-3);font-style:italic";
+    return `<tr>
+      <td style="text-align:left">${i === 0 ? '<span style="color:var(--accent);font-weight:700">(L)</span> ' : ""}${escapeHtml(m[1])}</td>
+      <td style="${cellStyle(rO)}">${escapeHtml(rO.cur)}</td>
+      <td style="${cellStyle(rT)}">${escapeHtml(rT.cur)}</td>
+    </tr>`;
+  }).join("");
+  return `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--grid)">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-weight:700;color:var(--ink-1);font-size:13px">${escapeHtml(team.label)}</span>
+      <span class="chip ${ASSAULT_CONF_CHIP[team.confidence] || "watch"}">${escapeHtml(team.confidence)}</span>
+    </div>
+    <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
+      <tr><th style="text-align:left">Unit</th><th>Ollietank</th><th>Tiny</th></tr>
+      ${rows}
+    </table></div>
+    ${team.unconfirmed ? `<div class="mnote" style="margin-top:4px;font-style:italic">${escapeHtml(team.unconfirmed)}</div>` : ""}
+    ${team.notes ? `<div class="mnote" style="margin-top:4px">${escapeHtml(team.notes)}</div>` : ""}
+    <div class="mnote" style="margin-top:2px;font-size:11px;opacity:0.7">Sources: ${escapeHtml(team.sources.join(" · "))}</div>
+  </div>`;
+}
 function assaultBattleHtml(ab) {
+  const teamsBlock = ab.teams && ab.teams.length
+    ? `<div class="cardtitle" style="margin-top:2px;font-size:13px">Top team${ab.teams.length === 1 ? "" : "s"} to 3★ Challenge Tier III <span class="sub">— leader marked (L)</span></div>${ab.teams.map(assaultTeamHtml).join("")}`
+    : "";
   const reqsFor = key => ((state.pulls[key] || BASELINE[key] || {}).reqs) || {};
-  const unitTable = ab.units.length ? `<div style="overflow-x:auto;margin-top:8px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
+  const unitTable = ab.units && ab.units.length ? `<div class="cardtitle" style="margin-top:${ab.teams ? "16" : "2"}px;font-size:13px">${ab.teams ? "Other eligible units reference" : "Eligible units reference"}</div><div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
       <tr><th style="text-align:left">Unit</th><th style="text-align:left">Faction</th><th>Ollietank</th><th>Tiny</th></tr>
       ${ab.units.map(u => {
         const rOllie = assaultUnitRow(reqsFor("ollie"), u);
@@ -1116,9 +1218,10 @@ function assaultBattleHtml(ab) {
           <td style="${cellStyle(rTiny)}">${escapeHtml(rTiny.cur)}</td>
         </tr>`;
       }).join("")}
-    </table></div>` : `<div class="mnote" style="margin-top:8px;font-style:italic">No specific named units to check against your roster for this battle — see notes below.</div>`;
+    </table></div>` : (ab.teams ? "" : `<div class="mnote" style="margin-top:8px;font-style:italic">No specific named units to check against your roster for this battle — see notes below.</div>`);
   return `<div class="cardtitle">${escapeHtml(ab.label)} <span class="sub">— squad recommendations</span></div>
     <div class="mnote">${escapeHtml(ab.factionNote)} ${escapeHtml(ab.mechanicNote)}</div>
+    ${teamsBlock}
     ${unitTable}
     ${ab.strategyNotes.map(n => `<div class="mnote" style="margin-top:6px">${escapeHtml(n)}</div>`).join("")}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
@@ -1182,13 +1285,66 @@ const META_SQUADS = [
   { name: "Jango Fett Bounty Hunters", mode: "GAC offense, mid-high investment", tl5v5: "Jango Fett", members: [["JANGOFETT","Jango Fett"], ["4LOM","4-LOM"], ["ASAJJDARKDISCIPLE","Asajj Ventress (Dark Disciple)"], ["THEMANDALORIAN","The Mandalorian"], ["ZUCKUSS","Zuckuss"]] },
   { name: "Fennec Shand Mercs (GL-killer)", mode: "GAC counter-offense vs GL defenses", members: [["FENNECSHAND","Fennec Shand"], ["BOSSK","Bossk"], ["GREEFKARGA","Greef Karga"], ["THEMANDALORIAN","The Mandalorian"], ["THEMANDALORIANBESKARARMOR","The Mandalorian (Beskar Armor)"]] },
   { name: "Bossk Bounty Hunters", mode: "Squad Arena / TW / GW, low relic req", members: [["BOSSK","Bossk"], ["BOBAFETT","Boba Fett"], ["DENGAR","Dengar"], ["IG88","IG-88"], ["ZAMWESELL","Zam Wesell"]] },
-  { name: "Nightsisters", mode: "Squad Arena / TW, cheap and durable · also the standard Rancor Raid squad", raidTier: "top", members: [["MOTHERTALZIN","Mother Talzin"], ["ASAJVENTRESS","Asajj Ventress"], ["DAKA","Old Daka"], ["MERRIN","Merrin"], ["NIGHTSISTERZOMBIE","Nightsister Zombie"]] },
-  { name: "Jedi Purge Squad (Order 66 raid, top-score)", mode: "Order 66 raid — max ~3.6M score", raidTier: "top", members: [["JEDIMASTERMACEWINDU","Jedi Master Mace Windu"], ["DEPABILLABA","Depa Billaba"], ["VANGUARDTEMPLEGUARD","Temple Guard"]] },
-  { name: "Dark Side Clones (Order 66 raid, budget)", mode: "Order 66 raid — near-max score, cheap entry", raidTier: "budget", members: [["GRANDMOFFTARKIN","Grand Moff Tarkin"], ["SCORCH","RC-1262 \"Scorch\""], ["APPO","CC-1119 \"Appo\""], ["OPERATIVE","CX-2"], ["DISGUISEDCLONETROOPER","Disguised Clone Trooper"]] },
-  { name: "Queen Amidala Republic (Naboo raid)", mode: "Battle for Naboo raid — scales with Relic 8", raidTier: "top", members: [["QUEENAMIDALA","Queen Amidala"], ["MASTERQUIGON","Master Qui-Gon"], ["PADAWANOBIWAN","Padawan Obi-Wan"]] },
-  { name: "Rey (Jedi Training) — HSTR Phase 1", mode: "Sith Triumvirate Raid (Heroic), P1 vs Darth Nihilus", raidTier: "top", members: [["REYJEDITRAINING","Rey (Jedi Training)"], ["BB8","BB-8"], ["REY","Rey (Scavenger)"], ["R2D2_LEGENDARY","R2-D2"], ["RESISTANCETROOPER","Resistance Trooper"]] },
-  { name: "Revan — HSTR Phase 2", mode: "Sith Triumvirate Raid (Heroic), P2 vs Darth Sion", raidTier: "top", members: [["JEDIKNIGHTREVAN","Jedi Knight Revan"], ["HERMITYODA","Hermit Yoda"], ["GRANDMASTERYODA","Grand Master Yoda"], ["BASTILASHAN","Bastila Shan"], ["JOLEEBINDO","Jolee Bindo"]] },
-  { name: "Rebel Power (Rancor Raid)", mode: "Rancor Raid — accessible mid-GP Heroic option", raidTier: "budget", members: [["WEDGEANTILLES","Wedge Antilles"], ["CASSIANANDOR","Cassian Andor"], ["BIGGSDARKLIGHTER","Biggs Darklighter"], ["JYNERSO","Jyn Erso"], ["BISTAN","Bistan"]] }
+  { name: "Nightsisters", mode: "Squad Arena / TW, cheap and durable", members: [["MOTHERTALZIN","Mother Talzin"], ["ASAJVENTRESS","Asajj Ventress"], ["DAKA","Old Daka"], ["MERRIN","Merrin"], ["NIGHTSISTERZOMBIE","Nightsister Zombie"]] },
+  { name: "Jedi Purge Squad (Order 66 raid, top-score)", mode: "Order 66 raid — max ~3.6M score", raidTier: "top", confidence: "LOW-MODERATE",
+    members: [["JEDIMASTERMACEWINDU","Jedi Master Mace Windu"], ["DEPABILLABA","Depa Billaba"], ["VANGUARDTEMPLEGUARD","Temple Guard"]],
+    notes: "3 of 5 slots confirmed across 2+ sources. A \"4 Man Jedi Master Mace Windu Max Score, Relic 9\" variant is referenced but the 4th/5th member names weren't extractable from any source found — an unrelated EA forum thread floated Jocasta Nu/Agen Kolar/Sasse Tin/Kit Fisto, but that predates release and is fan speculation off a \"coming soon\" splash image, not a confirmed roster.",
+    sources: ["starwars-fans.com Order 66 guide", "EA Forums Order 66 hub", "swgoh.tv \"Order 66 Raid Full Guide\""] },
+  { name: "Dark Side Clones (Order 66 raid, budget)", mode: "Order 66 raid — near-max score, cheap entry", raidTier: "budget", confidence: "HIGH",
+    members: [["GRANDMOFFTARKIN","Grand Moff Tarkin"], ["SCORCH","RC-1262 \"Scorch\""], ["APPO","CC-1119 \"Appo\""], ["OPERATIVE","CX-2"], ["DISGUISEDCLONETROOPER","Disguised Clone Trooper"]],
+    notes: "Tarkin+Scorch alone reportedly nets near-max score at Relic 9 before the rest of the squad is finished.",
+    sources: ["starwars-fans.com Order 66 guide", "EA Forums Order 66 hub", "swgoh.tv \"Order 66 Raid Full Guide\""] },
+  { name: "Pirate King Hondo (Order 66 raid, unconfirmed)", mode: "Order 66 raid — reported to reach the top score tier", confidence: "LOW",
+    members: [[null,"Pirate King Hondo Ohnaka"]],
+    notes: "Title-only lead — EA's own Order 66 hub post states pirate-scoring teams are \"led by the next Conquest unit\" and a later GL without naming the other 4 pirates. swgoh-cantina.com's generic Hondo PvP squad (Vane, Brutus, SM-33, Captain Silvo) is NOT confirmed as this raid's comp, so it isn't shown here.",
+    sources: ["swgoh.tv \"Order 66 Raid Full Guide\"", "EA Forums Order 66 hub"] },
+  { name: "Queen Amidala Republic (Naboo raid)", mode: "Battle for Naboo raid — scales with Relic 8", raidTier: "top", confidence: "LOW-MODERATE",
+    members: [["QUEENAMIDALA","Queen Amidala"], ["MASTERQUIGON","Master Qui-Gon"], ["PADAWANOBIWAN","Padawan Obi-Wan"], ["R2D2_LEGENDARY","R2-D2"]],
+    notes: "The 3-unit core (Amidala, Qui-Gon, Obi-Wan) is confirmed by multiple sources, which all agree \"these three alone can get the job done.\" R2-D2 as a 4th is single-sourced (swgoh.wiki). No source names a 5th member — swgoh.wiki itself marks that slot \"Optional.\"",
+    sources: ["swgoh.wiki Battle for Naboo", "starwars-fans.com Naboo raid guide", "swtorstrategies.com"] },
+  { name: "Gungans (Naboo raid)", mode: "Battle for Naboo raid — accessible go-to", confidence: "MODERATE-HIGH",
+    members: [[null,"Boss Nass"], [null,"Jar Jar Binks"], [null,"Captain Tarpals"], [null,"Gungan Boomadier"], [null,"Gungan Phalanx"]],
+    notes: "2 independent sources agree on the identical 5-unit set; Boss Nass as leader is corroborated by only 1 of them.",
+    sources: ["swgoh.wiki Battle for Naboo", "starwars-fans.com Naboo farming guide"] },
+  { name: "Separatists Droid (B2 lead) (Naboo raid)", mode: "Battle for Naboo raid — reportedly a consistent top scorer", confidence: "MODERATE",
+    members: [[null,"B2 Super Battle Droid"], [null,"IG-100 MagnaGuard"], ["MAUL","Darth Maul"], ["DARTHSIDIOUS","Darth Sidious"]],
+    notes: "4 of 5 slots agree across 2 sources; the 5th is disputed — one source says STAP, the other says B1 Battle Droid.",
+    sources: ["starwars-fans.com Naboo \"Best Teams\"", "swgoh.wiki Battle for Naboo"] },
+  { name: "Rey (Jedi Training) — HSTR Phase 1", mode: "Sith Triumvirate Raid (Heroic), P1 vs Darth Nihilus", raidTier: "top", confidence: "HIGH",
+    members: [["REYJEDITRAINING","Rey (Jedi Training)"], ["BB8","BB-8"], ["REY","Rey (Scavenger)"], ["R2D2_LEGENDARY","R2-D2"], ["RESISTANCETROOPER","Resistance Trooper"]] },
+  { name: "Revan — HSTR Phase 2", mode: "Sith Triumvirate Raid (Heroic), P2 vs Darth Sion", raidTier: "top", confidence: "HIGH",
+    members: [["JEDIKNIGHTREVAN","Jedi Knight Revan"], ["HERMITYODA","Hermit Yoda"], ["GRANDMASTERYODA","Grand Master Yoda"], ["BASTILASHAN","Bastila Shan"], ["JOLEEBINDO","Jolee Bindo"]] },
+  { name: "Deathstorm Nightsisters — HSTR Phase 3", mode: "Sith Triumvirate Raid (Heroic), P3 vs Darth Traya", raidTier: "top", confidence: "HIGH",
+    members: [["MOTHERTALZIN","Mother Talzin"], ["ASAJVENTRESS","Asajj Ventress"], ["DAKA","Old Daka"], ["NIGHTSISTERZOMBIE","Nightsister Zombie"], [null,"Nightsister Initiate"]],
+    notes: "Requires zetas on Talzin and Ventress; reportedly clears 10M+. One source allows Nightsister Spirit as a low-gear alternative to the Initiate slot.",
+    sources: ["gaming-fans.com STR Phase 3 guide", "swgoh.wiki \"Deathstorm\"", "belgianrebellion.com Sith Raid guide"] },
+  { name: "Chex Mix — HSTR Phase 3", mode: "Sith Triumvirate Raid (Heroic), P3 vs Darth Traya", confidence: "MODERATE",
+    members: [["COMMANDERLUKESKYWALKER","Commander Luke Skywalker"], ["HANSOLO","Han Solo"], [null,"Pao"], ["DEATHTROOPER","Death Trooper"], ["CHIRRUTIMWE","Chirrut Îmwe"]],
+    notes: "Full roster from one source; a second source names the team and confirms CLS as leader but doesn't list the other 4. Chewbacca is cited as a viable swap for one unspecified slot.",
+    sources: ["gaming-fans.com STR Phase 3 guide", "belgianrebellion.com Sith Raid guide"] },
+  { name: "Bounty and the Beast — HSTR Phase 3", mode: "Sith Triumvirate Raid (Heroic), P3 vs Darth Traya", confidence: "MODERATE",
+    members: [["BOBAFETT","Boba Fett"], ["GREEDO","Greedo"], ["CHEWBACCALEGENDARY","Chewbacca"], [null,"Pao"], ["DEATHTROOPER","Death Trooper"]],
+    notes: "Full roster from one source; a second source names the team but gives no roster detail.",
+    sources: ["gaming-fans.com STR Phase 3 guide", "belgianrebellion.com Sith Raid guide"] },
+  { name: "Nightsisters (Ventress-lead) — Rancor Raid", mode: "Rancor Raid — swgoh.wiki's current documented Heroic build", raidTier: "top", confidence: "MODERATE",
+    members: [["ASAJVENTRESS","Asajj Ventress"], ["MOTHERTALZIN","Mother Talzin"], ["DAKA","Old Daka"], ["NIGHTSISTERZOMBIE","Nightsister Zombie"], [null,"Nightsister Spirit"]],
+    notes: "swgoh.wiki: \"any 4 Nightsisters under Asajj Ventress with a zeta on her Leader ability should work.\" Leader is Ventress, not Talzin, and Spirit (not Merrin) fills the 5th slot — distinct from the general Squad Arena/TW \"Nightsisters\" squad tracked above.",
+    sources: ["swgoh.wiki Heroic Pit Raid Guide"] },
+  { name: "Rebel Power (Rancor Raid)", mode: "Rancor Raid — accessible mid-GP Heroic option, G9-11 vs Nightsisters' G12", raidTier: "budget", confidence: "MODERATE",
+    members: [["WEDGEANTILLES","Wedge Antilles"], ["CASSIANANDOR","Cassian Andor"], ["BIGGSDARKLIGHTER","Biggs Darklighter"], ["JYNERSO","Jyn Erso"], ["BISTAN","Bistan"]],
+    sources: ["swgoh.wiki Heroic Pit Raid Guide"] },
+  { name: "AAT Resistance (RJT lead)", mode: "AAT Raid (Tank Takedown) — general/Phase 1-2 team", raidTier: "top", confidence: "HIGH",
+    members: [["REYJEDITRAINING","Rey (Jedi Training)"], ["BB8","BB-8"], ["C3POLEGENDARY","C-3PO"], ["FINN","Finn"], ["COMMANDERLUKESKYWALKER","Commander Luke Skywalker"]],
+    notes: "Full 5-unit roster matches across 2 independent sources.",
+    sources: ["gaming-fans.com AAT Phase 1 Teams & Strategy", "wookieenews.com AAT Raid Guide"] },
+  { name: "AAT Rebel Core (Wedge lead)", mode: "AAT Raid — Phase 1/2 damage team, ~2M damage per source", raidTier: "budget", confidence: "MODERATE",
+    members: [["WEDGEANTILLES","Wedge Antilles"], ["BIGGSDARKLIGHTER","Biggs Darklighter"], ["ADMINISTRATORLANDO","Lando Calrissian"], ["PHASMA","Captain Phasma"], [null,"Han Solo (Stormtrooper Disguise)"]],
+    notes: "4 of 5 slots agree across sources; the 5th is disputed between \"ST Han\" (Stormtrooper-disguise Han Solo) and plain Han Solo/CLS.",
+    sources: ["EA Forums \"AAT Raid Guide (Normal Mode)\"", "wookieenews.com AAT Raid Guide"] },
+  { name: "AAT CLS Variant", mode: "AAT Raid — CLS core variant", confidence: "LOW-MODERATE",
+    members: [["COMMANDERLUKESKYWALKER","Commander Luke Skywalker"], ["HANSOLO","Han Solo"], ["CHEWBACCALEGENDARY","Chewbacca"], ["C3POLEGENDARY","C-3PO"], [null,"Ezra Bridger"]],
+    notes: "Closest match found to the widely-cited \"CLS + Raid Han as core\" concept, but from a single source, not corroborated elsewhere.",
+    sources: ["wookieenews.com AAT Raid Guide"] }
 ];
 /* Fleet Arena reference — from swgoh.gg's live GAC Fleet Offense Tier List (Season 81, pulled 9 Aug 2026,
    based on 3.55M first-attempt Kyber-league battles). Matched by unit name, not base_id — ship base_ids
@@ -1300,40 +1456,38 @@ const RAID_NOTES = [
    squad-check cards. Used by raidCoachHtmlForRaid() below, surfaced as a Raids sub-tab per key on the Game modes tab. */
 const RAID_INTEL = [
   { key: "o66", label: "Order 66 Raid",
-    squads: ["Jedi Purge Squad (Order 66 raid, top-score)", "Dark Side Clones (Order 66 raid, budget)"],
+    squads: ["Dark Side Clones (Order 66 raid, budget)", "Jedi Purge Squad (Order 66 raid, top-score)", "Pirate King Hondo (Order 66 raid, unconfirmed)"],
     notes: [
-      "Both squads above can reach the ~3.6M point cap at Relic 9. Dark Side Clones is the more flexible build to work towards first — Tarkin + Scorch alone reportedly still score close to max, so it pays off well before the full 5-unit roster is finished, whereas Jedi Purge Squad's 3 units are all required together.",
-      "Lower-investment entry points if neither is close yet: a Relic 5 Bad Batch team, or Hondo Ohnaka run solo (~300K, no full squad needed) — both scale the same fight down for a fraction of the relic investment.",
-      "A \"Pirate King Hondo Ohnaka\" pirates squad is also reported to reach the top score tier, but no source confirms its exact 5-unit roster — not tracked as a checkable squad here until that's verified."
+      "Both fully-tracked squads above can reach the ~3.6M point cap at Relic 9. Dark Side Clones is the more flexible build to work towards first — Tarkin + Scorch alone reportedly still score close to max, so it pays off well before the full 5-unit roster is finished, whereas Jedi Purge Squad's 3 units are all required together.",
+      "Lower-investment entry points if neither is close yet: a Relic 5 Bad Batch team, or Hondo Ohnaka run solo (~300K, no full squad needed) — both scale the same fight down for a fraction of the relic investment."
     ],
-    sources: ["swgoh.tv Order 66 Raid guide", "starwars-fans.com Order 66 raid guide"] },
+    sources: ["swgoh.tv Order 66 Raid guide", "starwars-fans.com Order 66 raid guide", "EA Forums Order 66 hub"] },
   { key: "naboo", label: "Naboo Raid (Battle for Naboo)",
-    squads: ["Queen Amidala Republic (Naboo raid)"],
+    squads: ["Gungans (Naboo raid)", "Separatists Droid (B2 lead) (Naboo raid)", "Queen Amidala Republic (Naboo raid)"],
     notes: [
-      "Sources agree on this 3-unit Republic core scaling with Relic 8, but disagree on the remaining 2 roster slots — swgoh.wiki adds R2-D2, other guides leave them open. Treat the squad above as the confirmed core, not a finished 5-unit squad, until you can verify the flex slots yourself.",
-      "Other reported options if this core doesn't fit either roster: Gungans (Boss Nass lead) — described as the accessible go-to; a Separatist/Sith droid squad (B2 lead) — reportedly a consistent top scorer; Luminara-led Jedi and a Kelleran Beq-led Republic Jedi squad are also mentioned but sources disagree on exact rosters, so none of these four are tracked as checkable squads yet."
+      "Luminara-led Jedi and a Kelleran Beq-led Republic Jedi squad are also mentioned by sources as viable, but nothing pins down a confident roster for either — not tracked as checkable squads yet."
     ],
-    sources: ["swgoh.wiki Battle for Naboo", "starwars-fans.com Naboo raid guide"] },
+    sources: ["swgoh.wiki Battle for Naboo", "starwars-fans.com Naboo raid guide", "swtorstrategies.com"] },
   { key: "rancor", label: "Rancor Raid",
-    squads: ["Nightsisters", "Rebel Power (Rancor Raid)"],
+    squads: ["Nightsisters (Ventress-lead) — Rancor Raid", "Rebel Power (Rancor Raid)"],
     notes: [
-      "Nightsisters is the standard full-squad Heroic clear and the one to build towards (swgoh.wiki's own build leads with Asajj Ventress rather than Mother Talzin and swaps in Nightsister Spirit — close enough to the roster tracked above that the readiness check still applies). Rebel Power is the lower-gear accessible alternative (G9–11 vs Nightsisters' G12).",
+      "The Ventress-led Nightsisters build above is swgoh.wiki's current documented Heroic clear and the one to build towards; Rebel Power is the lower-gear accessible alternative (G9–11 vs Nightsisters' G12). The general Squad Arena/TW \"Nightsisters\" squad tracked elsewhere in this app (Talzin lead, includes Merrin) is a different, lower-confidence pairing for this raid specifically — use the Ventress-lead build above for raid planning.",
       "If either squad is close, note Commander Luke Skywalker (zeta) is reported able to solo the entire raid alone once built — the single biggest per-character payoff in this raid if he's already a priority for other modes."
     ],
     sources: ["swgoh.wiki Heroic Pit Raid Guide", "gaming-fans.com Rancor solo guide"] },
   { key: "aat", label: "AAT Raid (Tank Takedown)",
-    squads: [],
+    squads: ["AAT Resistance (RJT lead)", "AAT Rebel Core (Wedge lead)", "AAT CLS Variant"],
     notes: [
-      "No single fixed squad exists to build towards — Jedi units get +20% Crit Chance and 15% max-health regen/turn, Jawa units get +50% Potency and an ability-triggered assist, as raid-wide passives on whatever squad is brought. Prioritise Jedi/Jawa units in squads here where the roster allows.",
-      "Commonly cited named comps if a concrete starting point helps: CLS + Raid Han Solo as a core solo team, a Kenobi/Maul \"sink\" team (Boba Fett or JKA lead), a straightforward Jedi team (Ima-Gun Di or Anakin lead), or a Resistance squad (Rey Jedi Training lead)."
+      "No single fixed squad is mandatory — Jedi units get +20% Crit Chance and 15% max-health regen/turn, Jawa units get +50% Potency and an ability-triggered assist, as raid-wide passives on whatever squad is brought. Prioritise Jedi/Jawa units in squads here where the roster allows.",
+      "A Kenobi/Maul \"sink\" team (with an unnamed damage-boosting lead, e.g. Boba Fett or Jedi Knight Anakin) and a straightforward Jedi team (Ima-Gun Di or Anakin lead) are also commonly cited, but neither ever resolved to a fixed 5-unit roster in this research pass — not tracked as checkable squads."
     ],
-    sources: ["swgoh.wiki Tank Takedown", "gaming-fans.com AAT Phase 1 guide"] },
+    sources: ["swgoh.wiki Tank Takedown", "gaming-fans.com AAT Phase 1-4 guides", "EA Forums \"AAT Raid Guide (Normal Mode)\"", "wookieenews.com"] },
   { key: "str", label: "Sith Triumvirate Raid (Heroic)",
-    squads: ["Rey (Jedi Training) — HSTR Phase 1", "Revan — HSTR Phase 2"],
+    squads: ["Rey (Jedi Training) — HSTR Phase 1", "Revan — HSTR Phase 2", "Deathstorm Nightsisters — HSTR Phase 3", "Chex Mix — HSTR Phase 3", "Bounty and the Beast — HSTR Phase 3"],
     notes: [
-      "Phase 3 vs Darth Traya still has no squad tracked here with high confidence — one source (gaming-fans.com) documents four named teams: \"Chex Mix\" (CLS lead), \"Bounty and the Beast\" (Boba Fett lead), Bounty Hunters w/ Aurra Sing, and a Nightsisters/\"Deathstorm\" team (Mother Talzin lead, reportedly clears 10M+). None is corroborated by a second source, so verify with the guild before committing relic investment to any of them for P3 specifically."
+      "Phase 3 vs Darth Traya now has 3 tracked options above (was previously untracked) — Deathstorm Nightsisters is the best-corroborated (2 independent sources agree on the same roster, reportedly clears 10M+); Chex Mix and Bounty and the Beast are each single-source full rosters with only the team name (not the roster) corroborated by a 2nd source. A 4th named team, Bounty Hunters w/ Aurra Sing, never resolved past 4 of 5 slots (the 5th is explicitly left flexible — \"+1 Zam/Jango…\") so it isn't tracked as its own row."
     ],
-    sources: ["swgoh.wiki HSTR P1/P2 team pages", "gaming-fans.com STR Phase 3 guide"] }
+    sources: ["swgoh.wiki HSTR P1/P2 team pages", "gaming-fans.com STR Phase 3 guide", "belgianrebellion.com Sith Raid guide"] }
 ];
 
 /* GAC/TW meta defense squads and their known counters (researched 9 Aug 2026, mid-core meta —
@@ -2747,7 +2901,12 @@ function rosterStatus(rows) {
 }
 function squadStatus(squad, reqs) {
   return rosterStatus(squad.members.map(([bid, name]) => {
-    const u = bid ? reqs[bid] : null;
+    /* Falls back to name-matching when a member has no independently-verified base_id (same safe
+       pattern as assaultUnitRow/findUnitByName elsewhere) — added so raid squads with research-sourced
+       but unverified-id members (Assault Battles / Raid Team Coach, 23 Aug 2026 research pass) still
+       check correctly instead of always reading "not owned". No existing squad relied on a null bid
+       meaning "unowned", so this is a strict improvement, not a behavior change for prior data. */
+    const u = bid ? reqs[bid] : findUnitByName(reqs, name);
     const owned = !!u;
     const geared = owned && (u.s || 0) >= 7 && (u.g || 1) >= 12;
     return { bid, name, owned, geared, cur: u ? ((u.s || 0) < 7 ? (u.s || 0) + "★" : (u.r ? "R" + u.r : "G" + (u.g || 1))) : "Not owned" };
@@ -3464,20 +3623,33 @@ function raidCoachForRaid(ri, acctKey) {
     .map(sq => ({ sq, st: squadStatus(sq, reqs) }))
     .sort((a, b) => bucketRank[a.st.bucket] - bucketRank[b.st.bucket] || b.st.ownedN - a.st.ownedN);
 }
+/* Full per-member breakdown for one squad/one account — same leader-tagging convention as
+   assaultTeamHtml (member[0] is always the leader, tagged "(L)"), plus a confidence chip when the
+   squad carries one (raid squads researched 23 Aug 2026 onward do; older entries without a
+   `confidence` field simply omit the chip). Built from "show FULL optimal teams... leader shown,
+   represented by an (L)" request, 23 Aug 2026. */
 function raidCoachRowHtml(x) {
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
   const bucketLabel = { ready: "✓ battle-ready", close: "→ 1 unit away", started: "⛭ in progress", notstarted: "· not started" };
   const tierLabel = x.sq.raidTier === "top" ? "work towards" : x.sq.raidTier === "budget" ? "budget option" : "";
-  return `<div class="cqline" style="align-items:center">
-    <span class="chip ${bucketChip[x.st.bucket]}" style="min-width:100px;justify-content:center">${bucketLabel[x.st.bucket]}</span>
-    <span style="flex:1;color:var(--ink-1);font-weight:600">${escapeHtml(x.sq.name)}</span>
-    ${tierLabel ? `<span style="color:var(--ink-3);font-size:11px;text-transform:uppercase;letter-spacing:0.03em">${tierLabel}</span>` : ""}
-    <span style="color:var(--ink-3);font-size:12px">${x.st.ownedN}/${x.st.total} owned</span>
+  const memberRows = x.st.rows.map((r, i) => `<div class="cqteam" style="${r.geared ? "color:var(--good)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">
+      ${i === 0 ? '<span style="color:var(--accent);font-weight:700">(L)</span> ' : ""}${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span>
+    </div>`).join("");
+  return `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--grid)">
+    <div class="cqline" style="align-items:center;flex-wrap:wrap">
+      <span class="chip ${bucketChip[x.st.bucket]}" style="min-width:100px;justify-content:center">${bucketLabel[x.st.bucket]}</span>
+      <span style="flex:1;color:var(--ink-1);font-weight:600">${escapeHtml(x.sq.name)}</span>
+      ${x.sq.confidence ? `<span class="chip ${ASSAULT_CONF_CHIP[x.sq.confidence] || "watch"}">${escapeHtml(x.sq.confidence)}</span>` : ""}
+      ${tierLabel ? `<span style="color:var(--ink-3);font-size:11px;text-transform:uppercase;letter-spacing:0.03em">${tierLabel}</span>` : ""}
+    </div>
+    <div class="cqteams" style="margin-top:4px">${memberRows}</div>
+    ${x.sq.notes ? `<div class="mnote" style="margin-top:3px">${escapeHtml(x.sq.notes)}</div>` : ""}
+    ${x.sq.sources ? `<div class="mnote" style="margin-top:2px;font-size:11px;opacity:0.7">Sources: ${escapeHtml(x.sq.sources.join(" · "))}</div>` : ""}
   </div>`;
 }
 function raidCoachHtmlForRaid(ri) {
   return `<div class="cardtitle">${escapeHtml(ri.label)} <span class="sub">— best available now vs. what to build towards</span></div>
-    <div class="mnote">Chip-checked squads are cross-referenced against each account's pulled roster (7★ G12+ = battle-ready) — same readiness logic as Roster Gaps. "Work towards" marks the aspirational/max-score build; "budget option" is the cheaper alternative that still clears well. Notes below cover alternatives this research pass couldn't confidently pin to an exact roster, plus mechanics for raids with no single fixed squad — verify anything not chip-checked before committing relic investment.</div>
+    <div class="mnote">Full team rosters below — leader always marked (L). Cross-referenced against each account's pulled roster (7★ G12+ = battle-ready) — same readiness logic as Roster Gaps. "Work towards" marks the aspirational/max-score build; "budget option" is the cheaper alternative that still clears well. Each squad's own confidence chip and sources reflect how well-corroborated that exact roster is — verify anything below HIGH/MODERATE-HIGH before committing relic investment. Notes at the bottom cover mechanics and alternatives that never resolved to a checkable roster.</div>
     ${ACCOUNTS.map(a => {
       const rows = raidCoachForRaid(ri, a.key);
       return `<div style="margin-top:12px">

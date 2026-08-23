@@ -1503,6 +1503,7 @@ const GUIDANCE = {
    Keyed "p{phaseIndex}-{itemIndex}" — items with no entry here stay manual (account-wide actions). */
 const star = (id, min) => ({ id, type: "star", min });
 const relic = (id, min) => ({ id, type: "relic", min });
+const gear = (id, min) => ({ id, type: "gear", min });
 const FARM_CHECKS = {
   ollie: {
     "p0-0": relic("ADMIRALACKBAR", 3),
@@ -1539,7 +1540,16 @@ function specMet(reqsMap, spec) {
   if (Array.isArray(spec)) return spec.every(s => specMet(reqsMap, s));
   const u = reqsMap[spec.id];
   if (!u) return false;
-  return spec.type === "star" ? (u.s || 0) >= spec.min : (u.r || 0) >= spec.min;
+  if (spec.type === "star") return (u.s || 0) >= spec.min;
+  if (spec.type === "gear") return (u.g || 1) >= spec.min;
+  return (u.r || 0) >= spec.min;
+}
+/* Progress summary for a Coach's Corner tip.check spec (single spec or an array of specs) —
+   {done, doneCount, total}. Used to auto-tick tips and show a live "X/Y done" count. */
+function tipProgress(reqsMap, check) {
+  const specs = Array.isArray(check) ? check : [check];
+  const doneCount = specs.filter(sp => specMet(reqsMap, sp)).length;
+  return { doneCount, total: specs.length, done: doneCount === specs.length };
 }
 /* Resolves whether a farm-plan checkbox is checked: data-driven where mapped, manual tick otherwise. */
 function isFarmDone(account, reqsMap, pi, ii) {
@@ -1552,8 +1562,8 @@ const TIPS = {
   ollie: [
     { sev: "fixnow", t: "Re-enter GAC — 3 R8+ GLs sitting in Carbonite 5", note: "Just setting a defense every round climbs divisions, and every division is more crystals. This single habit funds the entire Leia push." },
     { sev: "fixnow", t: "Zero datacrons", note: "Build 1–2 per set to level 3–6 (cheap tiers only). The current FO/Resistance set directly boosts your SLKR and Rey walls." },
-    { sev: "fixnow", t: "R2-D2 stuck at R1 (Leia needs R8)", note: "Longest lead-time item on the account. Start the relic climb now and stockpile signal data — don't spend high-tier relic mats anywhere else." },
-    { sev: "improve", t: "8 of 15 Leia requirements are below 7★", note: "Stars before relics: daily Ewok shards (Wicket/Chirpa/Kneesaa), Drogan events, Boushh in Proving Grounds, Threepio & Chewie on the legendary rerun." },
+    { sev: "fixnow", t: "R2-D2 stuck at R1 (Leia needs R8)", note: "Longest lead-time item on the account. Start the relic climb now and stockpile signal data — don't spend high-tier relic mats anywhere else.", check: relic("R2D2_LEGENDARY", 8) },
+    { sev: "improve", t: "8 of 15 Leia requirements are below 7★", note: "Stars before relics: daily Ewok shards (Wicket/Chirpa/Kneesaa), Drogan events, Boushh in Proving Grounds, Threepio & Chewie on the legendary rerun.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
     { sev: "improve", t: "Ewok gearing is a double-dip — exploit it", note: "Every Ewok you gear counts twice: Leia requirement + RotE TB platoons/ops. Prioritise Ewoks over any non-Leia gearing." },
     { sev: "improve", t: "No General Skywalker at 8M GP", note: "Not urgent — but after Leia, Padmé → GAS is the next journey; his 501st also carries a whole RotE zone." },
     { sev: "watch", t: "Freeze luxury relics until Leia is done", note: "Kelleran R8 / Paz R7-style sidegrades are how GLs slip a year. Every relic mat has a Leia address for now." },
@@ -1565,8 +1575,8 @@ const TIPS = {
     { sev: "fixnow", t: "Re-enter GAC — Rey/SLKR/GAS ignored in Carbonite 5", note: "Add the omicron'd Bo-Katan Mandalorians and this roster is Aurodium-grade wall material. Set a defense every round; collect the crystals." },
     { sev: "fixnow", t: "Zero datacrons", note: "1–2 per set at cheap tiers. The FO/Resistance set fits SLKR + Rey exactly." },
     { sev: "fixnow", t: "Executor parked at 65% power", note: "The crew is already done (Boba R8, Piett R8, Razor Crest 81%). Star the hull up, swap off Negotiator, and fleet payouts jump — fastest crystal upgrade on the account." },
-    { sev: "improve", t: "Close the four fast Leia wins", note: "Kneesaa R6→R7, Captain Han / ROLO / Lando R3→R5. That's 7 of 15 requirements finished for a few weeks of relic mats." },
-    { sev: "improve", t: "Gear the three big grinds in parallel", note: "R2-D2, Scout Trooper and Drogan from ~G8 to G13 while relic mats bank. R2-D2's R8 is the long pole — start now, finish last." },
+    { sev: "improve", t: "Close the four fast Leia wins", note: "Kneesaa R6→R7, Captain Han / ROLO / Lando R3→R5. That's 7 of 15 requirements finished for a few weeks of relic mats.", check: [relic("PRINCESSKNEESAA", 7), relic("HOTHHAN", 5), relic("HOTHLEIA", 5), relic("ADMINISTRATORLANDO", 5)] },
+    { sev: "improve", t: "Gear the three big grinds in parallel", note: "R2-D2, Scout Trooper and Drogan from ~G8 to G13 while relic mats bank. R2-D2's R8 is the long pole — start now, finish last.", check: [gear("R2D2_LEGENDARY", 13), gear("SCOUTTROOPER_V3", 13), gear("CAPTAINDROGAN", 13)] },
     { sev: "watch", t: "Old Republic is a dead end here", note: "JKR at G12 with no Darth Revan/Malak — zero further investment until after Leia, if ever." },
     { sev: "watch", t: "Era/Peridea units: unlocked, not built — keep it that way", note: "Correct instinct. Revisit only if RotE platoons demand them." },
     { sev: "watch", t: "Rotta rerun before GL Mando & Grogu", note: "Complete the Rotta Journey event on this account too — expected GL #10 requirement." },
@@ -4187,14 +4197,37 @@ function render() {
 
   /* ---- coach tab ---- */
   safeRender("Coach's corner", "tips", () => {
-    const tipHtml = x => `
-      <label class="item tip"><input type="checkbox" data-k="${current}-t${x.ti}" onchange="tick(this)">
-        <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span><b>${x.tp.t}</b>
-          <span class="note">${x.tp.note}</span></span></label>`;
+    const reqsMap = s.reqs || {};
+    /* Tips with a `check` spec (same star()/relic()/gear() specs Farm Plan uses) are auto-ticked from
+       pulled/baseline roster data instead of a manual click — "done" reflects reality, not a habit of
+       clicking. Multi-spec checks (e.g. "4 of 4 relics done") also show a live X/Y count in the label. */
+    const tipHtml = x => {
+      if (!x.tp.check) return `
+        <label class="item tip"><input type="checkbox" data-k="${current}-t${x.ti}" onchange="tick(this)">
+          <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span><b>${x.tp.t}</b>
+            <span class="note">${x.tp.note}</span></span></label>`;
+      const p = tipProgress(reqsMap, x.tp.check);
+      const progressNote = p.total > 1 ? ` — ${p.doneCount}/${p.total} done` : "";
+      return `
+        <label class="item tip auto" title="Auto-tracked from your roster data — updates on the next data pull">
+          <input type="checkbox" disabled ${p.done ? "checked" : ""}>
+          <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span><b>${x.tp.t}</b> <span class="autotag">auto</span>${progressNote}
+            <span class="note">${x.tp.note}</span></span></label>`;
+    };
     const allTips = TIPS[current].map((tp, ti) => ({ tp, ti }));
+    const actionTips = allTips.filter(x => x.tp.sev === "fixnow" || x.tp.sev === "improve");
+    const autoTracked = actionTips.filter(x => x.tp.check);
+    const autoCleared = autoTracked.filter(x => tipProgress(reqsMap, x.tp.check).done);
+    /* Every auto-tracked action item this file currently knows how to check is done — a real, live
+       signal (not a guess) that this account has cleared its tracked priorities and is due a fresh
+       Coach's Corner pass, same "ask Claude to refresh" pattern used elsewhere in this file. Only
+       shown once there's at least one tracked item, so it can't fire on an empty/untracked list. */
+    const clearedBanner = autoTracked.length && autoCleared.length === autoTracked.length
+      ? `<div class="mnote" style="margin-bottom:8px;color:var(--good)">✓ All ${autoTracked.length} auto-tracked priorit${autoTracked.length === 1 ? "y is" : "ies are"} done — ask Claude to review your latest pull and set the next batch.</div>`
+      : (autoTracked.length ? `<div class="mnote" style="margin-bottom:8px">${autoCleared.length}/${autoTracked.length} auto-tracked priorities done.</div>` : "");
     document.getElementById("tips").innerHTML = wrapCards("coach", [
-      { id: "action-flags", html: `<div class="cardtitle">Action flags</div>` +
-          allTips.filter(x => x.tp.sev === "fixnow" || x.tp.sev === "improve").map(tipHtml).join("") },
+      { id: "action-flags", html: `<div class="cardtitle">Action flags</div>` + clearedBanner +
+          actionTips.map(tipHtml).join("") },
       { id: "watch-keep", html: `<div class="cardtitle">Watch &amp; keep</div>` +
           allTips.filter(x => x.tp.sev === "watch" || x.tp.sev === "keep").map(tipHtml).join("") },
       { id: "squad-arena", w: 12, html: squadArenaCoachHtml(current) }

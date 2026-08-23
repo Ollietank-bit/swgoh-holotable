@@ -649,13 +649,17 @@
     <h2>Game modes</h2>
     <div class="h2sub">Current state of the game: Order 66 + Naboo raids · Rise of the Empire TB · GAC (3v3 season) · Era 09 “Myths &amp; Legends” to 20 Oct 2026</div>
 
-    <div class="cardtitle" style="margin-top:2px">Raids <span class="sub">— squad recommendations, per raid</span></div>
-    <div class="cqnav" id="raidNav"></div>
-    <div id="raidBody"></div>
+    <div class="cqnav" id="modesCatNav"></div>
 
-    <div class="cardtitle" style="margin-top:22px">Assault Battles <span class="sub">— squad recommendations, per battle</span></div>
-    <div class="cqnav" id="abNav"></div>
-    <div id="abBody"></div>
+    <div id="raidSection">
+      <div class="cqnav" id="raidNav"></div>
+      <div id="raidBody"></div>
+    </div>
+
+    <div id="assaultSection">
+      <div class="cqnav" id="abNav"></div>
+      <div id="abBody"></div>
+    </div>
 
     <div class="cardtitle" style="margin-top:22px">Weekly goals</div>
     <div class="sortable" id="modes" data-pane="modes"></div>
@@ -881,8 +885,8 @@ const GROUND_WAR_UNITS = [
   { name: "Grand Master Yoda", id: "GRANDMASTERYODA", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
   { name: "General Kenobi", id: "GENERALKENOBI", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
   { name: "Jedi Master Kenobi", id: "JEDIMASTERKENOBI", faction: "Jedi", note: "Named among swgoh.gg's top Jedi picks for this event." },
-  { name: "Jedi Knight Luke Skywalker", id: "JEDIKNIGHTLUKE", faction: "Jedi", note: "A community-reported Mythic-tier clear used a Jedi Knight Luke-led team (YouTube, unverified against a second source)." },
-  { name: "Jedi Knight Revan", id: "JEDIKNIGHTREVAN", faction: "Jedi", note: "One player-forum report: clears most tiers short of Mythic." },
+  { name: "Jedi Knight Luke Skywalker", id: "JEDIKNIGHTLUKE", faction: "Jedi", note: "The confirmed Challenge Tier III leader — corroborated by 2 swgoh.tv guides, a YouTube guide, and two separate EA forum threads (one quotes \"JKL lead is pretty much a requirement to 3★ this event on all tiers\"). Exact supporting members vary by source (Kenobi/GMY/Jolee Bindo/Shaak Ti show up in different combinations), so treat only \"JKL as leader\" as strongly confirmed." },
+  { name: "Jedi Knight Revan", id: "JEDIKNIGHTREVAN", faction: "Jedi", note: "A single EA forum post names a JKR-led alternative (with JKL, GMY, General Kenobi, Grogu) for Challenge Tier III — unverified against a second source." },
   { name: "Chief Chirpa", id: "CHIEFCHIRPA", faction: "Ewok", note: "Named among swgoh.gg's top Ewok picks for this event." },
   { name: "Ewok Elder", faction: "Ewok", note: "Named among swgoh.gg's top Ewok picks for this event." }
 ];
@@ -895,25 +899,34 @@ const GROUND_WAR_TIERS = [
   { tier: "Challenge II", gate: "Relic 5+, 6-dot mods" },
   { tier: "Challenge III", gate: "Relic 7, 6-dot mods" }
 ];
-/* Assault Battles reference (Ground War researched 22 Aug 2026; Military Might and Rebel Roundup
-   researched 22 Aug 2026 via swgoh.wiki + swgoh.gg's own event pages + a community-guide sweep) —
-   same honesty rule as RAID_INTEL/RAID_NOTES: only Ground War had specific named units consistently
-   called out as top picks across sources, so only it gets a roster-ownership table below; Military
-   Might and Rebel Roundup's own sources (including swgoh.gg's event pages directly) never name
-   specific characters, only faction eligibility + generic strategy tips — that's shown as-is rather
-   than inventing a squad. units:[] is the signal an ownership table isn't shown for that battle. */
+/* Assault Battles reference — all 9 Assault Battle events that exist in-game (per swgoh.wiki's
+   Assault Battle category, confirmed 23 Aug 2026), not just whichever 3 are on the live calendar.
+   Ground War researched 22 Aug 2026; the other 8 researched 23 Aug 2026 via an extensive sweep —
+   swgoh.gg/swgoh.wiki event pages, gaming-fans.com, EA/Reddit forums, swgoh.tv, and YouTube guide
+   titles/descriptions (video content itself couldn't be watched, so a title/description-only find is
+   always flagged unverified/single-source until a second independent source corroborates it — same
+   honesty rule as RAID_INTEL/RAID_NOTES throughout this file: no invented squads, no fabricated
+   "confirmed" status). units:[] means no named unit cleared this file's confidence bar for that
+   battle — general strategy notes only, no ownership table. Where a squad's full membership is
+   disputed/variant across sources but its LEADER is well-corroborated, only the leader (and any
+   consistently-named co-members) get their own checkable row — the notes below spell out exactly
+   what's confirmed vs. what varies by source. */
 const ASSAULT_BATTLES = [
   { key: "groundwar", label: "Ground War",
     factionNote: "Only Jedi, Ewok and Ugnaught units are usable here — everything else is locked out regardless of power, so this isn't the place for GL/GAC squads.",
-    mechanicNote: "\"Moment of Glory\" is the allies' shared buff mechanic in this event; watch for Shield Droid waves before committing cooldowns.",
+    mechanicNote: "\"Moment of Glory\" is the allies' shared buff mechanic in this event; watch for Shield Droid waves (\"Overcharge\" buff — dispel it) before committing cooldowns.",
     units: GROUND_WAR_UNITS,
     tiers: GROUND_WAR_TIERS,
-    strategyNotes: [],
-    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "community walkthroughs (22 Aug 2026)"] },
+    strategyNotes: [
+      "Jedi Knight Luke Skywalker (chip-checked above) is the confirmed Challenge Tier III leader — see his note for sourcing. Chief Chirpa, Teebo and Finn are named as viable leaders for the earlier general/Hard-through-Mythic tiers, not CT3 specifically."
+    ],
+    sources: ["swgoh.gg event page", "swgoh.wiki", "swgoh.tv", "EA forums", "YouTube guides (23 Aug 2026 sweep)"] },
   { key: "militarymight", label: "Military Might",
     factionNote: "Only Rebel and Clone Trooper units are usable here — vs. Empire waves.",
     mechanicNote: "Allies get a unique \"Counterwatch\" ability during battles — timing it well is the main mechanic called out for Tier II.",
-    units: [],
+    units: [
+      { name: "Commander Luke Skywalker", faction: "Rebel", note: "Named as the Challenge Tier III leader by 2 independent YouTube creators (\"CLS + Double Chewies Destroy Challenge Tier 3\"; a second video titled \"...Challenge Tier 3 w/ CLS Chewpio\"), both pairing him with Chewbacca-heavy Rebel units. Two independent sources agreeing on the leader is a real signal, but neither gives a confirmed full 5-member roster — treat as a strong leader hint, not a finished squad." }
+    ],
     tiers: [
       { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+, 3-dot mods" },
       { tier: "Very Hard", gate: "Level 80+, 7★, Gear 10+, 4-dot mods — after clearing Hard at 5★" },
@@ -924,14 +937,21 @@ const ASSAULT_BATTLES = [
       { tier: "Challenge III", gate: "Relic 7, 6-dot mods — after clearing Challenge II at 7★" }
     ],
     strategyNotes: [
-      "No specific named units or fixed squad turned up as a top pick across sources (unlike Ground War) — swgoh.gg's own event page lists all 68 eligible Rebel/Clone Trooper units without singling any out, so there's no ownership table below to check against. Build from whichever Rebel/Clone Trooper units you have geared/relic'd highest.",
-      "Challenge tiers are reported as \"extremely difficult\" — the only guidance found is to experiment with different squad synergies rather than one fixed comp."
+      "A separate EA forums thread titled \"WORLD'S FIRST Military Might Challenge Tier 3 and 3★ with Five Rebel Fighters!\" only confirms Mon Mothma by name (and other posters dispute whether she even qualifies as a \"Rebel Fighter\") — the image with the actual roster was unreadable, so it isn't tracked as a pick here.",
+      "Action counts are not shared between tiers — each tier is a fresh budget, so a Hard-tier clear doesn't cost you Challenge III attempts."
     ],
-    sources: ["swgoh.wiki Military Might", "swgoh.gg event page"] },
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
   { key: "rebelroundup", label: "Rebel Roundup",
     factionNote: "Only Bounty Hunter and Imperial Trooper units are usable here.",
     mechanicNote: "Imperial Troopers get a \"Rapid Fire\" ability and Bounty Hunters get \"Many Disintegrations\" as unique mechanics in this event.",
-    units: [],
+    units: [
+      { name: "General Veers", faction: "Imperial Trooper", note: "The best-corroborated Challenge Tier III leader found for this event — an Imperial Trooper squad with Colonel Starck, Admiral Piett, and a Death/Shore Trooper agrees across 3 independent EA forum threads (one gives explicit relic levels: R3–R5 on most units). Treat this as the strongest lead in this whole research pass." },
+      { name: "Colonel Starck", faction: "Imperial Trooper", note: "Named alongside General Veers in the corroborated Challenge Tier III Trooper squad above." },
+      { name: "Admiral Piett", id: "ADMIRALPIETT", faction: "Imperial Trooper", note: "Named as a squad member (not leader) in the corroborated Veers-led Trooper squad — separately, two YouTube titles put Piett front-and-center (\"Admiral Piett is INSANE!... Auto 3 Stars\"; \"Imperial Troopers with Piett Steamroll Challenge Tier 3\"), but neither video's content was viewable, so it's unconfirmed whether those runs were actually Piett-led or just featured him for his stacking buff under a Veers lead." },
+      { name: "Death Trooper", id: "DEATHTROOPER", faction: "Imperial Trooper", note: "Named in the corroborated Veers-led Trooper squad (one source lists Shore Trooper or Snowtrooper as an alternative to this slot)." },
+      { name: "Bossk", id: "BOSSK", faction: "Bounty Hunter", note: "A separate Bounty Hunter path: Bossk-led, reported to clear Challenge Tier III with full health/protection to spare. Corroborated by 2 independent sources (a swgoh.tv video titled \"Rebel Roundup CT3 Victory With Bossk Lead\" + an EA forums thread), but only Boba Fett is named as a supporting member — the rest of the 5-unit roster isn't specified." },
+      { name: "Boba Fett", id: "BOBAFETT", faction: "Bounty Hunter", note: "Named supporting member of the Bossk-led Bounty Hunter path above." }
+    ],
     tiers: [
       { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+" },
       { tier: "Very Hard", gate: "Level 80+, 7★, Gear 10+ — after clearing Hard" },
@@ -939,14 +959,140 @@ const ASSAULT_BATTLES = [
       { tier: "Mythic", gate: "Level 85, Gear 11+, 7★, zeta abilities — after clearing Bonus" },
       { tier: "Challenge I", gate: "Relic 3+, 7★ — after clearing Mythic" },
       { tier: "Challenge II", gate: "Relic 5+, 7★ — after clearing Challenge I" },
-      { tier: "Challenge III", gate: "Relic 7, 7★ — after clearing Challenge II" }
+      { tier: "Challenge III", gate: "Relic 7, 7★, zeta abilities — after clearing Challenge II" }
     ],
     strategyNotes: [
-      "No specific named units or fixed squad turned up as a top pick across sources — swgoh.gg's own event page lists all 36 eligible units per faction without singling any out, so there's no ownership table below. Any 5 Bounty Hunters and/or Imperial Troopers are eligible; build from whichever you have geared/relic'd highest.",
-      "One single, unverified community source (a YouTube video title) reports an Admiral Piett-led Imperial Trooper team clearing Challenge Tier III — not corroborated by a second source, so it isn't treated as a confirmed pick here. Worth trying if Piett is already built for other modes.",
-      "Per-tier tips found in sources: Challenge I — experiment with different leaders; Challenge II — a solid tank with strong support is called out as key; Challenge III — mod optimisation matters as much as roster at this point."
+      "A third path, Embo-led Bounty Hunters (with Greef Karga and Din Djarin/Mando, 7★ Gear 13+), is named by 2 sources but only 3 of 5 slots are specified — not tracked as its own row above, mentioned here as a lead worth digging into further if the Veers or Bossk squads aren't close.",
+      "Fennec Shand (relic) is separately called out as helping Bounty Hunter Protection-Up reliability; a Jango-lead Mando/Bossk/Jango combo was reported as a failed attempt on one forum thread — not recommended.",
+      "Piett needs to take damage early to build his stacking bonus; the opening enemy salvo is described as the swingiest moment for Trooper squads."
     ],
-    sources: ["swgoh.wiki Rebel Roundup", "swgoh.gg event page", "community video guides (unverified single-source note above)"] }
+    sources: ["swgoh.gg event page", "swgoh.wiki", "3 independent EA forums threads (Veers squad + relic levels)", "swgoh.tv (Bossk lead)", "YouTube guide titles (23 Aug 2026 sweep)"] },
+  { key: "forestmoon", label: "Forest Moon",
+    factionNote: "Any Empire and/or Droid units are usable here (mixed squads allowed) — vs. Ewok defenders (Ewok Scout/Warrior/Elder, Chief Chirpa, Teebo as end boss).",
+    mechanicNote: "Allies get a unique \"DEFEND\" ability; enemies can gain a \"DEADLY\" buff that hits hard but Ewoks are easy to kill once you spot which one has it.",
+    units: [
+      { name: "Admiral Piett", id: "ADMIRALPIETT", faction: "Imperial Trooper", note: "The best-corroborated Challenge Tier III lead — 2 independent creators (\"Conquer Challenge Tier 3 with Piett and Imperial Troopers\"; a second guide tagged #ewok #troopers) both point to a Piett-led Imperial Trooper approach, and the same pairing has a documented Challenge Tier II clear too, suggesting it scales across tiers. Neither source enumerates which other Trooper units fill the remaining slots." },
+      { name: "Darth Vader", id: "VADER", faction: "Empire", note: "A second, lower-confidence lead: one EA forums poster and one small YouTube channel (905 views) both describe a Vader-led (as an Imperial Trooper-tagged unit) clear that \"trivialises\" Challenge Tier III — plausible but thinner sourcing than the Piett path above, and no full roster given." }
+    ],
+    tiers: [
+      { tier: "Hard", gate: "Level 75+, 5★+, Gear 8+, 3-dot mods" },
+      { tier: "Very Hard", gate: "Level 80+, 7★, Gear 10+, 4-dot mods — after clearing Hard at 5★" },
+      { tier: "Bonus", gate: "Level 85, Gear 11+, 5-dot mods — after clearing Very Hard at 7★" },
+      { tier: "Mythic", gate: "Level 85, Gear 11–12+, 5-dot mods, zeta abilities — after clearing Bonus at 7★" },
+      { tier: "Challenge I", gate: "Relic 3+, 6-dot mods, zeta abilities — after clearing Mythic at 7★" },
+      { tier: "Challenge II", gate: "Relic 5+, 6-dot mods, zeta abilities — after clearing Challenge I at 7★" },
+      { tier: "Challenge III", gate: "Relic 7, 6-dot mods, zeta abilities — after clearing Challenge II at 7★" }
+    ],
+    strategyNotes: [
+      "A single EA forums post separately describes a Thrawn-led droid \"Battalion\" squad (B1 Battle Droid, Droideka, B2 Super Battle Droid, Magnaguard) clearing Challenge Tier III with careful Magnaguard tanking/mod setup — not corroborated by any second source, so not tracked as a pick here.",
+      "No source found used the words \"3-star\" for a Challenge Tier III clear specifically — titles say \"Conquer,\" \"Flawlessly Completes,\" \"Trivialised,\" which strongly implies a clean clear but isn't the same as a confirmed max-star claim."
+    ],
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "swgoh.tv / YouTube guide titles (23 Aug 2026 sweep)"] },
+  { key: "dueloffates", label: "Duel of the Fates",
+    factionNote: "Not a faction choice — this event locks you to exactly two specific units as your only allies, no substitutes: Padawan Obi-Wan and Qui-Gon Jinn (the event calls him \"Master Qui-Gon\"; any owned version of the character qualifies per swgoh.gg).",
+    mechanicNote: "Solo boss fight vs. Darth Maul, who has \"Power of Hatred\" (reduced damage from health-% effects, turn-meter gain + debuff cleanse with a bonus turn) and \"We Will Have Our Revenge\" (boosted offense via Advantage/Whirling Blades stacks).",
+    units: [
+      { name: "Padawan Obi-Wan", id: "PADAWANOBIWAN", faction: "Jedi", note: "One of the two mandatory allies for this entire event — every tier is cleared (or not) with this exact pair, there's no squad choice to make." },
+      { name: "Qui-Gon Jinn", id: "QUIGONJINN", faction: "Jedi", note: "The event's own \"Master Qui-Gon\" — the second of the two mandatory allies, paired with Padawan Obi-Wan for every tier." }
+    ],
+    tiers: [
+      { tier: "Tier 1", gate: "Any investment level, Level 75+, Gear 8+, 3-dot mods" },
+      { tier: "Tier 2", gate: "5★, Level 80+, Gear 10+, 4-dot mods" },
+      { tier: "Tier 3", gate: "7★, Level 85, Gear 11+, 5-dot mods" },
+      { tier: "Tier 4", gate: "7★, Relic 5+" },
+      { tier: "Tier 5", gate: "7★, Relic 7+" },
+      { tier: "Tier 6", gate: "7★, Relic 9+ — highest tier, per EA forums" }
+    ],
+    strategyNotes: [
+      "This event uses 6 numbered tiers, not the Hard/Challenge I-III structure most other Assault Battles use.",
+      "One YouTube title (\"Tier 3 | 3★ | Low Gear Padawan Obi-Wan & Master Qui-Gon\") claims a 3-star Tier 3 clear at gear well below the official 7★/Gear 11+ gate listed above — the video's content wasn't viewable to confirm the discrepancy, so treat the official gate as authoritative until verified in-game.",
+      "Rewards are drawn from a pool per tier, not a guaranteed full set, per a developer quote on swgoh.gg's own news post. The event recurs roughly monthly."
+    ],
+    sources: ["swgoh.gg event page", "swgoh.gg news post", "swgoh.wiki", "EA forums", "YouTube guide titles (23 Aug 2026 sweep)"] },
+  { key: "fanaticaldevotion", label: "Fanatical Devotion",
+    factionNote: "Inquisitorius and/or Tusken Raider units are usable here (can mix both factions) — vs. Force User/Jedi waves (Grand Master Yoda, General Kenobi, Ezra Bridger/Kanan Jarrus among the bosses).",
+    mechanicNote: "Inquisitorius allies get \"Our Prey Nears\" (stacking Purge debuff + a bonus turn with +50% Crit Chance/Damage); Tusken allies get \"Tusken Storm\" (Momentum stacks, buffs, and health recovery with bonus turns).",
+    units: [
+      { name: "Grand Inquisitor", faction: "Inquisitorius", note: "Named as the Challenge Tier III key unlock by 4+ independent YouTube video titles (\"Purge the Jedi with Grand Inquisitor Challenge Tier 3 Guide\"; \"The Greatest Challenge in SWGoH History - CT3... with Grand Inquisitor\"; two more referencing a GI-led clear) plus an EA forums comment (\"ct3 you would be best off with gi\"). None of these sources gave a viewable full roster, so this is title/anecdote-level corroboration only — real, but not a finished squad." }
+    ],
+    tiers: [
+      { tier: "Hard", gate: "Level 75+, Gear 8+, 3-dot mods" },
+      { tier: "Very Hard", gate: "5★ (from Hard), Level 80+, Gear 10+, 4-dot mods" },
+      { tier: "Bonus", gate: "7★ (from Very Hard), Level 85, Gear 11+, 5-dot mods" },
+      { tier: "Mythic", gate: "7★ (from Bonus), Level 85, Gear 11+, 5-dot mods, zeta abilities recommended" },
+      { tier: "Challenge I", gate: "7★, Relic 3+, 6-dot mods, zeta abilities" },
+      { tier: "Challenge II", gate: "7★, Relic 5+, 6-dot mods, zeta abilities" },
+      { tier: "Challenge III", gate: "7★, Relic 7+, 6-dot mods, zeta abilities" }
+    ],
+    strategyNotes: [
+      "Challenge Tier II is reported as doable with just the base 5 Inquisitors (no Grand Inquisitor needed) per a \"No GI - No Problem!\" guide title and a matching EA forums comment — Challenge Tier III is where sources consistently say you need either Grand Inquisitor or a fully-built Reva.",
+      "A general (not CT3-specific) Inquisitorius roster from swgoh-cantina.com's \"best squads\" reference: Grand Inquisitor, Ninth Sister, Fifth Brother, Seventh Sister, Second Sister (Eighth Brother sometimes swapped in) — useful as a starting point, not confirmed against this event specifically."
+    ],
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums", "swgoh-cantina.com", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
+  { key: "peridea", label: "Peridea Patrol",
+    factionNote: "Not a faction choice — this event locks you to exactly three specific Imperial Remnant units as your only allies, no substitutes: Captain Enoch, Night Trooper, and Death Trooper (Peridea).",
+    mechanicNote: "Solo boss fight vs. a boosted Ezra Bridger (Exile) with very large health pools (500K+ reported at Tier 1) that regenerates health/protection quickly — guides emphasize timing debuff-dispels for right after Ezra buffs himself, and using Captain Enoch's special often.",
+    units: [
+      { name: "Captain Enoch", id: "CAPTAINENOCH", faction: "Imperial Remnant", note: "One of the three mandatory allies for this entire event — squad size is locked at 3, there's no roster choice to make, only leader pick and investment level." },
+      { name: "Night Trooper", id: "NIGHTTROOPER", faction: "Imperial Remnant", note: "One of the three mandatory allies. Guides note his second special is risky if the enemy has Tenacity Up." },
+      { name: "Death Trooper (Peridea)", id: "DEATHTROOPERPERIDEA", faction: "Imperial Remnant", note: "One of the three mandatory allies — distinct from the regular \"Death Trooper\" unit used in other Assault Battles." }
+    ],
+    tiers: [
+      { tier: "Tier I", gate: "No star requirement, Gear 8+, 3-dot mods" },
+      { tier: "Tier II", gate: "5★, Gear 10+, 4-dot mods" },
+      { tier: "Tier III", gate: "7★, Gear 11+, 5-dot mods" },
+      { tier: "Tier IV", gate: "7★, Relic 5+, 6-dot mods" },
+      { tier: "Tier V", gate: "7★, Relic 7+, 6-dot mods" },
+      { tier: "Tier VI", gate: "7★, Relic 9+, 6-dot mods — highest tier" }
+    ],
+    strategyNotes: [
+      "This event uses 6 Roman-numeral tiers (I–VI), not the Hard/Challenge I-III structure most other Assault Battles use — a YouTube title referencing \"Tier 4 | 3★\" may be using a looser tier-naming convention, so don't assume it maps directly onto the table above.",
+      "No source gave a full, verified leader/mod breakdown for a Tier VI (highest-tier) clear — an EA forums post describes Enoch-led with two Night Troopers around Relic 5–6 as generally workable, but doesn't confirm which tier that clears or specify a 3-star result.",
+      "Multiple EA forums threads describe this event as overtuned at entry-level gear relative to its stated requirements — expect Tier I/II to feel harder than the numbers suggest."
+    ],
+    sources: ["swgoh.gg event page", "swgoh.wiki", "EA forums (3 threads)", "YouTube guide titles (23 Aug 2026 sweep, video content not directly viewable)"] },
+  { key: "placesofpower", label: "Places of Power",
+    factionNote: "Any First Order and/or Sith units are usable here (mixed squads allowed) — vs. Jedi defenders (Jedi Temple Guards, Jedi Sentinels, Grand Master Yoda as a boss-tier unit).",
+    mechanicNote: "Allies get access to \"Dark Gambit\" (+30% Health Steal, +50% Offense, +25% Speed, −50% Defense); the Jedi defenders are noticeably faster than your squad, so turn-meter control is the core challenge-tier skill.",
+    units: [
+      { name: "Emperor Palpatine", id: "EMPERORPALPATINE", faction: "Sith", note: "The best-corroborated Challenge Tier III lead — named across 2 independent EA forums threads (5 player-reported variants between them), with one thread noting \"T3 seems designed for Vader,\" who's consistently paired alongside him. Supporting members vary by poster (Bastila Shan, Darth Revan, Darth Malak, and Darth Nihilus all show up in different combinations), so only the Palpatine+Vader core is confirmed here." },
+      { name: "Darth Vader", id: "VADER", faction: "Sith", note: "Consistently paired with Emperor Palpatine in the Challenge Tier III reports above — see his note for sourcing." },
+      { name: "Sith Eternal Emperor", id: "SITHPALPATINE", faction: "Sith", note: "A second, separate lead: one EA forums poster and one YouTube title (\"3★ PLACES OF POWER CHALLENGE TIER 3 w/SITH ETERNAL EMPEROR SQUAD\") both point to a Sith Eternal Emperor-led clear (with Darth Traya, Darth Malak, Darth Nihilus, Darth Sion at Relic 3-7 reported by the forum poster). Two independent sources, but the video's content wasn't viewable to fully confirm — moderate-high confidence, not as strong as the Palpatine path above." }
+    ],
+    tiers: [
+      { tier: "Challenge I", gate: "7★, Relic 3+, 6-dot mods, zeta abilities" },
+      { tier: "Challenge II", gate: "7★, Relic 5+, 6-dot mods, zeta abilities" },
+      { tier: "Challenge III", gate: "7★, Relic 7+, 6-dot mods, zeta abilities" }
+    ],
+    strategyNotes: [
+      "A Darth Traya-led alternative is mentioned once each by a forum post and a YouTube title (\"PLACES OF POWER 3★ CHALLENGE TIER 3 with TRAYA SQUAD\") — thinner sourcing than the two picks above, worth trying if you're built for Traya but not tracked as its own confirmed row.",
+      "A Supreme Leader Kylo Ren-led team (with Kylo Ren Unmasked) is named once by a single forum poster with the rest of the roster unspecified — flagged as unverified, not a serious lead.",
+      "This is one of the older Assault Battles (2018-era) so pre-Challenge-tier-system guides exist but don't reliably map onto the current structure — the picks above are all from posts explicitly discussing today's Challenge Tier III."
+    ],
+    sources: ["swgoh.gg event page", "swgoh.wiki", "2 independent EA forums threads (5 reported variants)", "YouTube guide titles (23 Aug 2026 sweep)"] },
+  { key: "secretsandshadows", label: "Secrets and Shadows",
+    factionNote: "Nightsister and/or Phoenix units are usable here (mixed squads allowed) — vs. Dark Side/Sith defenders, with Darth Sidious and Darth Nihilus recurring across tiers.",
+    mechanicNote: "\"Celerity\" is the shared mechanic — the activating unit gains Taunt + Defense Up and other allies gain Speed Up (Phoenix members also get Health Steal Up, Nightsister members get Crit Damage Up), resetting all Celerity cooldowns when it triggers.",
+    units: [
+      { name: "Great Mothers", faction: "Nightsister", note: "The best-corroborated Challenge Tier III lead — 3 independent YouTube titles agree on a Great Mothers + Morgan Elsbeth pairing clearing Challenge Tier III (one explicitly claims \"All Tiers\"), though the full 5-unit roster is only sourced from a general (non-CT3-specific) squad reference, and no source confirms a 3-star result specifically." },
+      { name: "Mother Talzin", id: "MOTHERTALZIN", faction: "Nightsister", note: "Confirmed (with Old Daka) as the standard Challenge Tier I clear per rgamereview.com's guide. For Challenge Tier III specifically, two YouTube titles reference Talzin/Daka gearing (\"Challenge Tier 3 with G12 Talzin R4 Daka\"; \"Only Need Relics on Daka\") but neither confirms a full CT3 roster or clear — treat CT3 use as a promising lead, not confirmed the way CT1 is." },
+      { name: "Old Daka", id: "DAKA", faction: "Nightsister", note: "Paired with Mother Talzin in the confirmed Challenge Tier I squad and the unconfirmed Challenge Tier III lead above." }
+    ],
+    tiers: [
+      { tier: "Hard", gate: "Level 75+, Gear 8+, 3-dot mods" },
+      { tier: "Very Hard", gate: "1★+, Level 80+, Gear 10+, 4-dot mods" },
+      { tier: "Bonus", gate: "5★+, Level 85, Gear 11+, 5-dot mods" },
+      { tier: "Mythic", gate: "7★, Level 85, Gear 12+, 5-dot mods" },
+      { tier: "Challenge I", gate: "7★, 6-dot mods (relic requirement disputed between sources — verify in-game)" },
+      { tier: "Challenge II", gate: "7★, Relic 5+, 6-dot mods" },
+      { tier: "Challenge III", gate: "7★, Relic 7, 6-dot mods" }
+    ],
+    strategyNotes: [
+      "A single, untitled-leader YouTube video (Polish-language title) confirms a general Nightsisters clear of Challenge Tier III but names no specific leader or members — not tracked as a pick here.",
+      "gaming-fans.com has a guide specifically titled \"Secrets & Shadows – Challenge Tier 3 Tips & Walkthrough\" that couldn't be loaded this pass (JS-gated redirect) — worth a manual check next time this file gets refreshed, it's likely the single best lead for this event.",
+      "An EA forums bug report flags inconsistent Great Mothers ability behaviour between Challenge Tier I and II — worth knowing about if a Great Mothers run behaves unexpectedly."
+    ],
+    sources: ["swgoh.gg event page", "swgoh.wiki", "rgamereview.com (confirmed CT1 squad)", "EA forums", "swgoh-cantina.com", "YouTube guide titles (23 Aug 2026 sweep)"] }
 ];
 function assaultUnitRow(reqs, u) {
   const rec = u.id ? reqs[u.id] : findUnitByName(reqs, u.name);
@@ -978,6 +1124,18 @@ function assaultBattleHtml(ab) {
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
     <div class="cqteams">${ab.tiers.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
     <div class="mnote" style="margin-top:6px;font-style:italic;opacity:0.7">Sources: ${escapeHtml(ab.sources.join(" · "))} — verify in-game, CG occasionally adjusts event gates.</div>`;
+}
+function modesCategory(v) { state.modesnav.category = v; store.write(state); renderModesCategory(); }
+function renderModesCategory() {
+  const nav = document.getElementById("modesCatNav");
+  if (!nav) return;
+  const cats = [["raid", "Raids"], ["assault", "Assault Battles"]];
+  const cur = state.modesnav.category === "assault" ? "assault" : "raid";
+  nav.innerHTML = cats.map(c => `<button class="${cur === c[0] ? "active" : ""}" onclick="modesCategory('${c[0]}')">${c[1]}</button>`).join("");
+  const raidSec = document.getElementById("raidSection");
+  const abSec = document.getElementById("assaultSection");
+  if (raidSec) raidSec.style.display = cur === "raid" ? "" : "none";
+  if (abSec) abSec.style.display = cur === "assault" ? "" : "none";
 }
 function abView(v) { state.modesnav.abView = v; store.write(state); renderAssaultBattles(); }
 function renderAssaultBattles() {
@@ -1515,7 +1673,7 @@ function defaultState() {
       showEnemyIntel: false,                    // "Enemies" display preference (plan view)
       showDiskIntel: false                      // "Data Disks" display preference (plan view)
     },
-    modesnav: { raidView: "o66", abView: "groundwar" },  // Game modes tab: selected Raids/Assault Battles sub-tab
+    modesnav: { category: "raid", raidView: "o66", abView: "groundwar" },  // Game modes tab: RAID/Assault category + selected sub-tab within it
     glTarget: {},                               // per-account currently-viewed GL on the GL Roadmap tab, e.g. { ollie: "GLLEIA" }
     tb: {},                                     // TB planner: { [`${phase}-${zone}`]: { assigned: "ollie"|"tiny"|"both"|"", done: bool } }
     tw: { zones: [] },                          // TW coordination: zones = [{ name, assigned, squad, status }]
@@ -4069,7 +4227,8 @@ function render() {
     ], "mode");
   });
 
-  /* ---- game modes: raids + assault battles sub-nav ---- */
+  /* ---- game modes: RAID/Assault category toggle + their sub-nav ---- */
+  safeRender("Game modes category", "modesCatNav", () => renderModesCategory());
   safeRender("Raids", "raidBody", () => renderRaids());
   safeRender("Assault Battles", "abBody", () => renderAssaultBattles());
 

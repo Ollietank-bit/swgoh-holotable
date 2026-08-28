@@ -26,6 +26,11 @@
                                            so shape encodes status redundantly with colour. */
     --swyellow: #ffe81f;
     --accent: #38bdf8;           /* per-tab theme accent, set by body[data-tab] */
+    /* Persistent chrome that must NOT restyle itself as you navigate (primary "Pull latest data" CTA,
+       the account switcher's active card, the big readiness hero number). Deliberately declared OUTSIDE
+       the body[data-tab] overrides below so it is the one holo-blue constant across every tab; --accent
+       is reserved for genuinely in-page, tab-scoped things (H2 title, active nav pill, hero-card glow). */
+    --chrome-accent: #38bdf8;
     --radius-sm: 8px; --radius-md: 12px; --radius-lg: 14px;
     --shadow-card: 0 10px 30px rgba(0,0,0,0.24);
     --shadow-raised: 0 18px 48px rgba(0,0,0,0.36);
@@ -35,18 +40,33 @@
   body[data-tab="leia"]     { --accent: #fb923c; }   /* rebel starbird orange */
   body[data-tab="coach"]    { --accent: #4ade80; }   /* jedi green */
   body[data-tab="farm"]     { --accent: #a78bfa; }   /* hyperspace violet */
-  body[data-tab="modes"]    { --accent: #fb7185; }   /* sith red */
-  body[data-tab="mods"]     { --accent: #fbbf24; }   /* gold mod-pip */
+  body[data-tab="modes"]    { --accent: #f2603c; }   /* sith ember red — was #fb7185, an exact match for
+                                                        the --critical "fix now" chip, and identical to the
+                                                        arena tab; re-hued away from both (ΔE00 16.6 vs
+                                                        --critical, 29 vs arena) */
+  body[data-tab="mods"]     { --accent: #c8a63a; }   /* mod-pip gold, dulled — was #fbbf24, an exact match
+                                                        for the --warning "grind" chip (now ΔE00 10.5), and
+                                                        one of three near-identical yellows with --swyellow
+                                                        and the tierlist accent */
   body[data-tab="conquest"] { --accent: #2dd4bf; }   /* keycard teal */
   body[data-tab="gaps"]     { --accent: #f472b6; }   /* radar-scan rose */
   body[data-tab="intel"]    { --accent: #f59e0b; }   /* audit-ledger bronze */
   body[data-tab="events"]   { --accent: #818cf8; }   /* chrono periwinkle */
-  body[data-tab="arena"]    { --accent: #fb7185; }   /* duel-ring coral */
-  body[data-tab="tw"]       { --accent: #f472b6; }   /* siege-banner maroon */
+  body[data-tab="arena"]    { --accent: #e0479f; }   /* duel-ring magenta-rose — was #fb7185, both an exact
+                                                        --critical chip match and a duplicate of the modes
+                                                        tab (now ΔE00 16.6 vs --critical) */
+  body[data-tab="tw"]       { --accent: #d4794a; }   /* siege-banner rust — was #f472b6, identical to the
+                                                        gaps tab; rust also clears --serious/--warning
+                                                        (ΔE00 11.3) which the obvious amber-orange would not */
   body[data-tab="tb"]       { --accent: #bef264; }   /* campaign-map olive */
-  body[data-tab="gac"]      { --accent: #c084fc; }   /* championship purple */
+  body[data-tab="gac"]      { --accent: #a55cf0; }   /* championship purple, deepened — was #c084fc, an exact
+                                                        match for the --info "watch" chip (now ΔE00 10.9) */
   body[data-tab="modopt"]   { --accent: #67e8f9; }   /* calibration ice — sits next to Best Mods' gold in the Reference group, deliberately its cool opposite */
-  body[data-tab="tierlist"] { --accent: #facc15; }   /* leaderboard gold — the "what actually wins" reference at the top of Reference group */
+  body[data-tab="tierlist"] { --accent: #e368e0; }   /* leaderboard magenta — was #facc15, a third yellow
+                                                        competing with brand --swyellow and the mods gold.
+                                                        Moved out of the warm family entirely rather than
+                                                        merely darkened, since --serious/--warning/--swyellow
+                                                        already own the warm-gold range */
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--page);
@@ -90,6 +110,13 @@
   @keyframes swHue       { 0%,100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(14deg); } }
   @media (prefers-reduced-motion: reduce) {
     .sw-stars-a, .sw-stars-b, .sw-stars-c, .sw-planet, .sw-nebula, body::after { animation: none !important; }
+    /* UI transitions (not just the decorative starfield): progress-bar fills, the per-tab accent-glow
+       crossfade, and the Conquest switch slide should all be near-instant too. (Accessibility review,
+       28 Aug 2026.) */
+    .bigmeter > i, .meter > i, body::after, .cqswitch, .cqswitch::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
 
   /* ===== Star Wars scenes: characters & ships silhouettes, per tab ===== */
@@ -199,7 +226,9 @@
   .hbtns { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
   .pullbtn, .editbtn { font: inherit; font-size: 13px; font-weight: 650; border-radius: 8px;
                        padding: 9px 15px; cursor: pointer; border: 1px solid var(--border); }
-  .pullbtn { color: #001018; background: var(--accent); border-color: transparent; }
+  /* Fixed holo-blue, not var(--accent): the primary CTA lives in the persistent header and must look like
+     the same button on every tab. */
+  .pullbtn { color: #001018; background: var(--chrome-accent); border-color: transparent; }
   .pullbtn:disabled { opacity: 0.55; cursor: wait; }
   .editbtn { color: var(--ink-2); background: var(--surface-1); }
   .editbtn.on { color: var(--swyellow); border-color: var(--swyellow); }
@@ -240,8 +269,11 @@
          display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .tab .tname { font-weight: 650; color: var(--ink-1); }
   .tab .tcode { font-size: 11px; color: var(--ink-3); }
-  .tab.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), 0 0 14px -8px var(--accent); }
-  .tab.active .tname { color: var(--accent); }
+  /* Account switcher (Ollietank / Tiny) — persistent chrome, so its selected state is pinned to the fixed
+     holo-blue rather than the per-tab accent. Which account is active must not appear to change meaning
+     just because you moved to another tab. */
+  .tab.active { border-color: var(--chrome-accent); box-shadow: inset 0 0 0 1px var(--chrome-accent), 0 0 14px -8px var(--chrome-accent); }
+  .tab.active .tname { color: var(--chrome-accent); }
 
   .quickstats { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--border);
                 border-radius: 10px; background: var(--surface-1); }
@@ -270,6 +302,28 @@
            border-radius: 50%; background: var(--baseline); color: var(--ink-1); font-size: 10px; flex: 0 0 auto; }
   .pfstep.active .pfnum { background: var(--accent); color: #001018; }
   .pfarrow { color: var(--ink-3); font-size: 12px; }
+  /* Game Modes nesting breadcrumb — same visual family as .planflow above, one level quieter because it
+     reports where you are inside a tab rather than which tab of a pipeline you're on. */
+  .modescrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin: 0 0 10px; font-size: 12px; }
+  .crumbseg { font: inherit; font-size: 12px; font-weight: 650; padding: 4px 9px; border-radius: 7px;
+              border: 1px solid var(--border); background: var(--surface-1); color: var(--ink-3); cursor: pointer; }
+  .crumbseg:hover { color: var(--accent); border-color: var(--accent); }
+  .crumbseg.cur { color: var(--ink-1); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent);
+                  cursor: default; }
+  .crumbsep { color: var(--ink-3); font-size: 12px; }
+  /* Coach's Corner flag headline as a deep link into the tab that fixes it. Keeps the exact weight/colour
+     the plain <b> headline had, adds only the affordance. */
+  .tiplink { font: inherit; font-weight: 650; color: var(--ink-1); background: none; border: 0; padding: 0;
+             text-align: left; cursor: pointer; border-bottom: 1px dotted var(--ink-3); }
+  .tiplink:hover, .tiplink:focus-visible { color: var(--accent); border-bottom-color: var(--accent); }
+  .tiparrow { color: var(--ink-3); font-size: 11px; margin-left: 5px; }
+  .tiplink:hover .tiparrow, .tiplink:focus-visible .tiparrow { color: var(--accent); }
+  /* Landing target of a jumpToRequirement() deep link — brief accent wash, then back to normal. */
+  .req.jump-hit { animation: reqFlash 1.9s ease-out; border-radius: 6px; }
+  @keyframes reqFlash { 0%, 45% { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+                        100% { background: transparent; } }
+  @media (prefers-reduced-motion: reduce) { .req.jump-hit { animation: none;
+      background: color-mix(in srgb, var(--accent) 18%, transparent); } }
   @media (max-width: 900px) {
     .layout { flex-direction: column; }
     .sidebar { position: static; width: 100%; flex: 1 1 auto; max-height: none; }
@@ -322,16 +376,23 @@
                letter-spacing: 0.07em; color: var(--accent); font-family: "Orbitron", system-ui, sans-serif; }
   .cardtitle .sub { font-weight: 400; color: var(--ink-3); font-size: 11.5px; text-transform: none; letter-spacing: 0; font-family: system-ui, sans-serif; }
 
-  .hero { font-size: 50px; font-weight: 700; line-height: 1; font-family: "Orbitron", system-ui, sans-serif; color: var(--accent); }
+  /* The readiness percentage is the same metric wherever it is shown, so it keeps one fixed colour: on
+     var(--accent) it read cyan on Overview and orange on the GL Roadmap, implying the number itself had
+     changed meaning. The hero CARD still takes the tab accent on its border/glow (see .card:has(.hero)). */
+  .hero { font-size: 50px; font-weight: 700; line-height: 1; font-family: "Orbitron", system-ui, sans-serif; color: var(--chrome-accent); }
   .hero small { font-size: 16px; color: var(--ink-3); font-weight: 500; }
   .bigmeter { height: 10px; border-radius: 5px; background: var(--track-blue); overflow: hidden; margin: 14px 0 10px; }
   .bigmeter > i { display: block; height: 100%; border-radius: 5px 0 0 5px; background: var(--series-1); transition: width 0.6s; }
   .statuscounts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
+  /* Row rhythm is shared with .form-row and .card table rows — see "unified structured-row scale" below:
+     48px body rows / 32px header rows / 7px-10px padding, so the GL requirement grid, the editable
+     form tables and the data tables all scan as one system instead of three. */
   .req { display: grid; grid-template-columns: 1.35fr 0.55fr 0.7fr 1fr 0.8fr; gap: 10px; align-items: center;
-         padding: 8px 4px; border-bottom: 1px solid var(--grid); font-size: 13px; }
+         min-height: 48px; padding: 7px 10px; border-bottom: 1px solid var(--grid); font-size: 13px; }
   .req:last-child { border-bottom: none; }
-  .req.headrow { color: var(--ink-3); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em;
+  .req.headrow { min-height: 32px; padding-block: 0; color: var(--ink-3); font-size: 11.5px;
+                 text-transform: uppercase; letter-spacing: 0.04em;
                  border-bottom: 1px solid var(--baseline); }
   .req .unit { font-weight: 600; }
   .req .need, .req .cur { color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -375,7 +436,7 @@
   label.item.tip b { font-weight: 650; }
   body.compact label.item { padding: 3px 4px; font-size: 12.5px; }
   body.compact .card { padding: 11px 13px; }
-  body.compact .req { padding: 5px 4px; font-size: 12.5px; }
+  body.compact .req { min-height: 38px; padding: 5px 10px; font-size: 12.5px; }
   body.compact label.item .note { font-size: 11px; }
 
   .mode h3 { font-size: 13.5px; font-weight: 650; margin-bottom: 2px; }
@@ -387,7 +448,7 @@
   .nextup .n { color: var(--accent); font-weight: 650; font-variant-numeric: tabular-nums; flex: none; font-family: "Orbitron", system-ui, sans-serif; font-size: 12px; }
   .nextup .ph { color: var(--ink-3); font-size: 11.5px; display: block; }
 
-  .banner { border: 1px solid var(--swyellow); border-radius: 10px; padding: 10px 14px; font-size: 13px;
+  .banner { border: 1px solid var(--swyellow); border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px;
             color: var(--ink-2); background: rgba(255,232,31,0.05); }
   .banner b { color: var(--swyellow); }
   footer { margin-top: 20px; color: var(--ink-3); font-size: 11.5px; }
@@ -396,11 +457,16 @@
   .modsearchrow { display: flex; gap: 8px; }
   .modsearchrow input { flex: 1; font: inherit; font-size: 14px; background: var(--page); color: var(--ink-1);
         border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
-  .modsearchrow input:focus { outline: none; border-color: var(--accent); }
+  .modsearchrow input:focus { border-color: var(--accent); }
+  .modsearchrow input:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
   .modchips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   .modchip { font: inherit; font-size: 12px; padding: 4px 11px; border-radius: 14px; border: 1px solid var(--border);
         background: var(--page); color: var(--ink-2); cursor: pointer; }
   .modchip:hover { border-color: var(--accent); color: var(--accent); }
+  .modchip.active { color: var(--accent); border-color: var(--accent);
+                    background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .modchip.recent { color: var(--ink-1); }
+  .modchiplbl { font-size: 11px; color: var(--ink-3); align-self: center; margin-right: 2px; }
   .modstate { font-size: 13px; color: var(--ink-3); padding: 10px 2px; }
   .modstate.err { color: var(--serious); }
   .modstate a { color: var(--accent); }
@@ -496,7 +562,8 @@
     padding: 9px 12px; border: 1px solid var(--grid); border-radius: 10px; background: rgba(255,255,255,0.03); }
   .cqprefs .cqpreflabel { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
     color: var(--ink-3); flex: none; }
-  .cqswitchrow { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
+  .cqswitchrow { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;
+    background: none; border: none; padding: 0; margin: 0; font: inherit; text-align: left; }
   .cqswitch { position: relative; width: 34px; height: 19px; flex: none; border-radius: 999px;
     background: rgba(255,255,255,0.12); border: 1px solid var(--grid); transition: background 0.15s; }
   .cqswitch::after { content: ""; position: absolute; top: 1px; left: 1px; width: 15px; height: 15px;
@@ -511,6 +578,16 @@
   .cqintel .cqintelnone { color: var(--ink-3); font-style: italic; }
   .cqline.hasintel { flex-wrap: wrap; }
   .cqline.hasintel .cqintel { flex-basis: 100%; margin-left: 26px; width: calc(100% - 26px); }
+  /* Evidence / corroboration text — the transcript quotes and "why this roster is only partly confirmed"
+     caveats on Assault Battle teams and raid squads. Same left-rule + faint tint language as .cqintel so
+     supporting evidence is visibly a different KIND of text from the primary guidance above it, which
+     stays plain .mnote. */
+  .intelnote { margin: 6px 0 2px; padding: 6px 9px; border-left: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    background: rgba(255,255,255,0.03); border-radius: 0 6px 6px 0; font-size: 11.5px; color: var(--ink-3); line-height: 1.5; }
+  .intelnote + .intelnote { margin-top: 4px; }
+  .intelnote b { color: var(--ink-2); }
+  /* Citation line ("Sources: …") — quietest tier of all: it is provenance, never guidance. */
+  .srcline { margin-top: 5px; font-size: 11px; color: var(--ink-3); line-height: 1.45; }
   .cqsecthead { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
     color: var(--accent); margin: 12px 0 3px; }
   .cqsecthead:first-child { margin-top: 0; }
@@ -590,16 +667,29 @@
 
   .tab, .pfstep { background: var(--surface-1); border-color: var(--border); box-shadow: none; }
   .tab:hover, .pfstep:hover { background: var(--surface-2); border-color: var(--border-strong); }
-  .tab.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-1)); border-color: color-mix(in srgb, var(--accent) 65%, var(--border)); box-shadow: none; }
+  .tab.active { color: var(--chrome-accent); background: color-mix(in srgb, var(--chrome-accent) 10%, var(--surface-1)); border-color: color-mix(in srgb, var(--chrome-accent) 65%, var(--border)); box-shadow: none; }
   .stab.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
   .pullbtn, .editbtn { min-height: 40px; border-radius: var(--radius-sm); }
-  .pullbtn { box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 18%, transparent); }
+  .pullbtn { box-shadow: 0 6px 18px color-mix(in srgb, var(--chrome-accent) 18%, transparent); }
   .pullbtn:hover { filter: brightness(1.08); }
   button:focus-visible, input:focus-visible, select:focus-visible, .stab:focus-visible, .tab:focus-visible, [contenteditable="true"]:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
   .cqnav button.active, .daychips button.active, .optchip.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, var(--surface-1)); border-color: color-mix(in srgb, var(--accent) 65%, var(--border)); }
   .section-nav { display: grid; grid-template-columns: repeat(auto-fit,minmax(92px,1fr)); gap: 4px; padding: 4px; margin: 0 0 12px; background: color-mix(in srgb, var(--surface-1) 92%, transparent); border: 1px solid var(--border); border-radius: 10px; }
   .section-nav button { min-height: 38px; padding: 7px 10px; border-color: transparent; border-radius: 7px; }
   .section-nav button.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, var(--surface-2)); border-color: color-mix(in srgb, var(--accent) 42%, transparent); }
+  /* Third-level detail nav — "Team 1 / Team 2 / Eligible roster / Strategy & gates" on Assault Battles and
+     the account/squad pickers on Raids. Same control and behaviour, deliberately lighter than the
+     workspace nav and the .cqnav pickers above it, so three stacked nav rows read as three depths rather
+     than three peers. */
+  .section-nav.nav-tertiary { gap: 3px; padding: 0; margin-bottom: 10px; background: transparent;
+    border-color: transparent; grid-template-columns: repeat(auto-fit, minmax(86px, 1fr)); }
+  /* 26px keeps the run of nav rows strictly descending in weight: 38px workspace nav > 28px .cqnav
+     picker > 26px detail nav. Mobile restores a 38px touch target below. */
+  .section-nav.nav-tertiary button { min-height: 26px; padding: 5px 9px; font-size: 11.5px; font-weight: 600;
+    color: var(--ink-3); background: transparent; border: 1px solid var(--grid); border-radius: 6px; }
+  .section-nav.nav-tertiary button:hover { color: var(--ink-2); background: rgba(255,255,255,0.03); border-color: var(--border-strong); }
+  .section-nav.nav-tertiary button.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 32%, transparent); }
   .chip { padding: 3px 8px; border-color: color-mix(in srgb, currentColor 62%, transparent); background: color-mix(in srgb, currentColor 9%, transparent); font-size: 11px; font-weight: 700; line-height: 1.25; }
   .modal-field input, select.cqselect, .modsearchrow input { background: var(--surface-2); border-color: var(--border); }
 
@@ -627,10 +717,15 @@
   .gac-zones-form { --form-columns: minmax(76px,.45fr) minmax(180px,1.2fr) minmax(140px,1fr) 30px; }
   .gac-offense-form { --form-columns: 24px minmax(180px,1.2fr) minmax(120px,.7fr) 30px 30px 30px; }
 
-  /* Quiet, readable data tables: horizontal rules rather than boxed cells. */
+  /* Quiet, readable data tables: horizontal rules rather than boxed cells.
+     Unified structured-row scale: .form-row (48px / 7px 10px) is the reference, and .req (above) plus
+     these table rows now match it, with 32px header rows matching .form-head. `height` on a table cell
+     behaves as a minimum, so tall wrapped content still grows the row. */
   .card table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
-  .card table th { padding: 8px 10px; color: var(--ink-3); background: var(--surface-2); border: 0; border-bottom: 1px solid var(--baseline); font-size: 10.5px; font-weight: 700; letter-spacing: 0.065em; text-transform: uppercase; }
-  .card table td { padding: 8px 10px; color: var(--ink-2); border: 0; border-bottom: 1px solid var(--grid); }
+  .card table th { height: 32px; padding: 6px 10px; color: var(--ink-3); background: var(--surface-2); border: 0; border-bottom: 1px solid var(--baseline); font-size: 10.5px; font-weight: 700; letter-spacing: 0.065em; text-transform: uppercase; }
+  .card table td { height: 48px; padding: 7px 10px; color: var(--ink-2); border: 0; border-bottom: 1px solid var(--grid); }
+  /* the deliberately dense Best Mods "snapshot" mini tables opt out of the 48px row */
+  table.modtable.mini th, table.modtable.mini td { height: auto; }
   .card table tbody tr:hover td { background: rgba(255,255,255,0.025); }
   .card table tbody tr:last-child td { border-bottom: 0; }
   .modtable-wrap { scrollbar-color: var(--border-strong) transparent; }
@@ -682,6 +777,11 @@
     .section-nav { grid-template-columns: repeat(auto-fit,minmax(78px,1fr)); backdrop-filter: blur(14px); }
     .section-nav:not(.workspace-nav) { position: sticky; top: 8px; z-index: 8; }
     .section-nav button, .cqaddrow button, .rowtools button { min-height: 40px; }
+    /* still lighter than its parents, but never below a comfortable touch target */
+    .section-nav.nav-tertiary button { min-height: 38px; }
+    /* account switcher (.tab) and group/section nav (.stab) pills measured 38px tall on mobile —
+       2px under this app's own touch-target minimum. (Accessibility review, 28 Aug 2026.) */
+    .tab, .stab { min-height: 40px; }
     .card[data-card] { min-height: 0 !important; }
   }
   @media (pointer: coarse) { .rowtools { opacity: 1 !important; } }
@@ -744,11 +844,11 @@
   <div class="layout">
     <aside class="sidebar" id="sidebar">
       <button class="sidebar-close" type="button" onclick="toggleSidebar()" aria-label="Close navigation">✕ Close</button>
-      <div class="tabs" id="tabs"></div>
+      <nav aria-label="Accounts"><div class="tabs" id="tabs"></div></nav>
       <div class="quickstats" id="quickstats"></div>
-      <div class="subtabs" id="subtabs"></div>
+      <nav aria-label="Sections"><div class="subtabs" id="subtabs"></div></nav>
     </aside>
-    <main class="main">
+    <main class="main" id="main">
   <div class="section-nav workspace-nav" id="groupSubtabs" aria-label="Workspace sections"></div>
   <div class="epigraph" id="epigraph"></div>
 
@@ -818,18 +918,19 @@
     <h2>Game modes</h2>
     <div class="h2sub">Current state of the game: Order 66 + Naboo raids · Rise of the Empire TB · GAC (3v3 season) · Era 09 “Myths &amp; Legends” to 20 Oct 2026</div>
 
+    <div class="modescrumb" id="modesCrumb"></div>
     <div class="cqnav" id="modesCatNav"></div>
 
     <div id="raidSection">
       <div class="cqnav" id="raidNav"></div>
-      <div class="cqnav section-nav" id="raidDetailNav"></div>
-      <div class="cqnav section-nav" id="raidSquadNav"></div>
+      <div class="cqnav section-nav nav-tertiary" id="raidDetailNav"></div>
+      <div class="cqnav section-nav nav-tertiary" id="raidSquadNav"></div>
       <div id="raidBody"></div>
     </div>
 
     <div id="assaultSection">
       <div class="cqnav" id="abNav"></div>
-      <div class="cqnav section-nav" id="abDetailNav"></div>
+      <div class="cqnav section-nav nav-tertiary" id="abDetailNav"></div>
       <div id="abBody"></div>
     </div>
   </div>
@@ -968,10 +1069,21 @@ const SUBTABS = [
    fastest-changing first (what's coming up, daily arena) down to the slowest (Conquest's ~4-5 week cycle,
    then the always-on modes reference). */
 const NAV_GROUPS = [
-  { label: "Progress", keys: ["overview", "gaps", "leia", "intel", "farm", "coach"] },
-  { label: "Play",     keys: ["events", "arena", "tw", "tb", "gac", "conquest", "modes"] },
-  { label: "Reference", keys: ["tierlist", "mods", "modopt"] }
+  { key: "progress",  label: "Progress", keys: ["overview", "gaps", "leia", "intel", "farm", "coach"] },
+  { key: "play",      label: "Play",     keys: ["events", "arena", "tw", "tb", "gac", "conquest", "modes"] },
+  { key: "reference", label: "Reference", keys: ["tierlist", "mods", "modopt"] }
 ];
+/* Which tab each nav group was last left on, so re-opening a group returns you where you were instead of
+   always dumping you on its first tab. Kept in state (persisted) and updated by switchTab(); the group
+   buttons route through switchGroup() below. This is also what fixes the mobile "☰ → Play → GAC Planner"
+   three-tap round trip: after the first visit, "Play" lands straight back on GAC Planner.
+   (UX/IA design-review recommendation, 28 Aug 2026.) */
+function groupForTab(k) { return NAV_GROUPS.find(g => g.keys.includes(k)) || null; }
+function switchGroup(gk) {
+  const grp = NAV_GROUPS.find(g => g.key === gk) || NAV_GROUPS[0];
+  const last = (state.lastTabInGroup || {})[grp.key];
+  switchTab(grp.keys.indexOf(last) >= 0 ? last : grp.keys[0]);
+}
 /* The 4-tab roster-planning pipeline, shown as a clickable breadcrumb on each of these tabs so the chain
    reads as one flow rather than four unrelated sidebar stops (design-review recommendation, 9 Aug 2026). */
 const PLAN_FLOW = [
@@ -1411,9 +1523,9 @@ function assaultTeamHtml(team) {
       <tr><th style="text-align:left">Unit</th><th>Ollietank</th><th>Tiny</th></tr>
       ${rows}
     </table></div>
-    ${team.unconfirmed ? `<div class="mnote" style="margin-top:4px;font-style:italic">${escapeHtml(team.unconfirmed)}</div>` : ""}
-    ${team.notes ? `<div class="mnote" style="margin-top:4px">${escapeHtml(team.notes)}</div>` : ""}
-    <div class="mnote" style="margin-top:2px;font-size:11px;opacity:0.7">Sources: ${escapeHtml(team.sources.join(" · "))}</div>
+    ${team.unconfirmed ? `<div class="intelnote" style="font-style:italic">${escapeHtml(team.unconfirmed)}</div>` : ""}
+    ${team.notes ? `<div class="intelnote">${escapeHtml(team.notes)}</div>` : ""}
+    <div class="srcline">Sources: ${escapeHtml(team.sources.join(" · "))}</div>
   </div>`;
 }
 function assaultBattleHtml(ab, detail) {
@@ -1445,12 +1557,72 @@ function assaultBattleHtml(ab, detail) {
   const strategyBlock = `${ab.strategyNotes.map(n => `<div class="mnote" style="margin-top:6px">${escapeHtml(n)}</div>`).join("")}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
     <div class="cqteams">${ab.tiers.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
-    <div class="mnote" style="margin-top:6px;font-style:italic;opacity:0.7">Sources: ${escapeHtml(ab.sources.join(" · "))} — verify in-game, CG occasionally adjusts event gates.</div>`;
+    <div class="srcline" style="margin-top:8px">Sources: ${escapeHtml(ab.sources.join(" · "))} — verify in-game, CG occasionally adjusts event gates.</div>`;
   return `<div class="cardtitle">${escapeHtml(ab.label)} <span class="sub">— squad recommendations</span></div>
     <div class="mnote">${escapeHtml(ab.factionNote)} ${escapeHtml(ab.mechanicNote)}</div>
     ${detail === "roster" ? unitTable : detail === "strategy" ? strategyBlock : teamsBlock + fixedSquadOptBtn}`;
 }
 function modesCategory(v) { state.modesnav.category = v; store.write(state); renderModesCategory(); }
+/* ---- Game Modes breadcrumb ----------------------------------------------------------------------
+   Game Modes is the only tab in this file that nests four levels deep (category → event → account →
+   squad) across three stacked nav rows, with nothing telling you how far in you are or how to get back
+   out in one move. This renders the current path as "Raids › Order 66 Raid › Ollietank › Dark Side
+   Clones", every earlier segment clickable as a jump back up a level. It's a read-out of state.modesnav
+   only — no new state. (UX/IA design-review recommendation, 28 Aug 2026.) */
+const RAID_DETAIL_LABELS = { ollie: "Ollietank", tiny: "Tiny", notes: "Mechanics & notes" };
+function modesCrumbRoot(cat) {
+  state.modesnav.category = cat;
+  if (cat === "raid") {
+    state.modesnav.raidView = RAID_INTEL[0].key; state.modesnav.raidDetail = "ollie"; state.modesnav.raidSquad = "0";
+  } else {
+    state.modesnav.abView = ASSAULT_BATTLES[0].key; state.modesnav.abDetail = "";
+  }
+  store.write(state);
+  renderModesCategory(); renderRaids(); renderAssaultBattles();
+}
+function modesCrumbRaid(key) {
+  state.modesnav.raidView = key; state.modesnav.raidDetail = "ollie"; state.modesnav.raidSquad = "0";
+  store.write(state); renderRaids();
+}
+function modesCrumbAb(key) {
+  state.modesnav.abView = key; state.modesnav.abDetail = "";
+  store.write(state); renderAssaultBattles();
+}
+function renderModesCrumb() {
+  const el = document.getElementById("modesCrumb");
+  if (!el) return;
+  const segs = [];
+  if (state.modesnav.category === "assault") {
+    const cur = ASSAULT_BATTLES.find(b => b.key === state.modesnav.abView) || ASSAULT_BATTLES[0];
+    segs.push({ label: "Assault Battles", act: `modesCrumbRoot('assault')` });
+    segs.push({ label: cur.label, act: `modesCrumbAb('${jsAttr(cur.key)}')` });
+    const detailItems = cur.teams && cur.teams.length
+      ? [...cur.teams.map((t, i) => [`team${i}`, `Team ${i + 1}`]), ["roster", "Eligible roster"], ["strategy", "Strategy & gates"]]
+      : [["roster", "Required roster"], ["strategy", "Strategy & gates"]];
+    let detail = state.modesnav.abDetail || detailItems[0][0];
+    if (!detailItems.some(x => x[0] === detail)) detail = detailItems[0][0];
+    const hit = detailItems.find(x => x[0] === detail);
+    if (hit) segs.push({ label: hit[1], act: `abDetail('${jsAttr(detail)}')` });
+  } else {
+    const cur = RAID_INTEL.find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];
+    segs.push({ label: "Raids", act: `modesCrumbRoot('raid')` });
+    segs.push({ label: cur.label, act: `modesCrumbRaid('${jsAttr(cur.key)}')` });
+    const detail = state.modesnav.raidDetail || "ollie";
+    segs.push({ label: RAID_DETAIL_LABELS[detail] || detail, act: `raidDetail('${jsAttr(detail)}')` });
+    if (detail !== "notes") {
+      const rows = raidCoachForRaid(cur, detail);
+      if (rows.length > 1) {
+        const i = Math.min(+(state.modesnav.raidSquad || 0), rows.length - 1);
+        if (rows[i]) segs.push({ label: rows[i].sq.name, act: `raidSquad('${i}')` });
+      }
+    }
+  }
+  el.innerHTML = segs.map((sg, i) => {
+    const last = i === segs.length - 1;
+    return `${i ? '<span class="crumbsep">›</span>' : ""}<button type="button" class="crumbseg ${last ? "cur" : ""}"
+      ${last ? 'aria-current="page"' : `onclick="${sg.act}"`} title="${escapeHtml(last ? sg.label : "Back to " + sg.label)}">${escapeHtml(sg.label)}</button>`;
+  }).join("");
+}
 function renderModesCategory() {
   const nav = document.getElementById("modesCatNav");
   if (!nav) return;
@@ -1461,6 +1633,7 @@ function renderModesCategory() {
   const abSec = document.getElementById("assaultSection");
   if (raidSec) raidSec.style.display = cur === "raid" ? "" : "none";
   if (abSec) abSec.style.display = cur === "assault" ? "" : "none";
+  renderModesCrumb();
 }
 function abView(v) { state.modesnav.abView = v; store.write(state); renderAssaultBattles(); }
 function abDetail(v) { state.modesnav.abDetail = v; store.write(state); renderAssaultBattles(); }
@@ -1478,6 +1651,7 @@ function renderAssaultBattles() {
   if (detailNav) detailNav.innerHTML = detailItems.map(x => `<button class="${detail === x[0] ? "active" : ""}" onclick="abDetail('${x[0]}')">${x[1]}</button>`).join("");
   const body = document.getElementById("abBody");
   if (body) body.innerHTML = `<div class="card">${assaultBattleHtml(cur, detail)}</div>`;
+  renderModesCrumb();
 }
 /* Galactic Legend roadmap: every currently-released GL's unlock requirements.
    base_id/display-name pairs verified 8 Aug 2026 against swgoh.gg's full character list API
@@ -2092,6 +2266,7 @@ function defaultState() {
     dailyDate: "",
     tab: "",
     modsChars: null,                            // { fetchedAt, list: [{name, base_id, url}] }
+    modsRecent: [],                             // Best Mods quick-pick history: most-recent-first display names (max 6)
     modsData: {},                               // { [base_id]: { fetchedAt, name, sourceUrl, tables, fetchedLabel } }
     modopt: {                                   // Mod Optimiser tab
       content: "arena",                         // selected content-type key (see OPT_CONTENT)
@@ -2117,8 +2292,12 @@ function defaultState() {
     modesnav: { category: "raid", raidView: "o66", raidDetail: "ollie", raidSquad: "0", abView: "groundwar", abDetail: "teams" },  // Game modes tab: category, event and focused detail subtabs
     views: {                                    // task-focused local subtabs; only the selected card group is rendered
       gaps: "squads", coach: "priorities", arena: "overview", gac: "plan",
-      intel: "shopping", tb: "1", tierlist: "5v5", events: "next"
+      intel: "shopping", tb: "1", tierlist: "5v5", events: "next",
+      twshared: "defense"                       // TW Coord's shared-with-GAC reference section (defense | counters)
     },
+    /* Per-nav-group "where you were last" memory — see switchGroup() up top. Seeded to each group's
+       first tab so a first-ever visit behaves exactly as before. */
+    lastTabInGroup: { progress: "overview", play: "events", reference: "tierlist" },
     glTarget: {},                               // per-account currently-viewed GL on the GL Roadmap tab, e.g. { ollie: "GLLEIA" }
     tb: {},                                     // TB planner: { [`${phase}-${zone}`]: { assigned: "ollie"|"tiny"|"both"|"", done: bool } }
     tw: { zones: [] },                          // TW coordination: zones = [{ name, assigned, squad, status }]
@@ -2482,10 +2661,29 @@ function populateCharDatalist(list) {
   const dl = document.getElementById("modCharList");
   if (dl) dl.innerHTML = list.map(c => `<option value="${escapeHtml(c.name)}"></option>`).join("");
 }
+/* Best Mods' Reference-group siblings (Tier List, Mod Optimiser) both open on a pill row you can click
+   straight into; Best Mods opened on a bare search box with nothing to act on until you typed. This gives
+   it the same "land on something clickable" shape: your own recently-viewed characters first (real
+   tracked history, see noteModRecent), topped up from the popular list, with the search box still right
+   above for anything not in the quick picks. (UX/IA design-review recommendation, 28 Aug 2026.) */
+function noteModRecent(name) {
+  if (!name) return;
+  const list = (state.modsRecent || []).filter(n => n !== name);
+  list.unshift(name);
+  state.modsRecent = list.slice(0, 6);
+  store.write(state);
+  renderModChips();
+}
 function renderModChips() {
   const el = document.getElementById("modChips");
-  if (el) el.innerHTML = POPULAR_MODS.map(n =>
-    `<button class="modchip" onclick="quickLookupMods('${jsAttr(n)}')">${escapeHtml(n)}</button>`).join("");
+  if (!el) return;
+  const recent = (state.modsRecent || []).filter(Boolean);
+  const picks = [...recent];
+  POPULAR_MODS.forEach(n => { if (picks.length < 10 && !picks.includes(n)) picks.push(n); });
+  const activeName = (document.getElementById("modSearch") || {}).value || "";
+  el.innerHTML = `<span class="modchiplbl">${recent.length ? "Recently viewed &amp; popular" : "Popular"}</span>` +
+    picks.map(n => `<button class="modchip ${n === activeName ? "active" : ""}${recent.includes(n) ? " recent" : ""}"
+      onclick="quickLookupMods('${jsAttr(n)}')" title="${recent.includes(n) ? "Recently viewed — " : ""}look up ${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("");
 }
 function quickLookupMods(name) {
   const input = document.getElementById("modSearch");
@@ -2588,6 +2786,7 @@ function snapCardHtml(snap) {
 function renderModResult(record) {
   const el = document.getElementById("modResults");
   if (!el) return;
+  noteModRecent(record.name);
   const safeUrl = typeof record.sourceUrl === "string" && /^https:\/\/swgoh\.gg\//.test(record.sourceUrl) ? record.sourceUrl : null;
   const sourceLinkOuter = safeUrl ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">Check swgoh.gg directly ↗</a>` : "";
   const sourceLinkMeta = safeUrl ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">View on swgoh.gg ↗</a>` : "";
@@ -3490,7 +3689,26 @@ function renderTW() {
         </div>`).join("") || `<div class="form-empty">No zones logged yet — add one below when the war starts.</div>`}
       </div>
       <div class="cqaddrow" style="${state.tw.zones.length ? "" : "display:flex;justify-content:center"}"><button onclick="twAdd()">+ Add a zone</button></div>`
-  }, { id: "defense", w: 12, html: gacDefenseCollapsedHtml() }, { id: "counters", w: 12, html: gacCountersCollapsedHtml() }], "tw");
+  }, { id: "shared", w: 12, html: twSharedRefHtml() }], "tw");
+  /* The nav lives inside the card html above, so it can only be wired up once that html is in the DOM. */
+  sectionNav("twSharedNav", "twshared", [["defense", "Recommended defense"], ["counters", "Counters"]]);
+}
+/* Recommended defense + Counters are the SAME dataset the GAC Planner shows — TW previously presented
+   them as two <details> accordions while GAC presented them as sectionNav pills, so the identical content
+   had two different interaction models depending on which tab you reached it from. This is the GAC pattern
+   (pills over one body), on its own view key so switching it here doesn't silently move the GAC Planner's
+   own subtab out from under you. TW-specific content (the zones worksheet above) is untouched.
+   (UX/IA design-review recommendation, 28 Aug 2026.) */
+function twSharedRefHtml() {
+  const view = state.views.twshared === "counters" ? "counters" : "defense";
+  return `<div class="cardtitle">Quick reference <span class="sub">— shared with the GAC Planner</span></div>
+    <div class="cqnav section-nav" id="twSharedNav"></div>
+    ${view === "counters"
+      ? `<div class="mnote">Known counters — ${GAC_COUNTERS.length} matchups, mid-core meta. Verify against what you actually see in the war.</div>
+         ${gacCountersRowsHtml()}`
+      : `<div class="mnote">Recommended defense squads/fleets for both accounts, ranked by roster readiness then live Tier List standing.</div>
+         ${gacDefenseBodyHtml()}`}
+    <div class="prog-summary"><a href="#" style="color:var(--accent)" onclick="switchTab('gac');return false;">Open the GAC Planner for the full ${view === "counters" ? "counters" : "defense"} reference →</a></div>`;
 }
 
 /* ===================== Arena tools ===================== */
@@ -3821,7 +4039,10 @@ function gacCountersHtml() {
     ${gacCountersRowsHtml()}`;
 }
 /* Same list, collapsed, for Territory War. It's genuinely useful mid-war, but rendering all of it a
-   second time duplicated a screenful of static reference across two tabs. */
+   second time duplicated a screenful of static reference across two tabs.
+   NOTE (28 Aug 2026): TW now shows this shared reference through twSharedRefHtml()'s pill switcher, to
+   match the GAC Planner's interaction pattern for the same data. This accordion builder is kept intact
+   and callable in case the collapsed presentation is wanted somewhere else. */
 function gacCountersCollapsedHtml() {
   return `<div class="cardtitle">Counters reference <span class="sub">— shared with the GAC Planner</span></div>
     <details class="refdetails"><summary>Known counters reference — ${GAC_COUNTERS.length} matchups</summary>
@@ -4008,8 +4229,8 @@ function raidCoachRowHtml(x) {
       ${tierLabel ? `<span style="color:var(--ink-3);font-size:11px;text-transform:uppercase;letter-spacing:0.03em">${tierLabel}</span>` : ""}
     </div>
     <div class="cqteams" style="margin-top:4px">${memberRows}</div>
-    ${x.sq.notes ? `<div class="mnote" style="margin-top:3px">${escapeHtml(x.sq.notes)}</div>` : ""}
-    ${x.sq.sources ? `<div class="mnote" style="margin-top:2px;font-size:11px;opacity:0.7">Sources: ${escapeHtml(x.sq.sources.join(" · "))}</div>` : ""}
+    ${x.sq.notes ? `<div class="intelnote">${escapeHtml(x.sq.notes)}</div>` : ""}
+    ${x.sq.sources ? `<div class="srcline">Sources: ${escapeHtml(x.sq.sources.join(" · "))}</div>` : ""}
     <button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-top:6px" title="Loads this team's owned members into the Mod Optimiser, pre-set for Raids content"
       onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "raids")}">⚙ Optimize mods</button>
   </div>`;
@@ -4027,7 +4248,7 @@ function raidCoachHtmlForRaid(ri, detail, squadIndex) {
       </div>`;
     }).join("")}
     ${detail === "notes" ? `${ri.notes.map(n => `<div class="mnote" style="margin-top:7px">${escapeHtml(n)}</div>`).join("")}
-      <div class="mnote" style="margin-top:8px;font-style:italic;opacity:0.7">Sources: ${escapeHtml(ri.sources.join(" · "))}</div>` : ""}`;
+      <div class="srcline" style="margin-top:8px">Sources: ${escapeHtml(ri.sources.join(" · "))}</div>` : ""}`;
 }
 function raidView(v) { state.modesnav.raidView = v; store.write(state); renderRaids(); }
 function raidDetail(v) { state.modesnav.raidDetail = v; store.write(state); renderRaids(); }
@@ -4049,6 +4270,7 @@ function renderRaids() {
   }
   const body = document.getElementById("raidBody");
   if (body) body.innerHTML = `<div class="card">${raidCoachHtmlForRaid(cur, detail, squadIndex)}</div>`;
+  renderModesCrumb();
 }
 function renderGac() {
   const grid = document.getElementById("gacGrid");
@@ -4182,8 +4404,8 @@ function renderConquest() {
       }).join("")}</div>
       <div class="cqprefs">
         <span class="cqpreflabel">Display preferences</span>
-        <div class="cqswitchrow ${showEn ? "on" : ""}" onclick="cqToggleEnemyIntel()"><div class="cqswitch"></div><span class="cqswitchlabel">Enemies</span></div>
-        <div class="cqswitchrow ${showDk ? "on" : ""}" onclick="cqToggleDiskIntel()"><div class="cqswitch"></div><span class="cqswitchlabel">Data disks</span></div>
+        <button type="button" class="cqswitchrow ${showEn ? "on" : ""}" role="switch" aria-checked="${showEn}" aria-label="Enemies" onclick="cqToggleEnemyIntel()"><div class="cqswitch"></div><span class="cqswitchlabel">Enemies</span></button>
+        <button type="button" class="cqswitchrow ${showDk ? "on" : ""}" role="switch" aria-checked="${showDk}" aria-label="Data disks" onclick="cqToggleDiskIntel()"><div class="cqswitch"></div><span class="cqswitchlabel">Data disks</span></button>
         <div class="cqprefsnote">Free-data equivalent of swgoh4.life's Patreon-gated toggles — matches squad lines against our 30-leader Enemy intel snapshot by name; unmatched squads say so rather than guessing.</div>
       </div>
       <div class="card">
@@ -4596,13 +4818,81 @@ function reqRowsHtml(rows, title) {
   return (title ? `<div class="cardtitle">${escapeHtml(title)}</div>` : "") +
     `<div class="req headrow"><span>Requirement</span><span>Needed</span><span>Current</span><span>Progress</span><span>Status</span></div>` +
     rows.map(r => `
-      <div class="req">
+      <div class="req" data-unit="${escapeHtml(r.id || "")}">
         <span class="unit">${escapeHtml(r.name)}</span>
         <span class="need">${r.need}</span>
         <span class="cur">${r.cur}</span>
         <span class="meter" title="${r.pct}%"><i class="${r.pct === 100 ? "full " : ""}st-${r.status}" style="width:${r.pct}%"></i></span>
         <span><span class="chip ${r.status}">${chipText[r.status]}</span></span>
       </div>`).join("");
+}
+
+/* ===================== cross-tab deep links (Coach's Corner → the tab that fixes it) =====================
+   Coach's Corner used to be a read-only wall of text: every flag named a unit or a game mode you then had
+   to go find yourself. These two helpers turn a flag into a one-click jump, following the same pattern
+   optLoadTeam()/optSeeBest() already use for "⚙ Optimize mods" and "see best mods" (mutate the target
+   tab's own nav state, then switchTab into it). switchTab() renders synchronously, so the scroll/highlight
+   only needs one rAF to let layout settle. (UX/IA design-review recommendation, 28 Aug 2026.) */
+function jumpToRequirement(glId, unitId) {
+  if (glId && GL_ROADMAP[glId]) state.glTarget[current] = glId;
+  switchTab("leia");
+  if (!unitId) return;
+  requestAnimationFrame(() => {
+    const row = document.querySelector(`#glTables .req[data-unit="${String(unitId).replace(/"/g, "")}"]`);
+    if (!row) return;
+    row.scrollIntoView({ behavior: "smooth", block: "center" });
+    row.classList.remove("jump-hit");
+    void row.offsetWidth;                 // restart the animation if the same row is jumped to twice
+    row.classList.add("jump-hit");
+    setTimeout(() => row.classList.remove("jump-hit"), 2000);
+  });
+}
+/* Jump to a tab and, optionally, pre-select one of its sectionNav subviews first. */
+function jumpToView(tab, viewKey, viewVal) {
+  if (viewKey) state.views[viewKey] = String(viewVal);
+  switchTab(tab);
+}
+/* Works out where a Coach's Corner flag should send you.
+   1. If the flag is auto-tracked (has a `check` spec), its unit ids are matched against the GL roadmaps —
+      current GL target first — and it deep-links to that requirement row.
+   2. Otherwise the flag's headline is keyword-routed to the tab that actually addresses it.
+   Returns null when nothing sensible matches, in which case the flag renders exactly as it did before. */
+const TIP_ROUTES = [
+  [/\bgac\b|carbonite|division/i,                      { tab: "gac",   label: "GAC Planner" }],
+  [/datacron/i,                                        { tab: "intel", view: ["intel", "datacrons"], label: "Farm Intel · Datacrons" }],
+  [/zeta|omicron|abilit/i,                             { tab: "intel", view: ["intel", "abilities"], label: "Farm Intel · Ability audit" }],
+  [/executor|fleet|payout|arena/i,                     { tab: "arena", view: ["arena", "fleet"], label: "Arena" }],
+  [/journey|rerun|rotta|event/i,                       { tab: "events", label: "Events & Calendar" }],
+  [/relic|luxury|freeze|gear|grind/i,                  { tab: "farm",  label: "Farm plan" }],
+  [/squad|mandalorian|ewok|old republic|era|peridea|roster/i, { tab: "gaps", label: "Roster Gaps" }],
+  [/legend|\bgl\b|skywalker/i,                         { tab: "leia",  label: "GL Roadmap" }]
+];
+function tipTarget(tp) {
+  const reqs = (state.pulls[current] || BASELINE[current] || {}).reqs || {};
+  if (tp.check) {
+    const specs = (Array.isArray(tp.check) ? tp.check : [tp.check]).filter(sp => sp && sp.id);
+    const order = [glTargetFor(current), ...GL_ORDER];
+    for (const gid of order) {
+      const gl = GL_ROADMAP[gid];
+      if (!gl) continue;
+      const reqIds = new Set(gl.req.map(r => r[0]));
+      const inThisGl = specs.filter(sp => reqIds.has(sp.id));
+      if (!inThisGl.length) continue;
+      const unmet = inThisGl.find(sp => !specMet(reqs, sp)) || inThisGl[0];
+      return { kind: "req", gl: gid, unit: unmet.id, label: `${gl.name} roadmap` };
+    }
+    if (specs.length) return { kind: "view", tab: "gaps", label: "Roster Gaps" };
+  }
+  const hit = TIP_ROUTES.find(([re]) => re.test(tp.t));
+  if (!hit) return null;
+  const r = hit[1];
+  return { kind: "view", tab: r.tab, view: r.view, label: r.label };
+}
+/* Builds the onclick= for a tip target, safely escaped (same jsAttr contract as optLoadTeamAttr). */
+function tipJumpAttr(target) {
+  if (target.kind === "req") return `jumpToRequirement('${jsAttr(target.gl)}','${jsAttr(target.unit)}')`;
+  const v = target.view || [];
+  return `jumpToView('${jsAttr(target.tab)}'${v.length ? `,'${jsAttr(v[0])}','${jsAttr(v[1])}'` : ""})`;
 }
 
 /* Error containment for render(). Every pane is drawn inside one of these, so a throw in one pane's
@@ -4617,6 +4907,59 @@ function safeRender(label, gridId, fn) {
     if (grid) grid.innerHTML = `<div class="emptystate">This section hit an error — check the console, or ask Claude to look at it.</div>`;
   }
 }
+/* ============ Mobile nav overlay: dialog semantics + focus trap ============
+   On narrow viewports the sidebar becomes a modal overlay rather than static chrome, so while it's
+   open it needs role="dialog"/aria-modal, the background (<main>) needs to be inert, and Tab/Shift+Tab
+   must stay inside it. All of this is applied only while mobileNavOpen is true — the sidebar is a plain
+   static panel on desktop and none of this should apply there. (Accessibility review, 28 Aug 2026.) */
+let mobileNavWasOpen = false;
+function getSidebarFocusables() {
+  const root = document.getElementById("sidebar");
+  if (!root) return [];
+  return [...root.querySelectorAll('button, [href], input, select, textarea, [tabindex]')]
+    .filter(el => !el.disabled && el.tabIndex !== -1 && el.offsetParent !== null);
+}
+function sidebarTrapKeydown(e) {
+  if (e.key !== "Tab") return;
+  const focusables = getSidebarFocusables();
+  if (!focusables.length) return;
+  const first = focusables[0], last = focusables[focusables.length - 1];
+  const sidebarEl = document.getElementById("sidebar");
+  if (e.shiftKey) {
+    if (document.activeElement === first || !sidebarEl.contains(document.activeElement)) {
+      e.preventDefault(); last.focus();
+    }
+  } else {
+    if (document.activeElement === last || !sidebarEl.contains(document.activeElement)) {
+      e.preventDefault(); first.focus();
+    }
+  }
+}
+function syncMobileNavOverlayState(mobileNavOpen) {
+  const sidebarEl = document.getElementById("sidebar");
+  const mainEl = document.getElementById("main");
+  if (mobileNavOpen) {
+    sidebarEl.setAttribute("role", "dialog");
+    sidebarEl.setAttribute("aria-modal", "true");
+    if (mainEl) mainEl.setAttribute("inert", "");
+  } else {
+    sidebarEl.removeAttribute("role");
+    sidebarEl.removeAttribute("aria-modal");
+    if (mainEl) mainEl.removeAttribute("inert");
+  }
+  if (mobileNavOpen && !mobileNavWasOpen) {
+    // just opened: trap focus inside, and move focus in (close button is first focusable)
+    document.addEventListener("keydown", sidebarTrapKeydown, true);
+    const focusables = getSidebarFocusables();
+    (focusables[0] || sidebarEl).focus();
+  } else if (!mobileNavOpen && mobileNavWasOpen) {
+    // just closed: release the trap and hand focus back to the hamburger that opened it
+    document.removeEventListener("keydown", sidebarTrapKeydown, true);
+    const btn = document.getElementById("sidebarBtn");
+    if (btn) btn.focus();
+  }
+  mobileNavWasOpen = mobileNavOpen;
+}
 function render() {
   const acct = ACCOUNTS.find(a => a.key === current);
   const g = GUIDANCE[current];
@@ -4630,6 +4973,7 @@ function render() {
   document.body.classList.toggle("nav-open", mobileNavOpen);
   document.getElementById("sidebarBtn").setAttribute("aria-expanded", String(!state.layout.sidebarCollapsed));
   document.getElementById("sidebarBtn").setAttribute("aria-controls", "sidebar");
+  syncMobileNavOverlayState(mobileNavOpen);
   renderSyncStatus();
   document.getElementById("denCozy").classList.toggle("on", state.layout.density !== "compact");
   document.getElementById("denCompact").classList.toggle("on", state.layout.density === "compact");
@@ -4644,19 +4988,28 @@ function render() {
   });
 
   document.getElementById("tabs").innerHTML = ACCOUNTS.map(a =>
-    `<button class="tab ${a.key === current ? "active" : ""}" onclick="switchAcct('${a.key}')">
+    `<button class="tab ${a.key === current ? "active" : ""}" ${a.key === current ? 'aria-current="page"' : ""} onclick="switchAcct('${a.key}')">
        <span class="tname">${a.label}</span><span class="tcode">${a.codeFmt}</span></button>`).join("");
 
   const tipCount = TIPS[current].filter(t => t.sev === "fixnow").length;
+  /* Live status badges on the nav. Same <span class="cnt"> treatment the GL Roadmap and Coach's Corner
+     badges already use — every number below is computed from data this file already tracks, never
+     invented. (UX/IA design-review recommendation, 28 Aug 2026.) */
+  const gapsReady = META_SQUADS.filter(sq => squadStatus(sq, s.reqs || {}).bucket === "ready").length;
+  const gacPlanned = (state.gac.offense || []).length;
+  const gacZones = (state.gac.zones || []).length;
   const cntLabel = { overview: "", leia: ` <span class="cnt">${v.doneCount}/${v.reqRows.length}</span>`,
-                     coach: ` <span class="cnt">${tipCount} red</span>`, farm: "", modes: "" };
+                     coach: ` <span class="cnt">${tipCount} red</span>`, farm: "", modes: "",
+                     gaps: ` <span class="cnt">${gapsReady}/${META_SQUADS.length} ready</span>`,
+                     gac: ` <span class="cnt">${gacPlanned || gacZones ? `${gacPlanned} planned` : "no plan"}</span>`,
+                     arena: ` <span class="cnt">#${s.fleetRank}</span>` };
   const activeGroup = NAV_GROUPS.find(grp => grp.keys.includes(curTab)) || NAV_GROUPS[0];
   document.getElementById("subtabs").innerHTML = NAV_GROUPS.map(grp =>
-    `<button class="stab group-tab ${grp === activeGroup ? "active" : ""}" onclick="switchTab('${grp.keys[0]}')">${grp.label}<span class="cnt">${grp.keys.length}</span></button>`
+    `<button class="stab group-tab ${grp === activeGroup ? "active" : ""}" role="tab" aria-selected="${grp === activeGroup}" onclick="switchGroup('${grp.key}')">${grp.label}<span class="cnt">${grp.keys.length}</span></button>`
   ).join("");
   document.getElementById("groupSubtabs").innerHTML = activeGroup.keys.map(k => {
     const t = SUBTABS.find(x => x.key === k);
-    return `<button class="${k === curTab ? "active" : ""}" onclick="switchTab('${k}')">${t.label}${cntLabel[k] || ""}</button>`;
+    return `<button class="${k === curTab ? "active" : ""}" role="tab" aria-selected="${k === curTab}" onclick="switchTab('${k}')">${t.label}${cntLabel[k] || ""}</button>`;
   }).join("");
   SUBTABS.forEach(t => document.getElementById("pane-" + t.key).classList.toggle("active", t.key === curTab));
 
@@ -4761,17 +5114,28 @@ function render() {
     /* Tips with a `check` spec (same star()/relic()/gear() specs Farm Plan uses) are auto-ticked from
        pulled/baseline roster data instead of a manual click — "done" reflects reality, not a habit of
        clicking. Multi-spec checks (e.g. "4 of 4 relics done") also show a live X/Y count in the label. */
+    /* Each flag's headline is a real button that deep-links to the tab which actually fixes it (the GL
+       Roadmap requirement row for roadmap-linked flags, otherwise the most relevant tab — see tipTarget).
+       A <button> is "interactive content", so clicking it inside the <label> does NOT toggle the tip's
+       checkbox; preventDefault/stopPropagation belt-and-braces that. Flags with no sensible destination
+       keep the plain <b> headline they had before — nothing is removed either way. */
+    const tipTitle = tp => {
+      const target = tipTarget(tp);
+      if (!target) return `<b>${tp.t}</b>`;
+      return `<button type="button" class="tiplink" title="Go to ${escapeHtml(target.label)}"
+        onclick="event.preventDefault();event.stopPropagation();${tipJumpAttr(target)}">${tp.t}<span class="tiparrow">→</span></button>`;
+    };
     const tipHtml = x => {
       if (!x.tp.check) return `
         <label class="item tip"><input type="checkbox" data-k="${current}-t${x.ti}" onchange="tick(this)">
-          <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span><b>${x.tp.t}</b>
+          <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span>${tipTitle(x.tp)}
             <span class="note">${x.tp.note}</span></span></label>`;
       const p = tipProgress(reqsMap, x.tp.check);
       const progressNote = p.total > 1 ? ` — ${p.doneCount}/${p.total} done` : "";
       return `
         <label class="item tip auto" title="Auto-tracked from your roster data — updates on the next data pull">
           <input type="checkbox" disabled ${p.done ? "checked" : ""}>
-          <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span><b>${x.tp.t}</b> <span class="autotag">auto</span>${progressNote}
+          <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span>${tipTitle(x.tp)} <span class="autotag">auto</span>${progressNote}
             <span class="note">${x.tp.note}</span></span></label>`;
     };
     const allTips = TIPS[current].map((tp, ti) => ({ tp, ti }));
@@ -4875,7 +5239,14 @@ function updateProg() {
 function closeMobileNav() { if (window.innerWidth <= 900) state.layout.sidebarCollapsed = true; }
 function switchAcct(k) { current = k; closeMobileNav(); render(); }
 function switchTab(k) {
-  curTab = k; state.tab = k; closeMobileNav(); store.write(state); render();
+  curTab = k; state.tab = k;
+  /* Remember this tab as the group's landing spot, so the Progress/Play/Reference buttons return here. */
+  const grp = groupForTab(k);
+  if (grp) {
+    if (!state.lastTabInGroup) state.lastTabInGroup = {};
+    state.lastTabInGroup[grp.key] = k;
+  }
+  closeMobileNav(); store.write(state); render();
   if (k === "mods") initModsTabAsync();
 }
 
@@ -4900,6 +5271,7 @@ window.addEventListener("keydown", e => {
   }
 });
 render();
+renderModChips();          // Best Mods' quick-pick landing row is ready before the tab is ever opened
 if (curTab === "mods") initModsTabAsync();
 syncInit();   // Cloud Sync: pull-and-merge (or seed) if a device/GitHub repo is already configured
 /* auto-refresh when stale (> 20 hours → refreshes daily on open) */

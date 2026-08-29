@@ -37,8 +37,12 @@
   }
   body[data-tab="overview"] { --accent: #38bdf8; }   /* holo blue */
   body[data-tab="overview"] #quickstats { display: none; }   /* duplicates Overview's own tile row */
-  body[data-tab="leia"]     { --accent: #fb923c; }   /* rebel starbird orange */
-  body[data-tab="coach"]    { --accent: #4ade80; }   /* jedi green */
+  body[data-tab="leia"]     { --accent: #facc9e; }   /* rebel starbird orange, lightened to a peach — was
+                                                        #fb923c, an exact match for the --serious "stargate"
+                                                        chip (now ΔE00 16.5 vs --serious) */
+  body[data-tab="coach"]    { --accent: #a4dbbd; }   /* jedi green, lightened to mint — was #4ade80, an exact
+                                                        match for the --good "keep doing" chip (now ΔE00 14.6
+                                                        vs --good, 12.2 vs --teal) */
   body[data-tab="farm"]     { --accent: #a78bfa; }   /* hyperspace violet */
   body[data-tab="modes"]    { --accent: #f2603c; }   /* sith ember red — was #fb7185, an exact match for
                                                         the --critical "fix now" chip, and identical to the
@@ -48,7 +52,9 @@
                                                         for the --warning "grind" chip (now ΔE00 10.5), and
                                                         one of three near-identical yellows with --swyellow
                                                         and the tierlist accent */
-  body[data-tab="conquest"] { --accent: #2dd4bf; }   /* keycard teal */
+  body[data-tab="conquest"] { --accent: #0e95a4; }   /* keycard teal, deepened toward cyan-blue — was #2dd4bf,
+                                                        an exact match for --teal (now ΔE00 21.6 vs --teal,
+                                                        18.1 vs overview) */
   body[data-tab="gaps"]     { --accent: #f472b6; }   /* radar-scan rose */
   body[data-tab="intel"]    { --accent: #f59e0b; }   /* audit-ledger bronze */
   body[data-tab="events"]   { --accent: #818cf8; }   /* chrono periwinkle */
@@ -933,6 +939,11 @@
       <div class="cqnav section-nav nav-tertiary" id="abDetailNav"></div>
       <div id="abBody"></div>
     </div>
+
+    <div id="eraSection">
+      <div class="cqnav" id="eraNav"></div>
+      <div id="eraBody"></div>
+    </div>
   </div>
 
   <!-- ============ TIER LIST ============ -->
@@ -1574,11 +1585,13 @@ function modesCrumbRoot(cat) {
   state.modesnav.category = cat;
   if (cat === "raid") {
     state.modesnav.raidView = RAID_INTEL[0].key; state.modesnav.raidDetail = "ollie"; state.modesnav.raidSquad = "0";
+  } else if (cat === "eras") {
+    state.modesnav.eraView = ERA_SECTIONS[0].key;
   } else {
     state.modesnav.abView = ASSAULT_BATTLES[0].key; state.modesnav.abDetail = "";
   }
   store.write(state);
-  renderModesCategory(); renderRaids(); renderAssaultBattles();
+  renderModesCategory(); renderRaids(); renderAssaultBattles(); renderEras();
 }
 function modesCrumbRaid(key) {
   state.modesnav.raidView = key; state.modesnav.raidDetail = "ollie"; state.modesnav.raidSquad = "0";
@@ -1603,6 +1616,10 @@ function renderModesCrumb() {
     if (!detailItems.some(x => x[0] === detail)) detail = detailItems[0][0];
     const hit = detailItems.find(x => x[0] === detail);
     if (hit) segs.push({ label: hit[1], act: `abDetail('${jsAttr(detail)}')` });
+  } else if (state.modesnav.category === "eras") {
+    const cur = ERA_SECTIONS.find(x => x.key === state.modesnav.eraView) || ERA_SECTIONS[0];
+    segs.push({ label: "Eras", act: `modesCrumbRoot('eras')` });
+    segs.push({ label: cur.label, act: `eraView('${jsAttr(cur.key)}')` });
   } else {
     const cur = RAID_INTEL.find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];
     segs.push({ label: "Raids", act: `modesCrumbRoot('raid')` });
@@ -1626,13 +1643,15 @@ function renderModesCrumb() {
 function renderModesCategory() {
   const nav = document.getElementById("modesCatNav");
   if (!nav) return;
-  const cats = [["raid", "Raids"], ["assault", "Assault Battles"]];
-  const cur = state.modesnav.category === "assault" ? "assault" : "raid";
+  const cats = [["raid", "Raids"], ["assault", "Assault Battles"], ["eras", "Eras"]];
+  const cur = ["assault", "eras"].includes(state.modesnav.category) ? state.modesnav.category : "raid";
   nav.innerHTML = cats.map(c => `<button class="${cur === c[0] ? "active" : ""}" onclick="modesCategory('${c[0]}')">${c[1]}</button>`).join("");
   const raidSec = document.getElementById("raidSection");
   const abSec = document.getElementById("assaultSection");
+  const eraSec = document.getElementById("eraSection");
   if (raidSec) raidSec.style.display = cur === "raid" ? "" : "none";
   if (abSec) abSec.style.display = cur === "assault" ? "" : "none";
+  if (eraSec) eraSec.style.display = cur === "eras" ? "" : "none";
   renderModesCrumb();
 }
 function abView(v) { state.modesnav.abView = v; store.write(state); renderAssaultBattles(); }
@@ -1651,6 +1670,216 @@ function renderAssaultBattles() {
   if (detailNav) detailNav.innerHTML = detailItems.map(x => `<button class="${detail === x[0] ? "active" : ""}" onclick="abDetail('${x[0]}')">${x[1]}</button>`).join("");
   const body = document.getElementById("abBody");
   if (body) body.innerHTML = `<div class="card">${assaultBattleHtml(cur, detail)}</div>`;
+  renderModesCrumb();
+}
+/* ===================== Eras (Game modes 3rd category) ===================== */
+/* Era of Myths & Legends reference — researched 29 Aug 2026 (official EA Forums 10-Year Anniversary/
+   Title Update posts, swgoh.gg news, Holotables.xyz community leaderboard, player forum threads).
+   Same honesty rules as ASSAULT_BATTLES/RAID_INTEL: every claim below traces to a source, confidence
+   is graded per-fact, and disputed/unconfirmed items are flagged in the UI copy rather than smoothed
+   over (see the EL-cap dispute in the leveling section and the Journey EL-gate footnote).
+
+   Deliberately REFERENCE-FIRST, not live-tracked: the Era system's actual readiness axis is Era Level,
+   and parsePlayer() captures only stars/gear/relic (reqs[base_id] = {s,g,r,name,t,z,o}) — nothing
+   Era-Level-shaped exists in the swgoh.gg pull, so no "EL 87" style live progress is shown anywhere
+   here (it would be fabricated). The ONLY live cross-checks are star levels of the 7 new Era units,
+   matched by NAME via findUnitByName() — all 7 are brand-new and have no verified base_id anywhere in
+   this file, so every reference uses the [null, "Name"] convention and a missing match renders as
+   "no data" (the units may not even appear in swgoh.gg's general character list depending on how the
+   API classifies Era units — absence is treated as no-data, never as proof of non-ownership). */
+const ERA_SECTIONS = [
+  { key: "overview",   label: "Era overview",       html: () => eraOverviewHtml() },
+  { key: "units",      label: "New units",          html: () => eraUnitsHtml() },
+  { key: "journey",    label: "DJJ Journey Guide",  html: () => eraJourneyHtml() },
+  { key: "coliseum",   label: "Era Coliseum",       html: () => eraColiseumHtml() },
+  { key: "challenges", label: "Era Challenges",     html: () => eraChallengesHtml() },
+  { key: "leveling",   label: "Era Level & currency", html: () => eraLevelingHtml() }
+];
+const ERA_UNITS = [
+  { name: "Mara Jade Skywalker", side: "Light Side", tags: "Jedi · New Republic · Attacker", confidence: "HIGH",
+    role: "Riposte/assist attacker; applies Defense Down and Stagger; stacks Offense while undamaged; kit references a Luke Skywalker leader.",
+    synergy: "Pairs with Luke-led squads.",
+    src: "Kit/faction from the official EA kit-reveal." },
+  { name: "Yoda (Dark Side Vision)", side: "Dark Side", tags: "Sith · Healer/Support", confidence: "MODERATE-HIGH",
+    role: "Corrupted-Force team healer; transfers debuffs; grants the “Dark Master's Training” buff.",
+    synergy: "Sith trio with The Ronin + Darth Jar Jar — bonus effects when the squad is all-Sith; +100% Health Steal under a Darth Jar Jar lead." },
+  { name: "Starkiller (Luke Concept)", side: "Light Side", tags: "Rebel · Unaligned Force User", confidence: "MODERATE-HIGH",
+    role: "Buff dispel, buff-immunity application, AoE ability block; kit references Commander Luke Skywalker leading.",
+    synergy: "Rebel-wide stat boosts under a Commander Luke Skywalker lead." },
+  { name: "Stormtrooper (Concept)", side: "Dark Side", tags: "Empire · Imperial Trooper", confidence: "MODERATE-HIGH",
+    role: "Tank — taunts on battle start, reflects damage, stuns, grants protection to Imperial Trooper allies.",
+    synergy: "Plugs into the existing Imperial Trooper faction (Veers, Piett, Range Trooper, Dark Trooper)." },
+  { name: "Jaxxon", side: "Light Side", tags: "Mercenary · Scoundrel · Smuggler · Attacker", confidence: "MODERATE-HIGH",
+    role: "Double-hit physical attacker; Vulnerable/Stun/Off-Balance control; Stealth survivability.",
+    synergy: "Synergizes with Lando Calrissian and Scoundrel teams." },
+  { name: "The Ronin", side: "Dark Side", tags: "Sith · Attacker/Assassin", confidence: "MODERATE-HIGH",
+    role: "Critical-damage scaling; armor shred/bleed against taunting or defending enemies; summons the droid R5-D56.",
+    synergy: "Sith trio — accelerates under Gungan Sith leaders (i.e. Darth Jar Jar). Only required from Journey Tier 3 onward." },
+  { name: "Darth Jar Jar", side: "Dark Side", tags: "Sith · Gungan · Leader/Support", confidence: "HIGH",
+    role: "Manipulates enemies (“Manipulated” debuff); Sith-team buffs (Defense Up/Foresight); crowd control (Shock/Blind/Fear/Stun). As leader: reflects debuffs, grants immunity to Investigation and cooldown manipulation, Dark Infusion/Marked control. Unique grants Darth Sidious Emergency Powers.",
+    synergy: "Sith trio anchor — this Era's Journey Guide unit (see the DJJ Journey Guide section).",
+    src: "Kit corroborated by two independent fetches of the official kit post." }
+];
+/* "Terrible Tings" Solo Journey — 4 tiers, 330 total DJJ shards (80 to activate). EL gates are the
+   swgoh.gg-news figures; a separate EA-forums fetch gave slightly different numbers that were never
+   reconciled — hence MODERATE on the exact EL values but HIGH on the tier shape itself (4 tiers,
+   escalating 4★→7★, The Ronin joining at Tier 3). */
+const ERA_JOURNEY_CORE5 = ["Mara Jade Skywalker", "Yoda (Dark Side Vision)", "Starkiller (Luke Concept)", "Stormtrooper (Concept)", "Jaxxon"];
+const ERA_JOURNEY_TIERS = [
+  { tier: 1, stars: 4, el: 90,  shards: 80,  units: ERA_JOURNEY_CORE5 },
+  { tier: 2, stars: 5, el: 95,  shards: 65,  units: ERA_JOURNEY_CORE5 },
+  { tier: 3, stars: 6, el: 110, shards: 85,  units: [...ERA_JOURNEY_CORE5, "The Ronin"] },
+  { tier: 4, stars: 7, el: 125, shards: 100, units: [...ERA_JOURNEY_CORE5, "The Ronin"] }
+];
+/* Crowd-submitted Krayt Dragon squads from Holotables.xyz's Coliseum leaderboard — community data, not
+   official guidance, so every one is capped at MODERATE. Names only (no ownership table): Coliseum
+   power reportedly draws from Era Level rather than gear/relic/mods, so this file's normal 7★/G12
+   readiness math would be the wrong lens even for the loaned units it does track elsewhere. */
+const ERA_COLISEUM_SQUADS = [
+  { label: "Moff Gideon lead", result: "Tier 12 · 22,903 dmg",
+    members: ["Moff Gideon (L)", "Yoda (Dark Side Vision)", "Mara Jade Skywalker", "Darth Talon", "Dark Trooper"],
+    note: "Submitter's note: “Yoda solos tier 10-11 shortly after start, apply basic as much as possible.”" },
+  { label: "JKL lead (Yoda build)", result: "Tier 11 · 76%",
+    members: ["Jedi Knight Luke Skywalker (L)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis", "Yoda (Dark Side Vision)", "Mace Windu"] },
+  { label: "JKL lead (Starkiller swap)", result: "Tier 11 · 73%",
+    members: ["Jedi Knight Luke Skywalker (L)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis", "Starkiller (Luke Concept)", "Mace Windu"],
+    note: "Same JKL core as the Yoda build with Starkiller (Luke Concept) in for Yoda." },
+  { label: "JKL lead (Qi'ra build)", result: "Tier 8 · 78%",
+    members: ["Jedi Knight Luke Skywalker (L)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis", "Yoda (Dark Side Vision)", "Qi'ra"],
+    note: "Submitter's note: “Start with Mara basic. Use JKL's first special, save Vulnerable for burrow.”" }
+];
+function eraChip(c) { return `<span class="chip ${ASSAULT_CONF_CHIP[c] || "watch"}">${escapeHtml(c)}</span>`; }
+function eraReqsFor(key) { return ((state.pulls[key] || BASELINE[key] || {}).reqs) || {}; }
+/* Star-level cell for the name-matched cross-checks. `need` (a star gate) colors met cells green;
+   without a gate the raw star count is shown neutrally. Missing from the pull = "no data", never
+   "not owned" — see the classification caveat in the block comment up top. */
+function eraStarCell(reqs, name, need) {
+  const u = findUnitByName(reqs, name);
+  if (!u) return `<td style="color:var(--ink-3);font-style:italic">no data</td>`;
+  const s = u.s || 0;
+  const ok = need && s >= need;
+  return `<td style="${ok ? "color:var(--good);font-weight:600" : ""}">${s}★</td>`;
+}
+function eraTierReadiness(tier, reqs) {
+  let met = 0, nodata = 0;
+  tier.units.forEach(n => {
+    const u = findUnitByName(reqs, n);
+    if (!u) nodata++;
+    else if ((u.s || 0) >= tier.stars) met++;
+  });
+  return `${met}/${tier.units.length} at ${tier.stars}★${nodata ? ` <span style="color:var(--ink-3);font-style:italic">(${nodata} no data)</span>` : ""}`;
+}
+function eraOverviewHtml() {
+  return `<div class="cardtitle">Era of Myths &amp; Legends <span class="sub">— 28 Jul → 20 Oct 2026</span></div>
+    <div class="mnote">The current Era (Era 09). Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so this category is a sourced reference, not a live tracker (Era Level isn't exposed in the swgoh.gg pull, and nothing here pretends it is).</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Era units stay inside the Era ${eraChip("HIGH")}</div>
+    <div class="intelnote">Era units — the 7 new characters AND the ~25 temporary <b>“Loaned Units”</b> (existing permanent-roster characters temporarily boosted this Era) — can ONLY be used in Era content (Coliseum, Era Challenges, Episode/Journey content). They are NOT usable in GAC, TW, Arena or other Legacy modes for the duration of the Era. At Era end, all Era-unit investment converts automatically to permanent Legacy stats via a fixed Era Level lookup table — see the “Era Level &amp; currency” section for the confirmed conversion points and the one genuinely unresolved number (the EL cap). Two independent fetches of the same official EA Forums 10-Year Anniversary/Title Update post agreed on all of this.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">After the Era ends</div>
+    <div class="mnote">Units move to Shipments ~1 week after the Era concludes, then to normal farming nodes on a biweekly cadence. <b>Caveat:</b> that cadence is confirmed for a different, prior Era — a pattern assumed, but not confirmed, to repeat identically for Myths &amp; Legends.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">How this fits your daily/weekly routine</div>
+    <div class="mnote"><b>Daily:</b> one Coliseum session — scoring is a once-daily high-water-mark per boss, so once you've hit your best score for the day's boss there's no need to keep re-battling (official wording; see the Coliseum section). No evidence was found of a separate “Era Energy” resource — Coliseum appears to be attempt-based, not energy-based, so it shouldn't compete with your normal energy budget. <b>Weekly:</b> Era Challenges run during the week between Marquee releases, and their 4-feat tiers are explicitly designed to be revisited as your Era Level rises during the week — worth a re-check mid-week rather than one-and-done.</div>
+    <div class="srcline">Sources: official EA Forums 10-Year Anniversary/Title Update post (two independent fetches agreed) · swgoh.gg news · prior-Era post-era farming precedent (flagged above).</div>`;
+}
+function eraUnitsHtml() {
+  const reqsOllie = eraReqsFor("ollie"), reqsTiny = eraReqsFor("tiny");
+  const cards = ERA_UNITS.map(u => `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--grid)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-weight:700;color:var(--ink-1);font-size:13px">${escapeHtml(u.name)}</span>
+        <span style="color:var(--ink-3);font-size:11.5px">${escapeHtml(u.side)} · ${escapeHtml(u.tags)}</span>
+        ${eraChip(u.confidence)}
+      </div>
+      <div class="mnote" style="margin-top:5px;margin-bottom:2px"><b>Role:</b> ${escapeHtml(u.role)}</div>
+      <div class="mnote" style="margin-bottom:0"><b>Synergy:</b> ${escapeHtml(u.synergy)}</div>
+      ${u.src ? `<div class="srcline">${escapeHtml(u.src)}</div>` : ""}
+    </div>`).join("");
+  return `<div class="cardtitle">The 7 Era units <span class="sub">— Myths &amp; Legends roster</span></div>
+    <div class="intelnote">No confirmed single 7-unit (or even 6-unit) combined squad exists across these units — they split into a <b>Sith trio</b> (Darth Jar Jar, Yoda (Dark Side Vision), The Ronin), <b>two independent Luke-Skywalker-adjacent pieces</b> (Mara Jade Skywalker, Starkiller (Luke Concept)), and <b>two faction-specific plug-ins</b> (Stormtrooper (Concept) → Imperial Troopers; Jaxxon → Scoundrels). Anything presenting one combined “Era squad” would be invented.</div>
+    ${cards}
+    <div class="cardtitle" style="margin-top:16px;font-size:13px">Pulled-roster cross-check <span class="sub">— star count only</span></div>
+    <div class="mnote">Matched by name against each account's pulled roster. Era units may or may not appear in swgoh.gg's general character list depending on how the API classifies them — <b>“no data” means exactly that</b> (nothing matched in the pull), not “not unlocked”. Star count is the only meaningful axis here: Era power draws from Era Level, which isn't in the pull at all.</div>
+    <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
+      <tr><th style="text-align:left">Unit</th><th>Ollietank</th><th>Tiny</th></tr>
+      ${ERA_UNITS.map(u => `<tr><td style="text-align:left">${escapeHtml(u.name)}</td>${eraStarCell(reqsOllie, u.name)}${eraStarCell(reqsTiny, u.name)}</tr>`).join("")}
+    </table></div>
+    <div class="srcline">Sources: official EA kit-reveals (Mara Jade Skywalker, Darth Jar Jar at HIGH; remainder at MODERATE-HIGH from single official-channel kit summaries).</div>`;
+}
+function eraJourneyHtml() {
+  const reqsOllie = eraReqsFor("ollie"), reqsTiny = eraReqsFor("tiny");
+  return `<div class="cardtitle">“Terrible Tings” — Darth Jar Jar Solo Journey <span class="sub">— 4 tiers, 330 total shards</span></div>
+    <div class="mnote">The Era's Journey Guide event: <b>330 total Darth Jar Jar shards</b> across 4 tiers (80 shards = activation). Unlocks <b>Week 9</b> of the Era — “when the fifth Marquee releases, enabling 4-star access” ${eraChip("MODERATE-HIGH")} (single official-post summary).</div>
+    <div style="overflow-x:auto;margin-top:8px"><table class="cqspeedtable" style="width:100%">
+      <tr><th>Tier</th><th>Star gate</th><th>EL gate</th><th style="text-align:left">Units required</th><th>DJJ shards</th><th>Ollietank</th><th>Tiny</th></tr>
+      ${ERA_JOURNEY_TIERS.map(t => `<tr>
+        <td>${t.tier}</td><td>${t.stars}★</td><td>EL ${t.el}</td>
+        <td style="text-align:left;color:var(--ink-2)">${t.tier === 1 ? "The 5 Marquee units (Mara Jade Skywalker, Yoda (DSV), Starkiller (Luke Concept), Stormtrooper (Concept), Jaxxon)" : t.tier === 3 ? "Same 5 + The Ronin joins" : t.tier === 4 ? "All 6" : "Same 5"}</td>
+        <td>${t.shards}</td>
+        <td style="font-size:11.5px">${eraTierReadiness(t, reqsOllie)}</td>
+        <td style="font-size:11.5px">${eraTierReadiness(t, reqsTiny)}</td>
+      </tr>`).join("")}
+    </table></div>
+    <div class="mnote" style="margin-top:8px">The per-account columns check only the <b>star gate</b> (name-matched against the pulled roster — “no data” units may simply not appear in swgoh.gg's general list for Era units). The <b>EL gate cannot be checked live</b>: Era Level isn't in the pull, so track it in-game.</div>
+    <div class="intelnote"><b>EL gates are MODERATE confidence:</b> the figures shown (EL 90/95/110/125) are the swgoh.gg-news version. A separate EA-forums fetch gave slightly different EL numbers that were never reconciled against a primary source. The tier <b>shape</b> itself is HIGH confidence — 4 tiers, escalating 4★→7★, The Ronin joining at Tier 3.</div>
+    <div class="srcline">Sources: swgoh.gg news (tier/EL/shard table) · official EA Forums post summary (Week-9 unlock) · unreconciled EA-forums fetch (competing EL figures, flagged above).</div>`;
+}
+function eraColiseumHtml() {
+  const squads = ERA_COLISEUM_SQUADS.map(sq => `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--grid)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-weight:700;color:var(--ink-1);font-size:13px">${escapeHtml(sq.label)}</span>
+        <span style="color:var(--ink-3);font-size:11.5px">${escapeHtml(sq.result)}</span>
+        ${eraChip("MODERATE")}
+      </div>
+      <div class="cqteams" style="margin-top:4px">${sq.members.map(m => `<div class="cqteam">${escapeHtml(m)}</div>`).join("")}</div>
+      ${sq.note ? `<div class="intelnote">${escapeHtml(sq.note)}</div>` : ""}
+    </div>`).join("");
+  return `<div class="cardtitle">Era Coliseum <span class="sub">— daily boss battles, unlocks at Player Level 10</span></div>
+    <div class="mnote">Optional (very rewarding) lane alongside the Episode Track and Era Store — not gated, and not required to progress the core Era track. Current bosses: <b>Krayt Dragon, Zeffo Tomb Guardians, Jotaz, Dryax</b> ${eraChip("HIGH")} (multiple sources agree).</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Scoring: once-daily high-water-mark ${eraChip("HIGH")}</div>
+    <div class="intelnote">Official wording: <b>“Bosses will rotate daily, with players attempting to achieve new high scores each day”</b> — once you've hit your best score for a boss that day, there's no need to keep re-battling it. No public day-by-day rotation calendar was found — that's a genuine gap, not an omission. Scoring is damage/point-based with escalating numbered tiers per boss (up to ~12): for Krayt Dragon, Tier 1 ≈ 11,000 pts up through Tier 11 ≈ 600,000 pts, with Tier 12 uncapped ${eraChip("MODERATE-HIGH")} — one community data source, Krayt-specific; the other 3 bosses' tier tables weren't found.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Rewards: two tracks</div>
+    <div class="mnote">(1) One-time era-long <b>milestone rewards</b>, and (2) a <b>DAILY leaderboard reward</b> — daily, not weekly (this corrects an earlier assumption). The Coliseum leaderboard is one of the primary sources of <b>Relic 10 materials</b> ${eraChip("HIGH")} (official). Player-reported daily Era Currency payouts scale steeply by rank — e.g. top 10 ≈ 1,000/day vs rank 1001+ ≈ 10/day — but that's a single player forum post ${eraChip("LOW-MODERATE")}, treat as anecdotal.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Community-submitted Krayt Dragon squads <span class="sub">— Holotables.xyz crowd leaderboard, not official</span></div>
+    <div class="mnote">Coliseum squads mix the new Era units with the ~25 temporary <b>Loaned Units</b> (boosted existing characters this Era — e.g. Moff Gideon, Darth Talon, Dark Trooper, Jedi Knight Luke Skywalker, Jedi Knight Cal Kestis, Mace Windu, Qi'ra) — it is NOT restricted to the 6-7 new units. Mods are reportedly “irrelevant” to Coliseum performance since power draws from Era Level, not gear/relic/mods ${eraChip("MODERATE")} — community-reported, not officially confirmed — which is also why no per-account ownership table is shown here: this file's normal gear-based readiness math would be the wrong lens.</div>
+    ${squads}
+    <div class="srcline">Sources: official EA Forums post (boss list, daily rotation quote, high-water-mark scoring, Relic 10 materials) · Holotables.xyz crowd-submitted Coliseum leaderboard (squads, Krayt tier points — community data, MODERATE) · single player forum post (rank payouts, LOW-MODERATE).</div>`;
+}
+function eraChallengesHtml() {
+  return `<div class="cardtitle">Era Challenges <span class="sub">— the Galactic Challenges replacement</span></div>
+    <div class="mnote">Era Challenges replace Galactic Challenges for the duration of the Era, and run during the week BETWEEN Marquee releases ${eraChip("HIGH")} (official).</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">The 4-feat revisit system ${eraChip("MODERATE-HIGH")}</div>
+    <div class="intelnote">Reworked (as of the Era-of-Andor-era patch) into a <b>4-feat system</b>: each tier has 4 feats with escalating Era Level requirements, explicitly designed so you can revisit and redo a tier as your Era Level improves during the week. This is a <b>fixed EL-threshold ladder</b> — NOT a dynamic per-player auto-scaling difficulty.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Rewards</div>
+    <div class="mnote">Clearing tiers awards <b>Era Shipment Currency</b> (confirmed); a full itemized reward table was not found — another honest gap rather than a guess. Some players report tiers are hard to clear for average rosters and effectively cap out early ${eraChip("LOW-MODERATE")} — forum sentiment, presented as player sentiment rather than fact.</div>
+    <div class="mnote"><b>Routine tip:</b> because the feat ladder is fixed-threshold and revisit-friendly, check back mid-week after Era Levels gained from Coliseum/Marquees — a tier that walled you on Monday may clear by Thursday.</div>
+    <div class="srcline">Sources: official EA Forums posts (replacement + between-Marquee cadence at HIGH; 4-feat rework at MODERATE-HIGH) · player forum sentiment (difficulty, LOW-MODERATE, anecdotal).</div>`;
+}
+function eraLevelingHtml() {
+  return `<div class="cardtitle">Era Level progression &amp; currency</div>
+    <div class="mnote"><b>Era Materials</b> follow an Aurebesh-Mark naming convention mirroring the normal Gear system — e.g. “Mk I Grek Ability Module” through “Mk VIII [color] Ability Module/Performance Core” ${eraChip("MODERATE")}; a full per-tier quantity table was not found.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Era Currency: sources &amp; sink</div>
+    <div class="mnote"><b>Earned from</b>: Coliseum (daily, rank-based), Era Marquee Events, Era Journey Events, Episode Track milestones, or purchased ${eraChip("HIGH")} (official). <b>Spent in</b>: the “Era Shipment” store on Era Materials ${eraChip("MODERATE")} — itemized store contents not found.</div>
+    <div class="intelnote"><b>Terminology footnote — two OTHER currencies exist</b> and even players find the overlap confusing: (1) <b>Episode Currency</b> — a different, weekly-resetting currency for the separate Episode Shipment (Omicron/Omega mats, Focused Datacrons, gear, mod slicing mats — NOT Era Materials); (2) <b>Era Level Currency</b> — an end-of-era-only conversion mechanic, 12,000:1 into standard Era Currency. Era Currency is the main concept to track; these two are mentioned so the in-game names don't mislead, not tracked separately here.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">End-of-Era conversion to Legacy ${eraChip("HIGH")}</div>
+    <div class="mnote">At Era end, ALL Era-unit investment converts automatically to permanent Legacy stats via a fixed lookup table (Era Level → Character Level / Gear-or-Relic tier / Ability level). Confirmed example points (two independent fetches of the official EA Forums post agreed):</div>
+    <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%">
+      <tr><th>Era Level</th><th>Converts to</th></tr>
+      <tr><td>EL 65</td><td>Level 85 · Gear 12 · Ability 7</td></tr>
+      <tr><td>EL 80</td><td>Level 85 · Relic 2 · Ability 7</td></tr>
+      <tr><td>EL 95</td><td>Level 85 · Relic 6 · Ability 8 (Zeta)</td></tr>
+    </table></div>
+    <div class="mnote" style="margin-top:6px">Unused Era Materials/Currency also convert to Legacy materials at Era end.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Disputed: the Era Level cap itself</div>
+    <div class="intelnote"><b>Unresolved — two sources give different caps.</b> At the system's original launch (~Nov 2025) the cap was <b>EL 95</b>. A later community update (27 Apr 2026, pre-dating this Era) reportedly raised it to <b>EL 135</b> (converting to Relic 8). The live Journey Guide's own Tier 4 gate (EL 125) means the cap is <b>at least EL 125 for the current Era</b> — but the exact current maximum (135, or higher still) was not independently confirmed against a primary source for Myths &amp; Legends specifically. Read as: “cap confirmed at least EL 125 (Journey Tier 4); a since-superseded community update once cited EL 135/Relic 8 as the new ceiling, not independently re-confirmed for this Era.”</div>
+    <div class="mnote"><b>No “Era Energy” found:</b> no evidence of a distinct Era Energy resource exists in any source checked — Coliseum appears to be attempt-based (once-daily high-water-mark), not energy-based. Stated plainly rather than assuming a mechanic into existence.</div>
+    <div class="srcline">Sources: official EA Forums 10-Year Anniversary/Title Update post (conversion table, currency sources — two independent fetches agreed) · community update 27 Apr 2026 (EL 135 claim, unconfirmed for this Era) · community material-naming reports (MODERATE).</div>`;
+}
+function eraView(v) { state.modesnav.eraView = v; store.write(state); renderEras(); }
+function renderEras() {
+  const nav = document.getElementById("eraNav");
+  if (!nav) return;
+  const cur = ERA_SECTIONS.find(sec => sec.key === state.modesnav.eraView) || ERA_SECTIONS[0];
+  nav.innerHTML = ERA_SECTIONS.map(sec => `<button class="${cur.key === sec.key ? "active" : ""}" onclick="eraView('${sec.key}')">${escapeHtml(sec.label)}</button>`).join("");
+  const body = document.getElementById("eraBody");
+  if (body) body.innerHTML = `<div class="card">${cur.html()}</div>`;
   renderModesCrumb();
 }
 /* Galactic Legend roadmap: every currently-released GL's unlock requirements.
@@ -2289,7 +2518,7 @@ function defaultState() {
       showEnemyIntel: false,                    // "Enemies" display preference (plan view)
       showDiskIntel: false                      // "Data Disks" display preference (plan view)
     },
-    modesnav: { category: "raid", raidView: "o66", raidDetail: "ollie", raidSquad: "0", abView: "groundwar", abDetail: "teams" },  // Game modes tab: category, event and focused detail subtabs
+    modesnav: { category: "raid", raidView: "o66", raidDetail: "ollie", raidSquad: "0", abView: "groundwar", abDetail: "teams", eraView: "overview" },  // Game modes tab: category, event and focused detail subtabs
     views: {                                    // task-focused local subtabs; only the selected card group is rendered
       gaps: "squads", coach: "priorities", arena: "overview", gac: "plan",
       intel: "shopping", tb: "1", tierlist: "5v5", events: "next",
@@ -5194,6 +5423,7 @@ function render() {
   safeRender("Game modes category", "modesCatNav", () => renderModesCategory());
   safeRender("Raids", "raidBody", () => renderRaids());
   safeRender("Assault Battles", "abBody", () => renderAssaultBattles());
+  safeRender("Eras", "eraBody", () => renderEras());
 
   /* ---- roster gaps tab ---- */
   safeRender("Roster gaps", "gapsGrid", () => renderGaps(s));

@@ -2235,33 +2235,38 @@ const TB_ROTE = [
    pull from this browser. */
 const BASELINE = {
   ollie: {
-    fetchedAt: null, fetchedLabel: "Claude review · 2 Sep 2026 (GP/roster totals live via swgoh.gg; per-unit reqs below still from 7 Aug)",
+    fetchedAt: null, fetchedLabel: "Claude review · 3 Sep 2026 (all figures live via swgoh.gg, including per-unit reqs — press Pull latest data to refresh)",
     gp: 8055025, gpChar: 4775963, gpShip: 3279062, glCount: 3,
     glNote: "Jabba R9 · SLKR R9 · Rey R8", fleetRank: 66, fleetNote: "Executor fleet",
     gac: "Carb 5", gacNote: "983 SR", extraNote: "127 zetas · 8 omis",
     reqs: {
-      CAPTAINREX:{s:7,g:13,r:7}, COMMANDERLUKESKYWALKER:{s:7,g:13,r:5}, C3POCHEWBACCA:{s:4,g:12,r:0},
-      PRINCESSKNEESAA:{s:4,g:13,r:5}, SCOUTTROOPER_V3:{s:5,g:5,r:0}, CAPTAINDROGAN:{s:3,g:5,r:0},
-      R2D2_LEGENDARY:{s:7,g:13,r:1}, HOTHHAN:{s:4,g:13,r:3}, HOTHLEIA:{s:7,g:13,r:3},
-      BOUSHH:{s:4,g:13,r:5}, ADMINISTRATORLANDO:{s:4,g:13,r:3}, WICKET:{s:4,g:12,r:0},
-      CHIEFCHIRPA:{s:4,g:12,r:0}, LOBOT:{s:5,g:6,r:0}, ADMIRALACKBAR:{s:7,g:9,r:0},
+      /* Per-unit values refreshed 3 Sep 2026 from the live swgoh.gg units array (the API never actually
+         dropped it — see the note in fetchPlayer()). The 7 Aug snapshot this replaced was badly stale:
+         Wicket 4★G12 → 7★R3, Kneesaa 4★R5 → 7★R7, Drogan 3★G5 → 6★R5, Threepio & Chewie 4★G12 → 7★G13. */
+      CAPTAINREX:{s:7,g:13,r:7}, COMMANDERLUKESKYWALKER:{s:7,g:13,r:5}, C3POCHEWBACCA:{s:7,g:13,r:0},
+      PRINCESSKNEESAA:{s:7,g:13,r:7}, SCOUTTROOPER_V3:{s:7,g:5,r:0}, CAPTAINDROGAN:{s:6,g:13,r:5},
+      R2D2_LEGENDARY:{s:7,g:13,r:1}, HOTHHAN:{s:7,g:13,r:3}, HOTHLEIA:{s:7,g:13,r:3},
+      BOUSHH:{s:7,g:13,r:5}, ADMINISTRATORLANDO:{s:7,g:13,r:3}, WICKET:{s:7,g:13,r:3},
+      CHIEFCHIRPA:{s:7,g:12,r:0}, LOBOT:{s:7,g:8,r:0}, ADMIRALACKBAR:{s:7,g:12,r:0},
       /* GLs already owned (from glNote) — marks them "owned" on the GL Roadmap until a live pull fills in real requirement-unit data */
       JABBATHEHUTT:{s:7,g:13,r:9}, SUPREMELEADERKYLOREN:{s:7,g:13,r:9}, GLREY:{s:7,g:13,r:8}
     }
   },
   tiny: {
-    fetchedAt: null, fetchedLabel: "Claude review · 2 Sep 2026 (GP/roster totals live via swgoh.gg; per-unit reqs below still from 7 Aug, some estimated)",
+    fetchedAt: null, fetchedLabel: "Claude review · 3 Sep 2026 (all figures live via swgoh.gg, including per-unit reqs — press Pull latest data to refresh)",
     gp: 7763554, gpChar: 4575986, gpShip: 3187568, glCount: 2,
     glNote: "Rey R8 · SLKR R8 (+GAS R8)", fleetRank: 37, fleetNote: "Negotiator fleet",
-    gac: "Carb 5", gacNote: "1,106 SR", extraNote: "115 zetas · 6 omis",
+    gac: "Carb 5", gacNote: "1,106 SR", extraNote: "116 zetas · 6 omis",
     reqs: {
+      /* Per-unit values refreshed 3 Sep 2026 from the live swgoh.gg units array. The 7 Aug estimates
+         this replaced undersold the account badly — 11 of 15 Leia requirements are actually done. */
       CAPTAINREX:{s:7,g:13,r:7}, COMMANDERLUKESKYWALKER:{s:7,g:13,r:7}, C3POCHEWBACCA:{s:7,g:13,r:7},
-      PRINCESSKNEESAA:{s:7,g:13,r:6}, SCOUTTROOPER_V3:{s:7,g:9,r:0}, CAPTAINDROGAN:{s:7,g:9,r:0},
-      R2D2_LEGENDARY:{s:7,g:9,r:0}, HOTHHAN:{s:7,g:13,r:3}, HOTHLEIA:{s:7,g:13,r:3},
-      BOUSHH:{s:7,g:9,r:0}, ADMINISTRATORLANDO:{s:7,g:13,r:3}, WICKET:{s:7,g:11,r:0},
-      CHIEFCHIRPA:{s:7,g:12,r:0}, LOBOT:{s:7,g:9,r:0}, ADMIRALACKBAR:{s:7,g:11,r:0},
+      PRINCESSKNEESAA:{s:7,g:13,r:7}, SCOUTTROOPER_V3:{s:7,g:13,r:6}, CAPTAINDROGAN:{s:7,g:13,r:5},
+      R2D2_LEGENDARY:{s:7,g:12,r:0}, HOTHHAN:{s:7,g:13,r:5}, HOTHLEIA:{s:7,g:13,r:5},
+      BOUSHH:{s:7,g:13,r:5}, ADMINISTRATORLANDO:{s:7,g:13,r:5}, WICKET:{s:7,g:13,r:3},
+      CHIEFCHIRPA:{s:7,g:13,r:3}, LOBOT:{s:7,g:12,r:0}, ADMIRALACKBAR:{s:7,g:13,r:3},
       /* GLs already owned (from glNote) — marks them "owned" on the GL Roadmap until a live pull fills in real requirement-unit data */
-      GLREY:{s:7,g:13,r:8}, SUPREMELEADERKYLOREN:{s:7,g:13,r:8}
+      GLREY:{s:7,g:13,r:8}, SUPREMELEADERKYLOREN:{s:7,g:13,r:8}, GENERALSKYWALKER:{s:7,g:13,r:8}
     }
   }
 };
@@ -2400,7 +2405,9 @@ const TIPS = {
     { sev: "fixnow", t: "Re-enter GAC — 3 R8+ GLs sitting in Carbonite 5", note: "Just setting a defense every round climbs divisions, and every division is more crystals. This single habit funds the entire Leia push." },
     { sev: "improve", t: "2 Set 33 datacrons built — one's near-max, one has room", note: "Your Tier 6 Set 33 (Crit Chance/Crit Damage/Defense + First Order faction bonus) is close to the ceiling for a single datacron — nice. The second is only Tier 4; level it further toward T6 to pick up its full alignment/faction payoff before starting a new set." },
     { sev: "fixnow", t: "R2-D2 stuck at R1 (Leia needs R8)", note: "Longest lead-time item on the account. Start the relic climb now and stockpile signal data — don't spend high-tier relic mats anywhere else.", check: relic("R2D2_LEGENDARY", 8) },
-    { sev: "improve", t: "8 of 15 Leia requirements are below 7★", note: "Stars before relics: daily Ewok shards (Wicket/Chirpa/Kneesaa), Drogan events, Boushh in Proving Grounds, Threepio & Chewie on the legendary rerun.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
+    { sev: "improve", t: "Only Captain Drogan (6★) is still below 7★ — the star wall is basically down", note: "Huge shift since August: 14 of 15 Leia requirements are now 7★ (Wicket, Kneesaa, Boushh, Han, Lando, Threepio & Chewie all got there). One more Drogan event finishes the stars; from here it's a pure relic race.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
+    { sev: "improve", t: "Four cheap Leia relic wins are sitting right there", note: "CLS R5→R7, Lando R3→R5, Captain Han R3→R5, ROLO R3→R5 — all already G13, no star gates. That takes Leia from 4/15 to 8/15 done for a few weeks of mid-tier relic mats.", check: [relic("COMMANDERLUKESKYWALKER", 7), relic("ADMINISTRATORLANDO", 5), relic("HOTHHAN", 5), relic("HOTHLEIA", 5)] },
+    { sev: "watch", t: "Scout Trooper (G5) and Lobot (G8) are the real long poles after R2-D2", note: "Both need R7/R3 from a very low gear base — start feeding them gear now so they don't become the last thing standing between you and Leia.", check: [gear("SCOUTTROOPER_V3", 13), gear("LOBOT", 13)] },
     { sev: "improve", t: "Ewok gearing is a double-dip — exploit it", note: "Every Ewok you gear counts twice: Leia requirement + RotE TB platoons/ops. Prioritise Ewoks over any non-Leia gearing." },
     { sev: "improve", t: "No General Skywalker at 8M GP", note: "Not urgent — but after Leia, Padmé → GAS is the next journey; his 501st also carries a whole RotE zone." },
     { sev: "watch", t: "Freeze luxury relics until Leia is done", note: "Kelleran R8 / Paz R7-style sidegrades are how GLs slip a year. Every relic mat has a Leia address for now." },
@@ -2412,8 +2419,8 @@ const TIPS = {
     { sev: "fixnow", t: "Re-enter GAC — Rey/SLKR/GAS ignored in Carbonite 5", note: "Add the omicron'd Bo-Katan Mandalorians and this roster is Aurodium-grade wall material. Set a defense every round; collect the crystals." },
     { sev: "improve", t: "2 Set 33 datacrons built — the Tier 6 is great, the Tier 3 needs work", note: "Your Tier 6 Set 33 (Dark Side + First Order faction bonuses) is close to the ceiling for a single datacron — keep it. The second is still only Tier 3; level it up toward T6 to unlock its full alignment payoff." },
     { sev: "fixnow", t: "Executor parked at 65% power", note: "The crew is already done (Boba R8, Piett R8, Razor Crest 81%). Star the hull up, swap off Negotiator, and fleet payouts jump — fastest crystal upgrade on the account." },
-    { sev: "improve", t: "Close the four fast Leia wins", note: "Kneesaa R6→R7, Captain Han / ROLO / Lando R3→R5. That's 7 of 15 requirements finished for a few weeks of relic mats.", check: [relic("PRINCESSKNEESAA", 7), relic("HOTHHAN", 5), relic("HOTHLEIA", 5), relic("ADMINISTRATORLANDO", 5)] },
-    { sev: "improve", t: "Gear the three big grinds in parallel", note: "R2-D2, Scout Trooper and Drogan from ~G8 to G13 while relic mats bank. R2-D2's R8 is the long pole — start now, finish last.", check: [gear("R2D2_LEGENDARY", 13), gear("SCOUTTROOPER_V3", 13), gear("CAPTAINDROGAN", 13)] },
+    { sev: "keep", t: "The four fast Leia wins are all done — 11 of 15 requirements finished", note: "Kneesaa R7, Captain Han R5, ROLO R5, Lando R5 all landed since August, plus Ackbar, Chirpa and Threepio & Chewie. This account is now the closer of the two on Leia (92% vs Ollietank's 75%).", check: [relic("PRINCESSKNEESAA", 7), relic("HOTHHAN", 5), relic("HOTHLEIA", 5), relic("ADMINISTRATORLANDO", 5)] },
+    { sev: "fixnow", t: "Four requirements left for GL Leia — R2-D2 R8 is the whole timeline", note: "Scout Trooper R6→R7 and Drogan R5→R7 are quick. Lobot G12→R3 is short. R2-D2 is still G12 with R8 required — every high-tier relic mat on this account should be going to him until he's done.", check: [relic("SCOUTTROOPER_V3", 7), relic("CAPTAINDROGAN", 7), relic("LOBOT", 3), relic("R2D2_LEGENDARY", 8)] },
     { sev: "watch", t: "Old Republic is a dead end here", note: "JKR at G12 with no Darth Revan/Malak — zero further investment until after Leia, if ever." },
     { sev: "watch", t: "Era/Peridea units: unlocked, not built — keep it that way", note: "Correct instinct. Revisit only if RotE platoons demand them." },
     { sev: "watch", t: "Rotta rerun before GL Mando & Grogu", note: "Complete the Rotta Journey event on this account too — expected GL #10 requirement." },

@@ -2229,13 +2229,16 @@ const TB_ROTE = [
   ]}
 ];
 
-/* Baseline snapshot from Claude's roster review, 7 Aug 2026 (shown until the first live pull) */
+/* Baseline snapshot — account-level fields (GP/arena/GAC) refreshed via a live swgoh.gg pull 2 Sep 2026;
+   per-unit `reqs` below are unchanged from Claude's 7 Aug 2026 roster review, since swgoh.gg's API still
+   doesn't return per-character gear/relic detail (see fetchPlayer's comment). Shown until the first live
+   pull from this browser. */
 const BASELINE = {
   ollie: {
-    fetchedAt: null, fetchedLabel: "Claude review · 16 Aug 2026 (GP/roster totals live via swgoh.gg; per-unit reqs below still from 7 Aug)",
-    gp: 8000120, gpChar: 4748439, gpShip: 3251681, glCount: 3,
+    fetchedAt: null, fetchedLabel: "Claude review · 2 Sep 2026 (GP/roster totals live via swgoh.gg; per-unit reqs below still from 7 Aug)",
+    gp: 8055025, gpChar: 4775963, gpShip: 3279062, glCount: 3,
     glNote: "Jabba R9 · SLKR R9 · Rey R8", fleetRank: 66, fleetNote: "Executor fleet",
-    gac: "Carb 5", gacNote: "976 SR", extraNote: "127 zetas · 8 omis",
+    gac: "Carb 5", gacNote: "983 SR", extraNote: "127 zetas · 8 omis",
     reqs: {
       CAPTAINREX:{s:7,g:13,r:7}, COMMANDERLUKESKYWALKER:{s:7,g:13,r:5}, C3POCHEWBACCA:{s:4,g:12,r:0},
       PRINCESSKNEESAA:{s:4,g:13,r:5}, SCOUTTROOPER_V3:{s:5,g:5,r:0}, CAPTAINDROGAN:{s:3,g:5,r:0},
@@ -2247,10 +2250,10 @@ const BASELINE = {
     }
   },
   tiny: {
-    fetchedAt: null, fetchedLabel: "Claude review · 16 Aug 2026 (GP/roster totals live via swgoh.gg; per-unit reqs below still from 7 Aug, some estimated)",
-    gp: 7658898, gpChar: 4511976, gpShip: 3146922, glCount: 2,
-    glNote: "Rey R8 · SLKR R8 (+GAS R8)", fleetRank: 45, fleetNote: "Negotiator fleet",
-    gac: "Carb 5", gacNote: "1,185 SR", extraNote: "115 zetas · 6 omis",
+    fetchedAt: null, fetchedLabel: "Claude review · 2 Sep 2026 (GP/roster totals live via swgoh.gg; per-unit reqs below still from 7 Aug, some estimated)",
+    gp: 7763554, gpChar: 4575986, gpShip: 3187568, glCount: 2,
+    glNote: "Rey R8 · SLKR R8 (+GAS R8)", fleetRank: 37, fleetNote: "Negotiator fleet",
+    gac: "Carb 5", gacNote: "1,106 SR", extraNote: "115 zetas · 6 omis",
     reqs: {
       CAPTAINREX:{s:7,g:13,r:7}, COMMANDERLUKESKYWALKER:{s:7,g:13,r:7}, C3POCHEWBACCA:{s:7,g:13,r:7},
       PRINCESSKNEESAA:{s:7,g:13,r:6}, SCOUTTROOPER_V3:{s:7,g:9,r:0}, CAPTAINDROGAN:{s:7,g:9,r:0},
@@ -2395,7 +2398,7 @@ function isFarmDone(account, reqsMap, pi, ii) {
 const TIPS = {
   ollie: [
     { sev: "fixnow", t: "Re-enter GAC — 3 R8+ GLs sitting in Carbonite 5", note: "Just setting a defense every round climbs divisions, and every division is more crystals. This single habit funds the entire Leia push." },
-    { sev: "fixnow", t: "Zero datacrons", note: "Build 1–2 per set to level 3–6 (cheap tiers only). The current FO/Resistance set directly boosts your SLKR and Rey walls." },
+    { sev: "improve", t: "2 Set 33 datacrons built — one's near-max, one has room", note: "Your Tier 6 Set 33 (Crit Chance/Crit Damage/Defense + First Order faction bonus) is close to the ceiling for a single datacron — nice. The second is only Tier 4; level it further toward T6 to pick up its full alignment/faction payoff before starting a new set." },
     { sev: "fixnow", t: "R2-D2 stuck at R1 (Leia needs R8)", note: "Longest lead-time item on the account. Start the relic climb now and stockpile signal data — don't spend high-tier relic mats anywhere else.", check: relic("R2D2_LEGENDARY", 8) },
     { sev: "improve", t: "8 of 15 Leia requirements are below 7★", note: "Stars before relics: daily Ewok shards (Wicket/Chirpa/Kneesaa), Drogan events, Boushh in Proving Grounds, Threepio & Chewie on the legendary rerun.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
     { sev: "improve", t: "Ewok gearing is a double-dip — exploit it", note: "Every Ewok you gear counts twice: Leia requirement + RotE TB platoons/ops. Prioritise Ewoks over any non-Leia gearing." },
@@ -2407,7 +2410,7 @@ const TIPS = {
   ],
   tiny: [
     { sev: "fixnow", t: "Re-enter GAC — Rey/SLKR/GAS ignored in Carbonite 5", note: "Add the omicron'd Bo-Katan Mandalorians and this roster is Aurodium-grade wall material. Set a defense every round; collect the crystals." },
-    { sev: "fixnow", t: "Zero datacrons", note: "1–2 per set at cheap tiers. The FO/Resistance set fits SLKR + Rey exactly." },
+    { sev: "improve", t: "2 Set 33 datacrons built — the Tier 6 is great, the Tier 3 needs work", note: "Your Tier 6 Set 33 (Dark Side + First Order faction bonuses) is close to the ceiling for a single datacron — keep it. The second is still only Tier 3; level it up toward T6 to unlock its full alignment payoff." },
     { sev: "fixnow", t: "Executor parked at 65% power", note: "The crew is already done (Boba R8, Piett R8, Razor Crest 81%). Star the hull up, swap off Negotiator, and fleet payouts jump — fastest crystal upgrade on the account." },
     { sev: "improve", t: "Close the four fast Leia wins", note: "Kneesaa R6→R7, Captain Han / ROLO / Lando R3→R5. That's 7 of 15 requirements finished for a few weeks of relic mats.", check: [relic("PRINCESSKNEESAA", 7), relic("HOTHHAN", 5), relic("HOTHLEIA", 5), relic("ADMINISTRATORLANDO", 5)] },
     { sev: "improve", t: "Gear the three big grinds in parallel", note: "R2-D2, Scout Trooper and Drogan from ~G8 to G13 while relic mats bank. R2-D2's R8 is the long pole — start now, finish last.", check: [gear("R2D2_LEGENDARY", 13), gear("SCOUTTROOPER_V3", 13), gear("CAPTAINDROGAN", 13)] },
@@ -2784,7 +2787,37 @@ function parsePlayer(j, prev) {
     gacNote: (d.skill_rating ? d.skill_rating + " SR" : "") || "GAC league",
     extraNote: hasUnits ? (zetas + " zetas · " + omis + " omis") : ((prev && prev.extraNote) || "0 zetas · 0 omis"),
     reqs: hasUnits ? units : ((prev && prev.reqs) || {}),
-    mods
+    mods,
+    /* Datacrons (added Sep 2026 — verified via a direct fetch of the live player API, which now returns a
+       top-level "datacrons" array; the old "not in the live pull" assumption elsewhere in this file was
+       stale). Each entry's "tiers" array mixes two row shapes: a stat row (ability_description is null,
+       scope_target_name names the stat, stat_value is the raw fraction e.g. 0.0728 = 7.28%) and an ability
+       row (ability_description holds the actual tooltip text — the alignment/faction bonus). Split them
+       here into flat display strings so the UI doesn't need to know the raw shape. */
+    datacrons: (d.datacrons || []).map(dc => {
+      const tiers = dc.tiers || [];
+      return {
+        tier: dc.tier || 0,
+        set: dc.set_id || 0,
+        stats: tiers.filter(t => !t.ability_description && t.scope_target_name)
+          .map(t => t.scope_target_name + " +" + ((t.stat_value || 0) * 100).toFixed(2) + "%"),
+        abilities: tiers.filter(t => t.ability_description).map(t => t.ability_description)
+      };
+    }),
+    /* GAC "season_*" fields (added Sep 2026, same live pull). Naming caveat baked in at every place this
+       renders: season_banners_earned alone runs into six figures on both tracked accounts, which is not
+       plausible for a single GAC season — this is almost certainly a lifetime/career cumulative counter
+       despite the field name, so the UI must present it as such rather than "this season's stats". */
+    gacSeason: {
+      banners: d.season_banners_earned || 0,
+      fullClears: d.season_full_clears || 0,
+      leagueScore: d.season_league_score || 0,
+      offensiveWins: d.season_offensive_battles_won || 0,
+      promotions: d.season_promotions_earned || 0,
+      successfulDefends: d.season_successful_defends || 0,
+      territoriesDefeated: d.season_territories_defeated || 0,
+      undersizedWins: d.season_undersized_squad_wins || 0
+    }
   };
 }
 async function pullAll() {
@@ -4253,6 +4286,29 @@ function gacOffenseHtml() {
     </div>
     <div class="cqaddrow"><button onclick="gacOffAdd()">+ Add to offense order</button></div>`;
 }
+/* GAC/career totals from parsePlayer's `gacSeason` (the API's "season_*" fields — live pull only, see
+   the honesty caveat baked into the mnote below). */
+function gacSeasonHtml() {
+  const rows = ACCOUNTS.map(a => ({ acct: a, gs: (state.pulls[a.key] || {}).gacSeason }))
+    .filter(r => r.gs);
+  if (!rows.length) return "";
+  const stat = (lbl, v) => `<div class="cqteam">${lbl}: <b style="color:var(--ink-1)">${(v || 0).toLocaleString()}</b></div>`;
+  return `<div class="cardtitle">GAC / career totals <span class="sub">live from your last pull</span></div>
+    <div class="mnote">swgoh.gg's API names these fields "season_*", but the magnitude (six-figure banner counts) makes a single GAC season implausible — this is almost certainly a lifetime/career cumulative counter despite the name, so read it as "all-time so far", not "this season".</div>
+    ${rows.map(r => `<div style="margin-top:8px">
+      <div style="font-weight:700;color:var(--accent);font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">${escapeHtml(r.acct.label)}</div>
+      <div class="cqteams">
+        ${stat("Banners earned (career)", r.gs.banners)}
+        ${stat("League score", r.gs.leagueScore)}
+        ${stat("Full clears", r.gs.fullClears)}
+        ${stat("Promotions earned", r.gs.promotions)}
+        ${stat("Offensive battles won", r.gs.offensiveWins)}
+        ${stat("Successful defends", r.gs.successfulDefends)}
+        ${stat("Territories defeated", r.gs.territoriesDefeated)}
+        ${stat("Undersized squad wins", r.gs.undersizedWins)}
+      </div>
+    </div>`).join("")}`;
+}
 function gacCountersRowsHtml() {
   return GAC_COUNTERS.map(c => `<div style="padding:7px 0;border-bottom:1px solid var(--grid)">
       <b style="color:var(--ink-1);font-size:13px">${escapeHtml(c.def)}</b><br>
@@ -4508,9 +4564,11 @@ function renderGac() {
   const view = state.views.gac || "plan";
   const add = document.getElementById("gacAddZone");
   if (add) add.style.display = view === "plan" ? "" : "none";
+  const seasonHtml = gacSeasonHtml();
   const cards = view === "defense" ? [{ id: "defense", w: 12, html: gacDefenseHtml() }]
     : view === "counters" ? [{ id: "counters", w: 12, html: gacCountersHtml() }]
-    : [{ id: "zones", w: 6, html: gacZonesHtml() }, { id: "offense", w: 6, html: gacOffenseHtml() }];
+    : [{ id: "zones", w: 6, html: gacZonesHtml() }, { id: "offense", w: 6, html: gacOffenseHtml() },
+       ...(seasonHtml ? [{ id: "season", w: 12, html: seasonHtml }] : [])];
   grid.innerHTML = wrapCards("gac", cards);
 }
 
@@ -4562,9 +4620,30 @@ function shoppingListHtml(s, v, limit) {
     <div class="mnote">Dedupes farm targets so the same unit doesn't read as N separate to-dos — prioritize whatever shows up under the most sources below.</div>
     <div style="columns:290px;column-gap:22px;margin-top:2px">${shown.map(e => `<div class="cqteam" style="break-inside:avoid;padding-bottom:3px"><b style="color:var(--ink-1)">${escapeHtml(e.name)}</b> <span style="color:var(--ink-3)">— needed for: ${e.sources.map(escapeHtml).join(", ")}</span></div>`).join("")}</div>`;
 }
+/* Your actually-equipped datacrons, live from the last pull (parsePlayer's `datacrons` field — see the
+   comment there for the raw-shape split). Only accounts with a live pull (state.pulls[key], not the
+   static BASELINE) can show this: BASELINE predates the datacron field existing at all. */
+function liveDatacronsHtml() {
+  const rows = ACCOUNTS.map(a => ({ acct: a, dcs: (state.pulls[a.key] || {}).datacrons || [] }))
+    .filter(r => r.dcs.length);
+  if (!rows.length) return "";
+  return `<div class="cardtitle">Your equipped datacrons <span class="sub">live from your last pull</span></div>
+    <div class="mnote">What's actually built and equipped right now, straight from swgoh.gg — everything below "Datacron recommendations" stays static farming guidance since the API doesn't tell us which GL to target next.</div>
+    ${rows.map(r => `<div style="margin-top:8px">
+      <div style="font-weight:700;color:var(--accent);font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">${escapeHtml(r.acct.label)}</div>
+      ${r.dcs.map(dc => `<div style="padding:7px 0;border-bottom:1px solid var(--grid)">
+        <span class="chip ${dc.tier >= 6 ? "done" : dc.tier >= 4 ? "close" : "grind"}">Tier ${dc.tier}</span>
+        <span style="color:var(--ink-2);font-size:12px"> · Set ${dc.set}</span>
+        ${dc.stats.length ? `<div style="color:var(--ink-3);font-size:11.5px;margin-top:3px">${dc.stats.map(escapeHtml).join(" · ")}</div>` : ""}
+        ${dc.abilities.map(ab => `<div style="color:var(--ink-2);font-size:12px;margin-top:3px">${escapeHtml(ab)}</div>`).join("")}
+      </div>`).join("")}
+    </div>`).join("")}`;
+}
 function datacronHtml() {
-  return `<div class="cardtitle">Datacron recommendations <span class="sub">static reference as of 9 Aug 2026 — sets rotate</span></div>
-    <div class="mnote">Datacrons aren't in the live pull (no API exposes a player's equipped datacron), so this is guidance, not tracking. Rule of thumb: T3 = alignment bonus (cheap, broad value), T6 = faction bonus (the real power spike, realistic minimum "worth it" tier), T9 = named-character bonus.</div>
+  const live = liveDatacronsHtml();
+  return `${live}
+    <div class="cardtitle"${live ? ' style="margin-top:14px"' : ""}>Datacron recommendations <span class="sub">static reference as of 9 Aug 2026 — sets rotate</span></div>
+    <div class="mnote">Datacrons ARE in the live pull now (swgoh.gg's player API added a top-level "datacrons" array — verified by a direct fetch, 2 Sep 2026; the "no API exposes this" note that used to be here is outdated). See "Your equipped datacrons" above for live tracking of what's actually built. The recommendations below stay static guidance on which GL to farm datacrons for next, since the API only reports what's equipped, not what's worth building. Rule of thumb: T3 = alignment bonus (cheap, broad value), T6 = faction bonus (the real power spike, realistic minimum "worth it" tier), T9 = named-character bonus.</div>
     ${DATACRON_RECS.map(d => `<div style="padding:7px 0;border-bottom:1px solid var(--grid)">
       <b style="color:var(--ink-1)">${escapeHtml(d.gl)}</b> <span class="chip ${d.confidence.startsWith("High") ? "done" : "stargate"}">${chipGlyph(d.confidence.startsWith("High") ? "done" : "stargate")} ${escapeHtml(d.confidence)}</span><br>
       <span style="color:var(--accent);font-weight:650">${escapeHtml(d.set)}</span><br>

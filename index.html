@@ -2684,12 +2684,15 @@ async function fetchPlayer(code, onStatus) {
     try {
       onStatus(rt.name + "…");
       const j = await fetchJson(rt.url(API(code)), FETCH_TIMEOUT);
-      /* Only "data" is required here. swgoh.gg's public player API stopped returning a top-level
-         "units" array as of ~22 Aug 2026 — verified directly against the live endpoint: galactic_power,
-         arena, guild and mods are all still present, per-character gear/relic detail is not. Failing
-         the whole account on that alone would throw away fresh GP/arena/mods data every single pull.
-         parsePlayer() below falls back to the previous pull's character-level detail when "units" is
-         missing, and flags the result so the UI can say so instead of silently going stale. */
+      /* Only "data" is required here. CORRECTION (3 Sep 2026): an earlier note claimed swgoh.gg's
+         public player API had stopped returning the top-level "units" array as of ~22 Aug 2026. That
+         was a false alarm — the "verification" was done through a fetch tool that truncates large
+         responses, and a ~360-unit array is exactly big enough to get cut off before the "units" key.
+         Re-checked from a real browser on the app's own origin: "units" is present and complete
+         (294 characters + 65 ships, full rarity/gear_level/relic_tier/zeta/omicron detail, plus a new
+         era_level field). The graceful fallback below stays as defensive code — if "units" ever IS
+         genuinely absent, parsePlayer() keeps the previous pull's character detail and labels the
+         result honestly rather than wiping every readiness check to empty. */
       if (!j || !j.data) throw new Error("unexpected response shape");
       return j;
     } catch (e) { lastErr = e; }
@@ -2794,7 +2797,10 @@ function parsePlayer(j, prev) {
        scope_target_name names the stat, stat_value is the raw fraction e.g. 0.0728 = 7.28%) and an ability
        row (ability_description holds the actual tooltip text — the alignment/faction bonus). Split them
        here into flat display strings so the UI doesn't need to know the raw shape. */
-    datacrons: (d.datacrons || []).map(dc => {
+    /* NOTE: "datacrons" is a TOP-LEVEL key on the response (a sibling of "data", exactly like "mods"
+       and "units") — not nested inside j.data. Reading d.datacrons here silently yielded [] on every
+       real pull until this was caught against the live API on 3 Sep 2026. */
+    datacrons: (j.datacrons || []).map(dc => {
       const tiers = dc.tiers || [];
       return {
         tier: dc.tier || 0,

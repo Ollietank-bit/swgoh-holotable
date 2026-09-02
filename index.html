@@ -1679,14 +1679,24 @@ function renderAssaultBattles() {
    is graded per-fact, and disputed/unconfirmed items are flagged in the UI copy rather than smoothed
    over (see the EL-cap dispute in the leveling section and the Journey EL-gate footnote).
 
-   Deliberately REFERENCE-FIRST, not live-tracked: the Era system's actual readiness axis is Era Level,
-   and parsePlayer() captures only stars/gear/relic (reqs[base_id] = {s,g,r,name,t,z,o}) — nothing
-   Era-Level-shaped exists in the swgoh.gg pull, so no "EL 87" style live progress is shown anywhere
-   here (it would be fabricated). The ONLY live cross-checks are star levels of the 7 new Era units,
-   matched by NAME via findUnitByName() — all 7 are brand-new and have no verified base_id anywhere in
-   this file, so every reference uses the [null, "Name"] convention and a missing match renders as
-   "no data" (the units may not even appear in swgoh.gg's general character list depending on how the
-   API classifies Era units — absence is treated as no-data, never as proof of non-ownership). */
+   LIVE-TRACKED on the Era Level axis since 3 Sep 2026. The original build was reference-only on the
+   assumption that nothing Era-Level-shaped existed in the swgoh.gg pull; that assumption was checked
+   against the live player API and is wrong. The API carries a per-unit `era_level` (non-zero only on
+   Era units — parsePlayer() now stores it as reqs[base_id].el) and a top-level
+   `loaned_unit_era_level` (the collective EL of the ~25 Loaned Units — parsePlayer() stores it as
+   pull.loanedEraLevel). So real EL progress IS shown here; what stays flagged as unresolved is only
+   what genuinely is: the EL cap (95 vs 135), the unreconciled Journey EL-gate figures, and whether
+   the Journey's EL gate is applied per-unit or account-wide (see eraTierReadiness).
+
+   Unit identity: 3 of the 7 Era units are unlocked on the tracked accounts and their base_ids are
+   therefore VERIFIED against swgoh.gg's own data (LUKESTARKILLER, MARAJADESKYWALKER, YODADSV) — those
+   are used as real ids. The other 4 have never appeared in a pull, so they keep the [null, "Name"]
+   convention and are matched by name via findUnitByName(). Absence from the pull now most likely means
+   "not unlocked yet" (the API demonstrably DOES list unlocked Era units), which the UI says.
+
+   Era units also carry level/gear_level/relic_tier in the API, but those are derived legacy-equivalents
+   of the Era Level (EL 55 → level 47 / gear 7 / relic_tier 1) and would mislead — G/R is never shown
+   for an Era unit here, only stars + EL. */
 const ERA_SECTIONS = [
   { key: "overview",   label: "Era overview",       html: () => eraOverviewHtml() },
   { key: "units",      label: "New units",          html: () => eraUnitsHtml() },
@@ -1696,26 +1706,26 @@ const ERA_SECTIONS = [
   { key: "leveling",   label: "Era Level & currency", html: () => eraLevelingHtml() }
 ];
 const ERA_UNITS = [
-  { name: "Mara Jade Skywalker", side: "Light Side", tags: "Jedi · New Republic · Attacker", confidence: "HIGH",
+  { id: "MARAJADESKYWALKER", name: "Mara Jade Skywalker", side: "Light Side", tags: "Jedi · New Republic · Attacker", confidence: "HIGH",
     role: "Riposte/assist attacker; applies Defense Down and Stagger; stacks Offense while undamaged; kit references a Luke Skywalker leader.",
     synergy: "Pairs with Luke-led squads.",
     src: "Kit/faction from the official EA kit-reveal." },
-  { name: "Yoda (Dark Side Vision)", side: "Dark Side", tags: "Sith · Healer/Support", confidence: "MODERATE-HIGH",
+  { id: "YODADSV", name: "Yoda (Dark Side Vision)", side: "Dark Side", tags: "Sith · Healer/Support", confidence: "MODERATE-HIGH",
     role: "Corrupted-Force team healer; transfers debuffs; grants the “Dark Master's Training” buff.",
     synergy: "Sith trio with The Ronin + Darth Jar Jar — bonus effects when the squad is all-Sith; +100% Health Steal under a Darth Jar Jar lead." },
-  { name: "Starkiller (Luke Concept)", side: "Light Side", tags: "Rebel · Unaligned Force User", confidence: "MODERATE-HIGH",
+  { id: "LUKESTARKILLER", name: "Starkiller (Luke Concept)", side: "Light Side", tags: "Rebel · Unaligned Force User", confidence: "MODERATE-HIGH",
     role: "Buff dispel, buff-immunity application, AoE ability block; kit references Commander Luke Skywalker leading.",
     synergy: "Rebel-wide stat boosts under a Commander Luke Skywalker lead." },
-  { name: "Stormtrooper (Concept)", side: "Dark Side", tags: "Empire · Imperial Trooper", confidence: "MODERATE-HIGH",
+  { id: null, name: "Stormtrooper (Concept)", side: "Dark Side", tags: "Empire · Imperial Trooper", confidence: "MODERATE-HIGH",
     role: "Tank — taunts on battle start, reflects damage, stuns, grants protection to Imperial Trooper allies.",
     synergy: "Plugs into the existing Imperial Trooper faction (Veers, Piett, Range Trooper, Dark Trooper)." },
-  { name: "Jaxxon", side: "Light Side", tags: "Mercenary · Scoundrel · Smuggler · Attacker", confidence: "MODERATE-HIGH",
+  { id: null, name: "Jaxxon", side: "Light Side", tags: "Mercenary · Scoundrel · Smuggler · Attacker", confidence: "MODERATE-HIGH",
     role: "Double-hit physical attacker; Vulnerable/Stun/Off-Balance control; Stealth survivability.",
     synergy: "Synergizes with Lando Calrissian and Scoundrel teams." },
-  { name: "The Ronin", side: "Dark Side", tags: "Sith · Attacker/Assassin", confidence: "MODERATE-HIGH",
+  { id: null, name: "The Ronin", side: "Dark Side", tags: "Sith · Attacker/Assassin", confidence: "MODERATE-HIGH",
     role: "Critical-damage scaling; armor shred/bleed against taunting or defending enemies; summons the droid R5-D56.",
     synergy: "Sith trio — accelerates under Gungan Sith leaders (i.e. Darth Jar Jar). Only required from Journey Tier 3 onward." },
-  { name: "Darth Jar Jar", side: "Dark Side", tags: "Sith · Gungan · Leader/Support", confidence: "HIGH",
+  { id: null, name: "Darth Jar Jar", side: "Dark Side", tags: "Sith · Gungan · Leader/Support", confidence: "HIGH",
     role: "Manipulates enemies (“Manipulated” debuff); Sith-team buffs (Defense Up/Foresight); crowd control (Shock/Blind/Fear/Stun). As leader: reflects debuffs, grants immunity to Investigation and cooldown manipulation, Dark Infusion/Marked control. Unique grants Darth Sidious Emergency Powers.",
     synergy: "Sith trio anchor — this Era's Journey Guide unit (see the DJJ Journey Guide section).",
     src: "Kit corroborated by two independent fetches of the official kit post." }
@@ -1723,13 +1733,21 @@ const ERA_UNITS = [
 /* "Terrible Tings" Solo Journey — 4 tiers, 330 total DJJ shards (80 to activate). EL gates are the
    swgoh.gg-news figures; a separate EA-forums fetch gave slightly different numbers that were never
    reconciled — hence MODERATE on the exact EL values but HIGH on the tier shape itself (4 tiers,
-   escalating 4★→7★, The Ronin joining at Tier 3). */
-const ERA_JOURNEY_CORE5 = ["Mara Jade Skywalker", "Yoda (Dark Side Vision)", "Starkiller (Luke Concept)", "Stormtrooper (Concept)", "Jaxxon"];
+   escalating 4★→7★, The Ronin joining at Tier 3).
+   Members use the house [base_id, "Name"] convention: a real id where it's verified against the live
+   pull, null (name-matched) for the units that have never appeared in one. */
+const ERA_JOURNEY_CORE5 = [
+  ["MARAJADESKYWALKER", "Mara Jade Skywalker"],
+  ["YODADSV",           "Yoda (Dark Side Vision)"],
+  ["LUKESTARKILLER",    "Starkiller (Luke Concept)"],
+  [null,                "Stormtrooper (Concept)"],
+  [null,                "Jaxxon"]
+];
 const ERA_JOURNEY_TIERS = [
   { tier: 1, stars: 4, el: 90,  shards: 80,  units: ERA_JOURNEY_CORE5 },
   { tier: 2, stars: 5, el: 95,  shards: 65,  units: ERA_JOURNEY_CORE5 },
-  { tier: 3, stars: 6, el: 110, shards: 85,  units: [...ERA_JOURNEY_CORE5, "The Ronin"] },
-  { tier: 4, stars: 7, el: 125, shards: 100, units: [...ERA_JOURNEY_CORE5, "The Ronin"] }
+  { tier: 3, stars: 6, el: 110, shards: 85,  units: [...ERA_JOURNEY_CORE5, [null, "The Ronin"]] },
+  { tier: 4, stars: 7, el: 125, shards: 100, units: [...ERA_JOURNEY_CORE5, [null, "The Ronin"]] }
 ];
 /* Crowd-submitted Krayt Dragon squads from Holotables.xyz's Coliseum leaderboard — community data, not
    official guidance, so every one is capped at MODERATE. Names only (no ownership table): Coliseum
@@ -1749,29 +1767,45 @@ const ERA_COLISEUM_SQUADS = [
     note: "Submitter's note: “Start with Mara basic. Use JKL's first special, save Vulnerable for burrow.”" }
 ];
 function eraChip(c) { return `<span class="chip ${ASSAULT_CONF_CHIP[c] || "watch"}">${escapeHtml(c)}</span>`; }
-function eraReqsFor(key) { return ((state.pulls[key] || BASELINE[key] || {}).reqs) || {}; }
-/* Star-level cell for the name-matched cross-checks. `need` (a star gate) colors met cells green;
-   without a gate the raw star count is shown neutrally. Missing from the pull = "no data", never
-   "not owned" — see the classification caveat in the block comment up top. */
-function eraStarCell(reqs, name, need) {
-  const u = findUnitByName(reqs, name);
-  if (!u) return `<td style="color:var(--ink-3);font-style:italic">no data</td>`;
-  const s = u.s || 0;
+function eraAcctFor(key) { return state.pulls[key] || BASELINE[key] || {}; }
+function eraReqsFor(key) { return (eraAcctFor(key).reqs) || {}; }
+/* Era-unit lookup, [base_id, "Name"] convention: real id where verified, name-match otherwise — the
+   same pattern squadStatus() uses. */
+function eraFindUnit(reqs, id, name) { return (id && reqs[id]) || findUnitByName(reqs, name); }
+/* Star + Era Level cell for the per-account cross-checks. Era Level is the real progression axis for
+   these units, so it's shown alongside stars; gear/relic are deliberately NOT shown (the API's g/r on
+   an Era unit are derived legacy-equivalents of the EL, not independent progress). Absent from the
+   pull now reads as "likely not unlocked yet" — the API does list Era units once unlocked. */
+function eraUnitCell(reqs, id, name, need) {
+  const u = eraFindUnit(reqs, id, name);
+  if (!u) return `<td style="color:var(--ink-3);font-style:italic">not in pull — likely not unlocked yet</td>`;
+  const s = u.s || 0, el = u.el || 0;
   const ok = need && s >= need;
-  return `<td style="${ok ? "color:var(--good);font-weight:600" : ""}">${s}★</td>`;
+  return `<td style="${ok ? "color:var(--good);font-weight:600" : ""}">${s}★${el ? ` · <span style="color:var(--accent)">EL ${el}</span>` : ""}</td>`;
 }
+/* Per-tier Journey readiness: BOTH gates, star and Era Level, checked live per required unit.
+   ASSUMPTION, stated in the UI copy next to this: the EL gate is applied PER REQUIRED UNIT, because
+   era_level is a per-unit field in the API. Whether the game checks it per-unit or account-wide could
+   not be confirmed from any source, so the honest reading is surfaced rather than hidden — the "best
+   EL" figure is printed too so an account-wide interpretation can be eyeballed from the same cell. */
 function eraTierReadiness(tier, reqs) {
-  let met = 0, nodata = 0;
-  tier.units.forEach(n => {
-    const u = findUnitByName(reqs, n);
-    if (!u) nodata++;
-    else if ((u.s || 0) >= tier.stars) met++;
+  let starMet = 0, elMet = 0, missing = 0, bestEl = 0;
+  tier.units.forEach(([id, name]) => {
+    const u = eraFindUnit(reqs, id, name);
+    if (!u) { missing++; return; }
+    if ((u.s || 0) >= tier.stars) starMet++;
+    const el = u.el || 0;
+    if (el > bestEl) bestEl = el;
+    if (el >= tier.el) elMet++;
   });
-  return `${met}/${tier.units.length} at ${tier.stars}★${nodata ? ` <span style="color:var(--ink-3);font-style:italic">(${nodata} no data)</span>` : ""}`;
+  const n = tier.units.length;
+  const tone = v => v === n ? "color:var(--good);font-weight:600" : "";
+  return `<span style="${tone(starMet)}">stars ${starMet}/${n}</span> · <span style="${tone(elMet)}">EL ${elMet}/${n}</span>`
+    + `<div style="color:var(--ink-3);font-size:11px">best EL ${bestEl || "—"}, gate ${tier.el}${missing ? ` · ${missing} not unlocked` : ""}</div>`;
 }
 function eraOverviewHtml() {
   return `<div class="cardtitle">Era of Myths &amp; Legends <span class="sub">— 28 Jul → 20 Oct 2026</span></div>
-    <div class="mnote">The current Era (Era 09). Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so this category is a sourced reference, not a live tracker (Era Level isn't exposed in the swgoh.gg pull, and nothing here pretends it is).</div>
+    <div class="mnote">The current Era (Era 09). Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so most of this category is sourced reference. The Era Level parts, though, ARE live: swgoh.gg's pull carries a per-unit Era Level for the Era units and a collective Era Level for the ~25 Loaned Units, so the <b>New units</b>, <b>DJJ Journey Guide</b> and <b>Era Coliseum</b> sections show real progress rather than reference figures. What's still unresolved is flagged as such in place (the EL cap, the Journey EL-gate numbers, and how the Journey applies its EL gate).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Era units stay inside the Era ${eraChip("HIGH")}</div>
     <div class="intelnote">Era units — the 7 new characters AND the ~25 temporary <b>“Loaned Units”</b> (existing permanent-roster characters temporarily boosted this Era) — can ONLY be used in Era content (Coliseum, Era Challenges, Episode/Journey content). They are NOT usable in GAC, TW, Arena or other Legacy modes for the duration of the Era. At Era end, all Era-unit investment converts automatically to permanent Legacy stats via a fixed Era Level lookup table — see the “Era Level &amp; currency” section for the confirmed conversion points and the one genuinely unresolved number (the EL cap). Two independent fetches of the same official EA Forums 10-Year Anniversary/Title Update post agreed on all of this.</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">After the Era ends</div>
@@ -1795,12 +1829,13 @@ function eraUnitsHtml() {
   return `<div class="cardtitle">The 7 Era units <span class="sub">— Myths &amp; Legends roster</span></div>
     <div class="intelnote">No confirmed single 7-unit (or even 6-unit) combined squad exists across these units — they split into a <b>Sith trio</b> (Darth Jar Jar, Yoda (Dark Side Vision), The Ronin), <b>two independent Luke-Skywalker-adjacent pieces</b> (Mara Jade Skywalker, Starkiller (Luke Concept)), and <b>two faction-specific plug-ins</b> (Stormtrooper (Concept) → Imperial Troopers; Jaxxon → Scoundrels). Anything presenting one combined “Era squad” would be invented.</div>
     ${cards}
-    <div class="cardtitle" style="margin-top:16px;font-size:13px">Pulled-roster cross-check <span class="sub">— star count only</span></div>
-    <div class="mnote">Matched by name against each account's pulled roster. Era units may or may not appear in swgoh.gg's general character list depending on how the API classifies them — <b>“no data” means exactly that</b> (nothing matched in the pull), not “not unlocked”. Star count is the only meaningful axis here: Era power draws from Era Level, which isn't in the pull at all.</div>
+    <div class="cardtitle" style="margin-top:16px;font-size:13px">Pulled-roster cross-check <span class="sub">— stars + Era Level, live</span></div>
+    <div class="mnote">Live from each account's pull: swgoh.gg returns a per-unit <b>Era Level</b> for Era units, so both axes are real here. Unlocked Era units DO appear in the pull, so a unit that isn't there is <b>most likely just not unlocked yet</b> ${eraChip("MODERATE-HIGH")}. <b>Gear/relic are deliberately not shown:</b> the API does return them for Era units, but they're derived legacy-equivalents of the Era Level (EL 55 reports as G7/R1) — reading them as gear progress would mislead.</div>
     <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
       <tr><th style="text-align:left">Unit</th><th>Ollietank</th><th>Tiny</th></tr>
-      ${ERA_UNITS.map(u => `<tr><td style="text-align:left">${escapeHtml(u.name)}</td>${eraStarCell(reqsOllie, u.name)}${eraStarCell(reqsTiny, u.name)}</tr>`).join("")}
+      ${ERA_UNITS.map(u => `<tr><td style="text-align:left">${escapeHtml(u.name)}</td>${eraUnitCell(reqsOllie, u.id, u.name)}${eraUnitCell(reqsTiny, u.id, u.name)}</tr>`).join("")}
     </table></div>
+    <div class="srcline">Base_ids for Mara Jade Skywalker, Yoda (Dark Side Vision) and Starkiller (Luke Concept) verified 3 Sep 2026 against the live swgoh.gg player API; the remaining four have never appeared in a pull, so they're matched by name until they do.</div>
     <div class="srcline">Sources: official EA kit-reveals (Mara Jade Skywalker, Darth Jar Jar at HIGH; remainder at MODERATE-HIGH from single official-channel kit summaries).</div>`;
 }
 function eraJourneyHtml() {
@@ -1817,9 +1852,10 @@ function eraJourneyHtml() {
         <td style="font-size:11.5px">${eraTierReadiness(t, reqsTiny)}</td>
       </tr>`).join("")}
     </table></div>
-    <div class="mnote" style="margin-top:8px">The per-account columns check only the <b>star gate</b> (name-matched against the pulled roster — “no data” units may simply not appear in swgoh.gg's general list for Era units). The <b>EL gate cannot be checked live</b>: Era Level isn't in the pull, so track it in-game.</div>
+    <div class="mnote" style="margin-top:8px">The per-account columns check <b>both gates live</b> — star level and Era Level — for every unit that tier requires, from the pulled roster (swgoh.gg returns a per-unit Era Level for Era units). Each cell also prints the highest EL on the required set against the tier's gate, and how many of the required units aren't unlocked yet.</div>
+    <div class="intelnote"><b>Assumption — how the EL gate is applied:</b> these columns check the tier's EL gate <b>per required unit</b>, because <code>era_level</code> is a per-unit field in the API. Whether the game itself checks it per-unit or account-wide could not be confirmed from any source found ${eraChip("LOW-MODERATE")} — so the “best EL” figure is shown alongside, and an account-wide reading can be eyeballed from it. Treat the per-unit count as the conservative view.</div>
     <div class="intelnote"><b>EL gates are MODERATE confidence:</b> the figures shown (EL 90/95/110/125) are the swgoh.gg-news version. A separate EA-forums fetch gave slightly different EL numbers that were never reconciled against a primary source. The tier <b>shape</b> itself is HIGH confidence — 4 tiers, escalating 4★→7★, The Ronin joining at Tier 3.</div>
-    <div class="srcline">Sources: swgoh.gg news (tier/EL/shard table) · official EA Forums post summary (Week-9 unlock) · unreconciled EA-forums fetch (competing EL figures, flagged above).</div>`;
+    <div class="srcline">Sources: swgoh.gg news (tier/EL/shard table) · official EA Forums post summary (Week-9 unlock) · unreconciled EA-forums fetch (competing EL figures, flagged above) · live swgoh.gg player API (per-unit era_level, verified 3 Sep 2026).</div>`;
 }
 function eraColiseumHtml() {
   const squads = ERA_COLISEUM_SQUADS.map(sq => `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--grid)">
@@ -1831,6 +1867,14 @@ function eraColiseumHtml() {
       <div class="cqteams" style="margin-top:4px">${sq.members.map(m => `<div class="cqteam">${escapeHtml(m)}</div>`).join("")}</div>
       ${sq.note ? `<div class="intelnote">${escapeHtml(sq.note)}</div>` : ""}
     </div>`).join("");
+  /* Collective Era Level of the ~25 Loaned Units, straight off the pull (top-level
+     loaned_unit_era_level). Modest one-liner, not a readiness widget — there's no sourced target to
+     measure it against. */
+  const loanedEl = key => {
+    const v = eraAcctFor(key).loanedEraLevel || 0;
+    return v ? `<b>EL ${v}</b>` : `<span style="color:var(--ink-3);font-style:italic">no data</span>`;
+  };
+  const loanedLine = `Ollietank ${loanedEl("ollie")} · Tiny ${loanedEl("tiny")}`;
   return `<div class="cardtitle">Era Coliseum <span class="sub">— daily boss battles, unlocks at Player Level 10</span></div>
     <div class="mnote">Optional (very rewarding) lane alongside the Episode Track and Era Store — not gated, and not required to progress the core Era track. Current bosses: <b>Krayt Dragon, Zeffo Tomb Guardians, Jotaz, Dryax</b> ${eraChip("HIGH")} (multiple sources agree).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Scoring: once-daily high-water-mark ${eraChip("HIGH")}</div>
@@ -1839,8 +1883,9 @@ function eraColiseumHtml() {
     <div class="mnote">(1) One-time era-long <b>milestone rewards</b>, and (2) a <b>DAILY leaderboard reward</b> — daily, not weekly (this corrects an earlier assumption). The Coliseum leaderboard is one of the primary sources of <b>Relic 10 materials</b> ${eraChip("HIGH")} (official). Player-reported daily Era Currency payouts scale steeply by rank — e.g. top 10 ≈ 1,000/day vs rank 1001+ ≈ 10/day — but that's a single player forum post ${eraChip("LOW-MODERATE")}, treat as anecdotal.</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Community-submitted Krayt Dragon squads <span class="sub">— Holotables.xyz crowd leaderboard, not official</span></div>
     <div class="mnote">Coliseum squads mix the new Era units with the ~25 temporary <b>Loaned Units</b> (boosted existing characters this Era — e.g. Moff Gideon, Darth Talon, Dark Trooper, Jedi Knight Luke Skywalker, Jedi Knight Cal Kestis, Mace Windu, Qi'ra) — it is NOT restricted to the 6-7 new units. Mods are reportedly “irrelevant” to Coliseum performance since power draws from Era Level, not gear/relic/mods ${eraChip("MODERATE")} — community-reported, not officially confirmed — which is also why no per-account ownership table is shown here: this file's normal gear-based readiness math would be the wrong lens.</div>
+    <div class="mnote"><b>Your Loaned Units:</b> ${loanedLine} — the Loaned pool levels collectively, so it's one Era Level per account rather than a per-unit figure. Live from the pull.</div>
     ${squads}
-    <div class="srcline">Sources: official EA Forums post (boss list, daily rotation quote, high-water-mark scoring, Relic 10 materials) · Holotables.xyz crowd-submitted Coliseum leaderboard (squads, Krayt tier points — community data, MODERATE) · single player forum post (rank payouts, LOW-MODERATE).</div>`;
+    <div class="srcline">Sources: official EA Forums post (boss list, daily rotation quote, high-water-mark scoring, Relic 10 materials) · Holotables.xyz crowd-submitted Coliseum leaderboard (squads, Krayt tier points — community data, MODERATE) · single player forum post (rank payouts, LOW-MODERATE) · live swgoh.gg player API (Loaned Units Era Level, verified 3 Sep 2026).</div>`;
 }
 function eraChallengesHtml() {
   return `<div class="cardtitle">Era Challenges <span class="sub">— the Galactic Challenges replacement</span></div>
@@ -1854,6 +1899,7 @@ function eraChallengesHtml() {
 }
 function eraLevelingHtml() {
   return `<div class="cardtitle">Era Level progression &amp; currency</div>
+    <div class="mnote"><b>Era Level is live-pulled</b> ${eraChip("HIGH")} — swgoh.gg's player API returns a per-unit Era Level for each unlocked Era unit and a collective one for the Loaned Units pool, both verified against the live API on 3 Sep 2026. Your current figures are in the <b>New units</b> table (per unit) and the <b>Era Coliseum</b> section (Loaned Units); read them against the conversion table below to see what each unit banks at Era end. Manual entry isn't needed.</div>
     <div class="mnote"><b>Era Materials</b> follow an Aurebesh-Mark naming convention mirroring the normal Gear system — e.g. “Mk I Grek Ability Module” through “Mk VIII [color] Ability Module/Performance Core” ${eraChip("MODERATE")}; a full per-tier quantity table was not found.</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Era Currency: sources &amp; sink</div>
     <div class="mnote"><b>Earned from</b>: Coliseum (daily, rank-based), Era Marquee Events, Era Journey Events, Episode Track milestones, or purchased ${eraChip("HIGH")} (official). <b>Spent in</b>: the “Era Shipment” store on Era Materials ${eraChip("MODERATE")} — itemized store contents not found.</div>
@@ -1870,7 +1916,7 @@ function eraLevelingHtml() {
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Disputed: the Era Level cap itself</div>
     <div class="intelnote"><b>Unresolved — two sources give different caps.</b> At the system's original launch (~Nov 2025) the cap was <b>EL 95</b>. A later community update (27 Apr 2026, pre-dating this Era) reportedly raised it to <b>EL 135</b> (converting to Relic 8). The live Journey Guide's own Tier 4 gate (EL 125) means the cap is <b>at least EL 125 for the current Era</b> — but the exact current maximum (135, or higher still) was not independently confirmed against a primary source for Myths &amp; Legends specifically. Read as: “cap confirmed at least EL 125 (Journey Tier 4); a since-superseded community update once cited EL 135/Relic 8 as the new ceiling, not independently re-confirmed for this Era.”</div>
     <div class="mnote"><b>No “Era Energy” found:</b> no evidence of a distinct Era Energy resource exists in any source checked — Coliseum appears to be attempt-based (once-daily high-water-mark), not energy-based. Stated plainly rather than assuming a mechanic into existence.</div>
-    <div class="srcline">Sources: official EA Forums 10-Year Anniversary/Title Update post (conversion table, currency sources — two independent fetches agreed) · community update 27 Apr 2026 (EL 135 claim, unconfirmed for this Era) · community material-naming reports (MODERATE).</div>`;
+    <div class="srcline">Sources: official EA Forums 10-Year Anniversary/Title Update post (conversion table, currency sources — two independent fetches agreed) · community update 27 Apr 2026 (EL 135 claim, unconfirmed for this Era) · community material-naming reports (MODERATE) · live swgoh.gg player API (per-unit era_level + loaned_unit_era_level, verified 3 Sep 2026).</div>`;
 }
 function eraView(v) { state.modesnav.eraView = v; store.write(state); renderEras(); }
 function renderEras() {
@@ -2239,6 +2285,7 @@ const BASELINE = {
     gp: 8055025, gpChar: 4775963, gpShip: 3279062, glCount: 3,
     glNote: "Jabba R9 · SLKR R9 · Rey R8", fleetRank: 66, fleetNote: "Executor fleet",
     gac: "Carb 5", gacNote: "983 SR", extraNote: "127 zetas · 8 omis",
+    loanedEraLevel: 66,
     reqs: {
       /* Per-unit values refreshed 3 Sep 2026 from the live swgoh.gg units array (the API never actually
          dropped it — see the note in fetchPlayer()). The 7 Aug snapshot this replaced was badly stale:
@@ -2249,7 +2296,12 @@ const BASELINE = {
       BOUSHH:{s:7,g:13,r:5}, ADMINISTRATORLANDO:{s:7,g:13,r:3}, WICKET:{s:7,g:13,r:3},
       CHIEFCHIRPA:{s:7,g:12,r:0}, LOBOT:{s:7,g:8,r:0}, ADMIRALACKBAR:{s:7,g:12,r:0},
       /* GLs already owned (from glNote) — marks them "owned" on the GL Roadmap until a live pull fills in real requirement-unit data */
-      JABBATHEHUTT:{s:7,g:13,r:9}, SUPREMELEADERKYLOREN:{s:7,g:13,r:9}, GLREY:{s:7,g:13,r:8}
+      JABBATHEHUTT:{s:7,g:13,r:9}, SUPREMELEADERKYLOREN:{s:7,g:13,r:9}, GLREY:{s:7,g:13,r:8},
+      /* Era units (Era of Myths & Legends), live 3 Sep 2026. `el` = Era Level, the real progression
+         axis for these — the g/r values are the API's derived legacy-equivalents and the Eras tab
+         deliberately never shows them (see eraUnitCell). Only the 3 unlocked Era units exist here;
+         the other 4 are absent from the pull because they aren't unlocked. */
+      LUKESTARKILLER:{s:3,g:7,r:0,el:55}, MARAJADESKYWALKER:{s:3,g:6,r:0,el:47}, YODADSV:{s:3,g:6,r:0,el:47}
     }
   },
   tiny: {
@@ -2257,6 +2309,7 @@ const BASELINE = {
     gp: 7763554, gpChar: 4575986, gpShip: 3187568, glCount: 2,
     glNote: "Rey R8 · SLKR R8 (+GAS R8)", fleetRank: 37, fleetNote: "Negotiator fleet",
     gac: "Carb 5", gacNote: "1,106 SR", extraNote: "116 zetas · 6 omis",
+    loanedEraLevel: 67,
     reqs: {
       /* Per-unit values refreshed 3 Sep 2026 from the live swgoh.gg units array. The 7 Aug estimates
          this replaced undersold the account badly — 11 of 15 Leia requirements are actually done. */
@@ -2266,7 +2319,9 @@ const BASELINE = {
       BOUSHH:{s:7,g:13,r:5}, ADMINISTRATORLANDO:{s:7,g:13,r:5}, WICKET:{s:7,g:13,r:3},
       CHIEFCHIRPA:{s:7,g:13,r:3}, LOBOT:{s:7,g:12,r:0}, ADMIRALACKBAR:{s:7,g:13,r:3},
       /* GLs already owned (from glNote) — marks them "owned" on the GL Roadmap until a live pull fills in real requirement-unit data */
-      GLREY:{s:7,g:13,r:8}, SUPREMELEADERKYLOREN:{s:7,g:13,r:8}, GENERALSKYWALKER:{s:7,g:13,r:8}
+      GLREY:{s:7,g:13,r:8}, SUPREMELEADERKYLOREN:{s:7,g:13,r:8}, GENERALSKYWALKER:{s:7,g:13,r:8},
+      /* Era units (Era of Myths & Legends), live 3 Sep 2026 — see the note on the ollie block above. */
+      LUKESTARKILLER:{s:3,g:7,r:0,el:55}, YODADSV:{s:3,g:6,r:0,el:48}, MARAJADESKYWALKER:{s:3,g:5,r:0,el:34}
     }
   }
 };
@@ -2739,7 +2794,15 @@ function parsePlayer(j, prev) {
       units[u.base_id] = {
         s: u.rarity || 0, g: u.gear_level || 1, r: relic, name: u.name || u.base_id, t: isChar ? "char" : "ship",
         z: abilityData.filter(ad => ad.has_zeta_learned).map(ad => ad.name || ad.id),
-        o: abilityData.filter(ad => ad.has_omicron_learned).map(ad => ad.name || ad.id)
+        o: abilityData.filter(ad => ad.has_omicron_learned).map(ad => ad.name || ad.id),
+        /* Era Level (added Sep 2026 — verified against the live player API on 3 Sep 2026, which does
+           carry a per-unit "era_level"; the older "Era Level isn't in the pull" assumption in the Eras
+           block was stale). Non-zero ONLY on Era units — 0/absent on every normal character and ship,
+           so `el` doubles as an "is this an Era unit" flag. NOTE: for Era units the level/gear_level/
+           relic_tier fields are derived legacy-equivalents of the Era Level (EL 55 reports as level 47 /
+           gear 7 / relic_tier 1) and are misleading as progression, so the Eras tab shows stars + EL for
+           them and never G/R. */
+        el: u.era_level || 0
       };
       if (isChar) {
         zetas += (u.zeta_abilities || []).length;
@@ -2787,6 +2850,11 @@ function parsePlayer(j, prev) {
     charDataLive: hasUnits,
     charDataAt,
     gp: d.galactic_power || 0, gpChar: d.character_galactic_power || 0, gpShip: d.ship_galactic_power || 0,
+    /* Collective Era Level of the ~25 temporary "Loaned Units" used in Era content — top-level
+       "loaned_unit_era_level" on the player API, verified live 3 Sep 2026. Loaned units level as a
+       single pool (see the Era Coliseum section), hence one number rather than a per-unit figure.
+       Account-level like gp/arena, so it stays live even on a units-less partial pull. */
+    loanedEraLevel: d.loaned_unit_era_level || 0,
     glCount: hasUnits ? glCount : ((prev && prev.glCount) || 0),
     glNote: hasUnits ? (glOwned.slice(0, 3).join(" · ") || "—") : ((prev && prev.glNote) || "—"),
     squadRank: (d.arena && d.arena.rank) || d.arena_rank || "—",

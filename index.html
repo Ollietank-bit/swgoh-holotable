@@ -3707,7 +3707,14 @@ function optSlotHtml(sl, e, baseId, pull) {
 }
 function optResultCardHtml(r, pull, content, squadSize) {
   const archLabel = (OPT_ARCHETYPES[r.archKey] || OPT_ARCHETYPES.attacker).label;
+  /* Same optDel(id) the top setup card's squad chip ✕ already calls — a second entry point onto the one
+     removal path, so you don't have to scroll back up to drop someone mid-review. .rowtools is the app's
+     existing small-inline-icon-button convention (Conquest day-plan rows); reusing it for free gets this
+     button the app's standard 40px touch target on mobile with no new CSS. */
   const head = `<div class="cardtitle">${escapeHtml(r.name)}
+    <span class="rowtools" style="display:inline-flex;vertical-align:middle"><button type="button"
+      title="Remove ${escapeHtml(r.name)} from squad" aria-label="Remove ${escapeHtml(r.name)} from squad"
+      onclick="optDel('${r.baseId}')">✕</button></span>
     <span class="sub">— ${content.label} · ${archLabel} (${escapeHtml(r.archSrc)})</span></div>`;
   if (!r.res) return head + `<div class="emptystate">No candidate mods found for this character.</div>`;
   const setChips = Object.entries(r.res.counts).sort((a, b) => b[1] - a[1]).map(([set, n]) => {
@@ -3754,6 +3761,22 @@ function optSetupCardHtml(pull) {
     <div class="optrow"><span class="optlabel">Role</span>${archChips}</div>
     ${squad.length ? "" : `<div class="mnote">Add a character above — content and role settings apply to everyone you add.</div>`}`;
 }
+/* Second "add" entry point, rendered after the last result card so a squad of 3-4 doesn't force a scroll
+   back to the setup card just to add one more. Same .modsearchrow/.combo markup as the setup card's own
+   input (styling comes free), a distinct id (optCharInputBottom) so attachCharCombo can manage both
+   independently, and the same optAdd() add path — see optAdd(refocus, inputId) below. Only rendered by
+   renderModOpt() when 1-4 characters are already in the squad: room to add another (matches optAdd's own
+   5-character cap) and at least one result card above to append after. */
+function optAddMoreCardHtml(squadLen) {
+  return `<div class="cardtitle">Add another character <span class="sub">— ${squadLen} of 5 squad slots used</span></div>
+    <div class="modsearchrow">
+      <div class="combo">
+        <input type="text" id="optCharInputBottom" placeholder="Add a character from your roster… (up to 5 for a squad)"
+               autocomplete="off" spellcheck="false" aria-label="Add a character from your roster">
+      </div>
+      <button class="pullbtn" style="padding:9px 16px" onclick="optAdd(false,'optCharInputBottom')">+ Add</button>
+    </div>`;
+}
 function renderModOpt() {
   const grid = document.getElementById("modoptGrid");
   if (!grid) return;
@@ -3773,24 +3796,40 @@ function renderModOpt() {
   }
   const content = OPT_CONTENT.find(c => c.key === state.modopt.content) || OPT_CONTENT[0];
   const results = optComputeAll(pull);
+  const squad = state.modopt.squad[current] || [];
   grid.innerHTML = wrapCards("modopt", [
     { id: "setup", w: 12, html: optSetupCardHtml(pull) },
-    ...results.map(r => ({ id: "opt-" + r.baseId.toLowerCase(), w: 12, html: optResultCardHtml(r, pull, content, results.length) }))
+    ...results.map(r => ({ id: "opt-" + r.baseId.toLowerCase(), w: 12, html: optResultCardHtml(r, pull, content, results.length) })),
+    /* Only once there's a result card to follow (squad non-empty — an empty squad already has nothing but
+       the setup card prompting you to add someone) and only while a slot remains (matches optAdd's own
+       5-character cap; once full there's nothing this control could do). */
+    ...(squad.length > 0 && squad.length < 5 ? [{ id: "opt-addmore", w: 12, html: optAddMoreCardHtml(squad.length) }] : [])
   ]);
   /* The setup card (and its input) is rebuilt on every render, so re-attach each time; attachCharCombo is a
-     no-op on an input that already has one. Source reads the *current* account's roster at keystroke time. */
-  attachCharCombo(document.getElementById("optCharInput"), {
+     no-op on an input that already has one. Source reads the *current* account's roster at keystroke time.
+     Both the top setup-card input and the bottom "add another" input (rendered after the last result card,
+     see optAddMoreCardHtml) share this same options factory and both resolve through optAdd(refocus,
+     inputId) — one add path, two entry points, so behaviour (including the 5-cap and roster matching in
+     optFindRoster) can't drift between them. */
+  const optComboOpts = inputId => ({
     source: () => (state.pulls[current] ? optRoster(state.pulls[current]) : []), idOf: c => c.id,
     label: "Roster suggestions",
     announce: item => `${item.name} added to squad`,
-    onSubmit: (item, via) => optAdd(via === "key")
+    onSubmit: (item, via) => optAdd(via === "key", inputId)
   });
+  attachCharCombo(document.getElementById("optCharInput"), optComboOpts("optCharInput"));
+  const bottomInput = document.getElementById("optCharInputBottom");
+  if (bottomInput) attachCharCombo(bottomInput, optComboOpts("optCharInputBottom"));
 }
 /* refocus: after a keyboard-driven add, put the caret back in the (rebuilt) input so a squad of five is five
    type-Enter cycles, not five clicks. Mouse picks leave focus where the click put it (and don't re-raise the
-   on-screen keyboard on mobile). */
-function optAdd(refocus) {
-  const input = document.getElementById("optCharInput");
+   on-screen keyboard on mobile).
+   inputId: which combobox triggered this — "optCharInput" (top setup card, the default) or
+   "optCharInputBottom" (the "add another character" card after the last result card, see
+   optAddMoreCardHtml). Both inputs funnel through this one function so the roster lookup (optFindRoster),
+   the 5-character cap, and the write+render are shared, not duplicated per entry point. */
+function optAdd(refocus, inputId) {
+  const input = document.getElementById(inputId || "optCharInput");
   const pull = state.pulls[current];
   if (!input || !pull) return;
   const hit = optFindRoster(pull, input.value);
@@ -3799,7 +3838,7 @@ function optAdd(refocus) {
   if (!squad.includes(hit.id) && squad.length < 5) squad.push(hit.id);
   input.value = "";
   store.write(state); render();
-  if (refocus) { const again = document.getElementById("optCharInput"); if (again) again.focus(); }
+  if (refocus) { const again = document.getElementById(inputId || "optCharInput"); if (again) again.focus(); }
 }
 function optDel(id) {
   const squad = state.modopt.squad[current] || [];

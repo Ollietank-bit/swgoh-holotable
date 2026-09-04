@@ -473,6 +473,37 @@
                     background: color-mix(in srgb, var(--accent) 12%, transparent); }
   .modchip.recent { color: var(--ink-1); }
   .modchiplbl { font-size: 11px; color: var(--ink-3); align-self: center; margin-right: 2px; }
+  /* Shared character combobox (attachCharCombo) — replaces the native <datalist> on Best Mods' search and
+     the Mod Optimiser's "add a character". Chrome paints datalist popups outside the page's CSS entirely,
+     so with 300+ options one typed letter produced an unstyled list the height of the viewport, sitting
+     over the sidebar (Ollie's screenshot, 4 Sep 2026). This panel is bounded — 8 rows, then it scrolls —
+     anchored to the full width of the input's .modsearchrow (input + button, see place()), and styled like
+     the .modchip quick-pick row beneath it. */
+  .combo { position: relative; flex: 1; min-width: 0; }
+  .combo > input { width: 100%; box-sizing: border-box; }
+  .combo-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; margin: 0; padding: 4px;
+    list-style: none; max-height: 368px; overflow-y: auto; overscroll-behavior: contain;   /* COMBO_PANEL_MAX in JS */
+    background: color-mix(in srgb, var(--surface-2) 94%, var(--page)); border: 1px solid var(--border-strong);
+    border-radius: 10px; box-shadow: var(--shadow-raised); }
+  /* left/width are also set inline by place() to match the full .modsearchrow (input + button), not just the
+     input — otherwise ~100px of the row (the button, and the .modchips/.optchip strip below it, which shares
+     the row's right edge) stayed exposed beside the panel. Review fix #1, 4 Sep 2026. */
+  .combo-list.up { top: auto; bottom: calc(100% + 6px); }   /* last resort: above the input when there's no room below (see place()) */
+  .combo-opt { display: flex; align-items: center; justify-content: flex-start; gap: 10px; min-height: 40px;
+    padding: 7px 10px; border-radius: 7px; font-size: 13.5px; color: var(--ink-2); cursor: pointer; }
+  .combo-opt mark { background: none; color: var(--ink-1); font-weight: 700; }
+  .combo-opt:hover { color: var(--ink-1); background: rgba(255,255,255,0.07); }
+  .combo-opt[aria-selected="true"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .combo-opt[aria-selected="true"] mark { color: var(--accent); }
+  .combo-hint { flex: none; font-size: 10.5px; font-weight: 650; letter-spacing: 0.04em; color: var(--ink-3); opacity: 0; }
+  .combo-opt[aria-selected="true"] .combo-hint, .combo-list[data-active="-1"] .combo-opt:first-child .combo-hint { opacity: 1; }
+  .combo-name { min-width: 0; overflow-wrap: anywhere; }
+  .combo-note { padding: 7px 10px 5px; font-size: 11.5px; color: var(--ink-3); font-style: italic; }
+  .combo-note.more { position: sticky; bottom: -4px; margin: 0 -4px -4px; padding: 7px 14px 8px;   /* stays visible while a height-constrained panel scrolls */
+    background: inherit; border-top: 1px solid var(--grid); }
+  .combo-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* screen-reader-only result count */
+  @media (prefers-reduced-motion: no-preference) { .combo-opt { transition: background-color 0.12s ease; } }
   .modstate { font-size: 13px; color: var(--ink-3); padding: 10px 2px; }
   .modstate.err { color: var(--serious); }
   .modstate a { color: var(--accent); }
@@ -981,9 +1012,11 @@
     <div class="mnote">Snapshot as of 8 Aug 2026. “↻ try live refresh” attempts a live pull — swgoh.gg's bot protection blocks most proxy routes for these pages, so the snapshot is the reliable source.</div>
     <div class="card" style="margin-bottom:9px">
       <div class="modsearchrow">
-        <input type="text" id="modSearch" list="modCharList" placeholder="Search a character… (e.g. Bo-Katan, Rey, Darth Revan)"
-               autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();lookupMods();}">
-        <datalist id="modCharList"></datalist>
+        <!-- Enter / arrows / Escape are handled by attachCharCombo() (wired in initModsTabAsync) -->
+        <div class="combo">
+          <input type="text" id="modSearch" placeholder="Search a character… (e.g. Bo-Katan, Rey, Darth Revan)"
+                 autocomplete="off" spellcheck="false" aria-label="Search a character">
+        </div>
         <button class="pullbtn" style="padding:9px 16px" onclick="lookupMods()">Look up</button>
       </div>
       <div class="modchips" id="modChips"></div>
@@ -3026,10 +3059,199 @@ function findCharacter(list, query) {
   if (includes.length) { includes.sort((a, b) => a.name.length - b.name.length); return includes[0]; }
   return null;
 }
-function populateCharDatalist(list) {
-  const dl = document.getElementById("modCharList");
-  if (dl) dl.innerHTML = list.map(c => `<option value="${escapeHtml(c.name)}"></option>`).join("");
+/* ===================== Shared character combobox (Best Mods search + Mod Optimiser add) ===================== */
+/* charRank — the single source of truth for "which character does this text mean". Tiers, in order:
+   exact name (or id) → name starts with the query (A→Z) → name contains the query (shortest first, then
+   A→Z). snapshotFind() and optFindRoster() take [0]; the combobox lists the same order, so the top
+   suggestion is always exactly what Enter resolves to. Before this, snapshotFind's startsWith tier fell
+   through Array.find over BESTMODS' (non-alphabetical) insertion order, so "dar" ⏎ opened Darth Sion
+   while the native datalist showed Darth Bane first — list and Enter disagreed. Includes-tier order is
+   unchanged (shortest name wins, so "vader" is still Lord Vader) but the list now shows that too. */
+function charRank(list, query, idOf) {
+  const q = String(query || "").trim().toLowerCase();
+  if (!q) return [];
+  const exact = [], starts = [], within = [];
+  for (const c of list) {
+    const n = c.name.toLowerCase();
+    if (n === q || (idOf && String(idOf(c) || "").toLowerCase() === q)) exact.push(c);
+    else if (n.startsWith(q)) starts.push(c);
+    else if (n.includes(q)) within.push(c);
+  }
+  const az = (a, b) => a.name.localeCompare(b.name);
+  starts.sort(az);
+  within.sort((a, b) => (a.name.length - b.name.length) || az(a, b));
+  return exact.concat(starts, within);
 }
+const COMBO_MAX = 8;            /* rows shown before "N more — keep typing" */
+const COMBO_PANEL_MAX = 368;    /* px — 8 × 40px rows + the note + padding; mirrors .combo-list max-height */
+const COMBO_ANNOUNCE = {};      /* input.id -> pending "X added" message, applied to the next status live-region
+                                    element attachCharCombo creates for that id — survives a caller (e.g. optAdd)
+                                    rebuilding the input's markup between pick() and the next attach. Fix #3. */
+/* attachCharCombo(input, { source, idOf, onSubmit, label })
+     source   () => [{ name, … }]   candidates, re-read on every keystroke (cheap at ~300 names)
+     idOf     c => string           optional id field that also counts as an exact match (roster base_id)
+     onSubmit (item|null, via)      Enter or a picked row. item is null when Enter fires with nothing
+                                    highlighted — the caller then runs its own find on input.value, which is
+                                    the pre-combobox behaviour and (via charRank) resolves to the same row
+                                    the list showed first. `via` is "key" | "mouse".
+   Follows the WAI-ARIA combobox + listbox pattern: role/aria-expanded/aria-controls/aria-activedescendant
+   on the input, role=option + aria-selected per row, Arrow keys move, Home/End jump, Enter picks, Escape
+   closes, blur / outside pointerdown close. Idempotent per element (input._combo), and safe to call after
+   a re-render that rebuilt the input. Opens on typing or ArrowDown — not on focus — so a filled-in field
+   doesn't pop a one-row list every time it is tapped. */
+function attachCharCombo(input, opts) {
+  if (!input) return null;
+  if (input._combo) return input._combo;
+  const wrap = input.closest(".combo") || input.parentElement;
+  const listId = input.id + "List";
+  const ul = document.createElement("ul");
+  ul.className = "combo-list"; ul.id = listId; ul.hidden = true;
+  ul.setAttribute("role", "listbox");
+  ul.setAttribute("aria-label", opts.label || "Character suggestions");
+  wrap.appendChild(ul);
+  const status = document.createElement("div");           // polite live region: "8 of 129 suggestions" — listbox option
+  status.className = "combo-status";                       // counts aren't announced on their own by most screen readers
+  status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite");
+  if (COMBO_ANNOUNCE[input.id]) { status.textContent = COMBO_ANNOUNCE[input.id]; delete COMBO_ANNOUNCE[input.id]; }
+  wrap.appendChild(status);
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-autocomplete", "list");
+  input.setAttribute("aria-haspopup", "listbox");
+  input.setAttribute("aria-expanded", "false");
+  input.setAttribute("aria-controls", listId);
+  const c = { input, ul, items: [], active: -1, open: false, opts };
+  input._combo = c;
+
+  const optId = i => `${listId}-opt${i}`;
+  const setActive = (i, scroll) => {
+    c.active = i;
+    ul.dataset.active = String(i);
+    ul.querySelectorAll(".combo-opt").forEach((li, k) => li.setAttribute("aria-selected", String(k === i)));
+    if (i >= 0) {
+      input.setAttribute("aria-activedescendant", optId(i));
+      const li = document.getElementById(optId(i));
+      if (li && scroll) li.scrollIntoView({ block: "nearest" });
+    } else input.removeAttribute("aria-activedescendant");
+  };
+  const close = () => {
+    if (!c.open) return;
+    c.open = false; ul.hidden = true; ul.innerHTML = ""; c.items = []; status.textContent = "";
+    input.setAttribute("aria-expanded", "false");
+    setActive(-1);
+  };
+  /* Prefer opening downward at natural height (≤ COMBO_MAX rows + note). When the visible viewport below the
+     input is shorter than that — a phone, especially with the on-screen keyboard up — shrink the panel to the
+     room available (it scrolls internally) as long as ≥ 4 rows still fit; only flip above the input when the
+     space below can't even show that much and the space above is bigger. visualViewport (where supported)
+     is the keyboard-aware height; innerHeight is the fallback. */
+  const place = () => {
+    ul.classList.remove("up"); ul.style.maxHeight = "none";
+    /* Anchor width/left to the whole .modsearchrow (input + "Look up"/"+ Add" button), not just the input —
+       the row is ~100px wider than the input alone, and .modsearchrow's right edge is also the .modchips/
+       .optchip strip's right edge below it, so this covers both in one measurement. Falls back to the plain
+       .combo width when an input isn't inside a .modsearchrow (shouldn't happen for the two current call
+       sites, but keeps this safe for a future third box). Review fix #1, 4 Sep 2026. */
+    const row = input.closest(".modsearchrow");
+    if (row) {
+      const rowRect = row.getBoundingClientRect(), wrapRect = wrap.getBoundingClientRect();
+      ul.style.left = (rowRect.left - wrapRect.left) + "px";
+      ul.style.width = rowRect.width + "px";
+    } else { ul.style.left = ""; ul.style.width = ""; }
+    const natural = Math.min(ul.offsetHeight, COMBO_PANEL_MAX);
+    const r = input.getBoundingClientRect(), vv = window.visualViewport;
+    const vTop = vv ? vv.offsetTop : 0, vH = vv ? vv.height : window.innerHeight;
+    const below = vTop + vH - r.bottom - 14, above = r.top - vTop - 14, minH = 4 * 40 + 8;
+    let h = natural;
+    if (natural > below) {
+      if (below >= minH || below >= above) h = Math.max(below, minH);
+      else { ul.classList.add("up"); h = Math.min(natural, Math.max(above, minH)); }
+    }
+    ul.style.maxHeight = h + "px";
+  };
+  const highlight = (name, q) => {
+    const at = name.toLowerCase().indexOf(q);
+    if (at < 0) return escapeHtml(name);
+    return escapeHtml(name.slice(0, at)) + `<mark>${escapeHtml(name.slice(at, at + q.length))}</mark>` + escapeHtml(name.slice(at + q.length));
+  };
+  const refresh = () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { close(); return; }
+    const ranked = charRank(opts.source() || [], q, opts.idOf);
+    c.items = ranked.slice(0, COMBO_MAX);
+    const more = ranked.length - c.items.length;
+    ul.innerHTML = c.items.length
+      ? c.items.map((it, i) => `<li class="combo-opt" role="option" id="${optId(i)}" aria-selected="false" data-i="${i}">
+            <span class="combo-name">${highlight(it.name, q)}</span><span class="combo-hint" aria-hidden="true">↵ Enter</span></li>`).join("") +
+        (more > 0 ? `<li class="combo-note more" role="presentation">${more} more — keep typing to narrow it down</li>` : "")
+      : `<li class="combo-note" role="presentation">No character matches “${escapeHtml(input.value.trim())}”</li>`;
+    status.textContent = !ranked.length ? `No character matches "${input.value.trim()}"` : more > 0
+      ? `Showing ${c.items.length} of ${ranked.length} suggestions. Use the down arrow to browse.`
+      : `${ranked.length} suggestion${ranked.length === 1 ? "" : "s"}. Use the down arrow to browse.`;
+    ul.hidden = false; c.open = true;
+    input.setAttribute("aria-expanded", "true");
+    setActive(-1);
+    place();
+  };
+  const pick = (item, via) => {
+    input.value = item.name;
+    close();                          // clears status.textContent — the announcement below must come after
+    /* Announce the selection: close() above wipes the live region, and a screen-reader user who picked a
+       character otherwise hears nothing happened. opts.onSubmit may itself rebuild this input's markup
+       (Mod Optimiser's optAdd -> render()), tearing this exact status element out before the new text has a
+       chance to be announced — so it's also stashed in COMBO_ANNOUNCE for the next attachCharCombo() on this
+       id to apply to its fresh status element. Review fix #3, 4 Sep 2026. */
+    const msg = opts.announce ? opts.announce(item) : `${item.name} selected`;
+    status.textContent = msg;
+    COMBO_ANNOUNCE[input.id] = msg;
+    opts.onSubmit(item, via);
+  };
+
+  input.addEventListener("input", refresh);
+  input.addEventListener("keydown", e => {
+    const n = c.items.length;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!c.open) { refresh(); if (c.items.length) setActive(0, true); }
+        else if (n) setActive(c.active + 1 >= n ? 0 : c.active + 1, true);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (!c.open) { refresh(); if (c.items.length) setActive(c.items.length - 1, true); }
+        else if (n) setActive(c.active <= 0 ? n - 1 : c.active - 1, true);
+        break;
+      case "Home": if (c.open && n) { e.preventDefault(); setActive(0, true); } break;
+      case "End":  if (c.open && n) { e.preventDefault(); setActive(n - 1, true); } break;
+      case "Enter":
+        e.preventDefault();
+        if (c.open && c.active >= 0 && c.items[c.active]) pick(c.items[c.active], "key");
+        else { close(); opts.onSubmit(null, "key"); }
+        break;
+      case "Escape":
+        if (c.open) { e.preventDefault(); e.stopPropagation(); close(); }   /* only swallow it when we used it — the mobile-nav Escape handler still gets the next one */
+        break;
+      case "Tab": close(); break;
+    }
+  });
+  /* mousedown on the panel would blur the input (closing the panel before click lands) — suppress it. */
+  ul.addEventListener("mousedown", e => e.preventDefault());
+  ul.addEventListener("click", e => {
+    const li = e.target.closest(".combo-opt");
+    if (li && c.items[+li.dataset.i]) pick(c.items[+li.dataset.i], "mouse");
+  });
+  input.addEventListener("blur", close);
+  c.close = close; c.refresh = refresh;
+  return c;
+}
+/* One document-level listener covers every combobox: a pointerdown anywhere outside an open panel closes it
+   (blur normally does this already; this catches touch targets that don't take focus). */
+document.addEventListener("pointerdown", e => {
+  document.querySelectorAll(".combo-list:not([hidden])").forEach(ul => {
+    const wrap = ul.parentElement;
+    if (wrap && !wrap.contains(e.target)) { const inp = wrap.querySelector("input"); if (inp && inp._combo) inp._combo.close(); }
+  });
+});
+
 /* Best Mods' Reference-group siblings (Tier List, Mod Optimiser) both open on a pill row you can click
    straight into; Best Mods opened on a bare search box with nothing to act on until you typed. This gives
    it the same "land on something clickable" shape: your own recently-viewed characters first (real
@@ -3063,23 +3285,23 @@ function snapshotList() {
   return Object.entries(BESTMODS.chars).map(([slug, c]) => ({ name: c.name, slug }));
 }
 function snapshotFind(query) {
-  const q = query.trim().toLowerCase();
-  if (!q) return null;
-  const list = snapshotList();
-  let hit = list.find(c => c.name.toLowerCase() === q) ||
-            list.find(c => c.name.toLowerCase().startsWith(q));
-  if (!hit) {
-    const inc = list.filter(c => c.name.toLowerCase().includes(q));
-    if (inc.length) { inc.sort((a, b) => a.name.length - b.name.length); hit = inc[0]; }
-  }
-  return hit || null;
+  return charRank(snapshotList(), query)[0] || null;      // same ranking the search combobox displays
+}
+/* Candidates for the Best Mods combobox: every snapshot character, plus anything the live swgoh.gg character
+   list added (only present after a successful live pull). Deduped by name; charRank sorts. */
+function modSearchSource() {
+  const seen = new Set(), out = [];
+  snapshotList().forEach(c => { seen.add(c.name); out.push(c); });
+  if (state.modsChars && state.modsChars.list) state.modsChars.list.forEach(c => { if (!seen.has(c.name)) { seen.add(c.name); out.push({ name: c.name }); } });
+  return out;
 }
 function initModsTabAsync() {
   renderModChips();
-  const names = new Set(snapshotList().map(c => c.name));
-  if (state.modsChars && state.modsChars.list) state.modsChars.list.forEach(c => names.add(c.name));
-  const dl = document.getElementById("modCharList");
-  if (dl) dl.innerHTML = [...names].sort().map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
+  attachCharCombo(document.getElementById("modSearch"), {
+    source: modSearchSource, label: "Character suggestions",
+    announce: item => `Showing best mods for ${item.name}`,
+    onSubmit: () => lookupMods()                      // picked row is already in input.value; null-item Enter = old type-and-Enter path
+  });
 }
 
 /* Extracts every <table> on the best-mods page, labeling each with its nearest preceding heading. */
@@ -3197,8 +3419,7 @@ async function lookupMods(forceLive) {
   results.innerHTML = `<div class="modstate">Trying a live pull from swgoh.gg…</div>`;
   try {
     const list = await ensureCharList(m => { results.innerHTML = `<div class="modstate">Loading character list — ${m}</div>`; });
-    populateCharDatalist(list);
-    const hit = findCharacter(list, query);
+    const hit = findCharacter(list, query);          // the search combobox reads state.modsChars.list on its next keystroke — nothing to repopulate
     if (!hit) {
       results.innerHTML = snapHit
         ? "" : `<div class="modstate err">No character matched “${escapeHtml(query)}”. Try a shorter or different spelling.</div>`;
@@ -3441,16 +3662,7 @@ function optRoster(pull) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 function optFindRoster(pull, query) {
-  const q = String(query || "").trim().toLowerCase();
-  if (!q) return null;
-  const list = optRoster(pull);
-  let hit = list.find(c => c.name.toLowerCase() === q) || list.find(c => c.id.toLowerCase() === q) ||
-            list.find(c => c.name.toLowerCase().startsWith(q));
-  if (!hit) {
-    const inc = list.filter(c => c.name.toLowerCase().includes(q));
-    if (inc.length) { inc.sort((a, b) => a.name.length - b.name.length); hit = inc[0]; }
-  }
-  return hit || null;
+  return charRank(optRoster(pull), query, c => c.id)[0] || null;   // same ranking the add-a-character combobox displays
 }
 function optComputeAll(pull) {
   const squad = state.modopt.squad[current] || [];
@@ -3522,7 +3734,6 @@ function optResultCardHtml(r, pull, content, squadSize) {
 }
 function optSetupCardHtml(pull) {
   const squad = state.modopt.squad[current] || [];
-  const roster = optRoster(pull);
   const squadChips = squad.map(id => `<span class="optsquadchip">${escapeHtml((pull.reqs[id] && pull.reqs[id].name) || id)}
       <button title="Remove" onclick="optDel('${id}')">✕</button></span>`).join("");
   const contentChips = OPT_CONTENT.map(c =>
@@ -3532,9 +3743,10 @@ function optSetupCardHtml(pull) {
   const poolNote = `${pull.mods.length} mods in your pool · data: ${escapeHtml(pull.fetchedLabel || "")}`;
   return `<div class="cardtitle">Optimise a loadout <span class="sub">— ${escapeHtml(poolNote)}</span></div>
     <div class="modsearchrow" style="margin-bottom:10px">
-      <input type="text" id="optCharInput" list="optCharList" placeholder="Add a character from your roster… (up to 5 for a squad)"
-             autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();optAdd();}">
-      <datalist id="optCharList">${roster.map(c => `<option value="${escapeHtml(c.name)}"></option>`).join("")}</datalist>
+      <div class="combo">
+        <input type="text" id="optCharInput" placeholder="Add a character from your roster… (up to 5 for a squad)"
+               autocomplete="off" spellcheck="false" aria-label="Add a character from your roster">
+      </div>
       <button class="pullbtn" style="padding:9px 16px" onclick="optAdd()">+ Add</button>
     </div>
     ${squad.length ? `<div class="optrow"><span class="optlabel">Squad</span>${squadChips}</div>` : ""}
@@ -3565,8 +3777,19 @@ function renderModOpt() {
     { id: "setup", w: 12, html: optSetupCardHtml(pull) },
     ...results.map(r => ({ id: "opt-" + r.baseId.toLowerCase(), w: 12, html: optResultCardHtml(r, pull, content, results.length) }))
   ]);
+  /* The setup card (and its input) is rebuilt on every render, so re-attach each time; attachCharCombo is a
+     no-op on an input that already has one. Source reads the *current* account's roster at keystroke time. */
+  attachCharCombo(document.getElementById("optCharInput"), {
+    source: () => (state.pulls[current] ? optRoster(state.pulls[current]) : []), idOf: c => c.id,
+    label: "Roster suggestions",
+    announce: item => `${item.name} added to squad`,
+    onSubmit: (item, via) => optAdd(via === "key")
+  });
 }
-function optAdd() {
+/* refocus: after a keyboard-driven add, put the caret back in the (rebuilt) input so a squad of five is five
+   type-Enter cycles, not five clicks. Mouse picks leave focus where the click put it (and don't re-raise the
+   on-screen keyboard on mobile). */
+function optAdd(refocus) {
   const input = document.getElementById("optCharInput");
   const pull = state.pulls[current];
   if (!input || !pull) return;
@@ -3576,6 +3799,7 @@ function optAdd() {
   if (!squad.includes(hit.id) && squad.length < 5) squad.push(hit.id);
   input.value = "";
   store.write(state); render();
+  if (refocus) { const again = document.getElementById("optCharInput"); if (again) again.focus(); }
 }
 function optDel(id) {
   const squad = state.modopt.squad[current] || [];

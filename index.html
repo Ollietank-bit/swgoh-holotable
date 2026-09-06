@@ -2401,6 +2401,9 @@ const GUIDANCE = {
         ["R2-D2 R5 → R8", ""], ["Scout Trooper → R7", ""], ["Captain Drogan → R7", ""],
         ["Threepio & Chewie → R7", ""], ["Kneesaa → R7, then remaining R3/R5s", ""]
       ]},
+      { t: "Phase 4 — guild TB platoon slots", items: [
+        ["Darth Revan R5 → R6", "one relic level — covers the guild's only open Darth Revan platoon slot (DS-2 Geonosis Op 1)"]
+      ]},
       { t: "Side quests (income & account health)", items: [
         ["Re-enter GAC — set defenses every round", "3 R8+ GLs in Carbonite = free wins; crystals fund the push"],
         ["Build 1–2 datacrons per set", "start with the current FO/Resistance set"],
@@ -2430,6 +2433,9 @@ const GUIDANCE = {
       { t: "Phase 3 — the three big grinds", items: [
         ["Scout Trooper → R7", ""], ["Captain Drogan → R7", ""],
         ["R2-D2 → R8", "most expensive single item — start gear now"]
+      ]},
+      { t: "Phase 4 — guild TB platoon slots", items: [
+        ["Rebel Officer Leia R5 → R6", "one relic past her Leia R5 requirement — covers one of the guild's 2 open slots (MX-2 Felucia Ops 3 & 6)"]
       ]},
       { t: "Side quests (income & account health)", items: [
         ["Finish Executor (stars + crew)", "Razor Crest 81%, Boba R8, Piett R8 — cheap upgrade over Negotiator"],
@@ -2469,7 +2475,8 @@ const FARM_CHECKS = {
     "p2-1": relic("SCOUTTROOPER_V3", 7),
     "p2-2": relic("CAPTAINDROGAN", 7),
     "p2-3": relic("C3POCHEWBACCA", 7),
-    "p2-4": relic("PRINCESSKNEESAA", 7)
+    "p2-4": relic("PRINCESSKNEESAA", 7),
+    "p3-0": relic("DARTHREVAN", 6)
   },
   tiny: {
     "p0-0": relic("PRINCESSKNEESAA", 7),
@@ -2483,7 +2490,8 @@ const FARM_CHECKS = {
     "p1-4": relic("BOUSHH", 5),
     "p2-0": relic("SCOUTTROOPER_V3", 7),
     "p2-1": relic("CAPTAINDROGAN", 7),
-    "p2-2": relic("R2D2_LEGENDARY", 8)
+    "p2-2": relic("R2D2_LEGENDARY", 8),
+    "p3-0": relic("HOTHLEIA", 6)
   }
 };
 function specMet(reqsMap, spec) {

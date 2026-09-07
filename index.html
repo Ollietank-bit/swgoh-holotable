@@ -1021,8 +1021,13 @@
   @media (pointer: coarse) {
     .tab, .stab, .section-nav button, .daychips button, .optchip, .modchip, .optsquadchip button,
     .cqaddrow button, .rowtools button, .rowactions button, .cardtools button, .account-choice, .mobile-account-switch,
-    .cqnav button, .section-nav.nav-tertiary button, .opt-jumps a { min-height: 44px !important; min-width: 44px !important; }
+    .cqnav button, .section-nav.nav-tertiary button, .opt-jumps a, .pullbtn, .cqswitchrow, .combo > input,
+    label.item { min-height: 44px !important; min-width: 44px !important; }
     .chip { min-height: 0; min-width: 0; }
+    /* Bare checkboxes have an intrinsic ~13px box that min-height can't grow. Size it moderately and
+       expand only the tap area with a transparent ::before, so row heights barely move. */
+    input[type="checkbox"] { position: relative; width: 22px !important; height: 22px !important; }
+    input[type="checkbox"]::before { content: ""; position: absolute; top: -11px; right: -11px; bottom: -11px; left: -11px; }
   }
 </style>
 </head>

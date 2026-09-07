@@ -768,11 +768,11 @@
   .form-row > button { justify-self: start; border: 0; background: transparent; cursor: pointer; }
   .form-empty { grid-column: 1 / -1; padding: 22px 14px; color: var(--ink-3); text-align: center; font-size: 12.5px; font-style: italic; }
   .tb-form { --form-columns: 34px minmax(190px, 1fr) 150px; }
-  .tw-form { --form-columns: minmax(130px,.8fr) 140px minmax(170px,1fr) max-content 30px; }
+  .tw-form { --form-columns: minmax(130px,.8fr) 140px minmax(170px,1fr) max-content; }
   .arena-form { --form-columns: minmax(140px,1fr) 112px minmax(160px,1fr) 30px; }
   .events-form { --form-columns: 82px minmax(170px,1fr) max-content 126px 126px minmax(145px,.9fr) 30px; }
   .gac-zones-form { --form-columns: minmax(76px,.45fr) minmax(180px,1.2fr) minmax(140px,1fr) 30px; }
-  .gac-offense-form { --form-columns: 24px minmax(180px,1.2fr) minmax(120px,.7fr) 30px 30px 30px; }
+  .gac-offense-form { --form-columns: 24px minmax(180px,1.2fr) minmax(120px,.7fr) max-content; }
 
   /* Quiet, readable data tables: horizontal rules rather than boxed cells.
      Unified structured-row scale: .form-row (48px / 7px 10px) is the reference, and .req (above) plus
@@ -855,6 +855,175 @@
     body.nav-open { overflow: hidden; }
     .sidebar-close { display: block; min-height: 40px; padding: 7px 10px; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
   }
+
+  /* ===== approved 2026 workspace refresh (isolated staging build) ===== */
+  :root { --shadow-card: 0 2px 8px rgba(0,0,0,.16); }
+  body::after { opacity: .22; filter: none; transition: opacity .2s; }
+  .sw-nebula, .sw-planet { opacity: .35; }
+  h2 { font: 720 18px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .01em;
+       text-transform: none; margin: 6px 0 4px; }
+  .cardtitle { font: 700 13px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .02em;
+               text-transform: none; color: var(--ink-2); }
+  .card { padding: 16px; background: var(--surface-1); border: 1px solid var(--border);
+          box-shadow: var(--shadow-card); container-type: inline-size; }
+  body.compact .card { padding: 16px; }
+  .card:has(.hero) { background: var(--surface-1); }
+
+  .section-nav button {
+    font: 600 13px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--ink-2); background: transparent; border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .section-nav button:hover { color: var(--ink-1); background: var(--surface-2); border-color: var(--border); }
+  .cqaddrow button, .secondary-action {
+    min-height: 36px; padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface-2); color: var(--ink-2); font: 600 12.5px/1.2 system-ui, sans-serif; cursor: pointer;
+  }
+  .cqaddrow button:hover, .secondary-action:hover { color: var(--ink-1); border-color: var(--border-strong); }
+  body.data-fresh #pullBtn { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--border-strong); box-shadow: none; }
+
+  [contenteditable="true"], .txt[contenteditable="true"] {
+    min-height: 36px; padding: 7px 9px !important; border: 1px solid var(--border) !important;
+    border-radius: 8px !important; background: var(--surface-2); color: var(--ink-1);
+  }
+  input[type="date"] { min-height: 36px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 8px;
+                       background: var(--surface-2); color: var(--ink-1); color-scheme: dark; font: inherit; }
+  .form-head, .form-row { column-gap: 10px; }
+  .form-row { padding: 10px; }
+  .events-form, .tw-form, .tb-form, .gac-zones-form, .gac-offense-form { width: 100%; }
+
+  .account-bar { display: none; align-items: center; gap: 8px; margin: 0 0 10px; }
+  .account-bar-label { color: var(--ink-3); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .account-choice { min-height: 38px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 9px;
+                    background: var(--surface-1); color: var(--ink-2); font: 650 13px/1 system-ui, sans-serif; cursor: pointer; }
+  .account-choice.active { color: var(--chrome-accent); border-color: var(--chrome-accent);
+                           background: color-mix(in srgb, var(--chrome-accent) 10%, var(--surface-1)); }
+  .account-context { display: inline-flex; gap: 6px; align-items: center; margin-left: 6px; padding: 3px 8px;
+                     color: var(--chrome-accent); background: color-mix(in srgb, var(--chrome-accent) 9%, var(--surface-2));
+                     border: 1px solid color-mix(in srgb, var(--chrome-accent) 55%, var(--border)); border-radius: 999px;
+                     font-size: 11px; font-weight: 700; }
+  .local-route { margin-top: 10px; }
+  .local-route-label { margin: 0 0 5px 4px; color: var(--ink-3); font-size: 10px; font-weight: 750;
+                       letter-spacing: .065em; text-transform: uppercase; }
+  .local-route .section-nav { display: grid; grid-template-columns: 1fr; margin: 0; }
+  .local-route .section-nav button { text-align: left; }
+  .mobile-workspaces, .more-panel { display: none; }
+  .migration-card { margin: 0 0 12px; border-color: var(--warning); }
+  .migration-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .migration-actions button { min-height: 40px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-strong);
+                              background: var(--surface-2); color: var(--ink-1); font-weight: 650; cursor: pointer; }
+  .migration-actions button.primary { color: #06131a; background: var(--chrome-accent); border-color: var(--chrome-accent); }
+  .opt-jumps { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+  .opt-jumps a { padding: 5px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--ink-2); font-size: 11.5px; text-decoration: none; }
+  .opt-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 8px 0 12px; }
+  .opt-summary > div { padding: 9px; border: 1px solid var(--grid); border-radius: 8px; background: var(--surface-2); }
+  .opt-summary b { display: block; color: var(--ink-1); font-size: 15px; }
+  .opt-summary span { color: var(--ink-3); font-size: 10.5px; }
+  .optslots { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .optslot { min-width: 0; }
+  .gac-career { margin-top: 12px; }
+  .gac-career summary { min-height: 40px; display: flex; align-items: center; color: var(--ink-2); cursor: pointer; }
+  .modescrumb { display: none !important; }
+  #raidNav::before, #abNav::before { content: "Activity"; align-self: center; padding: 0 6px; color: var(--ink-3);
+    font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+  #raidDetailNav::before { content: "Account"; align-self: center; padding: 0 6px; color: var(--ink-3);
+    font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+  #raidSquadNav::before { content: "Squad"; align-self: center; padding: 0 6px; color: var(--ink-3);
+    font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+  .rowactions { display: flex; gap: 6px; align-items: center; width: auto !important; }
+  .mobile-account-switch { display: none; }
+  .mode-select-row { display: none; }
+  .mobile-mode-buttons { display: contents; }
+
+  @container (max-width: 620px) {
+    .form-head { display: none; }
+    .form-table { overflow: visible; border: 0; background: transparent; }
+    .form-row, .tb-form .form-row, .arena-form .form-row {
+      grid-template-columns: 1fr; row-gap: 10px; margin-bottom: 10px; padding: 10px;
+      border: 1px solid var(--grid); border-radius: 8px; background: rgba(255,255,255,.018);
+    }
+    .form-row > *, .form-row > .txt, .form-row > .form-field { grid-column: 1 !important; width: 100%; }
+    .form-field > span { display: block; margin: 0 0 4px 2px; color: var(--ink-3); font-size: 10px;
+                        font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+  }
+  @container (max-width: 1000px) {
+    .events-form .form-head, .tw-form .form-head { display: none; }
+    .events-form .form-row, .tw-form .form-row {
+      grid-template-columns: repeat(2,minmax(0,1fr)); row-gap: 10px; margin-bottom: 10px; padding: 10px;
+      border: 1px solid var(--grid); border-radius: 8px; background: rgba(255,255,255,.018);
+    }
+    .events-form .form-row > .form-field:nth-child(2), .events-form .form-row > .form-field:nth-child(6),
+    .events-form .rowactions, .tw-form .form-row > .form-field:nth-child(3), .tw-form .rowactions { grid-column: 1 / -1; }
+    .events-form .form-field > span, .tw-form .form-field > span { display: block; margin: 0 0 4px 2px; color: var(--ink-3); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+  }
+  @container (max-width: 760px) {
+    .gac-zones-form .form-head, .gac-offense-form .form-head { display: none; }
+    .gac-zones-form .form-row, .gac-offense-form .form-row {
+      grid-template-columns: minmax(0,1fr) minmax(0,1fr); row-gap: 10px; margin-bottom: 10px; padding: 10px;
+      border: 1px solid var(--grid); border-radius: 8px; background: rgba(255,255,255,.018);
+    }
+    .gac-zones-form .form-field:last-of-type, .gac-offense-form .form-field, .gac-offense-form .rowactions { grid-column: 1 / -1; }
+    .gac-zones-form .form-field > span, .gac-offense-form .form-field > span { display: block; margin: 0 0 4px 2px; color: var(--ink-3); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+  }
+
+  @media (min-width: 901px) {
+    #groupSubtabs { display: none; }
+    .sidebar { top: 12px; }
+  }
+  @media (max-width: 900px) {
+    body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+    body::after { opacity: .12; }
+    .sw-nebula, .sw-planet { opacity: .20; }
+    #sidebarBtn, .sidebar { display: none !important; }
+    body:not(.sidebar-collapsed)::before { content: none !important; }
+    body.nav-open { overflow: auto !important; }
+    .account-bar { display: flex; }
+    #editBtn, #syncStatus { display: none; }
+    .hbtns { grid-template-columns: 1fr; }
+    .workspace-nav { position: static !important; }
+    .section-nav:not(.workspace-nav) { position: static !important; }
+    .mobile-workspaces { display: grid; position: fixed; z-index: 60; left: 0; right: 0; bottom: 0;
+      grid-template-columns: repeat(5,1fr); gap: 2px; padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--surface-1) 96%, transparent); border-top: 1px solid var(--border-strong);
+      box-shadow: 0 -8px 24px rgba(0,0,0,.28); backdrop-filter: blur(18px); }
+    .mobile-workspaces button { min-height: 48px; border: 0; border-radius: 8px; background: transparent; color: var(--ink-3);
+      font: 650 11px/1.15 system-ui,sans-serif; cursor: pointer; }
+    .mobile-workspaces button.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)); }
+    .mobile-workspaces .mobile-account-switch { display: block; position: absolute; right: 10px; bottom: calc(70px + env(safe-area-inset-bottom));
+      min-height: 44px; padding: 8px 13px; border: 1px solid var(--chrome-accent); border-radius: 999px;
+      background: color-mix(in srgb,var(--surface-1) 96%,transparent); color: var(--chrome-accent); box-shadow: var(--shadow-card); }
+    .more-panel.open { display: block; position: fixed; z-index: 70; left: 10px; right: 10px;
+      bottom: calc(76px + env(safe-area-inset-bottom)); padding: 14px; border: 1px solid var(--border-strong);
+      border-radius: 14px; background: color-mix(in srgb,var(--surface-1) 97%,transparent); box-shadow: var(--shadow-raised); }
+    .more-panel .section-nav { grid-template-columns: repeat(2,minmax(0,1fr)); margin-bottom: 8px; }
+    .more-panel .more-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+    .more-panel .more-actions button { min-height: 44px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface-2); color: var(--ink-2); font-weight: 650; }
+    h2 { font-size: 18px; }
+    .card { padding: 16px; }
+    .tiles { order: 9; }
+    #pane-overview #ovGrid { display: flex; flex-direction: column; }
+    #pane-overview #ovGrid > .card { width: 100%; box-sizing: border-box; }
+    #pane-overview .tiles { margin-top: 10px; }
+    input[type="date"] { font-size: 16px; min-height: 44px; }
+    [contenteditable="true"], .txt[contenteditable="true"] { min-height: 44px; }
+    .optslots { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .opt-summary { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; }
+    .opt-summary > div { padding: 7px 6px; }
+    .opt-summary b { font-size: 12.5px; }
+    .mode-select-row { display: grid; grid-template-columns: 78px minmax(0,1fr); gap: 8px; align-items: center; margin: 6px 0; }
+    .mode-select-row span { color: var(--ink-3); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+    .mode-select-row select { width: 100%; min-height: 44px; }
+    .mobile-mode-buttons { display: none !important; }
+    #raidNav::before, #abNav::before, #raidDetailNav::before, #raidSquadNav::before { display: none; }
+  }
+  @media (max-width: 340px) { .optslots { grid-template-columns: 1fr; } }
+  @media (pointer: coarse) {
+    .tab, .stab, .section-nav button, .daychips button, .optchip, .modchip, .optsquadchip button,
+    .cqaddrow button, .rowtools button, .rowactions button, .cardtools button, .account-choice, .mobile-account-switch,
+    .cqnav button, .section-nav.nav-tertiary button, .opt-jumps a { min-height: 44px !important; min-width: 44px !important; }
+    .chip { min-height: 0; min-width: 0; }
+  }
 </style>
 </head>
 <body data-tab="overview">
@@ -878,6 +1047,7 @@
       </div>
     </div>
   </header>
+  <div class="account-bar" id="accountBar" aria-label="Active account"></div>
 
   <!-- ============ CLOUD SYNC MODAL ============ -->
   <div class="modal-backdrop" id="syncModal" onclick="if(event.target===this) closeSyncModal()">
@@ -904,6 +1074,7 @@
       <nav aria-label="Accounts"><div class="tabs" id="tabs"></div></nav>
       <div class="quickstats" id="quickstats"></div>
       <nav aria-label="Sections"><div class="subtabs" id="subtabs"></div></nav>
+      <div class="local-route"><div class="local-route-label">In this workspace</div><div class="section-nav" id="localRouteList"></div></div>
     </aside>
     <main class="main" id="main">
   <div class="section-nav workspace-nav" id="groupSubtabs" aria-label="Workspace sections"></div>
@@ -923,10 +1094,19 @@
     <button class="pill" onclick="resetLayout()" style="margin-left:auto">Reset layout</button>
   </div>
 
+  <nav class="mobile-workspaces" id="mobileWorkspaces" aria-label="Workspaces"></nav>
+  <div class="more-panel" id="morePanel" role="navigation" aria-label="More navigation" aria-hidden="true">
+    <div class="section-nav" id="moreReference"></div>
+    <div class="more-actions">
+      <button type="button" onclick="toggleEdit();toggleMorePanel(false)">Edit layout</button>
+      <button type="button" onclick="openSyncModal();toggleMorePanel(false)">Cloud sync</button>
+    </div>
+  </div>
+
   <!-- ============ OVERVIEW ============ -->
   <div class="tabpane" id="pane-overview">
-    <div class="tiles" id="tiles"></div>
     <div class="sortable" id="ovGrid" data-pane="overview"></div>
+    <div class="tiles" id="tiles"></div>
     <details style="margin-top:9px" class="banner" id="metaBanner"><summary><b>Holonet update:</b> GL Roadmap now covers all 10 Galactic Legends</summary><div class="banner-detail">Including <b>Pirate King Hondo Ohnaka</b> (Sept 2025) — browse any Legend to see real progress once you pull live data.</div></details>
   </div>
 
@@ -1026,7 +1206,7 @@
 
   <!-- ============ MOD OPTIMISER ============ -->
   <div class="tabpane" id="pane-modopt">
-    <h2>Mod Optimiser — your own mods, assigned</h2>
+    <h2 id="modoptTitle">Mod Optimiser — your own mods, assigned</h2>
     <div class="h2sub">Pick a character (or a whole squad), pick the content you're modding for, and get the best 6-mod loadout from the mods you actually own — companion to Best Mods, which shows what top players run. Mods live on characters in SWGOH, so your pool is everything currently equipped across the roster; each pick shows where it sits today.</div>
     <div class="sortable" id="modoptGrid" data-pane="modopt"></div>
   </div>
@@ -1077,7 +1257,7 @@
 
   <!-- ============ GAC PLANNER ============ -->
   <div class="tabpane" id="pane-gac">
-    <h2>Grand Arena Championships — counter &amp; offense planner</h2>
+    <h2 id="gacTitle">Grand Arena Championships — counter &amp; offense planner</h2>
     <div class="h2sub">Log what your opponent defended per zone, cross-reference the curated counters table, then plan your offense/banner order before you commit a squad.</div>
     <div class="mnote">Counters are a mid-core meta reference as of 9 Aug 2026 — verify against what you actually see on scout.</div>
     <div class="cqaddrow" id="gacAddZone" style="margin-bottom:9px"><button onclick="gacZoneAdd()">+ Log opponent zone intel</button></div>
@@ -1133,9 +1313,11 @@ const SUBTABS = [
    fastest-changing first (what's coming up, daily arena) down to the slowest (Conquest's ~4-5 week cycle,
    then the always-on modes reference). */
 const NAV_GROUPS = [
-  { key: "progress",  label: "Progress", keys: ["overview", "gaps", "leia", "intel", "farm", "coach"] },
-  { key: "play",      label: "Play",     keys: ["events", "arena", "tw", "tb", "gac", "conquest", "modes"] },
-  { key: "reference", label: "Reference", keys: ["tierlist", "mods", "modopt"] }
+  { key: "today",     label: "Today",     keys: ["overview", "coach", "events"] },
+  { key: "build",     label: "Build",     keys: ["farm", "leia", "gaps", "intel"] },
+  { key: "battle",    label: "Battle",    keys: ["gac", "tw", "tb", "conquest", "arena", "modes"] },
+  { key: "mods",      label: "Mods",      keys: ["modopt", "mods"] },
+  { key: "reference", label: "Reference", keys: ["tierlist"] }
 ];
 /* Which tab each nav group was last left on, so re-opening a group returns you where you were instead of
    always dumping you on its first tab. Kept in state (persisted) and updated by switchTab(); the group
@@ -1581,7 +1763,7 @@ function assaultTeamHtml(team) {
       <span style="font-weight:700;color:var(--ink-1);font-size:13px">${escapeHtml(team.label)}</span>
       <span class="chip ${ASSAULT_CONF_CHIP[team.confidence] || "watch"}">${escapeHtml(team.confidence)}</span>
       <button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-left:auto" title="Loads this team's owned members (for the current account) into the Mod Optimiser, pre-set for Raids/Assault Battle content"
-        onclick="${optLoadTeamAttr(team.members.map(m => m[1]), "raids")}">⚙ Optimize mods</button>
+        onclick="${optLoadTeamAttr(team.members.map(m => m[1]), "raids", current)}">⚙ Optimize mods</button>
     </div>
     <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
       <tr><th style="text-align:left">Unit</th><th>Ollietank</th><th>Tiny</th></tr>
@@ -1617,7 +1799,7 @@ function assaultBattleHtml(ab, detail) {
      Optimize-mods button — offer it once here instead, against the mandatory `units` roster. */
   const fixedSquadOptBtn = (!ab.teams && ab.units && ab.units.length)
     ? `<button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-top:8px" title="Loads this event's mandatory squad into the Mod Optimiser, pre-set for Raids/Assault Battle content"
-        onclick="${optLoadTeamAttr(ab.units.map(u => u.name), "raids")}">⚙ Optimize mods</button>` : "";
+        onclick="${optLoadTeamAttr(ab.units.map(u => u.name), "raids", current)}">⚙ Optimize mods</button>` : "";
   const strategyBlock = `${ab.strategyNotes.map(n => `<div class="mnote" style="margin-top:6px">${escapeHtml(n)}</div>`).join("")}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
     <div class="cqteams">${ab.tiers.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
@@ -1698,7 +1880,8 @@ function renderModesCategory() {
   if (!nav) return;
   const cats = [["raid", "Raids"], ["assault", "Assault Battles"], ["eras", "Eras"]];
   const cur = ["assault", "eras"].includes(state.modesnav.category) ? state.modesnav.category : "raid";
-  nav.innerHTML = cats.map(c => `<button class="${cur === c[0] ? "active" : ""}" onclick="modesCategory('${c[0]}')">${c[1]}</button>`).join("");
+  nav.innerHTML = `<label class="mode-select-row"><span>Activity</span><select class="cqselect" onchange="modesCategory(this.value)">${cats.map(c => `<option value="${c[0]}" ${cur === c[0] ? "selected" : ""}>${c[1]}</option>`).join("")}</select></label>` +
+    `<div class="mobile-mode-buttons">${cats.map(c => `<button class="${cur === c[0] ? "active" : ""}" onclick="modesCategory('${c[0]}')">${c[1]}</button>`).join("")}</div>`;
   const raidSec = document.getElementById("raidSection");
   const abSec = document.getElementById("assaultSection");
   const eraSec = document.getElementById("eraSection");
@@ -1713,14 +1896,16 @@ function renderAssaultBattles() {
   const nav = document.getElementById("abNav");
   if (!nav) return;
   const cur = ASSAULT_BATTLES.find(b => b.key === state.modesnav.abView) || ASSAULT_BATTLES[0];
-  nav.innerHTML = ASSAULT_BATTLES.map(b => `<button class="${cur.key === b.key ? "active" : ""}" onclick="abView('${b.key}')">${escapeHtml(b.label)}</button>`).join("");
+  nav.innerHTML = `<label class="mode-select-row"><span>Battle</span><select class="cqselect" onchange="abView(this.value)">${ASSAULT_BATTLES.map(b => `<option value="${b.key}" ${cur.key === b.key ? "selected" : ""}>${escapeHtml(b.label)}</option>`).join("")}</select></label>` +
+    `<div class="mobile-mode-buttons">${ASSAULT_BATTLES.map(b => `<button class="${cur.key === b.key ? "active" : ""}" onclick="abView('${b.key}')">${escapeHtml(b.label)}</button>`).join("")}</div>`;
   const detailItems = cur.teams && cur.teams.length
     ? [...cur.teams.map((t, i) => [`team${i}`, `Team ${i + 1}`]), ["roster","Eligible roster"], ["strategy","Strategy & gates"]]
     : [["roster","Required roster"],["strategy","Strategy & gates"]];
   let detail = state.modesnav.abDetail || detailItems[0][0];
   if (!detailItems.some(x => x[0] === detail)) detail = detailItems[0][0];
   const detailNav = document.getElementById("abDetailNav");
-  if (detailNav) detailNav.innerHTML = detailItems.map(x => `<button class="${detail === x[0] ? "active" : ""}" onclick="abDetail('${x[0]}')">${x[1]}</button>`).join("");
+  if (detailNav) detailNav.innerHTML = `<label class="mode-select-row"><span>View</span><select class="cqselect" onchange="abDetail(this.value)">${detailItems.map(x => `<option value="${x[0]}" ${detail === x[0] ? "selected" : ""}>${x[1]}</option>`).join("")}</select></label>` +
+    `<div class="mobile-mode-buttons">${detailItems.map(x => `<button class="${detail === x[0] ? "active" : ""}" onclick="abDetail('${x[0]}')">${x[1]}</button>`).join("")}</div>`;
   const body = document.getElementById("abBody");
   if (body) body.innerHTML = `<div class="card">${assaultBattleHtml(cur, detail)}</div>`;
   renderModesCrumb();
@@ -2502,6 +2687,18 @@ function specMet(reqsMap, spec) {
   if (spec.type === "gear") return (u.g || 1) >= spec.min;
   return (u.r || 0) >= spec.min;
 }
+function specLiveLabel(reqsMap, spec) {
+  const specs = Array.isArray(spec) ? spec : [spec];
+  return specs.map(sp => {
+    const u = reqsMap[sp.id];
+    const roadmap = GL_ORDER.map(gid => GL_ROADMAP[gid]).flatMap(gl => gl.req).find(r => r[0] === sp.id);
+    const squadUnit = META_SQUADS.flatMap(sq => sq.members).find(r => r[0] === sp.id);
+    const name = u && u.name ? u.name : (roadmap ? roadmap[1] : (squadUnit ? squadUnit[1] : sp.id));
+    const cur = !u ? "not unlocked" : ((u.r || 0) > 0 ? `R${u.r}` : `G${u.g || 1}${(u.s || 0) < 7 ? ` · ${u.s || 0}★` : ""}`);
+    const target = sp.type === "star" ? `${sp.min}★` : sp.type === "gear" ? `G${sp.min}` : `R${sp.min}`;
+    return `${name}: ${cur} → ${target}`;
+  }).join(" · ");
+}
 /* Progress summary for a Coach's Corner tip.check spec (single spec or an array of specs) —
    {done, doneCount, total}. Used to auto-tick tips and show a live "X/Y done" count. */
 function tipProgress(reqsMap, check) {
@@ -2513,6 +2710,23 @@ function tipProgress(reqsMap, check) {
 function isFarmDone(account, reqsMap, pi, ii) {
   const spec = (FARM_CHECKS[account] || {})[`p${pi}-${ii}`];
   return spec ? specMet(reqsMap, spec) : !!state.ticks[`${account}-p${pi}-${ii}`];
+}
+function farmActionLabel(account, reqsMap, pi, ii, item) {
+  const spec = (FARM_CHECKS[account] || {})[`p${pi}-${ii}`];
+  return spec ? specLiveLabel(reqsMap, spec) : item[0];
+}
+function tipIsDone(account, reqsMap, tip, index) {
+  return tip.check ? tipProgress(reqsMap, tip.check).done : !!state.ticks[`${account}-t${index}`];
+}
+function activeTips(account, reqsMap, severities) {
+  return TIPS[account].map((tp, ti) => ({ tp, ti }))
+    .filter(x => severities.includes(x.tp.sev) && !tipIsDone(account, reqsMap, x.tp, x.ti));
+}
+function glProgressSummary(v) {
+  if (v.owned) return "Already unlocked.";
+  const open = v.reqRows.filter(r => !r.done);
+  const least = [...open].sort((a, b) => a.pct - b.pct)[0];
+  return `${v.doneCount} of ${v.reqRows.length} requirements met${least ? ` · least complete: ${least.name} (${least.cur} → ${least.need})` : ""}.`;
 }
 
 /* Coach's corner — flagged priorities per account */
@@ -2579,6 +2793,9 @@ const store = {
     if (!opts.skipSync) scheduleSyncPush();
   }
 };
+const ACCOUNT_UI_KEY = "swgoh-holotable-active-account-v1";
+function accountUiRead() { try { return localStorage.getItem(ACCOUNT_UI_KEY) || ""; } catch { return ""; } }
+function accountUiWrite(key) { try { localStorage.setItem(ACCOUNT_UI_KEY, key); } catch { /* main save status covers blocked storage */ } }
 let localWriteFail = false;
 function renderLocalStatus() {
   const el = document.getElementById("localStatus");
@@ -2601,11 +2818,12 @@ let syncBusy = false;
 let syncLastError = "";
 let initialPullSettled = false;
 let initialPullPromise = null;
+let schemaMigrationPendingPush = false;
 /* STATE_VERSION describes the *shape* of the saved blob, and is stored as state.stateVersion.
    Purely additive changes need NOTHING here — mergeDefaults() below backfills new keys on its own.
    Bump this and add a step to migrateState() only for a genuinely breaking change: a key renamed, a
    value's units/meaning changed, a list restructured. */
-const STATE_VERSION = 1;
+const STATE_VERSION = 2;
 /* ---- state shape: one place that describes everything we expect to find in the saved blob ----
    Anything added here is automatically backfilled into an existing save by mergeDefaults() below,
    including NEW NESTED keys on a top-level key that already exists — which the old per-key
@@ -2620,6 +2838,7 @@ function defaultState() {
     lastPull: 0,
     dailyDate: "",
     tab: "",
+    currentAccount: "ollie",                    // device-local UI context; also synced harmlessly for compatibility
     modsChars: null,                            // { fetchedAt, list: [{name, base_id, url}] }
     modsRecent: [],                             // Best Mods quick-pick history: most-recent-first display names (max 6)
     modsData: {},                               // { [base_id]: { fetchedAt, name, sourceUrl, tables, fetchedLabel } }
@@ -2629,7 +2848,7 @@ function defaultState() {
       squad: { ollie: [], tiny: [] }            // per-account selected characters (base_ids, first = primary)
     },
     layout: {
-      order: {}, hidden: {},
+      order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags"] }, hidden: {},
       size: {},                                 // { pane: { cardId: { w: gridSpan(3-12), h: minHeightPx|0 } } }
       density: "cozy",
       /* First-ever load only (mergeDefaults only fills a key that's truly absent, so this never
@@ -2639,16 +2858,14 @@ function defaultState() {
       sidebarCollapsed: (typeof window !== "undefined" && window.innerWidth <= 900),
       show: { tiles: true, epigraph: true, banner: true }
     },
-    cq: {                                       // conquest tab; myPlan/planConquest are added on demand
-      view: "plan", day: 1, sector: "global",
+    cq: {                                       // shared reference/view prefs + account-specific run plans
+      view: "plan", sector: "global",
       showEnemyIntel: false,                    // "Enemies" display preference (plan view)
       showDiskIntel: false,                     // "Data Disks" display preference (plan view)
-      /* Per-run tick tracking (see cqRunStatus / cqEnsurePlan). lastSeenRun = ISO start date of the
-         live occurrence the current `done` flags belong to; null on a save that predates run tracking,
-         which cqEnsurePlan treats as "a new run has begun" and clears the ticks once. runResetNote =
-         { run, cleared, firstSync } shown once in the plan view after such a clear, null otherwise. */
-      lastSeenRun: null,
-      runResetNote: null
+      byAccount: {
+        ollie: { initialized: false, day: 1, lastSeenRun: null, runResetNote: null, myPlan: null, planConquest: null },
+        tiny:  { initialized: false, day: 1, lastSeenRun: null, runResetNote: null, myPlan: null, planConquest: null }
+      }
     },
     modesnav: { category: "raid", raidView: "o66", raidDetail: "ollie", raidSquad: "0", abView: "groundwar", abDetail: "teams", eraView: "overview" },  // Game modes tab: category, event and focused detail subtabs
     views: {                                    // task-focused local subtabs; only the selected card group is rendered
@@ -2658,7 +2875,7 @@ function defaultState() {
     },
     /* Per-nav-group "where you were last" memory — see switchGroup() up top. Seeded to each group's
        first tab so a first-ever visit behaves exactly as before. */
-    lastTabInGroup: { progress: "overview", play: "events", reference: "tierlist" },
+    lastTabInGroup: { today: "overview", build: "farm", battle: "gac", mods: "modopt", reference: "tierlist" },
     glTarget: {},                               // per-account currently-viewed GL on the GL Roadmap tab, e.g. { ollie: "GLLEIA" }
     tb: {},                                     // TB planner: { [`${phase}-${zone}`]: { assigned: "ollie"|"tiny"|"both"|"", done: bool } }
     tw: { zones: [] },                          // TW coordination: zones = [{ name, assigned, squad, status }]
@@ -2667,7 +2884,16 @@ function defaultState() {
     raidTickets: { ollie: {}, tiny: {} },       // manual per-account raid currency on hand: { str, rancor, aat, o66, naboo }
     raidProgress: { ollie: {}, tiny: {} },      // manual per-account raid tier/stars: { [raidKey]: { tier, stars } }
     guildCurrency: { ollie: 0, tiny: 0 },       // manual per-account Guild Event Store currency on hand
-    gac: { zones: [], offense: [] },            // GAC planner: zones = opponent intel log, offense = banner/offense order worksheet
+    gac: {                                      // account-specific GAC worksheets
+      ollie: { initialized: false, zones: [], offense: [] },
+      tiny: { initialized: false, zones: [], offense: [] }
+    },
+    legacyMigration: {                          // v1 shared planner data is retained until explicitly assigned
+      pending: false, resolved: "", resolvedAt: 0, shared: { gac: false, cq: false },
+      legacyGac: null, legacyCq: null,
+      legacyUpdates: { gac: [], cq: [] },       // later flat writes from an older client; original archives stay immutable
+      assignmentBackups: { gac: { ollie: [], tiny: [] }, cq: { ollie: [], tiny: [] } }
+    },
     events: { items: [] }                       // Events & Calendar: items = [{ id, name, cat, date, ends, note }]
   };
 }
@@ -2690,35 +2916,231 @@ function mergeDefaults(saved, defaults) {
      if (from < 2) state.gac.offense.forEach(o => { o.prio = 0; });
    Returns true when anything changed and the blob needs re-saving. */
 function migrateState(s, from) {
-  /* (no breaking migrations yet — pre-version saves are shape-compatible with v1) */
-  if (from === STATE_VERSION) return false;
+  if (from >= STATE_VERSION) return false;
+  if (from < 2) {
+    /* An older build can round-trip a v2 blob: it keeps unknown nested branches but writes its own
+       flat planner keys and lowers stateVersion. Preserve those nested branches first, then archive
+       only the flat legacy worksheet. Never replace already-separated account data. */
+    const priorGac = isPlainObject(s.gac) ? s.gac : {};
+    const keepGac = {
+      ollie: isPlainObject(priorGac.ollie) ? cloneData(priorGac.ollie) : { initialized: false, zones: [], offense: [] },
+      tiny: isPlainObject(priorGac.tiny) ? cloneData(priorGac.tiny) : { initialized: false, zones: [], offense: [] }
+    };
+    const oldGac = isPlainObject(priorGac) && (Array.isArray(priorGac.zones) || Array.isArray(priorGac.offense))
+      ? { zones: Array.isArray(s.gac.zones) ? s.gac.zones : [], offense: Array.isArray(s.gac.offense) ? s.gac.offense : [] }
+      : { zones: [], offense: [] };
+    const priorCq = isPlainObject(s.cq) ? s.cq : {};
+    const oldCq = isPlainObject(priorCq) ? {
+      day: s.cq.day || 1,
+      lastSeenRun: s.cq.lastSeenRun || null,
+      runResetNote: s.cq.runResetNote || null,
+      myPlan: s.cq.myPlan || null,
+      planConquest: s.cq.planConquest || null
+    } : null;
+    const hasGac = oldGac.zones.length || oldGac.offense.length;
+    const hasCq = !!(oldCq && (oldCq.myPlan || oldCq.lastSeenRun || oldCq.runResetNote));
+    const priorMigration = isPlainObject(s.legacyMigration) ? s.legacyMigration : {};
+    const priorShared = priorMigration.resolved === "shared"
+      ? { gac: true, cq: true }
+      : (isPlainObject(priorMigration.shared) ? priorMigration.shared : { gac: false, cq: false });
+    const updates = isPlainObject(priorMigration.legacyUpdates) ? cloneData(priorMigration.legacyUpdates) : { gac: [], cq: [] };
+    updates.gac = Array.isArray(updates.gac) ? updates.gac : [];
+    updates.cq = Array.isArray(updates.cq) ? updates.cq : [];
+    const originalGac = priorMigration.legacyGac ? cloneData(priorMigration.legacyGac) : (hasGac ? cloneData(oldGac) : null);
+    const originalCq = priorMigration.legacyCq ? cloneData(priorMigration.legacyCq) : (hasCq ? cloneData(oldCq) : null);
+    if (hasGac && priorMigration.legacyGac && JSON.stringify(oldGac) !== JSON.stringify(priorMigration.legacyGac) &&
+        !updates.gac.some(x => JSON.stringify(x.data) === JSON.stringify(oldGac))) {
+      updates.gac.push({ capturedAt: s.updatedAt || 0, data: cloneData(oldGac) });
+    }
+    if (hasCq && priorMigration.legacyCq && JSON.stringify(oldCq) !== JSON.stringify(priorMigration.legacyCq) &&
+        !updates.cq.some(x => JSON.stringify(x.data) === JSON.stringify(oldCq))) {
+      updates.cq.push({ capturedAt: s.updatedAt || 0, data: cloneData(oldCq) });
+    }
+    s.legacyMigration = {
+      pending: !!(hasGac || hasCq) || !!priorMigration.pending,
+      resolved: priorMigration.resolved || "",
+      resolvedAt: priorMigration.resolvedAt || 0,
+      shared: { gac: !!priorShared.gac, cq: !!priorShared.cq },
+      legacyGac: originalGac,
+      legacyCq: originalCq,
+      legacyUpdates: updates,
+      assignmentBackups: isPlainObject(priorMigration.assignmentBackups) ? cloneData(priorMigration.assignmentBackups) : { gac: { ollie: [], tiny: [] }, cq: { ollie: [], tiny: [] } }
+    };
+    s.gac = keepGac;
+    const oldByAccount = isPlainObject(priorCq.byAccount) ? priorCq.byAccount : {};
+    s.cq = {
+      view: priorCq.view || "plan", sector: priorCq.sector || "global",
+      enemy: priorCq.enemy || "", showEnemyIntel: !!priorCq.showEnemyIntel,
+      showDiskIntel: !!priorCq.showDiskIntel,
+      byAccount: {
+        ollie: isPlainObject(oldByAccount.ollie) ? cloneData(oldByAccount.ollie) : { initialized: false, day: 1, lastSeenRun: null, runResetNote: null, myPlan: null, planConquest: null },
+        tiny: isPlainObject(oldByAccount.tiny) ? cloneData(oldByAccount.tiny) : { initialized: false, day: 1, lastSeenRun: null, runResetNote: null, myPlan: null, planConquest: null }
+      }
+    };
+    s.currentAccount = ACCOUNTS.some(a => a.key === s.currentAccount) ? s.currentAccount : "ollie";
+  }
   s.stateVersion = STATE_VERSION;
   return true;
 }
+/* Boot maintenance is deliberately timestamp-neutral. Cloud Sync compares the saved local timestamp
+   with GitHub first; only after that decision do schema/seed/day updates receive a fresh timestamp and
+   push. The same function is replayed after accepting a newer remote copy, so maintenance is not lost. */
+function applyBootMaintenance(target) {
+  let changed = false;
+  if (target.eventsSeedVersion !== EVENTS_SEED_VERSION) {
+    const mine = ((target.events && target.events.items) || []).filter(e => !/^seed\d+$/.test(e && e.id));
+    target.events = target.events || { items: [] };
+    target.events.items = EVENTS_SEED.map((e, i) => ({ id: "seed" + i, ...e })).concat(mine);
+    target.eventsSeedVersion = EVENTS_SEED_VERSION;
+    target.eventsSeeded = true;
+    changed = true;
+  }
+  const today = new Date().toDateString();
+  if (target.dailyDate !== today) {
+    target.ticks = target.ticks || {};
+    for (const k of Object.keys(target.ticks)) if (k.startsWith("d-")) delete target.ticks[k];
+    target.dailyDate = today;
+    changed = true;
+  }
+  return changed;
+}
 const savedState = store.read();
 const savedVersion = typeof savedState.stateVersion === "number" ? savedState.stateVersion : 0;
+const savedUpdatedAt = savedState.updatedAt || 0;
 let state = mergeDefaults(savedState, defaultState());
-if (migrateState(state, savedVersion)) store.write(state);
-/* Events seed migration. This file gets re-saved to the same path on your Desktop, and the browser keeps
-   localStorage per file:// path — so a returning user still holds the seed rows from an older build. On a
-   version bump we drop ONLY the seed-derived rows (ids "seed0", "seed1", …) and re-add the current
-   EVENTS_SEED; anything you added yourself via "+ Add event" (ids "e<timestamp>") is left untouched.
-   This also covers the first-ever load, where eventsSeedVersion is simply absent. */
-if (state.eventsSeedVersion !== EVENTS_SEED_VERSION) {
-  const mine = (state.events.items || []).filter(e => !/^seed\d+$/.test(e && e.id));
-  state.events.items = EVENTS_SEED.map((e, i) => ({ id: "seed" + i, ...e })).concat(mine);
-  state.eventsSeedVersion = EVENTS_SEED_VERSION;
-  state.eventsSeeded = true;   // legacy flag, kept so an older copy of this file won't re-seed on top
+schemaMigrationPendingPush = migrateState(state, savedVersion);
+schemaMigrationPendingPush = applyBootMaintenance(state) || schemaMigrationPendingPush;
+if (schemaMigrationPendingPush) {
+  state.updatedAt = savedUpdatedAt;
+  store.write(state, { skipStamp: true, skipSync: true });
+}
+
+function cloneData(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
+function uniqueRows(primary, secondary) {
+  const out = cloneData(Array.isArray(primary) ? primary : []);
+  const seen = new Set(out.map(x => JSON.stringify(x)));
+  (Array.isArray(secondary) ? secondary : []).forEach(row => {
+    const sig = JSON.stringify(row);
+    if (!seen.has(sig)) { seen.add(sig); out.push(cloneData(row)); }
+  });
+  return out;
+}
+function mergeGacPlanner(primary, secondary) {
+  const a = isPlainObject(primary) ? primary : {}, b = isPlainObject(secondary) ? secondary : {};
+  return { ...cloneData(b), ...cloneData(a), initialized: true,
+    zones: uniqueRows(a.zones, b.zones), offense: uniqueRows(a.offense, b.offense) };
+}
+function mergeCqPlanner(primary, secondary) {
+  const a = isPlainObject(primary) ? primary : {}, b = isPlainObject(secondary) ? secondary : {};
+  /* When assigning into a never-used account, its seeded day:1/null metadata is not user data and must
+     not outrank the imported worksheet's day/conquest/run identity. Once an account has real planner
+     data, its metadata stays primary and legacy rows are merged in without replacing it. */
+  const primaryHasData = !!a.initialized || !!a.myPlan || !!a.lastSeenRun || !!a.runResetNote;
+  const out = primaryHasData
+    ? { ...cloneData(b), ...cloneData(a), initialized: true, myPlan: {} }
+    : { ...cloneData(a), ...cloneData(b), initialized: true, myPlan: {} };
+  const days = new Set([...Object.keys(b.myPlan || {}), ...Object.keys(a.myPlan || {})]);
+  days.forEach(day => { out.myPlan[day] = uniqueRows((a.myPlan || {})[day], (b.myPlan || {})[day]); });
+  if (!days.size) out.myPlan = a.myPlan || b.myPlan || null;
+  return out;
+}
+function combinedLegacy(kind) {
+  const m = state.legacyMigration || {};
+  let out = cloneData(kind === "gac" ? m.legacyGac : m.legacyCq);
+  const updates = (m.legacyUpdates && Array.isArray(m.legacyUpdates[kind])) ? m.legacyUpdates[kind] : [];
+  updates.forEach(entry => {
+    if (!entry || !entry.data) return;
+    out = kind === "gac" ? mergeGacPlanner(entry.data, out) : mergeCqPlanner(entry.data, out);
+  });
+  return out;
+}
+function plannerHasData(kind, branch) {
+  if (!isPlainObject(branch)) return false;
+  if (kind === "gac") return !!branch.initialized || (branch.zones || []).length > 0 || (branch.offense || []).length > 0;
+  return !!branch.initialized || !!branch.myPlan || !!branch.lastSeenRun || !!branch.runResetNote;
+}
+function backupPlanner(kind, key, branch) {
+  const m = state.legacyMigration;
+  m.assignmentBackups = m.assignmentBackups || { gac: { ollie: [], tiny: [] }, cq: { ollie: [], tiny: [] } };
+  m.assignmentBackups[kind] = m.assignmentBackups[kind] || { ollie: [], tiny: [] };
+  const list = m.assignmentBackups[kind][key] = m.assignmentBackups[kind][key] || [];
+  list.push({ capturedAt: Date.now(), data: cloneData(branch) });
+  if (list.length > 5) list.splice(0, list.length - 5);
+}
+function legacyMigrationPending() { return !!(state.legacyMigration && state.legacyMigration.pending); }
+function legacyPlannerShared(kind) { return !!(state.legacyMigration && state.legacyMigration.shared && state.legacyMigration.shared[kind]); }
+function gacData() {
+  const m = state.legacyMigration || {};
+  if ((m.pending || legacyPlannerShared("gac")) && m.legacyGac) return combinedLegacy("gac");
+  state.gac[current] = state.gac[current] || { initialized: false, zones: [], offense: [] };
+  return state.gac[current];
+}
+function cqData() {
+  const m = state.legacyMigration || {};
+  if ((m.pending || legacyPlannerShared("cq")) && m.legacyCq) return combinedLegacy("cq");
+  state.cq.byAccount[current] = state.cq.byAccount[current] || { initialized: false, day: 1, lastSeenRun: null, runResetNote: null, myPlan: null, planConquest: null };
+  return state.cq.byAccount[current];
+}
+function preparePlannerWrite(kind) {
+  const m = state.legacyMigration || {};
+  if (m.pending || legacyPlannerShared(kind)) {
+    const el = document.getElementById("migrationAssignment");
+    if (el) el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    return false;
+  }
+  if (kind === "gac") state.gac[current].initialized = true;
+  if (kind === "cq") state.cq.byAccount[current].initialized = true;
+  return true;
+}
+function assignLegacyData(target) {
+  const m = state.legacyMigration;
+  if (!m || (!m.pending && !legacyPlannerShared("gac") && !legacyPlannerShared("cq"))) return;
+  const targets = target === "both" ? ["ollie", "tiny"] : (target === "ollie" || target === "tiny" ? [target] : []);
+  targets.forEach(key => {
+    if (m.legacyGac) {
+      if (plannerHasData("gac", state.gac[key])) backupPlanner("gac", key, state.gac[key]);
+      state.gac[key] = mergeGacPlanner(state.gac[key], combinedLegacy("gac"));
+    }
+    if (m.legacyCq) {
+      if (plannerHasData("cq", state.cq.byAccount[key])) backupPlanner("cq", key, state.cq.byAccount[key]);
+      state.cq.byAccount[key] = mergeCqPlanner(state.cq.byAccount[key], combinedLegacy("cq"));
+    }
+  });
+  m.pending = false;
+  m.shared = target === "shared" ? { gac: !!m.legacyGac, cq: !!m.legacyCq } : { gac: false, cq: false };
+  m.resolved = target;
+  m.resolvedAt = Date.now();
   store.write(state);
+  const saved = store.read();
+  if (!saved.legacyMigration || saved.legacyMigration.resolvedAt !== m.resolvedAt) {
+    localWriteFail = true;
+    renderLocalStatus();
+    return;
+  }
+  render();
+}
+function renderMigrationAssignment() {
+  const main = document.getElementById("main");
+  if (!main) return;
+  let el = document.getElementById("migrationAssignment");
+  const needsChoice = legacyMigrationPending() || legacyPlannerShared("gac") || legacyPlannerShared("cq");
+  if (!needsChoice) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement("section");
+    el.id = "migrationAssignment";
+    el.className = "card migration-card";
+    main.insertBefore(el, main.firstChild);
+  }
+  el.innerHTML = `<div class="cardtitle">${legacyMigrationPending() ? "Assign legacy planner data" : "Shared legacy planner — read only"}</div>
+    <div class="mnote">Your original shared GAC and Conquest worksheet is preserved unchanged. Later edits made by an older client are retained separately and merged on assignment. Existing account plans are backed up and merged, never replaced. “Keep shared” remains a read-only reference and never auto-forks on a click.</div>
+    <div class="migration-actions">
+      <button class="primary" onclick="assignLegacyData('ollie')">Assign Ollietank</button>
+      <button onclick="assignLegacyData('tiny')">Assign Tiny</button>
+      <button onclick="assignLegacyData('both')">Copy to both</button>
+      <button onclick="assignLegacyData('shared')">Keep shared for now</button>
+    </div>`;
 }
 const DEFAULT_SPAN = { overview: 6, leia: 6, gaps: 6, coach: 6, farm: 6, modes: 4, tb: 6, tw: 6, arena: 6, gac: 6, intel: 6, events: 6, modopt: 6, tierlist: 6 };
-/* daily-routine ticks reset each calendar day */
-const TODAY = new Date().toDateString();
-if (state.dailyDate !== TODAY) {
-  for (const k of Object.keys(state.ticks)) if (k.startsWith("d-")) delete state.ticks[k];
-  state.dailyDate = TODAY;
-  store.write(state);
-}
 
 /* ===================== progress math ===================== */
 function unitProgress(u, reqRelic) {
@@ -3713,13 +4135,13 @@ function optSlotHtml(sl, e, baseId, pull) {
     <div class="secs">${secs.map(optStatHtml).join(" · ") || '<span style="color:var(--ink-3)">no secondaries yet</span>'}</div>
     ${from}</div>`;
 }
-function optResultCardHtml(r, pull, content, squadSize) {
+function optResultCardHtml(r, pull, content, squadSize, priority) {
   const archLabel = (OPT_ARCHETYPES[r.archKey] || OPT_ARCHETYPES.attacker).label;
   /* Same optDel(id) the top setup card's squad chip ✕ already calls — a second entry point onto the one
      removal path, so you don't have to scroll back up to drop someone mid-review. .rowtools is the app's
      existing small-inline-icon-button convention (Conquest day-plan rows); reusing it for free gets this
      button the app's standard 40px touch target on mobile with no new CSS. */
-  const head = `<div class="cardtitle">${escapeHtml(r.name)}
+  const head = `<div class="cardtitle">${squadSize > 1 ? `${priority}. ` : ""}${escapeHtml(r.name)}
     <span class="rowtools" style="display:inline-flex;vertical-align:middle"><button type="button"
       title="Remove ${escapeHtml(r.name)} from squad" aria-label="Remove ${escapeHtml(r.name)} from squad"
       onclick="optDel('${r.baseId}')">✕</button></span>
@@ -3731,6 +4153,7 @@ function optResultCardHtml(r, pull, content, squadSize) {
     return `<span class="setchip ${full ? "full" : ""}" title="${def ? `${def.size}-mod set — max bonus +${def.bonus}${["Health","Offense","Defense","Speed"].includes(def.stat) ? "% " + def.stat : " " + def.stat}` : ""}">${def ? def.name : "?"} ×${n}${full ? " ✓" : ""}</span>`;
   }).join("");
   const picksIds = new Set(Object.values(r.res.picks).map(e => e.m.id));
+  const moveCount = Object.values(r.res.picks).filter(e => e.m.char !== r.baseId).length;
   let vs = "";
   if (r.cur) {
     const same = picksIds.size === r.cur.ids.size && [...picksIds].every(id => r.cur.ids.has(id));
@@ -3743,20 +4166,26 @@ function optResultCardHtml(r, pull, content, squadSize) {
         <a href="#" style="color:var(--accent)" onclick="optSeeBest('${jsAttr(r.name)}');return false;">full Best Mods report →</a></div>` : "";
   const reserved = squadSize > 1 ? ` · earlier squad picks reserved` : "";
   return head + community +
-    `<div class="optslots">${OPT_SLOT_KEYS.map(sl => optSlotHtml(sl, r.res.picks[sl], r.baseId, pull)).join("")}</div>
-    <div class="optsetline">${setChips}
-      <span style="margin-left:auto" title="Abstract score for comparing loadouts — not an in-game stat">score ${Math.round(r.res.total)} · ${vs}${reserved}</span></div>`;
+    `<div class="opt-summary" aria-label="Optimiser decision summary">
+       <div><b>${moveCount}</b><span>mod move${moveCount === 1 ? "" : "s"}</span></div>
+       <div><b>${vs || "baseline unavailable"}</b><span title="Recommended ${Math.round(r.res.total)}${r.cur ? ` · current ${Math.round(r.cur.total)}` : ""}">abstract score comparison</span></div>
+       <div><b class="opt-summary-sets">${setChips || "No complete set"}</b><span>${squadSize > 1 ? "earlier squad picks reserved" : "recommended sets"}</span></div>
+     </div>
+     <div class="mnote">The comparison uses this optimiser's abstract weighting score. It is not a verified combat-damage or win-rate gain.</div>
+     <div class="optslots">${OPT_SLOT_KEYS.map(sl => optSlotHtml(sl, r.res.picks[sl], r.baseId, pull)).join("")}</div>`;
 }
 function optSetupCardHtml(pull) {
   const squad = state.modopt.squad[current] || [];
-  const squadChips = squad.map(id => `<span class="optsquadchip">${escapeHtml((pull.reqs[id] && pull.reqs[id].name) || id)}
+  const acct = ACCOUNTS.find(a => a.key === current);
+  const squadChips = squad.map((id, i) => `<span class="optsquadchip"><b>${i + 1}</b> ${escapeHtml((pull.reqs[id] && pull.reqs[id].name) || id)}
       <button title="Remove" onclick="optDel('${id}')">✕</button></span>`).join("");
   const contentChips = OPT_CONTENT.map(c =>
     `<button class="optchip ${c.key === state.modopt.content ? "active" : ""}" title="${escapeHtml(c.note)}" onclick="optContent('${c.key}')">${c.label}</button>`).join("");
   const archChips = [["", "Auto"], ...Object.entries(OPT_ARCHETYPES).map(([k, a]) => [k, a.label])].map(([k, label]) =>
     `<button class="optchip ${k === state.modopt.arch ? "active" : ""}" onclick="optArch('${k}')">${label}</button>`).join("");
   const poolNote = `${pull.mods.length} mods in your pool · data: ${escapeHtml(pull.fetchedLabel || "")}`;
-  return `<div class="cardtitle">Optimise a loadout <span class="sub">— ${escapeHtml(poolNote)}</span></div>
+  const jumps = squad.map((id, i) => `<a href="#" onclick="event.preventDefault();document.querySelector('[data-card=&quot;opt-${id.toLowerCase()}&quot;]')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})">${i + 1}. ${escapeHtml((pull.reqs[id] && pull.reqs[id].name) || id)}</a>`).join("");
+  return `<div class="cardtitle">Optimise for ${escapeHtml(acct.label)} <span class="account-context">${escapeHtml(acct.label)} roster + mod pool</span> <span class="sub">— ${escapeHtml(poolNote)}</span></div>
     <div class="modsearchrow" style="margin-bottom:10px">
       <div class="combo">
         <input type="text" id="optCharInput" placeholder="Add a character from your roster… (up to 5 for a squad)"
@@ -3764,9 +4193,10 @@ function optSetupCardHtml(pull) {
       </div>
       <button class="pullbtn" style="padding:9px 16px" onclick="optAdd()">+ Add</button>
     </div>
-    ${squad.length ? `<div class="optrow"><span class="optlabel">Squad</span>${squadChips}</div>` : ""}
+    ${squad.length ? `<div class="optrow"><span class="optlabel">Squad priority</span>${squadChips}</div>` : ""}
+    ${squad.length > 1 ? `<div class="opt-jumps" aria-label="Jump to character result">${jumps}</div>` : ""}
     <div class="optrow"><span class="optlabel">Content</span>${contentChips}</div>
-    <div class="optrow"><span class="optlabel">Role</span>${archChips}</div>
+    <div class="optrow"><span class="optlabel">Role override (all)</span>${archChips}</div>
     ${squad.length ? "" : `<div class="mnote">Add a character above — content and role settings apply to everyone you add.</div>`}`;
 }
 /* Second "add" entry point, rendered after the last result card so a squad of 3-4 doesn't force a scroll
@@ -3789,6 +4219,7 @@ function renderModOpt() {
   const grid = document.getElementById("modoptGrid");
   if (!grid) return;
   const acct = ACCOUNTS.find(a => a.key === current);
+  document.getElementById("modoptTitle").innerHTML = `Mod Optimiser — your own mods, assigned <span class="account-context">${escapeHtml(acct.label)}</span>`;
   const pull = state.pulls[current];
   if (!pull) {
     grid.innerHTML = wrapCards("modopt", [{ id: "setup", w: 12, html: `<div class="cardtitle">Mod Optimiser</div>
@@ -3807,7 +4238,7 @@ function renderModOpt() {
   const squad = state.modopt.squad[current] || [];
   grid.innerHTML = wrapCards("modopt", [
     { id: "setup", w: 12, html: optSetupCardHtml(pull) },
-    ...results.map(r => ({ id: "opt-" + r.baseId.toLowerCase(), w: 12, html: optResultCardHtml(r, pull, content, results.length) })),
+    ...results.map((r, i) => ({ id: "opt-" + r.baseId.toLowerCase(), w: 12, html: optResultCardHtml(r, pull, content, results.length, i + 1) })),
     /* Only once there's a result card to follow (squad non-empty — an empty squad already has nothing but
        the setup card prompting you to add someone) and only while a slot remains (matches optAdd's own
        5-character cap; once full there's nothing this control could do). */
@@ -3866,8 +4297,10 @@ function optArch(k) { state.modopt.arch = k; store.write(state); render(); }
    jumps straight to the Mod Optimiser tab already computed. Built from "an optimize button that
    automatically choose/aligns the mods required for the different game modes & specific teams"
    request, 23 Aug 2026. */
-function optLoadTeam(names, contentKey) {
-  const pull = state.pulls[current];
+function optLoadTeam(names, contentKey, accountKey) {
+  const targetAccount = ACCOUNTS.some(a => a.key === accountKey) ? accountKey : current;
+  selectAccount(targetAccount, { store: false, render: false });
+  const pull = state.pulls[targetAccount];
   const ids = [];
   if (pull) {
     (names || []).forEach(n => {
@@ -3875,15 +4308,16 @@ function optLoadTeam(names, contentKey) {
       if (hit && !ids.includes(hit.id)) ids.push(hit.id);
     });
   }
-  state.modopt.squad[current] = ids.slice(0, 5);
+  state.modopt.squad[targetAccount] = ids.slice(0, 5);
   state.modopt.content = OPT_CONTENT.some(c => c.key === contentKey) ? contentKey : "arena";
   state.modopt.arch = "";
   store.write(state);
   switchTab("modopt");
 }
 /* Builds the onclick= for an optLoadTeam() call from a list of display names, safely escaped. */
-function optLoadTeamAttr(names, contentKey) {
-  return `optLoadTeam([${(names || []).map(n => `'${jsAttr(n)}'`).join(",")}],'${contentKey}')`;
+function optLoadTeamAttr(names, contentKey, accountKey) {
+  const targetAccount = ACCOUNTS.some(a => a.key === accountKey) ? accountKey : current;
+  return `optLoadTeam([${(names || []).map(n => `'${jsAttr(n)}'`).join(",")}],'${contentKey}','${targetAccount}')`;
 }
 function optSeeBest(name) {
   switchTab("mods");
@@ -3968,17 +4402,29 @@ function cqEnsurePlan() {
   /* build the editable plan from the snapshot once (or after a reset / new conquest) */
   const rs = cqRunStatus();
   const runId = rs && rs.runId ? rs.runId : null;
-  if (!state.cq.myPlan || state.cq.planConquest !== CQDATA.conquest) {
+  const accountCq = cqData();
+  const readOnlyLegacy = legacyMigrationPending() || legacyPlannerShared("cq");
+  const waitingForInitialSync = syncConfigured() && !initialPullSettled;
+  if (readOnlyLegacy || waitingForInitialSync) {
+    if (accountCq.myPlan && accountCq.planConquest === CQDATA.conquest) return cloneData(accountCq.myPlan);
+    const preview = {};
+    Object.entries(CQDATA.plan.days).forEach(([d, text]) => {
+      preview[d] = text.split("\n").filter(l => l.trim()).map(l => ({ t: l.trim(), done: false }));
+    });
+    return preview;
+  }
+  if (!accountCq.myPlan || accountCq.planConquest !== CQDATA.conquest) {
     const p = {};
     Object.entries(CQDATA.plan.days).forEach(([d, text]) => {
       p[d] = text.split("\n").filter(l => l.trim()).map(l => ({ t: l.trim(), done: false }));
     });
-    state.cq.myPlan = p;
-    state.cq.planConquest = CQDATA.conquest;
-    state.cq.lastSeenRun = runId;
-    state.cq.runResetNote = null;
+    accountCq.myPlan = p;
+    accountCq.planConquest = CQDATA.conquest;
+    accountCq.lastSeenRun = runId;
+    accountCq.runResetNote = null;
+    accountCq.initialized = true;
     store.write(state);
-  } else if (runId && state.cq.lastSeenRun !== runId) {
+  } else if (runId && accountCq.lastSeenRun !== runId) {
     /* Same numbered Conquest, but a NEW live occurrence has begun since the ticks were last synced —
        or this is the first load of a save that predates run tracking (lastSeenRun null), where we
        can't know which occurrence the old ticks belong to and treat them as last run's. In-game
@@ -3986,16 +4432,16 @@ function cqEnsurePlan() {
        this run. ONLY the done flags reset: edited / added / reordered / deleted step text is the
        user's own planning and is kept (↺ Reset day is the explicit way back to swgoh4.life's text). */
     let cleared = 0;
-    Object.values(state.cq.myPlan).forEach(arr => (arr || []).forEach(it => { if (it && it.done) { it.done = false; cleared++; } }));
-    const firstSync = !state.cq.lastSeenRun;
-    state.cq.lastSeenRun = runId;
-    state.cq.runResetNote = cleared ? { run: runId, cleared, firstSync } : null;
-    if (rs.live && rs.day) state.cq.day = rs.day;   // land on the inferred day once per new run; chips stay clickable
+    Object.values(accountCq.myPlan).forEach(arr => (arr || []).forEach(it => { if (it && it.done) { it.done = false; cleared++; } }));
+    const firstSync = !accountCq.lastSeenRun;
+    accountCq.lastSeenRun = runId;
+    accountCq.runResetNote = cleared ? { run: runId, cleared, firstSync } : null;
+    if (rs.live && rs.day) accountCq.day = rs.day;   // land on the inferred day once per new run; chips stay clickable
     store.write(state);
   }
-  return state.cq.myPlan;
+  return accountCq.myPlan;
 }
-function cqDismissRunNote() { state.cq.runResetNote = null; store.write(state); renderConquest(); }
+function cqDismissRunNote() { if (!preparePlannerWrite("cq")) return; cqData().runResetNote = null; store.write(state); renderConquest(); }
 /* The one-line status + collapsed provenance shown above the day chips. Wording is deliberately
    "inferred", never "is": see the cadence note above. */
 function cqRunStatusHtml(rs) {
@@ -4016,7 +4462,7 @@ function cqRunStatusHtml(rs) {
     head = "Off fortnight — between runs";
     span = `run ${rs.occurrence} of 3 ended ${cqShortDate(rs.runEnd)} · next run inferred from ${cqShortDate(rs.nextStart)}`;
   }
-  const jump = (rs.live && rs.day && !rs.stale && +state.cq.day !== rs.day)
+  const jump = (rs.live && rs.day && !rs.stale && +cqData().day !== rs.day)
     ? ` · <a href="#" onclick="event.preventDefault();cqDay(${rs.day})">go to day ${rs.day}</a>` : "";
   return `<div class="intelnote cqrun"><span class="cqrunhead">${head}</span><span class="cqrunspan">${span}${jump}</span>${eraChip("MODERATE-HIGH")}
     <details><summary>inferred from a community cadence, not read from the game — how</summary><div>
@@ -4029,39 +4475,45 @@ function cqRunStatusHtml(rs) {
     </div></details></div>`;
 }
 function cqResetDay() {
-  const d = String(state.cq.day);
+  if (!preparePlannerWrite("cq")) return;
+  const accountCq = cqData();
+  const d = String(accountCq.day);
   const text = CQDATA.plan.days[d] || "";
-  state.cq.myPlan[d] = text.split("\n").filter(l => l.trim()).map(l => ({ t: l.trim(), done: false }));
+  accountCq.myPlan[d] = text.split("\n").filter(l => l.trim()).map(l => ({ t: l.trim(), done: false }));
   store.write(state); renderConquest();
 }
 function cqToggle(d, i) {
-  const it = state.cq.myPlan[d][i]; it.done = !it.done;
+  if (!preparePlannerWrite("cq")) return;
+  const it = cqData().myPlan[d][i]; it.done = !it.done;
   store.write(state); renderConquest();
 }
-function cqDel(d, i) { state.cq.myPlan[d].splice(i, 1); store.write(state); renderConquest(); }
+function cqDel(d, i) { if (!preparePlannerWrite("cq")) return; cqData().myPlan[d].splice(i, 1); store.write(state); renderConquest(); }
 function cqMove(d, i, dir) {
-  const arr = state.cq.myPlan[d], j = i + dir;
+  if (!preparePlannerWrite("cq")) return;
+  const arr = cqData().myPlan[d], j = i + dir;
   if (j < 0 || j >= arr.length) return;
   [arr[i], arr[j]] = [arr[j], arr[i]];
   store.write(state); renderConquest();
 }
 function cqAdd(d) {
-  state.cq.myPlan[d].push({ t: "New step — click ✎ to edit", done: false });
+  if (!preparePlannerWrite("cq")) return;
+  cqData().myPlan[d].push({ t: "New step — click ✎ to edit", done: false });
   store.write(state); renderConquest();
 }
 function cqEdit(d, i, btn) {
+  if (!preparePlannerWrite("cq")) return;
   const line = btn.closest(".cqline").querySelector(".txt");
   line.contentEditable = "true"; line.focus();
   const sel = window.getSelection(); sel.selectAllChildren(line); sel.collapseToEnd();
   line.onblur = () => {
     line.contentEditable = "false";
-    state.cq.myPlan[d][i].t = line.textContent.trim() || state.cq.myPlan[d][i].t;
+    cqData().myPlan[d][i].t = line.textContent.trim() || cqData().myPlan[d][i].t;
     store.write(state); renderConquest();
   };
   line.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); line.blur(); } };
 }
 function cqView(v) { state.cq.view = v; store.write(state); renderConquest(); }
-function cqDay(d) { state.cq.day = d; store.write(state); renderConquest(); }
+function cqDay(d) { if (!preparePlannerWrite("cq")) return; cqData().day = d; store.write(state); renderConquest(); }
 function cqSector(s) { state.cq.sector = s; store.write(state); renderConquest(); }
 function cqEnemy(sel) { state.cq.enemy = sel.value; store.write(state); renderConquest(); }
 function cqToggleEnemyIntel() { state.cq.showEnemyIntel = !state.cq.showEnemyIntel; store.write(state); renderConquest(); }
@@ -4301,11 +4753,14 @@ function renderGaps(s) {
   if (!grid) return;
   const bucketLabel = { ready: "✓ Battle-ready", close: "→ 1 unit away", started: "⛭ In progress", notstarted: "· Not started" };
   const bucketOrder = { ready: 0, close: 1, started: 2, notstarted: 3 };
-  const scored = META_SQUADS.map(sq => ({ sq, st: squadStatus(sq, s.reqs || {}) }))
+  const scored = META_SQUADS.map(sq => ({ sq, st: squadStatus(sq, s.reqs || {}), uses: sq.mode.split(/\s*\/\s*|,\s*/).filter(Boolean).length }))
     .sort((a, b) => bucketOrder[a.st.bucket] - bucketOrder[b.st.bucket] || b.st.ownedN - a.st.ownedN);
+  const unfinished = scored.filter(x => x.st.bucket !== "ready");
+  const mostUses = [...unfinished].sort((a, b) => b.uses - a.uses || bucketOrder[a.st.bucket] - bucketOrder[b.st.bucket] || b.st.ownedN - a.st.ownedN);
   const scoredFleets = META_FLEETS.map(fl => ({ sq: fl, st: fleetStatus(fl, s.reqs || {}) }))
     .sort((a, b) => bucketOrder[a.st.bucket] - bucketOrder[b.st.bucket] || b.st.ownedN - a.st.ownedN);
-  document.getElementById("gapsSub").innerHTML = `Cross-references your pulled roster against a curated top-squad reference (Squad Arena, Fleet Arena, GAC, TW, raids — Sith Triumvirate, Rancor, AAT, Order 66, Naboo) to surface teams you're close to fielding and per-unit bottlenecks.` +
+  const rosterProvenance = state.pulls[current] ? "the latest saved pull" : "the built-in baseline snapshot";
+  document.getElementById("gapsSub").innerHTML = `Cross-references ${rosterProvenance} against a curated top-squad reference (Squad Arena, Fleet Arena, GAC, TW, raids — Sith Triumvirate, Rancor, AAT, Order 66, Naboo) to surface teams you're close to fielding and per-unit bottlenecks. Squad strategy reference reviewed 9 Aug 2026; roster values use the source identified here.` +
     (state.pulls[current]
       ? (state.pulls[current].charDataLive === false ? ` <b style="color:var(--accent)">swgoh.gg isn't returning per-character roster data right now — gear/relic readiness below is from ${state.pulls[current].charDataAt ? escapeHtml(new Date(state.pulls[current].charDataAt).toLocaleDateString()) : "an earlier pull"}, not this session's pull.</b>` : "")
       : ` <b style="color:var(--accent)">Showing your last saved snapshot — press "Pull latest data" for a full, live roster picture.</b>`);
@@ -4330,12 +4785,15 @@ function renderGaps(s) {
       <div class="cqteams">${x.st.rows.map(r => `<div class="cqteam" style="${r.geared ? "color:var(--ink-1)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span></div>`).join("")}</div>`
   }));
   const fleetTierCard = { id: "fleettier", html: fleetTierHtml(s.reqs || {}) };
-  sectionNav("gapsNav", "gaps", [["squads", "Priority squads"], ["all", "All squads"], ["fleets", "Fleets"], ["raids", "Raid ops"]]);
+  sectionNav("gapsNav", "gaps", [["squads", "Next upgrades"], ["closest", "Closest"], ["uses", "Most uses"], ["all", "All squads"], ["fleets", "Fleets"], ["raids", "Raid ops"]]);
   const view = state.views.gaps || "squads";
+  const bySquad = new Map(scored.map((x, i) => [x.sq.name, squadCards[i]]));
   const cards = view === "all" ? squadCards
+    : view === "closest" ? unfinished.map(x => bySquad.get(x.sq.name))
+    : view === "uses" ? mostUses.map(x => bySquad.get(x.sq.name))
     : view === "fleets" ? [...fleetCards, fleetTierCard]
     : view === "raids" ? [...noteCards, ticketCard, infoCard]
-    : squadCards.slice(0, 6);
+    : unfinished.slice(0, 6).map(x => bySquad.get(x.sq.name));
   grid.innerHTML = wrapCards("gaps", cards, "sq");
 }
 
@@ -4442,18 +4900,20 @@ function renderTW() {
   grid.innerHTML = wrapCards("tw", [{
     id: "zones", w: 12, html: `<div class="cardtitle">This war's zones <span class="sub">— log as the war unfolds</span></div>
       <div class="form-table tw-form">
-        <div class="form-head"><span>Zone</span><span>Assignee</span><span>Squad / notes</span><span>Status</span><span></span></div>
+        <div class="form-head"><span>Zone</span><span>Assignee</span><span>Squad / notes</span><span>Status / actions</span></div>
       ${state.tw.zones.map((z, i) => `
         <div class="form-row">
-          <div class="txt" contenteditable="true" onblur="twSet(${i},'name',this.textContent.trim())" style="flex:1.4">${escapeHtml(z.name)}</div>
+          <div class="form-field"><span>Zone</span><div class="txt" contenteditable="true" role="textbox" aria-label="Zone name" onblur="twSet(${i},'name',this.textContent.trim())">${escapeHtml(z.name)}</div></div>
           <label class="form-field"><span>Assignee</span><select class="cqselect" aria-label="Zone assignee" onchange="twSet(${i},'assigned',this.value)">
             <option value="" ${z.assigned === "" ? "selected" : ""}>Unassigned</option>
             <option value="ollie" ${z.assigned === "ollie" ? "selected" : ""}>Ollietank</option>
             <option value="tiny" ${z.assigned === "tiny" ? "selected" : ""}>Tiny</option>
           </select></label>
-          <div class="txt" contenteditable="true" onblur="twSet(${i},'squad',this.textContent.trim())" style="flex:1;color:var(--ink-3)" data-ph="squad/notes">${escapeHtml(z.squad)}</div>
-          <button title="Cycle status" onclick="twCycleStatus(${i})">${statusChip[z.status]}</button>
-          <div class="rowtools"><button title="Delete" onclick="twDel(${i})">✕</button></div>
+          <div class="form-field"><span>Squad / notes</span><div class="txt" contenteditable="true" role="textbox" aria-label="Squad or notes" onblur="twSet(${i},'squad',this.textContent.trim())" style="color:var(--ink-3)" data-ph="squad/notes">${escapeHtml(z.squad)}</div></div>
+          <div class="rowtools rowactions">
+            <button title="Cycle status" onclick="twCycleStatus(${i})">${statusChip[z.status]}</button>
+            <button title="Delete" onclick="twDel(${i})">✕</button>
+          </div>
         </div>`).join("") || `<div class="form-empty">No zones logged yet — add one below when the war starts.</div>`}
       </div>
       <div class="cqaddrow" style="${state.tw.zones.length ? "" : "display:flex;justify-content:center"}"><button onclick="twAdd()">+ Add a zone</button></div>`
@@ -4723,11 +5183,11 @@ function eventsListHtml(mode) {
       const st = eventStatus(e);
       return `<div class="form-row cqline-event">
         <div style="min-width:76px;font-weight:650;${st.style}">${st.label}</div>
-        <div class="txt" contenteditable="true" onblur="eventSet('${e.id}','name',this.textContent.trim())" style="flex:1.3;min-width:176px">${escapeHtml(e.name)}</div>
+        <div class="form-field"><span>Event</span><div class="txt" contenteditable="true" role="textbox" aria-label="Event name" onblur="eventSet('${e.id}','name',this.textContent.trim())">${escapeHtml(e.name)}</div></div>
         <span class="chip ${EVENT_CAT_CHIP[e.cat] || "watch"}" style="white-space:nowrap">${chipGlyph(EVENT_CAT_CHIP[e.cat] || "watch")} ${escapeHtml(e.cat)}</span>
         <label class="form-field"><span>Starts</span><input type="date" class="cqselect" aria-label="Event start date" title="Starts" value="${escapeHtml(e.date)}" onchange="eventSet('${e.id}','date',this.value)"></label>
         <label class="form-field"><span>Ends</span><input type="date" class="cqselect" aria-label="Event end date" title="Ends (optional)" value="${escapeHtml(e.ends || "")}" onchange="eventSet('${e.id}','ends',this.value)"></label>
-        <div class="txt" contenteditable="true" onblur="eventSet('${e.id}','note',this.textContent.trim())" style="flex:1.6;min-width:150px;color:var(--ink-3)">${escapeHtml(e.note || "notes…")}</div>
+        <div class="form-field"><span>Notes</span><div class="txt" contenteditable="true" role="textbox" aria-label="Event notes" onblur="eventSet('${e.id}','note',this.textContent.trim())" style="color:var(--ink-3)">${escapeHtml(e.note || "notes…")}</div></div>
         <div class="rowtools"><button title="Delete" onclick="eventDel('${e.id}')">✕</button></div>
       </div>`;
     }).join("") || `<div class="form-empty">No events tracked — add one below.</div>`}
@@ -4746,29 +5206,30 @@ function renderEvents() {
 }
 
 /* ===================== GAC Counter & Offense Planner ===================== */
-const gacZoneCrud = makeListCrud(() => state.gac.zones,
-  () => ({ zone: `Zone ${state.gac.zones.length + 1}`, defIdx: "", note: "" }), renderGac);
-function gacZoneAdd() { gacZoneCrud.add(); }
-function gacZoneSet(i, field, val) { gacZoneCrud.set(i, field, val); }
-function gacZoneDel(i) { gacZoneCrud.del(i); }
-const gacOffCrud = makeListCrud(() => state.gac.offense, () => ({ squad: "New squad", zone: "" }), renderGac);
-function gacOffAdd() { gacOffCrud.add(); }
-function gacOffSet(i, field, val) { gacOffCrud.set(i, field, val); }
-function gacOffDel(i) { gacOffCrud.del(i); }
-function gacOffMove(i, dir) { gacOffCrud.move(i, dir); }
+const gacZoneCrud = makeListCrud(() => gacData().zones,
+  () => ({ zone: `Zone ${gacData().zones.length + 1}`, defIdx: "", note: "" }), render);
+function gacZoneAdd() { if (preparePlannerWrite("gac")) gacZoneCrud.add(); }
+function gacZoneSet(i, field, val) { if (preparePlannerWrite("gac")) gacZoneCrud.set(i, field, val); }
+function gacZoneDel(i) { if (preparePlannerWrite("gac")) gacZoneCrud.del(i); }
+const gacOffCrud = makeListCrud(() => gacData().offense, () => ({ squad: "New squad", zone: "" }), render);
+function gacOffAdd() { if (preparePlannerWrite("gac")) gacOffCrud.add(); }
+function gacOffSet(i, field, val) { if (preparePlannerWrite("gac")) gacOffCrud.set(i, field, val); }
+function gacOffDel(i) { if (preparePlannerWrite("gac")) gacOffCrud.del(i); }
+function gacOffMove(i, dir) { if (preparePlannerWrite("gac")) gacOffCrud.move(i, dir); }
 function gacZonesHtml() {
+  const gac = gacData();
   return `<div class="cardtitle">Opponent zone intel <span class="sub">— log what they defended</span></div>
     <div class="form-table gac-zones-form">
       <div class="form-head"><span>Zone</span><span>Opponent defense</span><span>Notes</span><span></span></div>
-    ${state.gac.zones.map((z, i) => {
+    ${gac.zones.map((z, i) => {
       const matched = z.defIdx !== "" && GAC_COUNTERS[z.defIdx];
       return `<div class="form-row">
-        <div class="txt" contenteditable="true" onblur="gacZoneSet(${i},'zone',this.textContent.trim())" style="flex:0.5">${escapeHtml(z.zone)}</div>
+        <div class="form-field"><span>Zone</span><div class="txt" contenteditable="true" role="textbox" aria-label="GAC zone" onblur="gacZoneSet(${i},'zone',this.textContent.trim())">${escapeHtml(z.zone)}</div></div>
         <label class="form-field"><span>Opponent defense</span><select class="cqselect" aria-label="Opponent defense" onchange="gacZoneSet(${i},'defIdx',this.value)">
           <option value="">— pick opponent defense —</option>
           ${GAC_COUNTERS.map((c, ci) => `<option value="${ci}" ${String(z.defIdx) === String(ci) ? "selected" : ""}>${escapeHtml(c.def)}</option>`).join("")}
         </select></label>
-        <div class="txt" contenteditable="true" onblur="gacZoneSet(${i},'note',this.textContent.trim())" style="flex:1;color:var(--ink-3)">${escapeHtml(z.note || "notes…")}</div>
+        <div class="form-field"><span>Notes</span><div class="txt" contenteditable="true" role="textbox" aria-label="GAC zone notes" onblur="gacZoneSet(${i},'note',this.textContent.trim())" style="color:var(--ink-3)">${escapeHtml(z.note || "notes…")}</div></div>
         <div class="rowtools"><button title="Delete" onclick="gacZoneDel(${i})">✕</button></div>
       </div>
       ${matched ? `<div class="prog-summary" style="margin:2px 0 10px 4px">→ Counter: <b style="color:var(--accent)">${escapeHtml(matched.counter)}</b> — ${escapeHtml(matched.why)}</div>` : ""}`;
@@ -4776,18 +5237,21 @@ function gacZonesHtml() {
     </div>`;
 }
 function gacOffenseHtml() {
+  const gac = gacData();
   return `<div class="cardtitle">Offense / banner order <span class="sub">— plan the sequence before you commit</span></div>
     <div class="mnote">Order top to bottom = attack order. Bank your safest, cheapest wins first; save your best counter-squad for the zone it's built for.</div>
     <div class="form-table gac-offense-form">
-      <div class="form-head"><span>#</span><span>Squad</span><span>Zone / banner target</span><span></span><span></span><span></span></div>
-    ${state.gac.offense.map((o, i) => `
+      <div class="form-head"><span>#</span><span>Squad</span><span>Zone / banner target</span><span>Actions</span></div>
+    ${gac.offense.map((o, i) => `
       <div class="form-row">
         <span style="color:var(--ink-3);font-family:'Orbitron',system-ui,sans-serif;font-size:12px;width:18px">${i + 1}</span>
-        <div class="txt" contenteditable="true" onblur="gacOffSet(${i},'squad',this.textContent.trim())" style="flex:1.2">${escapeHtml(o.squad)}</div>
-        <div class="txt" contenteditable="true" onblur="gacOffSet(${i},'zone',this.textContent.trim())" style="flex:0.6;color:var(--ink-3)">${escapeHtml(o.zone || "zone/banner…")}</div>
-        <button title="Move up" onclick="gacOffMove(${i},-1)">↑</button>
-        <button title="Move down" onclick="gacOffMove(${i},1)">↓</button>
-        <div class="rowtools"><button title="Delete" onclick="gacOffDel(${i})">✕</button></div>
+        <div class="form-field"><span>Squad</span><div class="txt" contenteditable="true" role="textbox" aria-label="Offense squad" onblur="gacOffSet(${i},'squad',this.textContent.trim())">${escapeHtml(o.squad)}</div></div>
+        <div class="form-field"><span>Zone / banner target</span><div class="txt" contenteditable="true" role="textbox" aria-label="Zone or banner target" onblur="gacOffSet(${i},'zone',this.textContent.trim())" style="color:var(--ink-3)">${escapeHtml(o.zone || "zone/banner…")}</div></div>
+        <div class="rowtools rowactions">
+          <button title="Move up" onclick="gacOffMove(${i},-1)">↑</button>
+          <button title="Move down" onclick="gacOffMove(${i},1)">↓</button>
+          <button title="Delete" onclick="gacOffDel(${i})">✕</button>
+        </div>
       </div>`).join("") || `<div class="form-empty">No offense plan yet — add your squads in attack order.</div>`}
     </div>
     <div class="cqaddrow"><button onclick="gacOffAdd()">+ Add to offense order</button></div>`;
@@ -4899,7 +5363,7 @@ function gacDefenseForAccount(acctKey) {
     .sort((a, b) => a.bucketRank - b.bucketRank || a.tierRank - b.tierRank || b.wr - a.wr);
   return { squads: squads.slice(0, 5), fleets: fleets.slice(0, 2) };
 }
-function gacDefenseRowHtml(x) {
+function gacDefenseRowHtml(x, acctKey) {
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
   const bucketLabel = { ready: "✓ ready", close: "→ 1 away", started: "⛭ in progress", notstarted: "· not started" };
   /* Fleets share this row renderer but ships don't carry mods — [name, reqStars] members (2nd item a
@@ -4910,7 +5374,7 @@ function gacDefenseRowHtml(x) {
     <span style="flex:1;color:var(--ink-1);font-weight:600">${escapeHtml(x.sq.name)}</span>
     ${x.tl ? `<span class="chip ${TIER_CHIP[x.tl.tier] || "watch"}" style="min-width:26px;justify-content:center" title="${x.tl.wr}% WR · ${x.tl.battles} battles, live Tier List">${x.tl.tier}</span>` : ""}
     ${isFleet ? "" : `<button class="pullbtn" style="padding:3px 8px;font-size:11px" title="Optimize mods for ${escapeHtml(x.sq.name)} (Mod Optimiser, GAC/TW content)"
-      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "gac")}">⚙</button>`}
+      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "gac", acctKey)}">⚙</button>`}
   </div>`;
 }
 function gacDefenseBodyHtml() {
@@ -4918,8 +5382,8 @@ function gacDefenseBodyHtml() {
     const d = gacDefenseForAccount(a.key);
     return `<div style="margin-top:10px">
       <div style="font-weight:700;color:var(--accent);font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">${escapeHtml(a.label)}</div>
-      ${d.squads.map(gacDefenseRowHtml).join("")}
-      ${d.fleets.map(gacDefenseRowHtml).join("")}
+      ${d.squads.map(x => gacDefenseRowHtml(x, a.key)).join("")}
+      ${d.fleets.map(x => gacDefenseRowHtml(x, a.key)).join("")}
     </div>`;
   }).join("");
 }
@@ -4958,7 +5422,7 @@ function squadArenaCandidates(acctKey) {
     })
     .sort((a, b) => a.bucketRank - b.bucketRank || a.tierRank - b.tierRank || b.wr - a.wr || b.overlap.length - a.overlap.length);
 }
-function squadArenaBlockHtml(x, label, v) {
+function squadArenaBlockHtml(x, label, v, acctKey) {
   if (!x) return "";
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
   const bucketLabel = { ready: "✓ battle-ready", close: "→ 1 unit away", started: "⛭ in progress", notstarted: "· not started" };
@@ -4970,7 +5434,7 @@ function squadArenaBlockHtml(x, label, v) {
     <div class="cqteams">${x.st.rows.map((r, i) => `<div class="cqteam" style="${r.geared ? "color:var(--ink-1)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">${i === 0 ? '<span style="color:var(--accent);font-weight:700">(L)</span> ' : ""}${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span></div>`).join("")}</div>
     ${x.overlap.length ? `<div class="prog-summary" style="color:var(--good)">✓ ${x.overlap.length} of these members also count toward ${escapeHtml(v.gl.name)} — gearing this squad is double-duty.</div>` : ""}
     <button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-top:6px" title="Loads this team's owned members into the Mod Optimiser, pre-set for Squad Arena content"
-      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "arena")}">⚙ Optimize mods</button>
+      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "arena", acctKey)}">⚙ Optimize mods</button>
   </div>`;
 }
 function squadArenaCoachHtml(acctKey) {
@@ -4981,8 +5445,8 @@ function squadArenaCoachHtml(acctKey) {
   const second = candidates.find(c => c !== top && c.st.bucket !== "notstarted") || (candidates.length > 1 ? candidates[1] : null);
   return `<div class="cardtitle">Squad Arena — attack &amp; defense</div>
     <div class="mnote">Ranked by what's actually battle-ready on this roster first, live Tier List standing second (5v5 GAC data — Squad Arena has no dedicated tier list of its own, but the same top comps generally hold both). Squads that also feed your current GL goal are called out below — free double progress on gearing.</div>
-    ${squadArenaBlockHtml(top, "Recommended defense &amp; primary attack", v)}
-    ${second ? squadArenaBlockHtml(second, "Backup / secondary attack", v) : ""}`;
+    ${squadArenaBlockHtml(top, "Recommended defense &amp; primary attack", v, acctKey)}
+    ${second ? squadArenaBlockHtml(second, "Backup / secondary attack", v, acctKey) : ""}`;
 }
 /* ===================== Raid Team Coach (Game modes) ===================== */
 /* Per-raid team coaching: which of the tracked raid squads (RAID_INTEL → META_SQUADS by name) are
@@ -5005,7 +5469,7 @@ function raidCoachForRaid(ri, acctKey) {
    squad carries one (raid squads researched 23 Aug 2026 onward do; older entries without a
    `confidence` field simply omit the chip). Built from "show FULL optimal teams... leader shown,
    represented by an (L)" request, 23 Aug 2026. */
-function raidCoachRowHtml(x) {
+function raidCoachRowHtml(x, acctKey) {
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
   const bucketLabel = { ready: "✓ battle-ready", close: "→ 1 unit away", started: "⛭ in progress", notstarted: "· not started" };
   const tierLabel = x.sq.raidTier === "top" ? "work towards" : x.sq.raidTier === "budget" ? "budget option" : "";
@@ -5023,11 +5487,11 @@ function raidCoachRowHtml(x) {
     ${x.sq.notes ? `<div class="intelnote">${escapeHtml(x.sq.notes)}</div>` : ""}
     ${x.sq.sources ? `<div class="srcline">Sources: ${escapeHtml(x.sq.sources.join(" · "))}</div>` : ""}
     <button class="pullbtn" style="padding:5px 12px;font-size:11.5px;margin-top:6px" title="Loads this team's owned members into the Mod Optimiser, pre-set for Raids content"
-      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "raids")}">⚙ Optimize mods</button>
+      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "raids", acctKey)}">⚙ Optimize mods</button>
   </div>`;
 }
 function raidCoachHtmlForRaid(ri, detail, squadIndex) {
-  const accounts = detail === "tiny" ? ACCOUNTS.filter(a => a.key === "tiny") : detail === "notes" ? [] : ACCOUNTS.filter(a => a.key === "ollie");
+  const accounts = detail === "notes" ? [] : detail === "compare" ? ACCOUNTS : ACCOUNTS.filter(a => a.key === detail);
   return `<div class="cardtitle">${escapeHtml(ri.label)} <span class="sub">— best available now vs. what to build towards</span></div>
     <div class="mnote">Full team rosters below — leader always marked (L). Cross-referenced against each account's pulled roster (7★ G12+ = battle-ready) — same readiness logic as Roster Gaps. "Work towards" marks the aspirational/max-score build; "budget option" is the cheaper alternative that still clears well. Each squad's own confidence chip and sources reflect how well-corroborated that exact roster is — verify anything below HIGH/MODERATE-HIGH before committing relic investment. Notes at the bottom cover mechanics and alternatives that never resolved to a checkable roster.</div>
     ${accounts.map(a => {
@@ -5035,7 +5499,7 @@ function raidCoachHtmlForRaid(ri, detail, squadIndex) {
       const shown = rows.length ? [rows[Math.min(+squadIndex || 0, rows.length - 1)]] : [];
       return `<div style="margin-top:12px">
         <div style="font-weight:700;color:var(--accent);font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">${escapeHtml(a.label)}</div>
-        ${shown.length ? shown.map(raidCoachRowHtml).join("") : `<div class="mnote" style="margin-top:2px">No single fixed squad — see notes below.</div>`}
+        ${shown.length ? shown.map(x => raidCoachRowHtml(x, a.key)).join("") : `<div class="mnote" style="margin-top:2px">No single fixed squad — see notes below.</div>`}
       </div>`;
     }).join("")}
     ${detail === "notes" ? `${ri.notes.map(n => `<div class="mnote" style="margin-top:7px">${escapeHtml(n)}</div>`).join("")}
@@ -5048,16 +5512,22 @@ function renderRaids() {
   const nav = document.getElementById("raidNav");
   if (!nav) return;
   const cur = RAID_INTEL.find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];
-  nav.innerHTML = RAID_INTEL.map(r => `<button class="${cur.key === r.key ? "active" : ""}" onclick="raidView('${r.key}')">${escapeHtml(r.label)}</button>`).join("");
-  const detail = state.modesnav.raidDetail || "ollie";
+  nav.innerHTML = `<label class="mode-select-row"><span>Raid</span><select class="cqselect" onchange="raidView(this.value)">${RAID_INTEL.map(r => `<option value="${r.key}" ${cur.key === r.key ? "selected" : ""}>${escapeHtml(r.label)}</option>`).join("")}</select></label>` +
+    `<div class="mobile-mode-buttons">${RAID_INTEL.map(r => `<button class="${cur.key === r.key ? "active" : ""}" onclick="raidView('${r.key}')">${escapeHtml(r.label)}</button>`).join("")}</div>`;
+  let detail = state.modesnav.raidDetail || current;
+  if (![current, "compare", "notes"].includes(detail)) detail = current;
   const detailNav = document.getElementById("raidDetailNav");
-  if (detailNav) detailNav.innerHTML = [["ollie","Ollietank"],["tiny","Tiny"],["notes","Mechanics & notes"]].map(x => `<button class="${detail === x[0] ? "active" : ""}" onclick="raidDetail('${x[0]}')">${x[1]}</button>`).join("");
+  const currentLabel = ACCOUNTS.find(a => a.key === current).label;
+  const detailItems = [[current,currentLabel],["compare","Compare accounts"],["notes","Mechanics & notes"]];
+  if (detailNav) detailNav.innerHTML = `<label class="mode-select-row"><span>Account</span><select class="cqselect" onchange="raidDetail(this.value)">${detailItems.map(x => `<option value="${x[0]}" ${detail === x[0] ? "selected" : ""}>${x[1]}</option>`).join("")}</select></label>` +
+    `<div class="mobile-mode-buttons">${detailItems.map(x => `<button class="${detail === x[0] ? "active" : ""}" onclick="raidDetail('${x[0]}')">${x[1]}</button>`).join("")}</div>`;
   const squadNav = document.getElementById("raidSquadNav");
-  const detailRows = detail === "notes" ? [] : raidCoachForRaid(cur, detail);
+  const detailRows = detail === "notes" ? [] : raidCoachForRaid(cur, detail === "compare" ? current : detail);
   let squadIndex = Math.min(+(state.modesnav.raidSquad || 0), Math.max(0, detailRows.length - 1));
   if (squadNav) {
     squadNav.style.display = detailRows.length > 1 ? "" : "none";
-    squadNav.innerHTML = detailRows.map((x, i) => `<button class="${squadIndex === i ? "active" : ""}" onclick="raidSquad('${i}')">${escapeHtml(x.sq.name)}</button>`).join("");
+    squadNav.innerHTML = `<label class="mode-select-row"><span>Squad</span><select class="cqselect" onchange="raidSquad(this.value)">${detailRows.map((x, i) => `<option value="${i}" ${squadIndex === i ? "selected" : ""}>${escapeHtml(x.sq.name)}</option>`).join("")}</select></label>` +
+      `<div class="mobile-mode-buttons">${detailRows.map((x, i) => `<button class="${squadIndex === i ? "active" : ""}" onclick="raidSquad('${i}')">${escapeHtml(x.sq.name)}</button>`).join("")}</div>`;
   }
   const body = document.getElementById("raidBody");
   if (body) body.innerHTML = `<div class="card">${raidCoachHtmlForRaid(cur, detail, squadIndex)}</div>`;
@@ -5066,15 +5536,17 @@ function renderRaids() {
 function renderGac() {
   const grid = document.getElementById("gacGrid");
   if (!grid) return;
-  sectionNav("gacNav", "gac", [["plan", "Scout & plan"], ["defense", "Defense"], ["counters", "Counters"]]);
+  const acct = ACCOUNTS.find(a => a.key === current);
+  document.getElementById("gacTitle").innerHTML = `Grand Arena Championships — counter &amp; offense planner <span class="account-context">${escapeHtml(acct.label)}</span>`;
+  sectionNav("gacNav", "gac", [["plan", "Scout & plan"], ["defense", "Defense"], ["counters", "Counters"], ["career", "Career totals"]]);
   const view = state.views.gac || "plan";
   const add = document.getElementById("gacAddZone");
   if (add) add.style.display = view === "plan" ? "" : "none";
   const seasonHtml = gacSeasonHtml();
   const cards = view === "defense" ? [{ id: "defense", w: 12, html: gacDefenseHtml() }]
     : view === "counters" ? [{ id: "counters", w: 12, html: gacCountersHtml() }]
-    : [{ id: "zones", w: 6, html: gacZonesHtml() }, { id: "offense", w: 6, html: gacOffenseHtml() },
-       ...(seasonHtml ? [{ id: "season", w: 12, html: seasonHtml }] : [])];
+    : view === "career" ? [{ id: "season", w: 12, html: seasonHtml || `<div class="emptystate">Career totals need a live data pull.</div>` }]
+    : [{ id: "zones", w: 6, html: gacZonesHtml() }, { id: "offense", w: 6, html: gacOffenseHtml() }];
   grid.innerHTML = wrapCards("gac", cards);
 }
 
@@ -5115,7 +5587,7 @@ function shoppingListHtml(s, v, limit) {
       need.set(bid, e);
     });
   });
-  const list = [...need.values()].sort((a, b) => b.pct - a.pct);
+  const list = [...need.values()].sort((a, b) => b.sources.length - a.sources.length || b.pct - a.pct || a.name.localeCompare(b.name));
   if (!list.length) return `<div class="cardtitle">Cross-farm shopping list</div><div class="emptystate">Nothing outstanding right now — every tracked requirement and squad member is done.</div>`;
   const shown = limit ? list.slice(0, limit) : list;
   /* Multi-column instead of one-per-line: at 80+ entries this list ran a full screen tall in a single
@@ -5174,7 +5646,8 @@ function renderConquest() {
   const nav = document.getElementById("cqNav");
   if (!nav) return;
   const meta = document.getElementById("cqMeta");
-  document.getElementById("cqTitle").textContent = `Conquest ${CQDATA.conquest}`;
+  const acct = ACCOUNTS.find(a => a.key === current);
+  document.getElementById("cqTitle").innerHTML = `Conquest ${CQDATA.conquest} <span class="account-context">${escapeHtml(acct.label)} daily plan</span>`;
   /* cqEnsurePlan runs on EVERY view (not just plan) so a new run's tick reset happens as soon as the tab
      is opened, whichever sub-view was left selected. */
   const plan = cqEnsurePlan();
@@ -5191,8 +5664,9 @@ function renderConquest() {
   const body = document.getElementById("cqBody");
 
   if (state.cq.view === "plan") {
-    const d = String(state.cq.day);
-    const note = state.cq.runResetNote;
+    const accountCq = cqData();
+    const d = String(accountCq.day);
+    const note = accountCq.runResetNote;
     const resetNote = note && note.cleared
       ? `<div class="intelnote cqrun"><span class="cqrunspan">Cleared <b>${note.cleared}</b> ✓ tick${note.cleared === 1 ? "" : "s"} carried over from a previous run — a run starting ${cqShortDate(note.run)} begins from zero in-game${note.firstSync ? " (first load with per-run tracking, so older ticks couldn't be dated)" : ""}. Your step edits were kept; re-tick anything you've already done this run.</span> <a href="#" onclick="event.preventDefault();cqDismissRunNote()">dismiss</a></div>`
       : "";
@@ -5230,7 +5704,7 @@ function renderConquest() {
         const dayItems = plan[k] || [];
         const allDone = dayItems.length && dayItems.every(i => i.done);
         const isToday = inferredDay !== null && +k === inferredDay;
-        return `<button class="${+k === +state.cq.day ? "active" : ""}${isToday ? " today" : ""}"${isToday ? ` title="Inferred current day (see status line)"` : ""} onclick="cqDay(${k})">${allDone ? "✓" : ""}${k}</button>`;
+        return `<button class="${+k === +accountCq.day ? "active" : ""}${isToday ? " today" : ""}"${isToday ? ` title="Inferred current day (see status line)"` : ""} onclick="cqDay(${k})">${allDone ? "✓" : ""}${k}</button>`;
       }).join("")}</div>
       <div class="cqprefs">
         <span class="cqpreflabel">Display preferences</span>
@@ -5375,11 +5849,18 @@ function renderSyncStatus() {
    re-pushing the exact thing we just pulled. */
 function mergeRemoteState(remote) {
   if (!remote || typeof remote !== "object") return;
+  const remoteVersion = typeof remote.stateVersion === "number" ? remote.stateVersion : 0;
+  const remoteUpdatedAt = remote.updatedAt || 0;
   const merged = mergeDefaults(Object.assign({}, remote), defaultState());
+  const migrated = migrateState(merged, remoteVersion);
+  const maintained = applyBootMaintenance(merged);
+  merged.updatedAt = remoteUpdatedAt;
   state = merged;
+  schemaMigrationPendingPush = migrated || maintained;
   clearTimeout(syncPushTimer);
   store.write(state, { skipStamp: true, skipSync: true });
-  current = ACCOUNTS.some(a => a.key === current) ? current : ACCOUNTS[0].key;
+  const localAccount = accountUiRead();
+  selectAccount(ACCOUNTS.some(a => a.key === localAccount) ? localAccount : (ACCOUNTS.some(a => a.key === state.currentAccount) ? state.currentAccount : ACCOUNTS[0].key), { store: false, render: false });
   curTab = SUBTABS.some(t => t.key === state.tab) ? state.tab : curTab;
   render();
 }
@@ -5403,9 +5884,13 @@ async function syncPull(showStatus) {
     return null;
   }
 }
-async function syncPush() {
+async function syncPush(stampAfterInitialPull) {
   if (!syncConfigured() || !syncOriginOk()) return;
   if (initialPullPromise && !initialPullSettled) { try { await initialPullPromise; } catch (e) {} }
+  if (stampAfterInitialPull) {
+    state.updatedAt = Date.now();
+    store.write(state, { skipStamp: true, skipSync: true });
+  }
   syncSetStatus("syncing");
   const payload = Object.assign({}, state);
   try {
@@ -5447,7 +5932,13 @@ function syncInit() {
     initialPullSettled = true;
     return;
   }
-  initialPullPromise = syncPull(true).then(r => { if (r && r.exists === false) syncPush(); }).finally(() => { initialPullSettled = true; });
+  initialPullPromise = syncPull(true).finally(() => { initialPullSettled = true; });
+  initialPullPromise.then(r => {
+    if (r && (r.exists === false || schemaMigrationPendingPush)) {
+      schemaMigrationPendingPush = false;
+      syncPush(true);
+    }
+  });
 }
 
 function openSyncModal() {
@@ -5481,9 +5972,15 @@ async function syncSaveAndTest() {
     syncCfg.lastSha = r.sha; syncCfgWrite(syncCfg);
     if (r.exists && (r.data.updatedAt || 0) > (state.updatedAt || 0)) {
       mergeRemoteState(r.data);
-      ms.textContent = "Connected — pulled newer data from GitHub and applied it here.";
+      if (schemaMigrationPendingPush) {
+        schemaMigrationPendingPush = false;
+        await syncPush(true);
+        ms.textContent = "Connected — pulled newer data, applied safe startup maintenance, and synced it back.";
+      } else ms.textContent = "Connected — pulled newer data from GitHub and applied it here.";
     } else {
-      await syncPush();
+      const stampMaintenance = schemaMigrationPendingPush;
+      schemaMigrationPendingPush = false;
+      await syncPush(stampMaintenance);
       ms.textContent = r.exists ? "Connected — this device's data was newer, pushed it to GitHub." : "Connected — seeded the repo with this device's data.";
     }
     ms.style.color = "var(--good)";
@@ -5521,7 +6018,7 @@ function toggleShow(key) { state.layout.show[key] = !state.layout.show[key]; sto
 function toggleSidebar() { state.layout.sidebarCollapsed = !state.layout.sidebarCollapsed; store.write(state); render(); }
 function setDensity(d) { state.layout.density = d; store.write(state); render(); }
 function resetLayout() {
-  state.layout = { order: {}, hidden: {}, size: {}, density: "cozy",
+  state.layout = { order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags"] }, hidden: {}, size: {}, density: "cozy", sidebarCollapsed: true,
                    show: { tiles: true, epigraph: true, banner: true } };
   store.write(state); render();
 }
@@ -5629,8 +6126,48 @@ const chipGlyph = cls => CHIP_GLYPH[cls] || "•";
 const chipText = { done: "✓ Done", close: "→ Close", stargate: "★ Star-gated", grind: "⛭ Long grind" };
 const sevText = { fixnow: "! Fix now", improve: "↗ Improve", watch: "◉ Watch", keep: "✓ Keep doing" };
 const fmtM = n => n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n.toLocaleString();
-let current = "ollie";
-let curTab = (state.tab && SUBTABS.some(t => t.key === state.tab)) ? state.tab : "overview";
+const initialHash = new URLSearchParams(location.hash.replace(/^#/, ""));
+const hashAccount = initialHash.get("account"), hashTab = initialHash.get("tab");
+const savedLocalAccount = accountUiRead();
+let current = ACCOUNTS.some(a => a.key === hashAccount) ? hashAccount : (ACCOUNTS.some(a => a.key === savedLocalAccount) ? savedLocalAccount : (ACCOUNTS.some(a => a.key === state.currentAccount) ? state.currentAccount : "ollie"));
+let curTab = SUBTABS.some(t => t.key === hashTab) ? hashTab : ((state.tab && SUBTABS.some(t => t.key === state.tab)) ? state.tab : "overview");
+accountUiWrite(current);
+
+function selectAccount(k, opts) {
+  opts = opts || {};
+  if (!ACCOUNTS.some(a => a.key === k)) return false;
+  current = k;
+  state.currentAccount = k;
+  accountUiWrite(k);
+  if (!["compare", "notes"].includes(state.modesnav.raidDetail)) state.modesnav.raidDetail = k;
+  if (opts.store) store.write(state);
+  if (opts.render) render();
+  return true;
+}
+function cycleAccount() {
+  const i = ACCOUNTS.findIndex(a => a.key === current);
+  selectAccount(ACCOUNTS[(i + 1) % ACCOUNTS.length].key, { store: true, render: true });
+}
+
+function updateDeepLink() {
+  const next = `#tab=${encodeURIComponent(curTab)}&account=${encodeURIComponent(current)}`;
+  if (location.hash !== next) history.replaceState(null, "", next);
+}
+function toggleMorePanel(force) {
+  const panel = document.getElementById("morePanel");
+  if (!panel) return;
+  const open = typeof force === "boolean" ? force : !panel.classList.contains("open");
+  panel.classList.toggle("open", open);
+  panel.setAttribute("aria-hidden", String(!open));
+  const trigger = document.getElementById("moreButton");
+  if (trigger) trigger.setAttribute("aria-expanded", String(open));
+  if (open) {
+    const first = panel.querySelector("button");
+    if (first) first.focus();
+  } else if (force === false && document.activeElement && panel.contains(document.activeElement) && trigger) {
+    trigger.focus();
+  }
+}
 
 const tickbox = (k, text, note) =>
   `<label class="item"><input type="checkbox" data-k="${k}" onchange="tick(this)">
@@ -5798,9 +6335,10 @@ function render() {
   const s = v.src;
 
   document.body.dataset.tab = curTab;
+  document.body.classList.toggle("data-fresh", !!state.lastPull && Date.now() - state.lastPull < 20 * 3600 * 1000);
   document.body.classList.toggle("compact", state.layout.density === "compact");
   document.body.classList.toggle("sidebar-collapsed", !!state.layout.sidebarCollapsed);
-  const mobileNavOpen = window.innerWidth <= 900 && !state.layout.sidebarCollapsed;
+  const mobileNavOpen = false;
   document.body.classList.toggle("nav-open", mobileNavOpen);
   document.getElementById("sidebarBtn").setAttribute("aria-expanded", String(!state.layout.sidebarCollapsed));
   document.getElementById("sidebarBtn").setAttribute("aria-controls", "sidebar");
@@ -5821,14 +6359,17 @@ function render() {
   document.getElementById("tabs").innerHTML = ACCOUNTS.map(a =>
     `<button class="tab ${a.key === current ? "active" : ""}" ${a.key === current ? 'aria-current="page"' : ""} onclick="switchAcct('${a.key}')">
        <span class="tname">${a.label}</span><span class="tcode">${a.codeFmt}</span></button>`).join("");
+  document.getElementById("accountBar").innerHTML = `<span class="account-bar-label">Account</span>` + ACCOUNTS.map(a =>
+    `<button class="account-choice ${a.key === current ? "active" : ""}" aria-pressed="${a.key === current}" onclick="switchAcct('${a.key}')">${a.label}</button>`).join("");
 
-  const tipCount = TIPS[current].filter(t => t.sev === "fixnow").length;
+  const tipCount = activeTips(current, s.reqs || {}, ["fixnow"]).length;
   /* Live status badges on the nav. Same <span class="cnt"> treatment the GL Roadmap and Coach's Corner
      badges already use — every number below is computed from data this file already tracks, never
      invented. (UX/IA design-review recommendation, 28 Aug 2026.) */
   const gapsReady = META_SQUADS.filter(sq => squadStatus(sq, s.reqs || {}).bucket === "ready").length;
-  const gacPlanned = (state.gac.offense || []).length;
-  const gacZones = (state.gac.zones || []).length;
+  const activeGac = gacData();
+  const gacPlanned = (activeGac.offense || []).length;
+  const gacZones = (activeGac.zones || []).length;
   const cntLabel = { overview: "", leia: ` <span class="cnt">${v.doneCount}/${v.reqRows.length}</span>`,
                      coach: ` <span class="cnt">${tipCount} red</span>`, farm: "", modes: "",
                      gaps: ` <span class="cnt">${gapsReady}/${META_SQUADS.length} ready</span>`,
@@ -5842,7 +6383,23 @@ function render() {
     const t = SUBTABS.find(x => x.key === k);
     return `<button class="${k === curTab ? "active" : ""}" role="tab" aria-selected="${k === curTab}" onclick="switchTab('${k}')">${t.label}${cntLabel[k] || ""}</button>`;
   }).join("");
+  document.getElementById("localRouteList").innerHTML = activeGroup.keys.map(k => {
+    const t = SUBTABS.find(x => x.key === k);
+    return `<button class="${k === curTab ? "active" : ""}" aria-current="${k === curTab ? "page" : "false"}" onclick="switchTab('${k}')">${t.label}${cntLabel[k] || ""}</button>`;
+  }).join("");
+  const mobileGroups = NAV_GROUPS.filter(gp => gp.key !== "reference");
+  document.getElementById("mobileWorkspaces").innerHTML = mobileGroups.map(grp =>
+    `<button class="${grp === activeGroup ? "active" : ""}" aria-current="${grp === activeGroup ? "page" : "false"}" onclick="toggleMorePanel(false);switchGroup('${grp.key}')">${grp.label}</button>`
+  ).join("") + `<button id="moreButton" class="${activeGroup.key === "reference" ? "active" : ""}" aria-controls="morePanel" aria-expanded="${document.getElementById("morePanel").classList.contains("open")}" onclick="toggleMorePanel()">More</button>
+    <button class="mobile-account-switch" title="Switch account" aria-label="Current account ${escapeHtml(acct.label)}; switch account" onclick="cycleAccount()">${escapeHtml(acct.label)} ⇄</button>`;
+  document.getElementById("moreReference").innerHTML = `<button class="${activeGroup.key === "reference" ? "active" : ""}" onclick="switchGroup('reference');toggleMorePanel(false)">Reference</button>` +
+    NAV_GROUPS.find(gp => gp.key === "reference").keys.map(k => {
+      const t = SUBTABS.find(x => x.key === k);
+      return `<button class="${k === curTab ? "active" : ""}" onclick="switchTab('${k}');toggleMorePanel(false)">${t.label}</button>`;
+    }).join("");
   SUBTABS.forEach(t => document.getElementById("pane-" + t.key).classList.toggle("active", t.key === curTab));
+  renderMigrationAssignment();
+  updateDeepLink();
 
   /* pinned quick-glance stats (visible regardless of active tab) */
   document.getElementById("quickstats").innerHTML = [
@@ -5876,11 +6433,11 @@ function render() {
 
     const nextUp = [];
     g.phases.forEach((p, pi) => p.items.forEach((it, ii) => {
-      if (!isFarmDone(current, s.reqs, pi, ii)) nextUp.push({ t: it[0], ph: p.t });
+      if (!isFarmDone(current, s.reqs, pi, ii)) nextUp.push({ t: farmActionLabel(current, s.reqs, pi, ii, it), ph: p.t });
     }));
 
     document.getElementById("ovGrid").innerHTML = wrapCards("overview", [
-      { id: "readiness", w: 7, html: v.owned ? `
+      { id: "readiness", w: 4, html: v.owned ? `
           <div class="cardtitle">${escapeHtml(v.gl.name)} <span class="sub">— ${acct.label}</span></div>
           <div class="hero">✓<small> owned</small></div>
           <div class="prog-summary">Already unlocked — browse the GL Roadmap tab to plan your next Legend.</div>` : `
@@ -5893,14 +6450,14 @@ function render() {
             <span class="chip stargate">★ ${v.counts.stargate} star-gated</span>
             <span class="chip grind">⛭ ${v.counts.grind} long grind</span>
           </div>
-          <div class="prog-summary">${g.glSub}</div>` },
+          <div class="prog-summary">${escapeHtml(glProgressSummary(v))}</div>` },
       { id: "daily", w: 5, html: `
           <div class="cardtitle">Daily routine <span class="sub">— resets each day</span></div>
           ${DAILY.map((it, ii) => tickbox(`d-${current}-${ii}`, it[0], it[1])).join("")}
           <div class="prog-summary" id="dailyProg"></div>` },
       { id: "flags", w: 4, html: `
           <div class="cardtitle">Top flags <span class="sub">— from Coach's corner</span></div>
-          ${TIPS[current].filter(t => t.sev === "fixnow").map(tp =>
+          ${activeTips(current, s.reqs || {}, ["fixnow"]).map(({ tp }) =>
             `<div style="padding:6px 0"><span class="chip fixnow">${sevText.fixnow}</span>
                <b style="font-size:13.5px"> ${tp.t}</b></div>`).join("") || `<div class="mnote">No urgent coach flags right now.</div>`}
           <div class="prog-summary"><a href="#" style="color:var(--accent)" onclick="switchTab('coach');return false;">Open Coach's corner →</a></div>` },
@@ -5908,8 +6465,8 @@ function render() {
           <div class="cardtitle">Event reminders <span class="sub">— soonest on your calendar</span></div>
           ${eventReminderHtml()}
           <div class="prog-summary"><a href="#" style="color:var(--accent)" onclick="switchTab('events');return false;">Open Events &amp; Calendar →</a></div>` },
-      { id: "nextup", w: 4, html: `
-          <div class="cardtitle">Next up <span class="sub">— top 4 unfinished farm-plan items</span></div>
+      { id: "nextup", w: 7, html: `
+          <div class="cardtitle">Next farm actions <span class="sub">— unfinished items, in plan order</span></div>
           <ul class="nextup">${nextUp.slice(0, 4).map((n, i) =>
             `<li><span class="n">${String(i + 1).padStart(2, "0")}</span><span>${n.t}<span class="ph">${n.ph}</span></span></li>`).join("") ||
             "<li>Everything done — ask Claude for the next plan!</li>"}</ul>
@@ -5920,7 +6477,7 @@ function render() {
   /* ---- GL Roadmap tab ---- */
   safeRender("GL Roadmap", "glTables", () => {
     document.getElementById("glTitle").textContent = `Galactic Legend roadmap — ${v.gl.name} (${acct.label})`;
-    document.getElementById("glSub").textContent = g.glSub;
+    document.getElementById("glSub").textContent = glProgressSummary(v);
     document.getElementById("glChips").innerHTML = GL_ORDER.map(gid => {
       const gl = GL_ROADMAP[gid];
       const ownedHere = !!(s.reqs && s.reqs[gid]);
@@ -5928,7 +6485,9 @@ function render() {
         ${ownedHere ? "✓ " : ""}${escapeHtml(gl.name)}</button>`;
     }).join("");
     const half = Math.ceil(v.reqRows.length / 2);
+    const blocker = [...v.reqRows].filter(r => !r.done).sort((a, b) => a.pct - b.pct)[0];
     const noteCard = { id: "note", html: `<div class="cardtitle">${escapeHtml(v.gl.name)} <span class="sub">${v.owned ? "— already owned ✓" : "— " + v.doneCount + "/" + v.reqRows.length + " requirements met"}</span></div>
+          ${blocker ? `<div class="intelnote"><b>Least complete requirement:</b> ${escapeHtml(blocker.name)} — current ${escapeHtml(blocker.cur)}, needs ${escapeHtml(blocker.need)}.</div>` : ""}
           <div class="prog-summary">${escapeHtml(v.gl.note)}</div>` };
     const jointCard = { id: "joint", html: glJointHtml() };
     document.getElementById("glTables").innerHTML = v.owned
@@ -5970,7 +6529,7 @@ function render() {
             <span class="note">${x.tp.note}</span></span></label>`;
     };
     const allTips = TIPS[current].map((tp, ti) => ({ tp, ti }));
-    const actionTips = allTips.filter(x => x.tp.sev === "fixnow" || x.tp.sev === "improve");
+    const actionTips = allTips.filter(x => (x.tp.sev === "fixnow" || x.tp.sev === "improve") && !tipIsDone(current, reqsMap, x.tp, x.ti));
     const autoTracked = actionTips.filter(x => x.tp.check);
     const autoCleared = autoTracked.filter(x => tipProgress(reqsMap, x.tp.check).done);
     /* Every auto-tracked action item this file currently knows how to check is done — a real, live
@@ -6004,7 +6563,7 @@ function render() {
           ${p.items.map((it, ii) => {
             const key = `p${pi}-${ii}`;
             return FARM_CHECKS[current] && FARM_CHECKS[current][key]
-              ? tickboxAuto(`${current}-${key}`, it[0], it[1], specMet(s.reqs, FARM_CHECKS[current][key]))
+              ? tickboxAuto(`${current}-${key}`, escapeHtml(farmActionLabel(current, s.reqs, pi, ii, it)), `${it[1]}<br>${v.live ? "Current roster from the latest pull" : "Current roster from the saved baseline snapshot"} · strategy reference reviewed 9 Aug 2026`, specMet(s.reqs, FARM_CHECKS[current][key]))
               : tickbox(`${current}-${key}`, it[0], it[1]);
           }).join("")}</div>`
       })));
@@ -6043,8 +6602,8 @@ function render() {
   safeRender("Mod Optimiser", "modoptGrid", () => renderModOpt());
   safeRender("Tier List", "tierlistGrid", () => renderTierList());
 
-  /* ---- roster-planning pipeline breadcrumb (Roster Gaps / GL Roadmap / Farm Intel / Farm Plan) ---- */
-  PLAN_FLOW.forEach(p => { const el = document.getElementById("flow-" + p.key); if (el) el.innerHTML = planFlowHtml(p.key); });
+  /* The former four-step planning breadcrumb is deliberately retired: Build owns these routes now. */
+  PLAN_FLOW.forEach(p => { const el = document.getElementById("flow-" + p.key); if (el) el.innerHTML = ""; });
 
   document.querySelectorAll("input[data-k]").forEach(el => { el.checked = !!state.ticks[el.dataset.k]; });
   updateProg();
@@ -6053,8 +6612,10 @@ function render() {
 function tick(el) {
   state.ticks[el.dataset.k] = el.checked;
   store.write(state);
-  updateProg();
-  if (el.dataset.k.includes("-p")) render();   // farm item → refresh "Next up"
+  /* Farm and Coach ticks feed overview/nav summaries. Refresh immediately so their counts never lag
+     behind the checkbox the user just changed; daily-only ticks can keep the lighter progress update. */
+  if (el.dataset.k.includes("-p") || el.dataset.k.startsWith(current + "-t")) render();
+  else updateProg();
 }
 function updateProg() {
   const boxes = [...document.querySelectorAll("#farmPlan input[type=checkbox]")];
@@ -6069,8 +6630,12 @@ function updateProg() {
   if (dEl) dEl.textContent = dDone === dBoxes.length ? `All ${dBoxes.length} done today — good hunting ✓` : `Today: ${dDone} / ${dBoxes.length} done`;
 }
 function closeMobileNav() { if (window.innerWidth <= 900) state.layout.sidebarCollapsed = true; }
-function switchAcct(k) { current = k; closeMobileNav(); render(); }
+function switchAcct(k) {
+  if (!selectAccount(k, { store: false, render: false })) return;
+  closeMobileNav(); store.write(state); render();
+}
 function switchTab(k) {
+  if (!SUBTABS.some(t => t.key === k)) return;
   curTab = k; state.tab = k;
   /* Remember this tab as the group's landing spot, so the Progress/Play/Reference buttons return here. */
   const grp = groupForTab(k);
@@ -6096,11 +6661,24 @@ window.addEventListener("resize", () => {
   wasNarrowViewport = narrow;
 });
 window.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.getElementById("morePanel")?.classList.contains("open")) {
+    toggleMorePanel(false);
+    document.getElementById("moreButton")?.focus();
+    return;
+  }
   if (e.key === "Escape" && window.innerWidth <= 900 && !state.layout.sidebarCollapsed) {
     state.layout.sidebarCollapsed = true;
     render();
     document.getElementById("sidebarBtn").focus();
   }
+});
+window.addEventListener("hashchange", () => {
+  const p = new URLSearchParams(location.hash.replace(/^#/, ""));
+  const a = p.get("account"), t = p.get("tab");
+  let changed = false;
+  if (ACCOUNTS.some(x => x.key === a) && a !== current) { selectAccount(a, { store: false, render: false }); changed = true; }
+  if (SUBTABS.some(x => x.key === t) && t !== curTab) { curTab = t; state.tab = t; changed = true; }
+  if (changed) { store.write(state); render(); }
 });
 render();
 renderModChips();          // Best Mods' quick-pick landing row is ready before the tab is ever opened

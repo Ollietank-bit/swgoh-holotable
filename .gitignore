@@ -1,0 +1,7 @@
+# Local project scratch/history - never meant to reach the deployed repo.
+archive/
+state-backups/
+_to_delete/
+_tmp-state-*.json
+*.bak
+roster-and-tool-review-*.md

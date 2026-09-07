@@ -983,14 +983,14 @@
     .workspace-nav { position: static !important; }
     .section-nav:not(.workspace-nav) { position: static !important; }
     .mobile-workspaces { display: grid; position: fixed; z-index: 60; left: 0; right: 0; bottom: 0;
-      grid-template-columns: repeat(5,1fr); gap: 2px; padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+      grid-template-columns: repeat(5,minmax(0,1fr)) auto; gap: 2px; padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
       background: color-mix(in srgb, var(--surface-1) 96%, transparent); border-top: 1px solid var(--border-strong);
       box-shadow: 0 -8px 24px rgba(0,0,0,.28); backdrop-filter: blur(18px); }
     .mobile-workspaces button { min-height: 48px; border: 0; border-radius: 8px; background: transparent; color: var(--ink-3);
       font: 650 11px/1.15 system-ui,sans-serif; cursor: pointer; }
     .mobile-workspaces button.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)); }
-    .mobile-workspaces .mobile-account-switch { display: block; position: absolute; right: 10px; bottom: calc(70px + env(safe-area-inset-bottom));
-      min-height: 44px; padding: 8px 13px; border: 1px solid var(--chrome-accent); border-radius: 999px;
+    .mobile-workspaces .mobile-account-switch { display: block; position: relative; z-index: 61; align-self: center; justify-self: end;
+      min-height: 44px; padding: 8px 11px; white-space: nowrap; border: 1px solid var(--chrome-accent); border-radius: 999px;
       background: color-mix(in srgb,var(--surface-1) 96%,transparent); color: var(--chrome-accent); box-shadow: var(--shadow-card); }
     .more-panel.open { display: block; position: fixed; z-index: 70; left: 10px; right: 10px;
       bottom: calc(76px + env(safe-area-inset-bottom)); padding: 14px; border: 1px solid var(--border-strong);

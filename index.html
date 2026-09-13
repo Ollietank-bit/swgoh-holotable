@@ -2785,9 +2785,16 @@ const DAILY = [
 ];
 
 /* ===================== persistence (localStorage, guarded) ===================== */
-/* TWO localStorage keys, deliberately:
+/* THREE localStorage keys, deliberately:
      "swgoh-tracker"  — everything Cloud Sync ships to GitHub (ticks, notes, planners, logs, layout…)
      PULLS_KEY        — state.pulls only: the swgoh.gg roster snapshot. DEVICE-LOCAL, never synced.
+     DEVICE_KEY       — the device-local scalars; today exactly one, lastPull. DEVICE-LOCAL, never synced.
+   lastPull means "when did THIS browser last fetch swgoh.gg", so syncing it was a category error: it
+   described one device but rode along in the shared blob, where it did two kinds of damage. It let one
+   device's fresh pull suppress the other device's staleness check for up to 20h (so the device that
+   actually needed a refresh sat on stale data), and it made every pull a *synced* edit — stamping the
+   "which copy is newer" clock mid-flight, which is how a boot-time pull used to win a race against the
+   boot-time sync pull and quietly overwrite the other device's work.
    `state.pulls` is still the one in-memory read surface the whole app reads from; all that changed is
    where it gets persisted. The snapshot was 629 KB of a 647 KB synced blob (97%) and is purely derived —
    every device re-fetches it for itself every ~20h — so syncing it meant every trivial tick committed
@@ -2813,11 +2820,24 @@ function pullsWrite(pulls) {
    dirty check: it catches every wholesale replacement of state.pulls (boot, merge-from-remote) but NOT
    an in-place `state.pulls[key] = …`, which is precisely why pullAll() passes { pulls: true }. */
 let pullsLastWritten = null;
-/* The single place that strips the device-local roster snapshot out of a blob headed for "swgoh-tracker"
-   or for GitHub, so the storage path and both syncPush payload sites cannot drift apart. */
-function stateWithoutPulls(s, extra) {
+/* Same split as PULLS_KEY, minus the dirty-check gymnastics: this blob is ~20 bytes, so re-stringifying
+   it is free. deviceLastWritten is what DEVICE_KEY currently holds, so the ~70 ordinary store.write()
+   call sites — none of which touch lastPull — still do no localStorage work here at all. Shaped as an
+   object rather than a bare number so the next device-local scalar is an added field, not a new key. */
+const DEVICE_KEY = "swgoh-holotable-device-v1";
+function deviceRead() { try { return JSON.parse(localStorage.getItem(DEVICE_KEY) || "null"); } catch (e) { return null; } }
+function deviceWrite(d) {
+  try { localStorage.setItem(DEVICE_KEY, JSON.stringify(d || {})); return true; }
+  catch (e) { console.error("localStorage save of the device-local scalars failed:", e); return false; }
+}
+let deviceLastWritten = null;
+/* The single place that strips the device-local halves of state — the roster snapshot (PULLS_KEY) and the
+   device scalars (DEVICE_KEY) — out of a blob headed for "swgoh-tracker" or for GitHub, so the storage
+   path and both syncPush payload sites cannot drift apart. */
+function stateWithoutDeviceLocal(s, extra) {
   const out = Object.assign({}, s, extra || {});
   delete out.pulls;
+  delete out.lastPull;
   return out;
 }
 const store = {
@@ -2828,6 +2848,19 @@ const store = {
     let s;
     try { s = JSON.parse(localStorage.getItem("swgoh-tracker") || "{}"); } catch { s = {}; }
     if (!isPlainObject(s)) s = {};
+    /* Recombine the device scalars, with the same care the pulls half gets below: a pre-v4 blob — or one
+       an older build re-wrote with its own copy still inside — carries its own lastPull, and dropping
+       either side would either zero this device's pull clock (a needless refetch, and the "First run"
+       banner on a device that has pulled for months) or discard a newer one an old build recorded. So keep
+       BOTH and take the later. Monotonic, hence idempotent across any number of loads. Unconditional,
+       unlike the opts.pulls branch, because this is a two-field parse and not a 629 KB one. */
+    const scalars = deviceRead();
+    const deviceLastPull = isPlainObject(scalars) && typeof scalars.lastPull === "number" ? scalars.lastPull : 0;
+    const blobLastPull = typeof s.lastPull === "number" ? s.lastPull : 0;
+    if (deviceLastPull || blobLastPull) s.lastPull = Math.max(deviceLastPull, blobLastPull);
+    /* Only claim DEVICE_KEY is already up to date when the value we just handed back IS the one on disk;
+       if the blob's copy won, leave it null so the next store.write() persists the merge. */
+    if (isPlainObject(scalars) && deviceLastPull >= blobLastPull) deviceLastWritten = deviceLastPull;
     if (opts && opts.pulls) {
       const device = pullsRead();
       const inBlob = isPlainObject(s.pulls) ? s.pulls : null;
@@ -2854,13 +2887,19 @@ const store = {
     if (opts.pulls || pulls !== pullsLastWritten) {
       if (pullsWrite(pulls)) pullsLastWritten = pulls; else ok = false;
     }
+    /* No opts flag needed: lastPull is a scalar, so value comparison sees every change — including
+       pullAll()'s in-place `state.lastPull = Date.now()`, which the identity check on `pulls` cannot. */
+    const lastPull = typeof s.lastPull === "number" ? s.lastPull : 0;
+    if (lastPull !== deviceLastWritten) {
+      if (deviceWrite({ lastPull })) deviceLastWritten = lastPull; else ok = false;
+    }
     /* A quota-exceeded (or any other) write failure used to be swallowed silently here — the in-memory
        `state` object had already been mutated (s.updatedAt above, plus whatever caller change triggered
        this write), so the app carried on as if the save landed. Next reload would silently revert to
        whatever last DID fit, with zero signal that anything was lost. Surface it the same way Cloud Sync
        surfaces its own errors: a small persistent header pill, not just a console line. */
     try {
-      localStorage.setItem("swgoh-tracker", JSON.stringify(stateWithoutPulls(s)));
+      localStorage.setItem("swgoh-tracker", JSON.stringify(stateWithoutDeviceLocal(s)));
     } catch (e) {
       ok = false;
       console.error("localStorage save failed — this change is NOT persisted:", e);
@@ -2900,7 +2939,7 @@ let schemaMigrationPendingPush = false;
    Purely additive changes need NOTHING here — mergeDefaults() below backfills new keys on its own.
    Bump this and add a step to migrateState() only for a genuinely breaking change: a key renamed, a
    value's units/meaning changed, a list restructured. */
-const STATE_VERSION = 3;
+const STATE_VERSION = 4;
 /* ---- state shape: one place that describes everything we expect to find in the saved blob ----
    Anything added here is automatically backfilled into an existing save by mergeDefaults() below,
    including NEW NESTED keys on a top-level key that already exists — which the old per-key
@@ -2912,7 +2951,7 @@ function defaultState() {
     updatedAt: 0,                               // ms epoch, stamped by store.write() — Cloud Sync's "which copy is newer" clock
     ticks: {},                                  // checkbox key -> bool
     pulls: {},                                  // account key -> parsePlayer() snapshot. DEVICE-LOCAL: lives in PULLS_KEY, stripped from the synced blob
-    lastPull: 0,
+    lastPull: 0,                                // ms epoch of THIS browser's last swgoh.gg pull. DEVICE-LOCAL: lives in DEVICE_KEY, stripped from the synced blob
     dailyDate: "",
     tab: "",
     currentAccount: "ollie",                    // device-local UI context; also synced harmlessly for compatibility
@@ -3069,6 +3108,19 @@ function migrateState(s, from) {
        nothing. */
     s.pulls = isPlainObject(s.pulls) ? s.pulls : {};
   }
+  if (from < 4) {
+    /* v4 moved lastPull out of the synced blob into DEVICE_KEY, and works exactly like the v3 step above
+       — deliberately, because the shape of the problem is the same. It moves no data itself: by the time
+       it runs, store.read() has already recombined whatever sat in the old blob with whatever is in the
+       new key (keeping the later of the two), and store.write() is what splits them apart again, so all
+       this has to do is normalise the field and return true so the caller re-saves and completes the
+       move. Note the ordering that makes "preserved, not zeroed" true: mergeDefaults() ran before this
+       and only backfills keys that are MISSING, so the recombined value survives it — which is also why
+       this normalisation must not be an unconditional `= 0`. Purely additive, therefore idempotent: run
+       twice, or against an already-migrated save whose lastPull is long gone from the blob, it changes
+       nothing and loses nothing. */
+    s.lastPull = typeof s.lastPull === "number" ? s.lastPull : 0;
+  }
   s.stateVersion = STATE_VERSION;
   return true;
 }
@@ -3104,8 +3156,10 @@ if (schemaMigrationPendingPush) {
   state.updatedAt = savedUpdatedAt;
   /* pulls: true only on the single boot that migrates a pre-v3 save — belt and braces, so PULLS_KEY is
      guaranteed to exist afterwards even in the branch where the recombined object kept its on-disk
-     identity and the cheap dirty check would have (correctly) skipped it. */
-  store.write(state, { skipStamp: true, skipSync: true, pulls: savedVersion < STATE_VERSION });
+     identity and the cheap dirty check would have (correctly) skipped it. Pinned to 3, not STATE_VERSION:
+     the v4 step moves a scalar into DEVICE_KEY, which store.write() persists on value comparison anyway,
+     so making every v3 save re-stringify 629 KB on its migration boot would buy nothing. */
+  store.write(state, { skipStamp: true, skipSync: true, pulls: savedVersion < 3 });
 }
 
 function cloneData(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
@@ -5920,8 +5974,9 @@ function renderConquest() {
 
    The roster snapshot (state.pulls) is explicitly NOT part of what gets pushed — it lives in its own
    device-local key and each device refreshes it independently, so shipping it would have been 97% of the
-   payload for data the other device is about to overwrite anyway. stateWithoutPulls() is the one helper
-   that strips it, used by both payload sites below and by store.write().
+   payload for data the other device is about to overwrite anyway. Neither is state.lastPull, which
+   describes this browser rather than the shared data. stateWithoutDeviceLocal() is the one helper that
+   strips both, used by both payload sites below and by store.write().
 
    Sync model is last-write-wins by timestamp: every store.write() stamps state.updatedAt = Date.now().
    On load, if a remote copy exists and its updatedAt is newer than the local copy's, remote replaces
@@ -6029,16 +6084,23 @@ function mergeRemoteState(remote) {
   const localPulls = isPlainObject(state.pulls) ? state.pulls : {};
   const remotePulls = isPlainObject(remote.pulls) ? remote.pulls : {};
   const seedFromRemote = Object.keys(localPulls).length === 0 && Object.keys(remotePulls).length > 0;
+  /* lastPull is device-local too (DEVICE_KEY), and unlike pulls there is no case where a remote value is
+     worth adopting: it answers "when did THIS browser last fetch swgoh.gg", and the answer for a browser
+     that has never pulled is 0 — i.e. show "First run", not a borrowed timestamp that would suppress the
+     first pull for up to 20h. An old client's blob still carries one, so this guard is what keeps such a
+     blob from reintroducing the suppression bug. */
+  const localLastPull = typeof state.lastPull === "number" ? state.lastPull : 0;
   const merged = mergeDefaults(Object.assign({}, remote), defaultState());
   const migrated = migrateState(merged, remoteVersion);
   const maintained = applyBootMaintenance(merged);
   merged.updatedAt = remoteUpdatedAt;
   merged.pulls = seedFromRemote ? remotePulls : localPulls;
+  merged.lastPull = localLastPull;
   state = merged;
   schemaMigrationPendingPush = migrated || maintained;
   clearTimeout(syncPushTimer);
-  /* store.write() strips `pulls` out of the synced blob and syncPush() strips them out of its payload,
-     so adopting remote pulls above can never send them back up. */
+  /* store.write() strips `pulls`/`lastPull` out of the synced blob and syncPush() strips them out of its
+     payload, so adopting remote pulls above can never send them back up. */
   store.write(state, { skipStamp: true, skipSync: true, pulls: seedFromRemote });
   const localAccount = accountUiRead();
   selectAccount(ACCOUNTS.some(a => a.key === localAccount) ? localAccount : (ACCOUNTS.some(a => a.key === state.currentAccount) ? state.currentAccount : ACCOUNTS[0].key), { store: false, render: false });
@@ -6073,7 +6135,7 @@ async function syncPush(stampAfterInitialPull) {
     store.write(state, { skipStamp: true, skipSync: true });
   }
   syncSetStatus("syncing");
-  const payload = stateWithoutPulls(state);
+  const payload = stateWithoutDeviceLocal(state);
   try {
     const newSha = await ghPutFile(syncCfg, payload, syncCfg.lastSha);
     syncCfg.lastSha = newSha;
@@ -6096,7 +6158,7 @@ async function syncPush(stampAfterInitialPull) {
           const r = await ghGetFile(syncCfg);
           syncCfg.lastSha = r.sha; syncCfgWrite(syncCfg);
           if (r.exists && (r.data.updatedAt || 0) > (state.updatedAt || 0)) mergeRemoteState(r.data);
-          const payload2 = stateWithoutPulls(state, { updatedAt: Date.now() });
+          const payload2 = stateWithoutDeviceLocal(state, { updatedAt: Date.now() });
           state.updatedAt = payload2.updatedAt;
           const newSha2 = await ghPutFile(syncCfg, payload2, syncCfg.lastSha);
           syncCfg.lastSha = newSha2; syncCfg.lastSyncedAt = Date.now(); syncCfgWrite(syncCfg);
@@ -6907,12 +6969,36 @@ render();
 renderModChips();          // Best Mods' quick-pick landing row is ready before the tab is ever opened
 if (curTab === "mods") initModsTabAsync();
 syncInit();   // Cloud Sync: pull-and-merge (or seed) if a device/GitHub repo is already configured
-/* auto-refresh when stale (> 20 hours → refreshes daily on open) */
+/* Auto-refresh when stale (> 20 hours → refreshes daily on open) — but NOT until the boot sync pull has
+   settled, and that ordering is a data-loss fix, not a nicety.
+
+   syncInit() above is async and deliberately not awaited (the UI must not block on GitHub). This decision
+   used to run synchronously right after it, which meant two things at once: it was made against THIS
+   device's pre-merge copy, and the pull it started ran concurrently with the in-flight GET. pullAll()
+   finishes first (one fast swgoh.gg call vs two GitHub round trips), stamps state.updatedAt via
+   store.write(), and by the time the GET resolves the remote copy no longer looks newer — so syncPull()
+   declines to merge it, while having already refreshed syncCfg.lastSha. The debounced push then lands
+   cleanly, with a valid sha and a green "Synced" pill, on top of the other device's work. Deciding after
+   the merge removes the race at its root: there is no window in which a pull can invalidate a comparison
+   that has not been made yet.
+
+   Runs exactly once per boot in all three configurations. initialPullPromise is non-null only on the path
+   that actually pulls; syncInit() sets initialPullSettled synchronously when sync isn't configured or
+   syncOriginOk() is false, and leaves the promise null — so those boots take the else branch and decide
+   immediately. The autoRefreshDecided latch makes the "exactly once" structural rather than incidental. */
 const STALE = 20 * 3600 * 1000;
-if (navigator.onLine && (!state.lastPull || Date.now() - state.lastPull > STALE)) {
-  if (state.lastPull) pullAll();
-  else document.getElementById("pullStatus").textContent = "First run: press “Pull latest data” to go live.";
+let autoRefreshDecided = false;
+function autoRefreshIfStale() {
+  if (autoRefreshDecided) return;
+  autoRefreshDecided = true;
+  if (!navigator.onLine) return;
+  if (!state.lastPull) { document.getElementById("pullStatus").textContent = "First run: press “Pull latest data” to go live."; return; }
+  if (Date.now() - state.lastPull > STALE) pullAll();
 }
+/* Both handlers, because a rejected initial pull must not leave auto-refresh permanently disarmed —
+   syncPull() swallows its own errors today, but that is its business, not a promise this depends on. */
+if (initialPullPromise) initialPullPromise.then(autoRefreshIfStale, autoRefreshIfStale);
+else autoRefreshIfStale();
 </script>
 </body>
 </html>

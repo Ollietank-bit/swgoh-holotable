@@ -2785,28 +2785,87 @@ const DAILY = [
 ];
 
 /* ===================== persistence (localStorage, guarded) ===================== */
-/* opts.skipStamp / opts.skipSync are used exactly once each, by the Cloud Sync merge-from-remote path
-   (see the Cloud Sync section below): a write that's just replaying what GitHub already has shouldn't
-   bump the local "changed at" clock past the remote's own timestamp, and shouldn't immediately schedule
-   pushing that same data straight back up. scheduleSyncPush is a function declaration defined further
-   down in this file — safe to call here regardless of source order, since function declarations hoist. */
+/* TWO localStorage keys, deliberately:
+     "swgoh-tracker"  — everything Cloud Sync ships to GitHub (ticks, notes, planners, logs, layout…)
+     PULLS_KEY        — state.pulls only: the swgoh.gg roster snapshot. DEVICE-LOCAL, never synced.
+   `state.pulls` is still the one in-memory read surface the whole app reads from; all that changed is
+   where it gets persisted. The snapshot was 629 KB of a 647 KB synced blob (97%) and is purely derived —
+   every device re-fetches it for itself every ~20h — so syncing it meant every trivial tick committed
+   647 KB to a public repo and kicked off a Pages rebuild. store.read() puts the two halves back
+   together; store.write() splits them again.
+
+   opts (all optional):
+     skipStamp — don't bump state.updatedAt (Cloud Sync's "which copy is newer" clock)
+     skipSync  — don't schedule a push for this write
+     pulls     — this write changed state.pulls IN PLACE, so PULLS_KEY must be rewritten. Otherwise
+                 PULLS_KEY is rewritten only when the object's identity changed (see pullsLastWritten):
+                 re-stringifying 629 KB on all ~70 store.write() call sites — i.e. on every tab click —
+                 would cost more than the sync traffic this whole split removes.
+   scheduleSyncPush is a function declaration defined further down in this file — safe to call here
+   regardless of source order, since function declarations hoist. */
+const PULLS_KEY = "swgoh-holotable-pulls-v1";
+function pullsRead() { try { return JSON.parse(localStorage.getItem(PULLS_KEY) || "null"); } catch (e) { return null; } }
+function pullsWrite(pulls) {
+  try { localStorage.setItem(PULLS_KEY, JSON.stringify(pulls || {})); return true; }
+  catch (e) { console.error("localStorage save of the roster snapshot failed — this pull is NOT persisted:", e); return false; }
+}
+/* The exact object last successfully written to PULLS_KEY. Identity comparison against it is the cheap
+   dirty check: it catches every wholesale replacement of state.pulls (boot, merge-from-remote) but NOT
+   an in-place `state.pulls[key] = …`, which is precisely why pullAll() passes { pulls: true }. */
+let pullsLastWritten = null;
+/* The single place that strips the device-local roster snapshot out of a blob headed for "swgoh-tracker"
+   or for GitHub, so the storage path and both syncPush payload sites cannot drift apart. */
+function stateWithoutPulls(s, extra) {
+  const out = Object.assign({}, s, extra || {});
+  delete out.pulls;
+  return out;
+}
 const store = {
-  read() { try { return JSON.parse(localStorage.getItem("swgoh-tracker") || "{}"); } catch { return {}; } },
+  /* opts.pulls: also fold PULLS_KEY back in, i.e. hand back the full in-memory shape. Only the boot read
+     wants that — the read-back verification in assignLegacyPlanners() checks one key and shouldn't pay
+     for a 600 KB parse. */
+  read(opts) {
+    let s;
+    try { s = JSON.parse(localStorage.getItem("swgoh-tracker") || "{}"); } catch { s = {}; }
+    if (!isPlainObject(s)) s = {};
+    if (opts && opts.pulls) {
+      const device = pullsRead();
+      const inBlob = isPlainObject(s.pulls) ? s.pulls : null;
+      if (isPlainObject(device)) {
+        if (inBlob && Object.keys(inBlob).length) {
+          /* A pre-v3 save, or one an older build re-wrote with its own copy still inside. Keep BOTH
+             sides — silently dropping an account's snapshot here is unrecoverable until its next pull —
+             with the device-local key winning per account. The merged object is not what's on disk, so
+             pullsLastWritten stays null and the next store.write() persists it. */
+          s.pulls = Object.assign({}, inBlob, device);
+        } else {
+          s.pulls = device;
+          pullsLastWritten = device;   // byte-for-byte what PULLS_KEY already holds — nothing to rewrite
+        }
+      }
+    }
+    return s;
+  },
   write(s, opts) {
     opts = opts || {};
     if (!opts.skipStamp) s.updatedAt = Date.now();
+    let ok = true;
+    const pulls = isPlainObject(s.pulls) ? s.pulls : {};
+    if (opts.pulls || pulls !== pullsLastWritten) {
+      if (pullsWrite(pulls)) pullsLastWritten = pulls; else ok = false;
+    }
     /* A quota-exceeded (or any other) write failure used to be swallowed silently here — the in-memory
        `state` object had already been mutated (s.updatedAt above, plus whatever caller change triggered
        this write), so the app carried on as if the save landed. Next reload would silently revert to
        whatever last DID fit, with zero signal that anything was lost. Surface it the same way Cloud Sync
        surfaces its own errors: a small persistent header pill, not just a console line. */
     try {
-      localStorage.setItem("swgoh-tracker", JSON.stringify(s));
-      localWriteFail = false;
+      localStorage.setItem("swgoh-tracker", JSON.stringify(stateWithoutPulls(s)));
     } catch (e) {
-      localWriteFail = true;
+      ok = false;
       console.error("localStorage save failed — this change is NOT persisted:", e);
     }
+    localWriteFail = !ok;
     renderLocalStatus();
     if (!opts.skipSync) scheduleSyncPush();
   }
@@ -2841,7 +2900,7 @@ let schemaMigrationPendingPush = false;
    Purely additive changes need NOTHING here — mergeDefaults() below backfills new keys on its own.
    Bump this and add a step to migrateState() only for a genuinely breaking change: a key renamed, a
    value's units/meaning changed, a list restructured. */
-const STATE_VERSION = 2;
+const STATE_VERSION = 3;
 /* ---- state shape: one place that describes everything we expect to find in the saved blob ----
    Anything added here is automatically backfilled into an existing save by mergeDefaults() below,
    including NEW NESTED keys on a top-level key that already exists — which the old per-key
@@ -2852,7 +2911,7 @@ function defaultState() {
     stateVersion: STATE_VERSION,
     updatedAt: 0,                               // ms epoch, stamped by store.write() — Cloud Sync's "which copy is newer" clock
     ticks: {},                                  // checkbox key -> bool
-    pulls: {},                                  // account key -> parsePlayer() snapshot
+    pulls: {},                                  // account key -> parsePlayer() snapshot. DEVICE-LOCAL: lives in PULLS_KEY, stripped from the synced blob
     lastPull: 0,
     dailyDate: "",
     tab: "",
@@ -2999,6 +3058,17 @@ function migrateState(s, from) {
     };
     s.currentAccount = ACCOUNTS.some(a => a.key === s.currentAccount) ? s.currentAccount : "ollie";
   }
+  if (from < 3) {
+    /* v3 moved the swgoh.gg roster snapshot out of the synced blob into its own device-local key
+       (PULLS_KEY). Note what this step does NOT do: it doesn't move any data itself. By the time it
+       runs, store.read({ pulls: true }) has already recombined whatever sat in the old blob with
+       whatever is in the new key, and store.write() is what actually splits them apart again — so all
+       this has to do is normalise the branch and return true, which makes the caller re-save and
+       complete the move. Purely additive, therefore idempotent: run twice, or against an
+       already-migrated save whose `pulls` are long gone from the blob, it changes nothing and loses
+       nothing. */
+    s.pulls = isPlainObject(s.pulls) ? s.pulls : {};
+  }
   s.stateVersion = STATE_VERSION;
   return true;
 }
@@ -3024,7 +3094,7 @@ function applyBootMaintenance(target) {
   }
   return changed;
 }
-const savedState = store.read();
+const savedState = store.read({ pulls: true });
 const savedVersion = typeof savedState.stateVersion === "number" ? savedState.stateVersion : 0;
 const savedUpdatedAt = savedState.updatedAt || 0;
 let state = mergeDefaults(savedState, defaultState());
@@ -3032,7 +3102,10 @@ schemaMigrationPendingPush = migrateState(state, savedVersion);
 schemaMigrationPendingPush = applyBootMaintenance(state) || schemaMigrationPendingPush;
 if (schemaMigrationPendingPush) {
   state.updatedAt = savedUpdatedAt;
-  store.write(state, { skipStamp: true, skipSync: true });
+  /* pulls: true only on the single boot that migrates a pre-v3 save — belt and braces, so PULLS_KEY is
+     guaranteed to exist afterwards even in the branch where the recombined object kept its on-disk
+     identity and the cheap dirty check would have (correctly) skipped it. */
+  store.write(state, { skipStamp: true, skipSync: true, pulls: savedVersion < STATE_VERSION });
 }
 
 function cloneData(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
@@ -3419,11 +3492,20 @@ async function pullAll() {
       st.textContent = `Pulling ${a.label} — `;
       const j = await fetchPlayer(a.code, m => { st.textContent = `Pulling ${a.label} — ${m}`; });
       state.pulls[a.key] = parsePlayer(j, state.pulls[a.key]);
-      arenaAutoLog(a.key, state.pulls[a.key]);
       /* Persist per account, not once at the end: if a later account's fetch fails, the account(s) that
          already succeeded keep their freshly-pulled data instead of being lost with the whole batch.
          state.lastPull stays untouched until every account is in, so a partial pull still counts as
-         stale and the next open retries the account that failed. */
+         stale and the next open retries the account that failed.
+
+         TWO writes, and the split matters. The roster snapshot is device-local, so persisting it is not
+         a local "edit": it must neither bump state.updatedAt nor schedule a GitHub push — that was the
+         whole point of moving it out of the synced blob. { pulls: true } is required because the
+         assignment above mutates state.pulls in place, which the identity-based dirty check cannot see.
+         What arenaAutoLog() then unshifts into state.arena.log IS synced state, so it gets an ordinary
+         stamping, push-scheduling write, exactly as before this split. Do not collapse these back into
+         one write: skipStamp/skipSync on a single write would silently stop arena history syncing. */
+      store.write(state, { pulls: true, skipStamp: true, skipSync: true });
+      arenaAutoLog(a.key, state.pulls[a.key]);
       store.write(state);
     }
     state.lastPull = Date.now();
@@ -5836,6 +5918,11 @@ function renderConquest() {
    leak the token to anyone who could read that repo. The token only ever leaves this browser in an
    Authorization header sent directly to api.github.com.
 
+   The roster snapshot (state.pulls) is explicitly NOT part of what gets pushed — it lives in its own
+   device-local key and each device refreshes it independently, so shipping it would have been 97% of the
+   payload for data the other device is about to overwrite anyway. stateWithoutPulls() is the one helper
+   that strips it, used by both payload sites below and by store.write().
+
    Sync model is last-write-wins by timestamp: every store.write() stamps state.updatedAt = Date.now().
    On load, if a remote copy exists and its updatedAt is newer than the local copy's, remote replaces
    local (via a "quiet" store.write that skips re-stamping and skips scheduling a push, so we don't
@@ -5933,14 +6020,26 @@ function mergeRemoteState(remote) {
   if (!remote || typeof remote !== "object") return;
   const remoteVersion = typeof remote.stateVersion === "number" ? remote.stateVersion : 0;
   const remoteUpdatedAt = remote.updatedAt || 0;
+  /* The roster snapshot is device-local (PULLS_KEY), and a remote blob is never authoritative for it:
+     it either carries none at all (a client on this build) or some OTHER device's stale copy (an older
+     client that still synced them). So LOCAL PULLS ALWAYS WIN when this device has any. Remote pulls are
+     adopted in exactly one case — this device has none at all (fresh browser, cleared storage) — where
+     they're a genuine bonus: real numbers instead of BASELINE until the first pull lands. Capture both
+     sides BEFORE migrateState/mergeDefaults touch `merged`. */
+  const localPulls = isPlainObject(state.pulls) ? state.pulls : {};
+  const remotePulls = isPlainObject(remote.pulls) ? remote.pulls : {};
+  const seedFromRemote = Object.keys(localPulls).length === 0 && Object.keys(remotePulls).length > 0;
   const merged = mergeDefaults(Object.assign({}, remote), defaultState());
   const migrated = migrateState(merged, remoteVersion);
   const maintained = applyBootMaintenance(merged);
   merged.updatedAt = remoteUpdatedAt;
+  merged.pulls = seedFromRemote ? remotePulls : localPulls;
   state = merged;
   schemaMigrationPendingPush = migrated || maintained;
   clearTimeout(syncPushTimer);
-  store.write(state, { skipStamp: true, skipSync: true });
+  /* store.write() strips `pulls` out of the synced blob and syncPush() strips them out of its payload,
+     so adopting remote pulls above can never send them back up. */
+  store.write(state, { skipStamp: true, skipSync: true, pulls: seedFromRemote });
   const localAccount = accountUiRead();
   selectAccount(ACCOUNTS.some(a => a.key === localAccount) ? localAccount : (ACCOUNTS.some(a => a.key === state.currentAccount) ? state.currentAccount : ACCOUNTS[0].key), { store: false, render: false });
   curTab = SUBTABS.some(t => t.key === state.tab) ? state.tab : curTab;
@@ -5974,7 +6073,7 @@ async function syncPush(stampAfterInitialPull) {
     store.write(state, { skipStamp: true, skipSync: true });
   }
   syncSetStatus("syncing");
-  const payload = Object.assign({}, state);
+  const payload = stateWithoutPulls(state);
   try {
     const newSha = await ghPutFile(syncCfg, payload, syncCfg.lastSha);
     syncCfg.lastSha = newSha;
@@ -5997,7 +6096,7 @@ async function syncPush(stampAfterInitialPull) {
           const r = await ghGetFile(syncCfg);
           syncCfg.lastSha = r.sha; syncCfgWrite(syncCfg);
           if (r.exists && (r.data.updatedAt || 0) > (state.updatedAt || 0)) mergeRemoteState(r.data);
-          const payload2 = Object.assign({}, state, { updatedAt: Date.now() });
+          const payload2 = stateWithoutPulls(state, { updatedAt: Date.now() });
           state.updatedAt = payload2.updatedAt;
           const newSha2 = await ghPutFile(syncCfg, payload2, syncCfg.lastSha);
           syncCfg.lastSha = newSha2; syncCfg.lastSyncedAt = Date.now(); syncCfgWrite(syncCfg);

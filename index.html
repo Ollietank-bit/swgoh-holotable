@@ -243,6 +243,11 @@
   .syncstatus { font-size: 11.5px; padding: 3px 9px; border-radius: 12px; border: 1px solid var(--border);
                 display: inline-flex; align-items: center; gap: 5px; color: var(--ink-3); cursor: pointer;
                 background: var(--surface-1); white-space: nowrap; }
+  /* #syncStatus is a real <button> — it opens a dialog, so it has to be keyboard-reachable, and a <span>
+     with an onclick never is. These undo the UA button defaults (font, margin, border-radius quirks) that
+     would otherwise make it render unlike the #localStatus <span> sitting right beside it. */
+  button.syncstatus { font: inherit; font-size: 11.5px; margin: 0; text-align: center; appearance: none;
+                      -webkit-appearance: none; }
   .syncstatus.ok { border-color: var(--good); color: var(--good); }
   .syncstatus.err { border-color: var(--serious); color: var(--serious); }
   .syncstatus.busy { border-color: var(--info); color: var(--info); }
@@ -978,7 +983,10 @@
     body:not(.sidebar-collapsed)::before { content: none !important; }
     body.nav-open { overflow: auto !important; }
     .account-bar { display: flex; }
-    #editBtn, #syncStatus { display: none; }
+    /* #syncStatus stays visible here: this app is used mostly on a phone, and hiding the pill below 900px
+       meant a permanently failing Cloud Sync was invisible on the one device that would notice. #editBtn
+       is still hidden — drag-to-rearrange is desktop-only. */
+    #editBtn { display: none; }
     .hbtns { grid-template-columns: 1fr; }
     .workspace-nav { position: static !important; }
     .section-nav:not(.workspace-nav) { position: static !important; }
@@ -1043,7 +1051,7 @@
     <div class="hbtns">
       <button class="editbtn" id="sidebarBtn" onclick="toggleSidebar()">☰</button>
       <button class="editbtn" id="editBtn" onclick="toggleEdit()">⚙ Edit layout</button>
-      <span class="syncstatus" id="syncStatus" onclick="openSyncModal()" title="Cloud Sync — click to configure">☁ Sync</span>
+      <button type="button" class="syncstatus" id="syncStatus" onclick="openSyncModal()" title="Cloud Sync — click to configure">☁ Sync</button>
       <span class="syncstatus err" id="localStatus" style="display:none" title="Local browser storage save failed — see tooltip">⚠ Save failed</span>
       <div>
         <button class="pullbtn" id="pullBtn" onclick="pullAll()">⟳ Pull latest data</button>
@@ -1056,8 +1064,8 @@
 
   <!-- ============ CLOUD SYNC MODAL ============ -->
   <div class="modal-backdrop" id="syncModal" onclick="if(event.target===this) closeSyncModal()">
-    <div class="modal-card">
-      <h3>☁ Cloud Sync (GitHub)</h3>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="syncModalTitle">
+      <h3 id="syncModalTitle">☁ Cloud Sync (GitHub)</h3>
       <div class="mnote">Keeps this app's own data — checkboxes, notes, layout, logs, event edits — in sync across every device that opens the same GitHub Pages URL. Your live roster pull always still comes fresh from swgoh.gg on each device separately; this only syncs what you've typed/ticked into the app itself. Your token stays in this browser and talks directly to GitHub's API — nothing passes through any other server.</div>
       <div class="modal-field"><label>GitHub username / org</label><input type="text" id="syncOwner" placeholder="e.g. ollietank" autocomplete="off" spellcheck="false"></div>
       <div class="modal-field"><label>Repository name</label><input type="text" id="syncRepo" placeholder="e.g. swgoh-holotable" autocomplete="off" spellcheck="false"></div>
@@ -1402,6 +1410,10 @@ const EVENTS_SEED = [
   { name: "The Wanderer's Blade", cat: "Marquee", date: "2026-10-07", note: "Earn Rewards Daily! — swgoh.gg shows this as an absolute date (\"Starts Oct 7\"), not a countdown; year inferred as 2026." }
 ];
 const EVENTS_SEED_VERSION = 3;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
+/* The day the seed list above was read off swgoh.gg — a calendar snapshot has a shelf life, and once
+   its rows are all in the past the tab would otherwise sit there looking like a live feed with nothing
+   on it. Named here so the "run out" notice and the tab's provenance line can't drift apart. */
+const EVENTS_SEED_CAPTURED = "16 Aug 2026";
 /* Discarded Doctrine requirements, per swgoh.wiki (captured 9 Aug 2026) — verify in-game before spending
    relic/gear materials, CG occasionally adjusts event gates. Matched against pulled roster data by unit
    name (ships aren't tracked by base_id elsewhere in this file, so name-matching is the robust option). */
@@ -2519,9 +2531,10 @@ const TB_ROTE = [
 ];
 
 /* Baseline snapshot — account-level fields (GP/arena/GAC) refreshed via a live swgoh.gg pull 2 Sep 2026;
-   per-unit `reqs` below are unchanged from Claude's 7 Aug 2026 roster review, since swgoh.gg's API still
-   doesn't return per-character gear/relic detail (see fetchPlayer's comment). Shown until the first live
-   pull from this browser. */
+   the per-unit `reqs` below were themselves refreshed 3 Sep 2026 from swgoh.gg's live `units` array, so
+   the API DOES return per-character gear/relic detail (fetchPlayer sets charDataLive when that array is
+   present). The degraded path — charDataLive:false, keeping the last known per-unit reqs — exists only
+   for if swgoh.gg ever stops returning it. Shown until the first live pull from this browser. */
 const BASELINE = {
   ollie: {
     fetchedAt: null, fetchedLabel: "Claude review · 3 Sep 2026 (all figures live via swgoh.gg, including per-unit reqs — press Pull latest data to refresh)",
@@ -2883,6 +2896,8 @@ function defaultState() {
     lastTabInGroup: { today: "overview", build: "farm", battle: "gac", mods: "modopt", reference: "tierlist" },
     glTarget: {},                               // per-account currently-viewed GL on the GL Roadmap tab, e.g. { ollie: "GLLEIA" }
     tb: {},                                     // TB planner: { [`${phase}-${zone}`]: { assigned: "ollie"|"tiny"|"both"|"", done: bool } }
+    tbRun: null,                                // { startedAt } — when the current TB worksheet was first written; see tbEnsureRun
+    tbRunResetNote: null,                       // { cleared, at } — one-shot "last TB's assignments were cleared" line above the planner
     tw: { zones: [] },                          // TW coordination: zones = [{ name, assigned, squad, status }]
     /* log: [{ mode: "squad"|"fleet", rank, note, ts, src: "auto"|"manual" }]  opponents: [{ mode, name, tag, note }] */
     arena: { log: { ollie: [], tiny: [] }, opponents: { ollie: [], tiny: [] } },
@@ -3431,7 +3446,7 @@ async function pullAll() {
 
 /* ===================== Best Mods (embedded swgoh.gg snapshot + best-effort live refresh) ===================== */
 /* swgoh.gg's /best-mods/ HTML pages sit behind Cloudflare bot protection, which blocks the CORS
-   proxies a local file must use — so a 30-character snapshot (pulled 7 Aug 2026) ships built in,
+   proxies a local file must use — so a 332-character snapshot (pulled 8 Aug 2026) ships built in,
    and the live path is attempted only on demand. */
 /* Wrapped in try/catch: this is a single non-module <script>, so an unguarded JSON.parse() failure here
    (e.g. an unescaped quote from a future copy-pasted refresh) would throw before anything below it —
@@ -3837,7 +3852,7 @@ function snapRecord(hit, note) {
   return {
     name: c.name, snap: c, note: note || "",
     sourceUrl: `https://swgoh.gg/units/${hit.slug}/best-mods/`,
-    fetchedLabel: "Built-in snapshot · " + (BESTMODS.fetched || "7 Aug 2026")
+    fetchedLabel: "Built-in snapshot · " + (BESTMODS.fetched || "8 Aug 2026")
   };
 }
 async function lookupMods(forceLive) {
@@ -4480,6 +4495,22 @@ function cqRunStatusHtml(rs) {
       In-game progress starts from zero every occurrence, so this tab clears your ✓ ticks when a new run begins (your edited steps are kept). The day chips always follow your own click.
     </div></details></div>`;
 }
+/* Once today is past the snapshot's known window the plan, feats, disks and enemy intel are the PREVIOUS
+   conquest's, so they stop being presented as current: the stale banner and run-status line stay put, and
+   the sub-view itself is folded into a closed <details> that says what it actually is. Nothing is hidden
+   or discarded — a finished run's ticks are still a record — and this is presentation only: cqEnsurePlan
+   and every inline handler inside are untouched (a <details> keeps its children in the DOM, so the ticks,
+   chips and edit buttons work normally the moment it's opened). */
+let cqStaleOpen = false;   // remembered for this page visit only, so a tick's re-render doesn't slam the panel shut
+function cqStaleToggle(el) { cqStaleOpen = !!el.open; }
+function cqStaleWrap(rs, viewLabel, html) {
+  if (!rs || !rs.stale) return html;
+  return `<div class="mnote" style="color:var(--serious);font-weight:650">Ask Claude to research and refresh this tab (and its run-cadence anchor) before working from anything below.</div>
+    <details class="refdetails"${cqStaleOpen ? " open" : ""} ontoggle="cqStaleToggle(this)">
+      <summary>Conquest ${CQDATA.conquest}'s ${escapeHtml(viewLabel)} — kept for reference</summary>
+      <div>${html}</div>
+    </details>`;
+}
 function cqResetDay() {
   if (!preparePlannerWrite("cq")) return;
   const accountCq = cqData();
@@ -4809,12 +4840,33 @@ function tbSet(phase, zone, field, val) {
   const k = tbKey(phase, zone);
   state.tb[k] = Object.assign({ assigned: "", done: false }, state.tb[k]);
   state.tb[k][field] = val;
+  /* First real mark on an empty worksheet dates the run, so tbEnsureRun can later tell a finished TB's
+     leftovers from work in progress. Only a truthy tick/assignment starts the clock — clearing a
+     checkbox or setting an assignee back to "Unassigned" isn't the start of anything. */
+  if (!state.tbRun && val) state.tbRun = { startedAt: Date.now() };
   store.write(state); renderTB();
 }
-function tbResetAll() { state.tb = {}; store.write(state); renderTB(); }
+function tbResetAll() { state.tb = {}; state.tbRun = null; state.tbRunResetNote = null; store.write(state); renderTB(); }
+/* Conquest clears last run's ✓ ticks from its published cadence (see cqEnsurePlan); TB has no schedule
+   data here at all — no public feed carries a guild's TB windows — so this uses the only signal available,
+   the age of the worksheet itself. A Rise of the Empire run lasts 6 days, so anything still ticked 7 days
+   after the first mark of that run belongs to a TB that is over, and leaving it on screen would claim
+   platoons are filled and missions done in a battle that no longer exists. Same shape as Conquest's: the
+   stale marks go, a dismissible note says what happened, and nothing is written unless it actually did. */
+function tbEnsureRun() {
+  if (!state.tbRun || Date.now() - state.tbRun.startedAt <= 7 * 86400000) return;
+  const cleared = Object.keys(state.tb || {}).length;
+  if (!cleared) { state.tbRun = null; store.write(state); return; }
+  state.tb = {};
+  state.tbRun = null;
+  state.tbRunResetNote = { cleared, at: Date.now() };
+  store.write(state);
+}
+function tbDismissRunNote() { state.tbRunResetNote = null; store.write(state); renderTB(); }
 function renderTB() {
   const grid = document.getElementById("tbGrid");
   if (!grid) return;
+  tbEnsureRun();
   sectionNav("tbNav", "tb", TB_ROTE.map(ph => [String(ph.phase), `Phase ${ph.phase}`]));
   const activePhase = String(state.views.tb || "1");
   const phaseCards = TB_ROTE.filter(ph => String(ph.phase) === activePhase).map(ph => ({
@@ -4838,7 +4890,12 @@ function renderTB() {
         </div>`;
       }).join("")}</div>`
   }));
-  grid.innerHTML = wrapCards("tb", phaseCards, "tb");
+  const note = state.tbRunResetNote;
+  /* Full-span so it reads as a line across the planner rather than a stray card in the 12-column grid. */
+  const resetNote = note && note.cleared
+    ? `<div class="intelnote cqrun" style="grid-column:1/-1"><span class="cqrunspan">Cleared <b>${note.cleared}</b> assignment${note.cleared === 1 ? "" : "s"} from the previous TB — that run ended more than a week ago.</span> <a href="#" onclick="event.preventDefault();tbDismissRunNote()">dismiss</a></div>`
+    : "";
+  grid.innerHTML = resetNote + wrapCards("tb", phaseCards, "tb");
 }
 
 /* ===================== shared editable-list CRUD =====================
@@ -5167,10 +5224,23 @@ function upcomingEvents(limit) {
     .sort((a, b) => a.st.sortDays - b.st.sortDays)
     .slice(0, limit);
 }
+/* EVENTS_SEED is a dated snapshot, not a live feed, so it quietly runs out: with nothing but the last
+   stragglers left, both this tab and the Overview card would render a one-row list that reads as "that's
+   all that's coming up" rather than "this list has expired". True when the upcoming list has run dry —
+   at most one seed row still standing and nothing the user logged themselves. */
+function eventsSeedExhausted() {
+  const items = (state.events && state.events.items) || [];
+  const up = items.filter(e => { const st = eventStatus(e); return st.sortDays >= 0 || st.live; });
+  const seeds = up.filter(e => /^seed\d+$/.test((e && e.id) || "")).length;
+  return seeds <= 1 && up.length === seeds;
+}
 function eventReminderHtml() {
   const items = upcomingEvents(4);
-  if (!items.length) return `<div class="mnote">Nothing upcoming logged — add one on the Events &amp; Calendar tab.</div>`;
-  return items.map(e => `<div style="padding:5px 0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+  const expired = eventsSeedExhausted()
+    ? `<div class="mnote">Built-in calendar captured ${escapeHtml(EVENTS_SEED_CAPTURED)} and has run out — ask Claude to re-pull swgoh.gg/events/.</div>`
+    : "";
+  if (!items.length) return `${expired}<div class="mnote">Nothing upcoming logged — add one on the Events &amp; Calendar tab.</div>`;
+  return expired + items.map(e => `<div style="padding:5px 0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
       <span style="min-width:66px;font-size:12.5px;${e.st.style}">${e.st.label}</span>
       <span class="chip ${EVENT_CAT_CHIP[e.cat] || "watch"}" style="font-size:10px">${chipGlyph(EVENT_CAT_CHIP[e.cat] || "watch")} ${escapeHtml(e.cat)}</span>
       <b style="font-size:13px">${escapeHtml(e.name)}</b>
@@ -5182,6 +5252,7 @@ function eventsListHtml(mode) {
   const upcoming = allItems.filter(e => (e.ends || e.date) >= today);
   const items = mode === "next" ? (upcoming.length ? upcoming : allItems).slice(0, 8) : allItems;
   return `<div class="cardtitle">${mode === "next" ? "Current & next events" : "All events"} <span class="sub">— ${items.length} shown</span></div>
+    ${eventsSeedExhausted() ? `<div class="mnote" style="color:var(--serious);font-weight:650">The built-in calendar was captured ${escapeHtml(EVENTS_SEED_CAPTURED)} and has run out — ask Claude to re-pull swgoh.gg/events/, or add events below.</div>` : ""}
     <div class="mnote">Second date field is optional — only set for events with a known end date (mainly ones that were already live when this list was last refreshed).</div>
     <div class="form-table events-form">
       <div class="form-head"><span>When</span><span>Event</span><span>Category</span><span>Starts</span><span>Ends</span><span>Notes</span><span></span></div>
@@ -5667,6 +5738,7 @@ function renderConquest() {
   meta.innerHTML = `Red crate: <b style="color:var(--accent)">${CQDATA.redCrate} keycards</b> (up to ${CQDATA.skippable} skippable) · Hard mode, 3★ all nodes · snapshot ${CQDATA.captured} · <a href="https://swgoh4.life/conquest/plan" target="_blank" rel="noopener">live site ↗</a>${staleBanner}`;
   const views = [["plan", "My daily plan"], ["feats", "Feats & teams"], ["disks", "Data disks"], ["enemies", "Enemies"]];
   nav.innerHTML = views.map(v => `<button class="${state.cq.view === v[0] ? "active" : ""}" onclick="cqView('${v[0]}')">${v[1]}</button>`).join("");
+  const viewLabel = (views.find(v => v[0] === state.cq.view) || ["", String(state.cq.view)])[1];
   const body = document.getElementById("cqBody");
 
   if (state.cq.view === "plan") {
@@ -5704,8 +5776,7 @@ function renderConquest() {
           </div>`;
     });
     const inferredDay = rs && rs.live && !rs.stale ? rs.day : null;
-    body.innerHTML = `
-      ${cqRunStatusHtml(rs)}${resetNote}
+    body.innerHTML = `${cqRunStatusHtml(rs)}${resetNote}` + cqStaleWrap(rs, viewLabel, `
       <div class="daychips">${Object.keys(CQDATA.plan.days).map(k => {
         const dayItems = plan[k] || [];
         const allDone = dayItems.length && dayItems.every(i => i.done);
@@ -5725,31 +5796,31 @@ function renderConquest() {
           <button onclick="cqAdd('${d}')">+ Add a step</button>
           <button onclick="cqResetDay()" style="margin-left:6px;border-color:var(--ink-3);color:var(--ink-3)">↺ Reset day to swgoh4.life plan</button>
         </div>
-      </div>`;
+      </div>`);
   } else if (state.cq.view === "feats") {
     const secs = [["global", "Global"], ["1", "Sector 1"], ["2", "Sector 2"], ["3", "Sector 3"], ["4", "Sector 4"], ["5", "Sector 5"]];
     const cur = state.cq.sector;
     const feats = cur === "global" ? CQDATA.feats.global : (CQDATA.feats.sectors[cur] || []);
-    body.innerHTML = `
+    body.innerHTML = cqStaleWrap(rs, viewLabel, `
       <div class="daychips">${secs.map(s => `<button class="${cur === s[0] ? "active" : ""}" onclick="cqSector('${s[0]}')">${s[1]}</button>`).join("")}</div>
       <div class="intelnote" style="margin-bottom:9px"><b>Suggested squads</b> under each feat are swgoh4.life's own picks as captured ${escapeHtml(CQDATA.captured)} — the planner's short-hand names ("5th Bro", "DVDE"), shown as listed and not cross-checked against these rosters. A feat that lists only Coruscant Underworld Police is, by the site's usual convention, one where any squad will do. Day-by-day squad order lives under <a href="#" onclick="event.preventDefault();cqView('plan')" style="color:var(--accent)">My daily plan</a>.</div>
-      <div class="card">${feats.map(cqFeatHtml).join("") || "No feats captured."}</div>`;
+      <div class="card">${feats.map(cqFeatHtml).join("") || "No feats captured."}</div>`);
   } else if (state.cq.view === "disks") {
-    body.innerHTML = `<div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px">` +
+    body.innerHTML = cqStaleWrap(rs, viewLabel, `<div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px">` +
       CQDATA.disks.map(s => `<div class="card">
         <div class="cardtitle">${escapeHtml(s.name)}</div>
         <div class="cqteam" style="margin-bottom:8px">${escapeHtml(s.blurb)}</div>
         ${s.disks.map(dk => `<div class="cqfeat"><div class="fhead">${escapeHtml(dk.n)}</div><div class="freq">${escapeHtml(dk.d)}</div></div>`).join("")}
-      </div>`).join("") + `</div>`;
+      </div>`).join("") + `</div>`);
   } else if (state.cq.view === "enemies") {
     const names = Object.keys(CQDATA.enemies.data);
     const cur = state.cq.enemy && names.includes(state.cq.enemy) ? state.cq.enemy : names[0];
-    body.innerHTML = `
+    body.innerHTML = cqStaleWrap(rs, viewLabel, `
       <div class="card" style="margin-bottom:9px">
         <div class="cardtitle">Enemy intel <span class="sub">· speed ranges per sector + counters per data-disk set</span></div>
         <select class="cqselect" onchange="cqEnemy(this)">${names.map(n => `<option ${n === cur ? "selected" : ""}>${escapeHtml(n)}</option>`).join("")}</select>
       </div>
-      ${cur ? cqEnemyHtml(cur, CQDATA.enemies.data[cur]) : ""}`;
+      ${cur ? cqEnemyHtml(cur, CQDATA.enemies.data[cur]) : ""}`);
   }
 }
 
@@ -5781,6 +5852,11 @@ function syncBranch() { return syncCfg.branch || "main"; }
 function ghApiUrl(cfg) {
   return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${syncPath()}`;
 }
+/* Errors from the two helpers below carry the HTTP status as a number, because syncPush's conflict
+   recovery has to decide on it: matching on the message text (msg.includes("409")) missed the other
+   statuses GitHub uses for the same "your sha is wrong" situation, and would also match a stray "409"
+   anywhere in a body excerpt. The message text itself is unchanged — it's what the user sees. */
+function ghError(status, message) { const e = new Error(message); e.status = status; return e; }
 /* UTF-8-safe base64 helpers — plain atob/btoa mangle anything outside Latin1, and this state contains
    curly quotes, star glyphs, em dashes, etc. throughout (events, notes, squad names). */
 function b64EncodeUtf8(str) { return btoa(unescape(encodeURIComponent(str))); }
@@ -5797,10 +5873,10 @@ async function ghGetFile(cfg) {
   const url = ghApiUrl(cfg) + `?ref=${encodeURIComponent(syncBranch())}&_=${Date.now()}`;
   const metaRes = await fetch(url, { headers: { "Authorization": "Bearer " + cfg.token, "Accept": "application/vnd.github+json" } });
   if (metaRes.status === 404) return { exists: false, sha: null, data: null };
-  if (!metaRes.ok) throw new Error(`GitHub API ${metaRes.status} on GET — ${(await metaRes.text()).slice(0, 200)}`);
+  if (!metaRes.ok) throw ghError(metaRes.status, `GitHub API ${metaRes.status} on GET — ${(await metaRes.text()).slice(0, 200)}`);
   const meta = await metaRes.json();
   const rawRes = await fetch(url, { headers: { "Authorization": "Bearer " + cfg.token, "Accept": "application/vnd.github.raw+json" } });
-  if (!rawRes.ok) throw new Error(`GitHub API ${rawRes.status} on GET (raw) — ${(await rawRes.text()).slice(0, 200)}`);
+  if (!rawRes.ok) throw ghError(rawRes.status, `GitHub API ${rawRes.status} on GET (raw) — ${(await rawRes.text()).slice(0, 200)}`);
   const text = await rawRes.text();
   let data;
   try { data = JSON.parse(text); }
@@ -5821,7 +5897,7 @@ async function ghPutFile(cfg, payload, sha) {
     headers: { "Authorization": "Bearer " + cfg.token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
     body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error(`GitHub API ${res.status} on PUT — ${(await res.text()).slice(0, 300)}`);
+  if (!res.ok) throw ghError(res.status, `GitHub API ${res.status} on PUT — ${(await res.text()).slice(0, 300)}`);
   const j = await res.json();
   return j.content.sha;
 }
@@ -5907,19 +5983,30 @@ async function syncPush(stampAfterInitialPull) {
     syncSetStatus("idle");
   } catch (e) {
     const msg = String((e && e.message) || e);
-    if (msg.includes("409")) {
+    /* "The sha you sent isn't the file that's there" arrives as 409, 412 OR 422 — 422 specifically when
+       lastSha is null and the file already exists, which is the state any device lands in after a failed
+       push or a cleared config. The old msg.includes("409") test didn't match it, so that device retried
+       nothing and stayed wedged in "Sync error" forever. All three now take the same recovery, bounded to
+       3 attempts with a short jittered backoff so two devices pushing at once don't lock-step forever. */
+    if (e && (e.status === 409 || e.status === 412 || e.status === 422)) {
       /* Someone else's write (our other device) landed between our last pull and this push — pull the
          newer copy, merge it in, then push the merged result so both devices converge. */
-      try {
-        const r = await ghGetFile(syncCfg);
-        syncCfg.lastSha = r.sha; syncCfgWrite(syncCfg);
-        if (r.exists && (r.data.updatedAt || 0) > (state.updatedAt || 0)) mergeRemoteState(r.data);
-        const payload2 = Object.assign({}, state, { updatedAt: Date.now() });
-        state.updatedAt = payload2.updatedAt;
-        const newSha2 = await ghPutFile(syncCfg, payload2, syncCfg.lastSha);
-        syncCfg.lastSha = newSha2; syncCfg.lastSyncedAt = Date.now(); syncCfgWrite(syncCfg);
-        syncSetStatus("idle");
-      } catch (e2) { syncSetStatus("error", String((e2 && e2.message) || e2)); }
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await new Promise(res => setTimeout(res, 300 * attempt + Math.random() * 200));
+          const r = await ghGetFile(syncCfg);
+          syncCfg.lastSha = r.sha; syncCfgWrite(syncCfg);
+          if (r.exists && (r.data.updatedAt || 0) > (state.updatedAt || 0)) mergeRemoteState(r.data);
+          const payload2 = Object.assign({}, state, { updatedAt: Date.now() });
+          state.updatedAt = payload2.updatedAt;
+          const newSha2 = await ghPutFile(syncCfg, payload2, syncCfg.lastSha);
+          syncCfg.lastSha = newSha2; syncCfg.lastSyncedAt = Date.now(); syncCfgWrite(syncCfg);
+          syncSetStatus("idle");
+          return;
+        } catch (e2) {
+          if (attempt === 3) syncSetStatus("error", String((e2 && e2.message) || e2));
+        }
+      }
     } else syncSetStatus("error", msg);
   }
 }
@@ -5947,6 +6034,26 @@ function syncInit() {
   });
 }
 
+/* Dialog semantics for the Cloud Sync modal. Without these it was a div that merely appeared: Tab walked
+   straight past it into the page behind, Escape did nothing, and focus never entered it at all — so a
+   keyboard user could open it and then had no way to fill it in or get out again. */
+let syncModalReturnFocus = null;
+function syncModalFocusables() {
+  const card = document.querySelector("#syncModal .modal-card");
+  if (!card) return [];
+  return Array.from(card.querySelectorAll('input, select, textarea, button, a[href], [tabindex]:not([tabindex="-1"])'))
+    .filter(el => !el.disabled && el.offsetParent !== null);
+}
+function syncModalKeydown(e) {
+  if (e.key === "Escape") { e.preventDefault(); closeSyncModal(); return; }
+  if (e.key !== "Tab") return;
+  const f = syncModalFocusables();
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1], at = document.activeElement;
+  /* Wrap at both ends, and pull focus back in if it somehow sits outside the card while open. */
+  if (e.shiftKey && (at === first || f.indexOf(at) === -1)) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
+}
 function openSyncModal() {
   document.getElementById("syncOwner").value = syncCfg.owner || "";
   document.getElementById("syncRepo").value = syncCfg.repo || "";
@@ -5958,9 +6065,20 @@ function openSyncModal() {
     ? (syncCfg.lastSyncedAt ? `Last synced ${new Date(syncCfg.lastSyncedAt).toLocaleString()}.` : "Connected, not yet synced.")
     : "Not connected yet — fill in the fields below.";
   ms.style.color = "var(--ink-3)";
-  document.getElementById("syncModal").classList.add("open");
+  const modal = document.getElementById("syncModal");
+  syncModalReturnFocus = document.activeElement;
+  /* Bound once, lazily: the listener lives on the backdrop, so it only ever fires while focus is inside. */
+  if (!modal.dataset.keysBound) { modal.addEventListener("keydown", syncModalKeydown); modal.dataset.keysBound = "1"; }
+  modal.classList.add("open");
+  const first = syncModalFocusables()[0];
+  if (first) first.focus();
 }
-function closeSyncModal() { document.getElementById("syncModal").classList.remove("open"); }
+function closeSyncModal() {
+  document.getElementById("syncModal").classList.remove("open");
+  const back = syncModalReturnFocus;
+  syncModalReturnFocus = null;
+  if (back && typeof back.focus === "function" && document.contains(back)) back.focus();
+}
 async function syncSaveAndTest() {
   const owner = document.getElementById("syncOwner").value.trim();
   const repo = document.getElementById("syncRepo").value.trim();

@@ -3268,6 +3268,7 @@ async function fetchViaProxies(url, { asText = false, ms = FETCH_TIMEOUT, onStat
   }
   throw lastErr || new Error("all routes failed");
 }
+const rankNum = v => { const n = +v; return Number.isFinite(n) && n > 0 ? n : "—"; };
 function parsePlayer(j, prev) {
   const d = j.data || {};
   /* hasUnits is false under the swgoh.gg API shape change described in fetchPlayer() above — when that
@@ -3317,9 +3318,9 @@ function parsePlayer(j, prev) {
       id: m.id,
       set: +m.set || 0,                          // 1-8, see MOD_SETS
       slot: +m.slot || 0,                        // 2-7, see MOD_SLOTS
-      rarity: m.rarity || 0,                     // dots/pips 1-6
-      tier: m.tier || 0,                         // colour tier 1-5 (grey→gold)
-      level: m.level || 0,                       // 1-15
+      rarity: +m.rarity || 0,                    // dots/pips 1-6
+      tier: +m.tier || 0,                        // colour tier 1-5 (grey→gold)
+      level: +m.level || 0,                      // 1-15
       char: m.character || "",                   // base_id it's equipped on ("" = loose, not seen from swgoh.gg)
       pri: pv(m.primary_stat || {}),
       sec: (m.secondary_stats || []).map(st => Object.assign(pv(st), { rolls: st.roll || 1 }))
@@ -3351,9 +3352,9 @@ function parsePlayer(j, prev) {
     loanedEraLevel: d.loaned_unit_era_level || 0,
     glCount: hasUnits ? glCount : ((prev && prev.glCount) || 0),
     glNote: hasUnits ? (glOwned.slice(0, 3).join(" · ") || "—") : ((prev && prev.glNote) || "—"),
-    squadRank: (d.arena && d.arena.rank) || d.arena_rank || "—",
+    squadRank: rankNum((d.arena && d.arena.rank) || d.arena_rank),
     squadLeader: (d.arena && d.arena.leader) || d.arena_leader_base_id || "",
-    fleetRank: (d.fleet_arena && d.fleet_arena.rank) || d.fleet_arena_rank || "—",
+    fleetRank: rankNum((d.fleet_arena && d.fleet_arena.rank) || d.fleet_arena_rank),
     fleetLeader: (d.fleet_arena && d.fleet_arena.leader) || "",
     fleetNote: "fleet arena", gac: league.trim(),
     gacNote: (d.skill_rating ? d.skill_rating + " SR" : "") || "GAC league",
@@ -3372,8 +3373,8 @@ function parsePlayer(j, prev) {
     datacrons: (j.datacrons || []).map(dc => {
       const tiers = dc.tiers || [];
       return {
-        tier: dc.tier || 0,
-        set: dc.set_id || 0,
+        tier: +dc.tier || 0,
+        set: +dc.set_id || 0,
         stats: tiers.filter(t => !t.ability_description && t.scope_target_name)
           .map(t => t.scope_target_name + " +" + ((t.stat_value || 0) * 100).toFixed(2) + "%"),
         abilities: tiers.filter(t => t.ability_description).map(t => t.ability_description)
@@ -4134,7 +4135,7 @@ function optSlotHtml(sl, e, baseId, pull) {
   const lvlHint = m.level < 15 ? ` · lvl ${m.level} — level to 15` : "";
   return `<div class="optslot">
     <div class="shape">${slot.icon} ${slot.name}
-      <span class="optpip t${m.tier}" title="${m.rarity}-dot, tier ${m.tier}${lvlHint ? " — not yet level 15" : ""}">${m.rarity}◦${"EDCBA"[m.tier - 1] || "?"}${lvlHint}</span>
+      <span class="optpip t${escapeHtml(m.tier)}" title="${escapeHtml(m.rarity)}-dot, tier ${escapeHtml(m.tier)}${lvlHint ? " — not yet level 15" : ""}">${escapeHtml(m.rarity)}◦${"EDCBA"[m.tier - 1] || "?"}${lvlHint}</span>
       <span class="setname">${MOD_SETS[m.set] ? MOD_SETS[m.set].name : "?"}</span></div>
     <div class="pri">${optStatHtml(m.pri)}</div>
     <div class="secs">${secs.map(optStatHtml).join(" · ") || '<span style="color:var(--ink-3)">no secondaries yet</span>'}</div>
@@ -5019,8 +5020,8 @@ function arenaLiveHtml() {
   const nameFor = id => (pull.reqs && pull.reqs[id] && pull.reqs[id].name) || id;
   return `<div class="cardtitle">Live Arena ratings <span class="sub">from last data pull · ${when}</span></div>
     <div class="cqteams">
-      <div class="cqteam" style="margin-bottom:6px"><b style="color:var(--ink-1)">Squad Arena</b> — <b>#${pull.squadRank}</b>${pull.squadLeader ? " · lead " + escapeHtml(nameFor(pull.squadLeader)) : ""}</div>
-      <div class="cqteam" style="margin-bottom:6px"><b style="color:var(--ink-1)">Fleet Arena</b> — <b>#${pull.fleetRank}</b>${pull.fleetLeader ? " · lead " + escapeHtml(nameFor(pull.fleetLeader)) : ""}</div>
+      <div class="cqteam" style="margin-bottom:6px"><b style="color:var(--ink-1)">Squad Arena</b> — <b>#${escapeHtml(pull.squadRank)}</b>${pull.squadLeader ? " · lead " + escapeHtml(nameFor(pull.squadLeader)) : ""}</div>
+      <div class="cqteam" style="margin-bottom:6px"><b style="color:var(--ink-1)">Fleet Arena</b> — <b>#${escapeHtml(pull.fleetRank)}</b>${pull.fleetLeader ? " · lead " + escapeHtml(nameFor(pull.fleetLeader)) : ""}</div>
       <div class="cqteam"><b style="color:var(--ink-1)">GAC league</b> — ${escapeHtml(pull.gac || "—")} ${pull.gacNote ? "· " + escapeHtml(pull.gacNote) : ""}</div>
     </div>
     <div class="mnote">Squad/fleet rank feed the payout logs alongside automatically on every pull — no manual check-in needed unless you want an extra mid-day reading.</div>`;
@@ -5615,8 +5616,8 @@ function liveDatacronsHtml() {
     ${rows.map(r => `<div style="margin-top:8px">
       <div style="font-weight:700;color:var(--accent);font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">${escapeHtml(r.acct.label)}</div>
       ${r.dcs.map(dc => `<div style="padding:7px 0;border-bottom:1px solid var(--grid)">
-        <span class="chip ${dc.tier >= 6 ? "done" : dc.tier >= 4 ? "close" : "grind"}">Tier ${dc.tier}</span>
-        <span style="color:var(--ink-2);font-size:12px"> · Set ${dc.set}</span>
+        <span class="chip ${dc.tier >= 6 ? "done" : dc.tier >= 4 ? "close" : "grind"}">Tier ${escapeHtml(dc.tier)}</span>
+        <span style="color:var(--ink-2);font-size:12px"> · Set ${escapeHtml(dc.set)}</span>
         ${dc.stats.length ? `<div style="color:var(--ink-3);font-size:11.5px;margin-top:3px">${dc.stats.map(escapeHtml).join(" · ")}</div>` : ""}
         ${dc.abilities.map(ab => `<div style="color:var(--ink-2);font-size:12px;margin-top:3px">${escapeHtml(ab)}</div>`).join("")}
       </div>`).join("")}
@@ -6379,7 +6380,7 @@ function render() {
                      coach: ` <span class="cnt">${tipCount} red</span>`, farm: "", modes: "",
                      gaps: ` <span class="cnt">${gapsReady}/${META_SQUADS.length} ready</span>`,
                      gac: ` <span class="cnt">${gacPlanned || gacZones ? `${gacPlanned} planned` : "no plan"}</span>`,
-                     arena: ` <span class="cnt">#${s.fleetRank}</span>` };
+                     arena: ` <span class="cnt">#${escapeHtml(s.fleetRank)}</span>` };
   const activeGroup = NAV_GROUPS.find(grp => grp.keys.includes(curTab)) || NAV_GROUPS[0];
   document.getElementById("subtabs").innerHTML = NAV_GROUPS.map(grp =>
     `<button class="stab group-tab ${grp === activeGroup ? "active" : ""}" role="tab" aria-selected="${grp === activeGroup}" onclick="switchGroup('${grp.key}')">${grp.label}<span class="cnt">${grp.keys.length}</span></button>`
@@ -6410,7 +6411,7 @@ function render() {
   document.getElementById("quickstats").innerHTML = [
     { lbl: "Galactic power", val: fmtM(s.gp) },
     { lbl: v.gl.name, val: v.owned ? "Owned ✓" : (v.live ? "" : "~") + v.avg + "%" },
-    { lbl: "Fleet arena", val: "#" + s.fleetRank },
+    { lbl: "Fleet arena", val: "#" + escapeHtml(s.fleetRank) },
     { lbl: "GAC", val: s.gac }
   ].map(q => `<div class="qstat"><span class="qlbl">${escapeHtml(q.lbl)}</span><span class="qval">${q.val}</span></div>`).join("");
 
@@ -6429,7 +6430,7 @@ function render() {
       { lbl: "GLs owned", val: s.glCount, note: s.glNote },
       { lbl: v.gl.name + " readiness", val: v.owned ? "Owned ✓" : (v.live ? "" : "~") + v.avg + "%",
         note: v.owned ? "already unlocked" : v.doneCount + " of " + v.reqRows.length + " reqs done · materials-weighted" },
-      { lbl: "Fleet arena", val: "#" + s.fleetRank, note: s.fleetNote },
+      { lbl: "Fleet arena", val: "#" + escapeHtml(s.fleetRank), note: s.fleetNote },
       { lbl: "GAC", val: s.gac, note: s.gacNote },
       { lbl: "Abilities", val: s.extraNote, note: "zetas &amp; omicrons unlocked" }
     ].map(t => `<div class="tile"><div class="lbl">${t.lbl}</div><div class="val">${t.val}</div><div class="note">${t.note}</div></div>`).join("");

@@ -1254,7 +1254,7 @@
   <!-- ============ EVENTS & CALENDAR ============ -->
   <div class="tabpane" id="pane-events">
     <h2>Events &amp; Calendar</h2>
-    <div class="h2sub">Upcoming game-wide events plus your own entries — guild-specific TW/TB timing and GAC seasons aren't on a public feed, so log those yourself. The Executor readiness card cross-checks the Discarded Doctrine gate against your last pulled roster.</div>
+    <div class="h2sub">Upcoming game-wide events plus your own entries — guild-specific TW/TB timing and GAC seasons aren't on a public feed, so log those yourself. The Executor card tracks blueprint progress to 7&#9733; (and the unlock gate, for an account that hasn't unlocked it yet).</div>
     <div class="mnote">Seed list read directly off swgoh.gg/events/ as of 16 Aug 2026 (live DOM read, not the swgohevents.com feed) — ask Claude to re-pull it if this list looks stale.</div>
     <div class="cqnav section-nav" id="eventsNav"></div>
     <div class="sortable" id="eventsGrid" data-pane="events"></div>
@@ -1422,6 +1422,18 @@ const EXECUTOR_REQ = {
   chars: [["Admiral Piett", 8], ["Boba Fett", 8], ["Darth Vader", 7], ["Dengar", 5], ["IG-88", 5], ["Bossk", 5], ["TIE Fighter Pilot", 5]],
   ships: [["Razor Crest", 5], ["TIE Advanced x1", 4], ["Imperial TIE Bomber", 4], ["Hound's Tooth", 4], ["Slave I", 4], ["IG-2000", 4], ["Imperial TIE Fighter", 4]]
 };
+/* Discarded Doctrine's blueprint economy — researched 17 Sep 2026 (swgohevents.com/event/executor plus
+   the in-game event screens). The gate above only governs the UNLOCK, which happens at 4*; after that,
+   blueprints are the sole progression and this event is their only source — no fleet store, no shard
+   shop, no Conquest — so "how many occurrences away" IS the timeline. The repeatable bonus tier awards
+   shardsPerRun free once per occurrence; extra runs cost refreshCrystals for refreshShards, capped at
+   refreshMax per occurrence; packs (packCrystals for packShards) are unlimited but strictly worse per
+   blueprint, so always exhaust refreshes first. asOf/source are carried into the card on purpose: this
+   file has gone stale behind undated snapshots before, so the age has to be legible on screen. */
+const EXECUTOR_EVENT = { name: "Discarded Doctrine", anchorISO: "2026-09-15", dayOfMonth: 15,
+  shardsPerRun: 10, refreshCrystals: 999, refreshShards: 10, refreshMax: 19,
+  packCrystals: 1250, packShards: 10, asOf: "17 Sep 2026", source: "swgohevents.com/event/executor" };
+const SHIP_STAR_COST = { 5: 65, 6: 85, 7: 100 };   // blueprints to REACH that star (330 cumulative from 4*)
 /* Ground War (Assault Battle) — researched 22 Aug 2026 via live web search (swgoh.gg's event page,
    swgoh.wiki, EA forums, community walkthroughs) while this event is live on the calendar. Faction-
    restricted event (Jedi/Ewok/Ugnaught only vs Separatist waves) with no single confidently-sourced
@@ -3002,6 +3014,13 @@ function defaultState() {
     raidTickets: { ollie: {}, tiny: {} },       // manual per-account raid currency on hand: { str, rancor, aat, o66, naboo }
     raidProgress: { ollie: {}, tiny: {} },      // manual per-account raid tier/stars: { [raidKey]: { tier, stars } }
     guildCurrency: { ollie: 0, tiny: 0 },       // manual per-account Guild Event Store currency on hand
+    /* Executor blueprint progress. Account-specific baked data, same class as BASELINE: seeded off the
+       17 Sep 2026 in-game screenshots (Ollietank 5* with 55/85, Tiny 4* with 55/65). `shards` is the
+       count toward the NEXT star, `star` is the star level it was read at (so a promotion can be
+       detected and the stale count re-asked for), `at` is when. mergeDefaults backfills this into
+       existing saves; executorShardsSet re-stamps all three on every edit. */
+    executor: { ollie: { shards: 55, star: 5, at: 1789603200000 },
+                tiny:  { shards: 55, star: 4, at: 1789603200000 } },
     gac: {                                      // account-specific GAC worksheets
       ollie: { initialized: false, zones: [], offense: [] },
       tiny: { initialized: false, zones: [], offense: [] }
@@ -5297,6 +5316,116 @@ function executorReadiness(key) {
   const avg = Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length);
   return { live: !!pull, rows, doneCount, avg, total: rows.length };
 }
+/* Pure: `now` is a Date (defaults to the real clock; tests pin it), same contract as cqRunStatus.
+   Returns the ISO date of the nth UPCOMING occurrence, n=1 being the next one. An occurrence dated
+   today counts as today's, not as past, because the event is still playable on its own day. */
+function executorEventOn(n, now) {
+  const k = Math.max(1, Math.floor(+n) || 1);
+  const d = now || new Date();
+  const dom = EXECUTOR_EVENT.dayOfMonth || 15;
+  /* roll into next month only once today is genuinely past this month's occurrence; Date.UTC
+     normalises the month overflow for us, so n can run years out without extra arithmetic */
+  const m = d.getMonth() + (d.getDate() > dom ? 1 : 0);
+  return cqISO(Date.UTC(d.getFullYear(), m + (k - 1), dom));
+}
+/* Pure: blueprint progress for one account, from the live pull's star level plus the hand-typed count.
+   Everything downstream (dates, crystal costs) is derived here so the card stays presentational.
+   countStale means the live star no longer matches the star the count was typed at — the ship promoted
+   and the saved number is about a star that is already behind us, so it is NOT arithmetic-safe; the
+   card asks for a re-entry instead and every derived field comes back zeroed rather than plausible. */
+function executorProgress(key, now) {
+  const pull = state.pulls[key];
+  const unit = (pull && pull.reqs && pull.reqs.CAPITALEXECUTOR) || null;
+  const saved = (state.executor && state.executor[key]) || {};
+  const star = unit ? (+unit.s || 0) : 0;
+  const shards = Math.max(0, Math.floor(+saved.shards || 0));
+  const base = { unlocked: !!unit, star, shards, countStale: false, toNextStar: 0, toMax: 0,
+    eventsToNextStar: 0, eventsToMax: 0, nextStarISO: null, maxISO: null,
+    crystalsToNextStar: 0, crystalsToMax: 0, crystalsFitsOneEvent: true };
+  const nextCost = SHIP_STAR_COST[star + 1];
+  /* not unlocked, already 7*, or a star this table doesn't know: zeros, never a division by nothing */
+  if (!unit || !nextCost) return base;
+  if ((+saved.star || 0) !== star) return { ...base, countStale: true };
+  const per = EXECUTOR_EVENT.shardsPerRun || 1;
+  const toNextStar = Math.max(0, nextCost - shards);
+  let toMax = toNextStar;
+  for (let st = star + 2; st <= 7; st++) toMax += SHIP_STAR_COST[st] || 0;
+  const eventsToNextStar = toNextStar > 0 ? Math.ceil(toNextStar / per) : 0;
+  const eventsToMax = toMax > 0 ? Math.ceil(toMax / per) : 0;
+  /* crystals assume the free bonus run is taken first, then refreshes (cheaper per blueprint than packs) */
+  const refreshesFor = need => Math.max(0, Math.ceil((need - per) / (EXECUTOR_EVENT.refreshShards || 1)));
+  const rNext = refreshesFor(toNextStar), rMax = refreshesFor(toMax);
+  return { ...base, toNextStar, toMax, eventsToNextStar, eventsToMax,
+    nextStarISO: eventsToNextStar ? executorEventOn(eventsToNextStar, now) : null,
+    maxISO: eventsToMax ? executorEventOn(eventsToMax, now) : null,
+    crystalsToNextStar: rNext * EXECUTOR_EVENT.refreshCrystals,
+    crystalsToMax: rMax * EXECUTOR_EVENT.refreshCrystals,
+    crystalsFitsOneEvent: rNext <= EXECUTOR_EVENT.refreshMax };
+}
+function executorRefreshesFor(need) {
+  return Math.max(0, Math.ceil((need - (EXECUTOR_EVENT.shardsPerRun || 1)) / (EXECUTOR_EVENT.refreshShards || 1)));
+}
+/* Manual entry, mirroring guildCurrencySet. Clamped to one short of the next star's cost, because
+   hitting the cost promotes the ship in-game and the count resets — a saved value at or above it could
+   only ever be a typo. Stamps the live star and the time alongside, so a later promotion is detectable. */
+function executorShardsSet(acctKey, val) {
+  const n = +val;
+  const pull = state.pulls[acctKey];
+  const unit = (pull && pull.reqs && pull.reqs.CAPITALEXECUTOR) || null;
+  const star = unit ? (+unit.s || 0) : 0;
+  const cap = Math.max(0, (SHIP_STAR_COST[star + 1] || 0) - 1);
+  state.executor = state.executor || {};
+  state.executor[acctKey] = { shards: isNaN(n) ? 0 : Math.min(cap, Math.max(0, Math.floor(n))), star, at: Date.now() };
+  store.write(state); renderEvents();
+}
+/* The card that replaced the unlock gate. Both accounts unlocked the Executor long ago, so the gate
+   read 100% forever; what actually costs months is blueprints. An account that has NOT unlocked it
+   still gets the gate rows, from executorReadiness() unchanged. */
+function executorProgressHtml() {
+  const ev = EXECUTOR_EVENT;
+  const chipText = { done: "✓ ready", close: "→ close", stargate: "★ not started", grind: "⛭ grinding" };
+  const asOfMs = Date.parse(ev.asOf);
+  const ageDays = isNaN(asOfMs) ? null : Math.floor((Date.now() - asOfMs) / 86400000);
+  const stale = ageDays !== null && ageDays > 90;
+  const plural = (k, word, suffix) => `${k} ${word}${k === 1 ? "" : (suffix || "s")}`;
+  const body = ACCOUNTS.map(a => {
+    const v = executorProgress(a.key);
+    const head = `<div class="prog-summary" style="margin-bottom:6px"><b style="color:var(--ink-1)">${escapeHtml(a.label)}</b> — `;
+    if (!v.unlocked) {
+      const g = executorReadiness(a.key);
+      return `${head}Executor not unlocked yet — ${g.doneCount}/${g.total} gate requirements met (${g.avg}% avg)${g.live ? "" : ` <span style="color:var(--ink-3)">(no live pull yet — showing baseline/last-saved roster)</span>`}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+        ${g.rows.map(r => `<span class="chip ${r.status}" title="${escapeHtml(r.name)} — need ${r.need}, at ${escapeHtml(r.cur)}">${escapeHtml(r.name)} ${chipText[r.status]}</span>`).join("")}
+      </div>`;
+    }
+    if (v.star >= 7) return `${head}<span class="chip done">${chipGlyph("done")} 7★ — maxed</span> no blueprints left to farm.</div>`;
+    const input = `<input type="number" min="0" ${numboxStyle(72)} value="${v.shards}" aria-label="${escapeHtml(a.label)} Executor blueprints on hand" onchange="executorShardsSet('${a.key}',this.value)">`;
+    if (v.countStale) return `${head}live pull says <b>${v.star}★</b>, but the saved blueprint count was typed at ${escapeHtml(String((state.executor && state.executor[a.key] && state.executor[a.key].star) || "?"))}★ — it promoted since, so that number is about a star already behind us. Re-enter what the ship shows now: ${input}</div>`;
+    const cost = SHIP_STAR_COST[v.star + 1];
+    const path = [];
+    let cum = 0;
+    for (let st = v.star + 1; st <= 7; st++) {
+      cum += st === v.star + 1 ? v.toNextStar : (SHIP_STAR_COST[st] || 0);
+      const runs = Math.ceil(cum / (ev.shardsPerRun || 1));
+      path.push({ st, cum, runs, iso: executorEventOn(runs) });
+    }
+    const rNext = executorRefreshesFor(v.toNextStar);
+    const crystals = v.crystalsToNextStar <= 0
+      ? `The free bonus run alone clears ${v.star + 1}★ next occurrence.`
+      : v.crystalsFitsOneEvent
+        ? `Or <b>${v.crystalsToNextStar.toLocaleString()}</b> crystals in one occurrence — the free run plus ${plural(rNext, "refresh", "es")} at ${ev.refreshCrystals} for ${ev.refreshShards}.`
+        : `Can't be bought inside one occurrence: that needs ${plural(rNext, "refresh", "es")} and refreshes cap at ${ev.refreshMax}.`;
+    return `${head}<b>${v.star}★</b>, ${input} / ${cost} blueprints toward ${v.star + 1}★ — <b>${v.toNextStar}</b> to go, <b>${v.toMax}</b> to 7★.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
+        ${path.map(p => `<span class="chip ${p.st === v.star + 1 ? "close" : "watch"}" title="${p.cum} blueprints cumulative — ${plural(p.runs, "free run")} at ${ev.shardsPerRun} per occurrence">${p.st}★ ${escapeHtml(cqLongDate(p.iso))}</span>`).join("")}
+      </div>
+      <div class="prog-summary" style="margin-bottom:12px">Free path: ${plural(v.eventsToNextStar, "occurrence")} to ${v.star + 1}★, ${plural(v.eventsToMax, "occurrence")} to 7★. ${crystals}</div>`;
+  }).join("");
+  return `<div class="cardtitle">Executor <span class="sub">${escapeHtml(ev.name)} blueprints — the only source, ${ev.shardsPerRun} free per occurrence</span></div>
+    <div class="mnote">Unlocks at 4★; reaching 5★/6★/7★ costs ${SHIP_STAR_COST[5]}/${SHIP_STAR_COST[6]}/${SHIP_STAR_COST[7]} blueprints. The event runs monthly on the ${ev.dayOfMonth}th and is auto-listed on the calendar below.</div>
+    ${body}
+    <div class="mnote"${stale ? ` style="color:var(--serious);font-weight:650"` : ""}>Costs and cadence as of ${escapeHtml(ev.asOf)}, per ${escapeHtml(ev.source)}${stale ? ` — that snapshot is ${ageDays} days old, past its ~90-day shelf life: re-check before spending crystals.` : "."} Blueprint counts are typed by hand — the live pull only carries the star level.</div>`;
+}
 function executorReadinessHtml() {
   const chipText = { done: "✓ ready", close: "→ close", stargate: "★ not started", grind: "⛭ grinding" };
   const accts = ACCOUNTS.map(a => ({ acct: a, v: executorReadiness(a.key) }));
@@ -5349,12 +5478,28 @@ function eventIdx(id) { return state.events.items.findIndex(e => e.id === id); }
 function eventAdd() { eventCrud.add(); }
 function eventSet(id, field, val) { eventCrud.set(eventIdx(id), field, val); }
 function eventDel(id) { eventCrud.del(eventIdx(id)); }
+/* The seed calendar is a dated snapshot and it expired on 16 Aug 2026 — which is exactly why the
+   15 Sep Discarded Doctrine never showed up here and may well have been played past; every occurrence
+   missed pushes the 7★ date out by a month. So this one event is DERIVED from EXECUTOR_EVENT's anchor
+   on every render rather than written into state.events.items: it cannot expire with the snapshot, it
+   cannot be edited or deleted into the past, it cannot collide with the seed\d+ id space, and because
+   eventsSeedExhausted() only ever inspects state.events.items, the "calendar has run out" notice keeps
+   telling the truth about the user's own rows. Rendered read-only and chipped "auto" so it reads as
+   computed rather than as something someone typed. */
+function executorDerivedEvents(now) {
+  const iso = executorEventOn(1, now);
+  return [{
+    id: "auto-executor-" + iso, derived: true, name: EXECUTOR_EVENT.name, cat: "Fleet Mastery",
+    date: iso, ends: cqISO(cqUTCDay(iso) + 86400000),
+    note: `Earn Executor Blueprints — the only source there is. Auto-scheduled from the ${EXECUTOR_EVENT.dayOfMonth}th-of-the-month cadence, not from the calendar snapshot.`
+  }];
+}
 /* Soonest not-yet-over events, for the Overview "Top flags" snapshot — mirrors the "Next up" card's
    top-4 pattern rather than a fixed day window, so a big event further out (e.g. a fleet-mastery journey)
    still surfaces once it becomes one of the four nearest things on the calendar. Currently-live events
    (start in the past, known end date still in the future) sort as "now" via eventStatus's sortDays. */
 function upcomingEvents(limit) {
-  return state.events.items
+  return state.events.items.concat(executorDerivedEvents())
     .map(e => ({ ...e, st: eventStatus(e) }))
     .filter(e => e.st.sortDays >= 0 || e.st.live)
     .sort((a, b) => a.st.sortDays - b.st.sortDays)
@@ -5383,7 +5528,7 @@ function eventReminderHtml() {
     </div>`).join("");
 }
 function eventsListHtml(mode) {
-  const allItems = state.events.items.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const allItems = state.events.items.concat(executorDerivedEvents()).sort((a, b) => a.date.localeCompare(b.date));
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = allItems.filter(e => (e.ends || e.date) >= today);
   const items = mode === "next" ? (upcoming.length ? upcoming : allItems).slice(0, 8) : allItems;
@@ -5394,6 +5539,17 @@ function eventsListHtml(mode) {
       <div class="form-head"><span>When</span><span>Event</span><span>Category</span><span>Starts</span><span>Ends</span><span>Notes</span><span></span></div>
     ${items.map(e => {
       const st = eventStatus(e);
+      /* derived rows carry no crud: no contenteditable, no date inputs, no delete — same 7-cell shape
+         so the form grid still lines up */
+      if (e.derived) return `<div class="form-row cqline-event">
+        <div style="min-width:76px;font-weight:650;${st.style}">${st.label}</div>
+        <div class="form-field"><span>Event</span><div class="txt" style="color:var(--ink-1)">${escapeHtml(e.name)} <span class="chip keep" style="font-size:10px">${chipGlyph("keep")} auto</span></div></div>
+        <span class="chip ${EVENT_CAT_CHIP[e.cat] || "watch"}" style="white-space:nowrap">${chipGlyph(EVENT_CAT_CHIP[e.cat] || "watch")} ${escapeHtml(e.cat)}</span>
+        <div class="form-field"><span>Starts</span><div class="txt" style="color:var(--ink-2)">${escapeHtml(cqShortDate(e.date))}</div></div>
+        <div class="form-field"><span>Ends</span><div class="txt" style="color:var(--ink-2)">${escapeHtml(cqShortDate(e.ends))}</div></div>
+        <div class="form-field"><span>Notes</span><div class="txt" style="color:var(--ink-3)">${escapeHtml(e.note)}</div></div>
+        <div class="rowtools"></div>
+      </div>`;
       return `<div class="form-row cqline-event">
         <div style="min-width:76px;font-weight:650;${st.style}">${st.label}</div>
         <div class="form-field"><span>Event</span><div class="txt" contenteditable="true" role="textbox" aria-label="Event name" onblur="eventSet('${e.id}','name',this.textContent.trim())">${escapeHtml(e.name)}</div></div>
@@ -5410,10 +5566,10 @@ function eventsListHtml(mode) {
 function renderEvents() {
   const grid = document.getElementById("eventsGrid");
   if (!grid) return;
-  sectionNav("eventsNav", "events", [["next", "Current & next"], ["all", "All events"], ["executor", "Executor readiness"]]);
+  sectionNav("eventsNav", "events", [["next", "Current & next"], ["all", "All events"], ["executor", "Executor"]]);
   const view = state.views.events || "next";
   const cards = view === "executor"
-    ? [{ id: "executor", w: 12, html: executorReadinessHtml() }]
+    ? [{ id: "executor", w: 12, html: executorProgressHtml() }]
     : [{ id: "list", w: 12, html: eventsListHtml(view) }];
   grid.innerHTML = wrapCards("events", cards, "events");
 }

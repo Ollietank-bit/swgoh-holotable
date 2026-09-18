@@ -285,6 +285,18 @@
      just because you moved to another tab. */
   .tab.active { border-color: var(--chrome-accent); box-shadow: inset 0 0 0 1px var(--chrome-accent), 0 0 14px -8px var(--chrome-accent); }
   .tab.active .tname { color: var(--chrome-accent); }
+  /* swgoh.gg profile links: one beside each sidebar account row (browse anytime), one beside the data-
+     provenance line for the currently selected account. Both point at the same URL builder — see
+     acctProfileUrl() — and share this look; the sidebar variant is icon-only (an <a>, kept as a sibling
+     of the switch-account <button> rather than nested inside it, since an <a> inside a <button> is
+     invalid HTML and the two clicks would fight), the provenance variant carries its own label text. */
+  .profile-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+                   color: var(--ink-3); border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); }
+  .profile-link:hover { color: var(--chrome-accent); border-color: var(--chrome-accent); }
+  .tabrow { display: flex; align-items: stretch; gap: 6px; }
+  .tabrow .tab { flex: 1; min-width: 0; }
+  .tabrow .profile-link { flex: 0 0 auto; width: 34px; font-size: 13px; }
+  .datasrc .profile-link { margin-left: 6px; padding: 2px 8px; font-size: 11px; gap: 4px; }
 
   .quickstats { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--border);
                 border-radius: 10px; background: var(--surface-1); }
@@ -804,7 +816,11 @@
     .hbtns > div .pullbtn { width: 100%; min-height: 44px; }
     .editbtn, .syncstatus { min-height: 40px; }
     .pullstatus, .hbtns .datasrc { width: 100%; max-width: none; text-align: left !important; line-height: 1.35; }
-    .hbtns .datasrc { display: -webkit-box; overflow: hidden; font-size: 10.5px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    /* The line-clamp lives on .datasrc-label alone (not the whole .datasrc row), so the profile-refresh
+       link that follows it is a normal flex item — free to reach the 44px tap target below, instead of
+       being clipped by the label's own overflow:hidden. */
+    .hbtns .datasrc { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .hbtns .datasrc .datasrc-label { display: -webkit-box; overflow: hidden; font-size: 10.5px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
     .epigraph { margin-bottom: 12px; font-size: 11.5px; }
     .tiles { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
     .tile { min-height: 98px; padding: 11px; }
@@ -1030,7 +1046,7 @@
     .tab, .stab, .section-nav button, .daychips button, .optchip, .modchip, .optsquadchip button,
     .cqaddrow button, .rowtools button, .rowactions button, .cardtools button, .account-choice, .mobile-account-switch,
     .cqnav button, .section-nav.nav-tertiary button, .opt-jumps a, .pullbtn, .cqswitchrow, .combo > input,
-    label.item { min-height: 44px !important; min-width: 44px !important; }
+    label.item, .profile-link { min-height: 44px !important; min-width: 44px !important; }
     .chip { min-height: 0; min-width: 0; }
     /* Bare checkboxes have an intrinsic ~13px box that min-height can't grow. Size it moderately and
        expand only the tap area with a transparent ::before, so row heights barely move. */
@@ -1301,6 +1317,11 @@ const ACCOUNTS = [
   { key: "ollie", label: "Ollietank", code: "229917529", codeFmt: "229-917-529" },
   { key: "tiny",  label: "Tiny",      code: "295352286", codeFmt: "295-352-286" }
 ];
+/* Single source of truth for an account's swgoh.gg profile URL — used by both the sidebar link and the
+   provenance-line link, so the URL is never hand-assembled twice. */
+function acctProfileUrl(a) {
+  return `https://swgoh.gg/p/${encodeURIComponent(a.code)}/`;
+}
 const SUBTABS = [
   { key: "overview", label: "Overview" },
   { key: "leia",     label: "GL Roadmap" },
@@ -6798,8 +6819,9 @@ function render() {
   });
 
   document.getElementById("tabs").innerHTML = ACCOUNTS.map(a =>
-    `<button class="tab ${a.key === current ? "active" : ""}" ${a.key === current ? 'aria-current="page"' : ""} onclick="switchAcct('${a.key}')">
-       <span class="tname">${a.label}</span><span class="tcode">${a.codeFmt}</span></button>`).join("");
+    `<div class="tabrow"><button class="tab ${a.key === current ? "active" : ""}" ${a.key === current ? 'aria-current="page"' : ""} onclick="switchAcct('${a.key}')">
+       <span class="tname">${a.label}</span><span class="tcode">${a.codeFmt}</span></button>
+       <a class="profile-link" href="${escapeHtml(acctProfileUrl(a))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(a.label)}'s swgoh.gg profile" title="Open ${escapeHtml(a.label)}'s swgoh.gg profile">↗</a></div>`).join("");
   document.getElementById("accountBar").innerHTML = `<span class="account-bar-label">Account</span>` + ACCOUNTS.map(a =>
     `<button class="account-choice ${a.key === current ? "active" : ""}" aria-pressed="${a.key === current}" onclick="switchAcct('${a.key}')">${a.label}</button>`).join("");
 
@@ -6870,7 +6892,10 @@ function render() {
       { lbl: "Abilities", val: s.extraNote, note: "zetas &amp; omicrons unlocked" }
     ].map(t => `<div class="tile"><div class="lbl">${t.lbl}</div><div class="val">${t.val}</div><div class="note">${t.note}</div></div>`).join("");
 
-    document.getElementById("datasrc").textContent = "Data: " + s.fetchedLabel;
+    /* swgoh.gg only re-scrapes a profile when someone visits it — a "Pull latest data" here just reads
+       whatever swgoh.gg last scraped, which can be stale for days. This link opens the currently
+       selected account's own profile so visiting it forces that resync before you pull. */
+    document.getElementById("datasrc").innerHTML = `<span class="datasrc-label">Data: ${escapeHtml(s.fetchedLabel)}</span> <a class="profile-link" href="${escapeHtml(acctProfileUrl(acct))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(acct.label)}'s swgoh.gg profile to refresh it">Refresh on swgoh.gg ↗</a>`;
 
     const nextUp = [];
     g.phases.forEach((p, pi) => p.items.forEach((it, ii) => {

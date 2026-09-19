@@ -300,6 +300,9 @@
                       -webkit-appearance: none; }
   .syncstatus.ok { border-color: var(--good); color: var(--good); }
   .syncstatus.err { border-color: var(--serious); color: var(--serious); }
+  /* Amber, not red: a merge that had to settle a collision by the clock is not a failure, it is a
+     success with one value overwritten — and it must not read as the green that used to sit over it. */
+  .syncstatus.warn { border-color: var(--warning); color: var(--warning); }
   .syncstatus.busy { border-color: var(--info); color: var(--info); }
   .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(3,6,10,0.72); z-index: 60;
                     align-items: center; justify-content: center; padding: 20px; }
@@ -1184,6 +1187,14 @@
           <button type="button" class="recbtn danger" id="forcePushBtn" onclick="forcePush()">↑ Force push — this device wins</button>
         </div>
         <div class="mnote" id="forceWhy" style="color:var(--ink-3);margin:7px 0 0;display:none"></div>
+        <!-- Shown only after a merge that had to settle a real two-device collision by the clock. The
+             Undo button is the same rollback ring the row below offers; this one exists so the amber
+             pill has a one-click destination instead of leaving him to find it. -->
+        <div class="mnote" id="conflictWhy" style="color:var(--warning);margin:7px 0 0;display:none"></div>
+        <div class="recovery-row" id="conflictRow" style="display:none">
+          <button type="button" class="recbtn undo" id="conflictUndoBtn" onclick="rollbackOffer()">⟲ Undo the merge — put this device's copy back</button>
+          <button type="button" class="recbtn" id="conflictDismissBtn" onclick="conflictDismiss()">Dismiss — the merge was right</button>
+        </div>
         <div class="recovery-row" id="rollbackRow" style="display:none">
           <button type="button" class="recbtn undo" id="rollbackBtn" onclick="rollbackOffer()"></button>
         </div>
@@ -2980,6 +2991,50 @@ function deviceWrite(d) {
   catch (e) { console.error("localStorage save of the device-local scalars failed:", e); return false; }
 }
 let deviceLastWritten = null;
+/* BASE_KEY — the payload this device last knew to be byte-for-byte what GitHub holds, written after
+   every successful PUT and after every pull it accepted. It is the third input the merge needs and the
+   only one the old code never had: with just "mine" and "theirs" you cannot tell an edit from a
+   never-had-it, so the only available answer is "pick a whole blob", which is how one device's work
+   disappeared while both pills read green. With a base, each key answers for itself — who moved it —
+   and the clock is consulted only where both devices really did move the same one.
+   DEVICE-LOCAL, like PULLS_KEY and DEVICE_KEY: it describes this device's knowledge of the remote, not
+   shared data, and pushing it would make every device's base a race against every other's. It holds the
+   stripped payload (~19-40 KB), not the in-memory state, so it costs about what one rollback slot does.
+   A missing or unreadable base is not an error — threeWay() degrades to "identical keys pass through,
+   differing keys go to the later clock and get reported", which is still strictly better than the
+   wholesale replace it replaces, and the next successful push seeds it for good. */
+const BASE_KEY = "swgoh-holotable-base-v1";
+function baseRead() {
+  try {
+    const b = JSON.parse(localStorage.getItem(BASE_KEY) || "null");
+    return isPlainObject(b) && isPlainObject(b.state) ? b.state : null;
+  } catch (e) { return null; }
+}
+function baseWrite(payload) {
+  try { localStorage.setItem(BASE_KEY, JSON.stringify({ at: Date.now(), state: payload })); return true; }
+  catch (e) { console.error("Couldn't record the sync base — the next merge falls back to per-key last-write-wins:", e); return false; }
+}
+/* Used where this device's copy is deliberately replaced wholesale (import, Undo): the base that
+   described the old copy describes nothing afterwards, and a stale base is worse than none — it would
+   report the replaced copy's every key as "changed remotely" on the next pull. */
+function baseClear() { try { localStorage.removeItem(BASE_KEY); } catch (e) {} }
+
+/* CONFLICT_KEY — set when a merge had to settle a genuine two-device collision by the clock, i.e. when
+   one side's value really was discarded. Device-local and persistent for the same reason the rollback
+   ring is: the moment that matters is after the reload, and a warning that vanishes on refresh is not a
+   warning. Cleared only by acting on it (Undo) or dismissing it, never by a later clean sync, because a
+   later clean sync says nothing about the copy that was already thrown away. */
+const CONFLICT_KEY = "swgoh-holotable-conflict-v1";
+function conflictRead() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CONFLICT_KEY) || "null");
+    return isPlainObject(c) && typeof c.at === "number" && typeof c.count === "number" ? c : null;
+  } catch (e) { return null; }
+}
+function conflictWrite(c) {
+  try { if (c) localStorage.setItem(CONFLICT_KEY, JSON.stringify(c)); else localStorage.removeItem(CONFLICT_KEY); }
+  catch (e) {}
+}
 /* The single place that strips the device-local halves of state — the roster snapshot (PULLS_KEY) and the
    device scalars + UI context (DEVICE_KEY) — out of a blob headed for "swgoh-tracker" or for GitHub, so the
    storage path and both syncPush payload sites cannot drift apart. */
@@ -3095,6 +3150,9 @@ let syncLastError = "";
 let initialPullSettled = false;
 let initialPullPromise = null;
 let schemaMigrationPendingPush = false;
+/* Read at boot, not reset by it: see CONFLICT_KEY above. Declared here with the other sync `let`s for
+   the same reason they are — renderSyncStatus() can run from a pre-boot write. */
+let syncConflict = conflictRead();
 /* STATE_VERSION describes the *shape* of the saved blob, and is stored as state.stateVersion.
    Purely additive changes need NOTHING here — mergeDefaults() below backfills new keys on its own.
    Bump this and add a step to migrateState() only for a genuinely breaking change: a key renamed, a
@@ -6285,12 +6343,27 @@ function renderConquest() {
    describes this browser rather than the shared data. stateWithoutDeviceLocal() is the one helper that
    strips both, used by both payload sites below and by store.write().
 
-   Sync model is last-write-wins by timestamp: every store.write() stamps state.updatedAt = Date.now().
-   On load, if a remote copy exists and its updatedAt is newer than the local copy's, remote replaces
-   local (via a "quiet" store.write that skips re-stamping and skips scheduling a push, so we don't
-   immediately re-push the exact thing we just pulled). Every local change schedules a debounced push
-   (2.5s after the last edit) so rapid successive ticks/edits collapse into one API call. This is built
-   for one person's own two-ish devices, not multi-user conflict resolution — good enough here.
+   Sync model is a three-way merge against a stored base, NOT last-write-wins. Every store.write()
+   still stamps state.updatedAt = Date.now(), but that clock no longer decides who wins a whole file:
+   it is the tiebreaker of last resort for the one case where both devices changed the same key.
+   threeWay(base, local, remote) asks, per key, which side moved it — the side that did wins, the side
+   that didn't yields, and only a key both sides moved reaches the clock. Two devices essentially never
+   touch the same scalar in the same window, so in practice almost everything merges cleanly and
+   nothing is discarded. Every local change schedules a debounced push (2.5s after the last edit) so
+   rapid successive ticks/edits collapse into one API call.
+
+   Last-write-wins was fine for one device and quietly wrong for two, in four ways, all of which ended
+   syncSetStatus("idle") with a green pill over a copy that had just been thrown away:
+     1. a stale-sha push whose remote was NOT newer skipped the merge entirely and pushed straight over
+        the other device's work;
+     2. a stale-sha push whose remote WAS newer replaced this device's work wholesale;
+     3. no conflict at all — edit offline here, push there, reload here, and the ">" test in syncPull
+        replaced local with remote;
+     4. the device whose clock ran slow lost every time, whoever had actually edited last.
+   All four are the same bug — a two-input comparison cannot tell an edit from a never-had-it — and the
+   base is the third input that fixes them together. When a merge really does have to settle a
+   collision by the clock the pill goes amber and the outgoing copy goes on the rollback ring; a clean
+   three-way merge discards nothing and stays green.
    (SYNC_CFG_KEY / syncCfgRead / syncCfgWrite and the `let` state variables live earlier in the file,
    right after the store object — see the comment there for why.) */
 function syncConfigured() { return !!(syncCfg.owner && syncCfg.repo && syncCfg.token); }
@@ -6361,6 +6434,10 @@ function syncStatusLabel() {
   if (!syncConfigured()) return { cls: "", text: "☁ Sync" };
   if (syncBusy) return { cls: "busy", text: "☁ Syncing…" };
   if (syncLastError) return { cls: "err", text: "⚠ Sync error" };
+  /* Ranked above "Synced": the sync DID succeed, and saying only that is precisely the lie this
+     change exists to stop telling. Stays up across reloads and later clean syncs until it is acted on
+     or dismissed — a clean sync afterwards says nothing about the value already discarded. */
+  if (syncConflict) return { cls: "warn", text: `⚠ Merged — ${syncConflict.count} overwritten` };
   if (!syncCfg.lastSyncedAt) return { cls: "", text: "☁ Not yet synced" };
   const mins = Math.max(0, Math.round((Date.now() - syncCfg.lastSyncedAt) / 60000));
   const ago = mins < 1 ? "just now" : mins < 60 ? `${mins}m ago` : `${Math.round(mins / 60)}h ago`;
@@ -6372,12 +6449,263 @@ function renderSyncStatus() {
   const s = syncStatusLabel();
   el.className = "syncstatus" + (s.cls ? " " + s.cls : "");
   el.textContent = s.text;
-  el.title = syncLastError ? syncLastError : "Cloud Sync — click to configure";
+  el.title = syncLastError ? syncLastError
+    : syncConflict ? conflictSummary() + " Click to undo the merge or dismiss this."
+    : "Cloud Sync — click to configure";
+}
+
+/* ===================== three-way merge ===================== */
+/* Key-order-independent signature. Two devices running the same build write keys in the same order, so
+   plain JSON.stringify would nearly always agree — but "nearly always" is what this whole section
+   exists to stop relying on. A blob that has been through an older build, a hand edit, or an import
+   round-trip can come back reordered, and reading that as "changed on both sides" would manufacture a
+   collision out of nothing and put an amber pill over a merge that had no conflict at all. */
+function stableJson(v) {
+  if (v === undefined) return "null";
+  if (v === null || typeof v !== "object") return JSON.stringify(v);
+  if (Array.isArray(v)) return "[" + v.map(stableJson).join(",") + "]";
+  return "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + stableJson(v[k])).join(",") + "}";
+}
+/* Comparisons that ask "is this the same DATA" must ignore updatedAt, which every write bumps whether
+   or not anything else moved. Without this the "remote hasn't moved since our base" fast path would
+   miss every time and each visibilitychange pull would re-render the page for nothing. */
+function payloadSig(p) { return stableJson(Object.assign({}, p, { updatedAt: 0 })); }
+
+/* Distinguishes "this key is absent here" from "this key is present and holds undefined/null". The
+   difference is the entire "present on one side only — keep it" rule: a key one device has never heard
+   of must be adopted, not read as a deletion. */
+const MERGE_NONE = { holotableMergeAbsent: true };
+
+/* Per-branch rules, keyed on the dotted path from the root of the synced payload. Everything not
+   listed here gets the generic treatment — recurse plain objects, decide scalars by who moved them —
+   which is the right answer for ticks, tb, raidProgress, raidTickets, guildCurrency, executor, layout,
+   cq's view/sector/flags, glTarget, modopt, dailyDate, eventsSeedVersion, eventsSeeded, stateVersion
+   and tbRun alike. Only shapes the generic rule would get WRONG are named:
+     "max"   updatedAt and stateVersion are not data, they are the clocks the merge is judged by;
+             never let them collide, always take the higher.
+     "maintain" applyBootMaintenance() recomputes these from the calendar the instant any merge lands,
+             so whichever side "wins" them is overwritten in the same tick. Resolving them by clock is
+             therefore free, and REPORTING them as overwritten would be a false alarm about a value
+             that never survives either way — which on a first boot with no base yet is the difference
+             between an amber pill nobody should act on and a green one that is simply true.
+     "local" modsData/modsChars/modsRecent are derived proxy caches — every device refetches them for
+             itself and a merged cache is worth nothing. Deliberately NOT moved device-local, which
+             would be the tidier fix: that needs a STATE_VERSION bump and a migration step, and this
+             change is already the risky one. They simply stop travelling in a merge — except that an
+             EMPTY local cache yields to a non-empty remote one, so a brand-new browser's `{}` cannot
+             erase the other device's copy just by being local.
+     "legacy" legacyMigration is a one-shot migration record whose halves are only meaningful together
+             (what was archived, whether it was assigned, and the backups taken when it was), so it is
+             taken whole from one side rather than merged key by key. Local wins — unless local is the
+             untouched default, i.e. this device has never seen legacy data at all, in which case the
+             remote record is adopted whole. Without that exception a freshly-opened browser would push
+             its empty default over the only surviving copy of the pre-split worksheets.
+     "rows"  append-mostly lists where both devices add rows independently. Row identity is the row
+             itself, via uniqueRows() — the helper the legacy-planner merge already uses.
+     "byId"  events carry a stable id, so the same event edited on both devices is one row to reconcile
+             field by field, not two rows to keep. */
+const MERGE_RULES = [
+  [/^(updatedAt|stateVersion)$/, "max"],
+  [/^(dailyDate|eventsSeedVersion|eventsSeeded)$/, "maintain"],
+  [/^(modsData|modsChars|modsRecent)$/, "local"],
+  [/^legacyMigration$/, "legacy"],
+  [/^events\.items$/, "byId"],
+  [/^arena\.log\.[^.]+$/, "rows"],
+  [/^cq\.byAccount\.[^.]+\.myPlan\.[^.]+$/, "rows"],
+  [/^gac\.[^.]+\.(zones|offense)$/, "rows"],
+  [/^tw\.zones$/, "rows"]
+];
+function mergeRuleFor(path) {
+  for (const [re, rule] of MERGE_RULES) if (re.test(path)) return rule;
+  return "";
+}
+/* "Has nothing here" in the senses this state actually uses: a null branch, an empty list, an empty
+   object, an empty string. Note that `false` and `0` are NOT empty — an unticked checkbox and a zero
+   currency balance are real values someone set. */
+function mergeIsEmpty(v) {
+  if (v === null || v === undefined || v === "") return true;
+  if (Array.isArray(v)) return v.length === 0;
+  if (isPlainObject(v)) return Object.keys(v).length === 0;
+  return false;
+}
+/* The default-shaped legacyMigration every device starts with: nothing archived, nothing resolved. */
+function legacyUntouched(m) {
+  return !isPlainObject(m) || (!m.pending && !m.resolved && !m.legacyGac && !m.legacyCq);
+}
+
+/* Three-way merge of an append-mostly list. Row identity is the whole row, so an edited row reads as a
+   different row — which is what makes this safe: an edit on one device and a delete of the same row on
+   the other keeps the edit rather than honouring a delete that was aimed at a row that no longer
+   exists. Deletions ARE honoured, symmetrically, but only for rows still byte-identical to the base,
+   i.e. rows the other device provably did not touch. With no base every row reads as an addition and
+   this collapses to the plain union uniqueRows() gives — which is the correct degradation, since
+   without a base we cannot tell a deletion from a never-had-it and resurrecting a row is recoverable
+   where dropping one is not. */
+function threeWayRows(base, local, remote) {
+  const L = Array.isArray(local) ? local : [];
+  const R = Array.isArray(remote) ? remote : [];
+  const B = Array.isArray(base) ? base : [];
+  const bSig = new Set(B.map(stableJson));
+  const rSig = new Set(R.map(stableJson));
+  const kept = L.filter(row => { const sig = stableJson(row); return !(bSig.has(sig) && !rSig.has(sig)); });
+  const adds = R.filter(row => !bSig.has(stableJson(row)));
+  return uniqueRows(kept, adds);
+}
+
+/* Three-way merge of a list whose rows carry a stable id (events). Union by id, local order first so
+   the list doesn't reshuffle under the user; a row both sides have goes back through threeWayValue(),
+   so two devices editing different FIELDS of the same event both keep their edit and only the same
+   field on both sides reaches the clock. A row with no usable id can't be matched across devices, so
+   those fall back to the row union rather than being dropped. */
+function threeWayById(base, local, remote, path, ctx) {
+  const list = v => (Array.isArray(v) ? v : []);
+  const hasId = x => isPlainObject(x) && x.id !== undefined && x.id !== null;
+  const index = arr => { const m = new Map(); arr.forEach(x => { if (hasId(x)) m.set(String(x.id), x); }); return m; };
+  const L = list(local), R = list(remote), B = list(base);
+  const lm = index(L), rm = index(R), bm = index(B);
+  const out = [], seen = new Set();
+  const order = L.filter(hasId).map(x => String(x.id)).concat(R.filter(hasId).map(x => String(x.id)));
+  for (const id of order) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const b = bm.has(id) ? bm.get(id) : MERGE_NONE;
+    const l = lm.has(id) ? lm.get(id) : MERGE_NONE;
+    const r = rm.has(id) ? rm.get(id) : MERGE_NONE;
+    /* Deleted on one side while the other left it exactly as the base had it: nobody is arguing, the
+       delete stands. If the other side DID change it, its signature no longer matches the base and it
+       falls through to be kept — edit beats delete, the safe way round. */
+    if (l === MERGE_NONE && b !== MERGE_NONE && r !== MERGE_NONE && stableJson(b) === stableJson(r)) continue;
+    if (r === MERGE_NONE && b !== MERGE_NONE && l !== MERGE_NONE && stableJson(b) === stableJson(l)) continue;
+    const v = threeWayValue(b, l, r, path + "[" + id + "]", ctx);
+    if (v !== MERGE_NONE) out.push(v);
+  }
+  return out.concat(uniqueRows(L.filter(x => !hasId(x)), R.filter(x => !hasId(x))));
+}
+
+/* The merge itself. ctx collects the paths where a real collision had to be settled by the clock —
+   that list is what decides whether this sync gets a green pill or an amber one. */
+function threeWayValue(base, local, remote, path, ctx) {
+  if (local === MERGE_NONE && remote === MERGE_NONE) return MERGE_NONE;
+  if (remote === MERGE_NONE) return local;       // present on one side only — keep it
+  if (local === MERGE_NONE) return remote;
+
+  const rule = mergeRuleFor(path);
+  if (rule === "local") return mergeIsEmpty(local) ? remote : local;
+  if (rule === "legacy") return legacyUntouched(local) ? remote : local;
+  if (rule === "max") return Math.max(Number(local) || 0, Number(remote) || 0);
+  if (rule === "maintain") return ctx.remoteNewer ? remote : local;
+
+  const sl = stableJson(local), sr = stableJson(remote);
+  if (sl === sr) return local;                   // nobody disagrees
+  if (rule === "rows") return threeWayRows(base === MERGE_NONE ? null : base, local, remote);
+  if (rule === "byId") return threeWayById(base === MERGE_NONE ? null : base, local, remote, path, ctx);
+
+  if (base !== MERGE_NONE) {
+    const sb = stableJson(base);
+    if (sb === sl) return remote;                // unchanged here — the other device moved it
+    if (sb === sr) return local;                 // unchanged there — we moved it
+  }
+
+  /* Both sides moved it. Recurse before judging, so a disagreement deep inside `ticks` or `tb` is
+     settled on the one key that actually differs instead of taking the whole branch from one device —
+     that descent is the difference between "one tick lost" and "every tick on this device lost". */
+  if (isPlainObject(local) && isPlainObject(remote)) {
+    const bo = isPlainObject(base) ? base : null;
+    const at = (o, k) => (o && Object.prototype.hasOwnProperty.call(o, k)) ? o[k] : MERGE_NONE;
+    const out = {};
+    for (const k of new Set(Object.keys(local).concat(Object.keys(remote)))) {
+      const v = threeWayValue(at(bo, k), at(local, k), at(remote, k), path ? path + "." + k : k, ctx);
+      if (v !== MERGE_NONE) out[k] = v;
+    }
+    return out;
+  }
+
+  /* No base, and one side has nothing where the other has data. That is not a disagreement, it is an
+     absence of information: a browser opened for the first time looks exactly like a device that
+     deliberately cleared the branch, and the only tiebreak left is a clock — so a fresh browser whose
+     clock happens to run a minute ahead would push its empty default over a planner. Keep the data.
+     Bringing back something that was cleared on purpose costs one more clear; losing the Conquest
+     worksheet costs the Conquest worksheet. Nothing is discarded here, so nothing is reported. Once
+     there IS a base this cannot fire — the base says which side moved, and that answer is better. */
+  if (base === MERGE_NONE) {
+    const le = mergeIsEmpty(local), re = mergeIsEmpty(remote);
+    if (le !== re) return le ? remote : local;
+  }
+
+  /* A genuine leaf collision: the same scalar (or the same list under no rule of its own) set to two
+     different values on two devices. There is no information left to decide with except the clocks, so
+     use them — and record it, because this is the one and only place where a copy of something really
+     is discarded, and the status pill has to say so. */
+  ctx.collisions.push(path || "(root)");
+  return ctx.remoteNewer ? remote : local;
+}
+
+/* Merge a remote blob into this device instead of replacing this device with it. Returns what the
+   caller needs to decide the status and whether a push has to follow.
+     applied     the merged result differs from what was here, so state was replaced and re-rendered
+     pushNeeded  the merged result differs from what is on GitHub, so GitHub is now the stale one
+     collisions  the paths a clock had to settle; non-empty means something was genuinely discarded
+   `why` is only a label for the rollback ring and the amber message. */
+function syncMergeRemote(remote, why) {
+  if (!isPlainObject(remote)) return { applied: false, pushNeeded: false, collisions: [] };
+  const localPayload = stateWithoutDeviceLocal(state);
+  /* Strip the device-local halves off the REMOTE too. An older client's blob still carries its own
+     pulls/lastPull/UI context, and merging those in would read another device's tab position as a
+     genuine key to reconcile. mergeRemoteState() guards them again on the way in; this keeps them from
+     ever reaching the collision list. remote.pulls is put back below, unmerged, because the one case
+     where a remote snapshot is worth having (a browser that has none) is mergeRemoteState's to judge. */
+  const remotePayload = stateWithoutDeviceLocal(remote);
+  const base = baseRead();
+  const sRemote = payloadSig(remotePayload);
+  /* Remote is the same data this device last matched: nothing has landed there, so there is nothing to
+     merge and no reason to touch state. This is the ordinary outcome of a visibilitychange pull, and it
+     is what makes that pull cheap enough to do on every foreground. */
+  if (base !== null && payloadSig(base) === sRemote) {
+    return { applied: false, pushNeeded: payloadSig(localPayload) !== sRemote, collisions: [] };
+  }
+  /* Already identical without a merge — record the base we now provably share and stop. Also the path
+     that seeds a base for the first time on an upgraded device that was already in sync. */
+  if (payloadSig(localPayload) === sRemote) {
+    baseWrite(remotePayload);
+    return { applied: false, pushNeeded: false, collisions: [] };
+  }
+
+  const ctx = { collisions: [], remoteNewer: (remotePayload.updatedAt || 0) > (localPayload.updatedAt || 0) };
+  const merged = threeWayValue(base === null ? MERGE_NONE : base, localPayload, remotePayload, "", ctx);
+  const pushNeeded = payloadSig(merged) !== sRemote;
+
+  /* Only a merge that actually discarded something gets an undo copy. A clean three-way merge keeps
+     both sides by construction, so stashing on every pull would do nothing but push an import's Undo
+     slot out of a three-deep ring — which is the one thing the ring must not do. */
+  if (ctx.collisions.length) rollbackStash("merge from " + (why || "sync"));
+
+  /* The merged copy has to read newer than the remote it was built from, or the other device compares
+     two timestamps, prefers the one it already has, and the merge is undone on its next pull. Never
+     move the clock backwards; and when the merge produced exactly what is already on GitHub, keep
+     GitHub's own stamp so nothing is pushed for no reason. */
+  merged.updatedAt = pushNeeded
+    ? Math.max(Date.now(), (remotePayload.updatedAt || 0) + 1, localPayload.updatedAt || 0)
+    : (remotePayload.updatedAt || merged.updatedAt || 0);
+  if (isPlainObject(remote.pulls)) merged.pulls = remote.pulls;
+
+  /* mergeRemoteState() still owns everything about replaying a blob into `state` — the device-local
+     guards, the schema migration, the account/tab restore, the re-render. Handing it the MERGED blob
+     rather than the raw remote is the whole of this change. */
+  mergeRemoteState(merged);
+  baseWrite(remotePayload);
+  if (ctx.collisions.length) {
+    syncConflict = { at: Date.now(), label: why || "sync", count: ctx.collisions.length, paths: ctx.collisions.slice(0, 12) };
+    conflictWrite(syncConflict);
+  }
+  return { applied: true, pushNeeded: pushNeeded, collisions: ctx.collisions };
 }
 
 /* Replays remote data into local state without treating it as a fresh local edit (see the big comment
    above): skipStamp keeps state.updatedAt equal to the remote's own value, skipSync avoids immediately
-   re-pushing the exact thing we just pulled. */
+   re-pushing the exact thing we just pulled. Since the three-way merge landed this is a WHOLESALE
+   REPLACE and nothing else — the honest version of what it always did. Its callers are the four places
+   where replacing really is the intent: syncMergeRemote() after it has built a blob that already
+   contains both sides, force pull, import, and Undo. */
 function mergeRemoteState(remote) {
   if (!remote || typeof remote !== "object") return;
   const remoteVersion = typeof remote.stateVersion === "number" ? remote.stateVersion : 0;
@@ -6430,13 +6758,21 @@ async function syncPull(showStatus) {
     const r = await ghGetFile(syncCfg);
     syncCfg.lastSha = r.sha;
     if (!r.exists) { syncCfgWrite(syncCfg); if (showStatus) syncSetStatus("idle"); return { exists: false }; }
-    /* Merging remote in brings local fully up to date with it, so that counts as "synced" too —
-       otherwise the header pill would misleadingly read "Not yet synced" right after a pull that just
-       replaced local with the current remote copy. */
-    if ((r.data.updatedAt || 0) > (state.updatedAt || 0)) { mergeRemoteState(r.data); syncCfg.lastSyncedAt = Date.now(); }
+    /* Was: adopt the remote wholesale if its clock read newer, otherwise ignore it entirely. Both
+       halves lost data — the first threw away anything edited here since the last push (the classic
+       "edit offline, reload, it's gone"), the second left a newer edit from the other device sitting
+       unmerged until something else happened to pull it. Merge unconditionally instead and let
+       syncMergeRemote() decide whether there is anything to do: when remote still matches this
+       device's base it returns without touching state, so the common case is as cheap as the old
+       comparison was. */
+    const res = syncMergeRemote(r.data, "pull");
+    /* "Synced" means local and GitHub now hold the same data. A merge that produced something neither
+       side had yet is NOT that until the push below lands, so don't claim it. */
+    if (!res.pushNeeded) syncCfg.lastSyncedAt = Date.now();
     syncCfgWrite(syncCfg);
+    if (res.pushNeeded) scheduleSyncPush();
     if (showStatus) syncSetStatus("idle");
-    return { exists: true, data: r.data };
+    return { exists: true, data: r.data, merged: res };
   } catch (e) {
     syncSetStatus("error", String((e && e.message) || e));
     return null;
@@ -6456,6 +6792,11 @@ async function syncPush(stampAfterInitialPull) {
     syncCfg.lastSha = newSha;
     syncCfg.lastSyncedAt = Date.now();
     syncCfgWrite(syncCfg);
+    /* GitHub now holds exactly this payload, so this is the copy the next merge measures both devices
+       against. Written after the PUT and never before it: a base recorded for a push that then failed
+       would claim this device's edits were already shared, and the next merge would yield every one of
+       them to the other device as "unchanged here". */
+    baseWrite(payload);
     syncSetStatus("idle");
   } catch (e) {
     const msg = String((e && e.message) || e);
@@ -6472,11 +6813,20 @@ async function syncPush(stampAfterInitialPull) {
           await new Promise(res => setTimeout(res, 300 * attempt + Math.random() * 200));
           const r = await ghGetFile(syncCfg);
           syncCfg.lastSha = r.sha; syncCfgWrite(syncCfg);
-          if (r.exists && (r.data.updatedAt || 0) > (state.updatedAt || 0)) mergeRemoteState(r.data);
-          const payload2 = stateWithoutDeviceLocal(state, { updatedAt: Date.now() });
+          /* This is where scenarios 1 and 2 lived. The old test merged only when the remote's clock
+             read newer: when it did, the merge was a wholesale replace and THIS device's edits went;
+             when it didn't, the merge was skipped and the push below went straight over the OTHER
+             device's edits. Either way one side's work was gone and the pill went green. Merge
+             unconditionally — the clock is consulted inside threeWay(), per key, and only where both
+             devices really did change the same one. */
+          if (r.exists) syncMergeRemote(r.data, "push");
+          /* Never below the stamp syncMergeRemote() already gave the merged copy: that one is deliberately
+             above the remote's, and a Date.now() from a device whose clock runs slow would undo it. */
+          const payload2 = stateWithoutDeviceLocal(state, { updatedAt: Math.max(Date.now(), state.updatedAt || 0) });
           state.updatedAt = payload2.updatedAt;
           const newSha2 = await ghPutFile(syncCfg, payload2, syncCfg.lastSha);
           syncCfg.lastSha = newSha2; syncCfg.lastSyncedAt = Date.now(); syncCfgWrite(syncCfg);
+          baseWrite(payload2);
           syncSetStatus("idle");
           return;
         } catch (e2) {
@@ -6573,18 +6923,26 @@ async function syncSaveAndTest() {
   try {
     const r = await ghGetFile(syncCfg);
     syncCfg.lastSha = r.sha; syncCfgWrite(syncCfg);
-    if (r.exists && (r.data.updatedAt || 0) > (state.updatedAt || 0)) {
-      mergeRemoteState(r.data);
-      if (schemaMigrationPendingPush) {
-        schemaMigrationPendingPush = false;
-        await syncPush(true);
-        ms.textContent = "Connected — pulled newer data, applied safe startup maintenance, and synced it back.";
-      } else ms.textContent = "Connected — pulled newer data from GitHub and applied it here.";
+    /* Connecting a SECOND device is the single most dangerous moment this app has — it is exactly the
+       "pulled nothing, pushed a near-empty state over the desktop's" case the recovery group below was
+       built for. Merge here too rather than picking a winner by clock: whichever side is emptier, its
+       keys are simply absent and the other side's are kept. */
+    const connectMerge = r.exists ? syncMergeRemote(r.data, "connect") : { applied: false, pushNeeded: true, collisions: [] };
+    if (r.exists && connectMerge.applied && !connectMerge.pushNeeded && !schemaMigrationPendingPush) {
+      ms.textContent = "Connected — pulled newer data from GitHub and applied it here.";
+    } else if (r.exists && connectMerge.applied) {
+      schemaMigrationPendingPush = false;
+      await syncPush(true);
+      ms.textContent = connectMerge.collisions.length
+        ? "Connected — merged GitHub's copy with this device's. Some values had been changed on both; see the warning below."
+        : "Connected — merged GitHub's copy with this device's and pushed the result back.";
     } else {
       const stampMaintenance = schemaMigrationPendingPush;
       schemaMigrationPendingPush = false;
       await syncPush(stampMaintenance);
-      ms.textContent = r.exists ? "Connected — this device's data was newer, pushed it to GitHub." : "Connected — seeded the repo with this device's data.";
+      ms.textContent = !r.exists ? "Connected — seeded the repo with this device's data."
+        : connectMerge.pushNeeded ? "Connected — this device had edits GitHub's copy didn't, pushed them up."
+        : "Connected — both copies already held the same data.";
     }
     ms.style.color = "var(--good)";
     document.getElementById("syncDisconnectBtn").style.display = "";
@@ -6625,24 +6983,62 @@ function syncDisconnect() {
    carrying onto another device. */
 
 const ROLLBACK_KEY = "swgoh-holotable-rollback-v1";
-/* Device-local, single slot, and deliberately NOT session-scoped: the moment you most want the undo is
-   after reloading the page to see whether the import really did what you feared. It stashes
-   stateWithoutDeviceLocal(), not the whole state, so the slot is ~20 KB rather than ~650 KB — which
-   matters precisely because quota pressure is one of the things that lands people here. */
-function rollbackStash(label) {
+/* Device-local and deliberately NOT session-scoped: the moment you most want the undo is after
+   reloading the page to see whether the import really did what you feared. It stashes
+   stateWithoutDeviceLocal(), not the whole state, so a slot is ~20-40 KB rather than ~650 KB — which
+   matters precisely because quota pressure is one of the things that lands people here.
+
+   Three slots, newest first, rather than the one this started with. Sync merges now stash too, and a
+   single slot shared between "the import I want to undo" and "the merge that ran while I was reading
+   this modal" is a slot that is never the one you wanted. They do not fight over it because a merge
+   only stashes when it genuinely discarded something (see syncMergeRemote) — a clean three-way merge
+   keeps both sides and has nothing to undo — so a routine sync cannot evict an import's copy.
+   rollbackRead() still means "the most recent stash", so Undo is unchanged: it always offers the last
+   thing that was replaced, and stashes the outgoing copy on its way past, which keeps it a toggle. */
+const ROLLBACK_DEPTH = 3;
+function rollbackReadAll() {
   try {
-    localStorage.setItem(ROLLBACK_KEY, JSON.stringify({ at: Date.now(), label: label, state: stateWithoutDeviceLocal(state) }));
-    return true;
-  } catch (e) {
-    console.error("Couldn't stash a rollback copy — continuing anyway:", e);
-    return false;
-  }
+    const raw = JSON.parse(localStorage.getItem(ROLLBACK_KEY) || "null");
+    /* A save from before the ring holds a bare { at, label, state }. Read it as a one-entry ring so an
+       Undo stashed by the previous build still works across this upgrade. */
+    const list = Array.isArray(raw) ? raw : [raw];
+    return list.filter(r => isPlainObject(r) && isPlainObject(r.state) && typeof r.at === "number");
+  } catch (e) { return []; }
 }
-function rollbackRead() {
-  try {
-    const r = JSON.parse(localStorage.getItem(ROLLBACK_KEY) || "null");
-    return isPlainObject(r) && isPlainObject(r.state) && typeof r.at === "number" ? r : null;
-  } catch (e) { return null; }
+function rollbackStash(label) {
+  const ring = [{ at: Date.now(), label: label, state: stateWithoutDeviceLocal(state) }].concat(rollbackReadAll()).slice(0, ROLLBACK_DEPTH);
+  /* Shed the oldest slot and retry rather than failing the whole stash: quota pressure is exactly the
+     situation where the copy that matters is the one about to be overwritten, and a two-week-old slot
+     is not worth losing it for. */
+  for (let n = ring.length; n >= 1; n--) {
+    try { localStorage.setItem(ROLLBACK_KEY, JSON.stringify(ring.slice(0, n))); return true; }
+    catch (e) { if (n === 1) { console.error("Couldn't stash a rollback copy — continuing anyway:", e); return false; } }
+  }
+  return false;
+}
+function rollbackRead() { return rollbackReadAll()[0] || null; }
+
+/* One sentence naming what was overwritten, in the merge's own dotted paths — "ticks.ollie-t1" is more
+   use than a count, because it tells him whether to bother pressing Undo at all. */
+function conflictSummary() {
+  if (!syncConflict) return "";
+  const paths = Array.isArray(syncConflict.paths) ? syncConflict.paths : [];
+  const shown = paths.slice(0, 4).join(", ");
+  const more = syncConflict.count > shown.split(", ").filter(Boolean).length
+    ? ` and ${syncConflict.count - Math.min(4, paths.length)} more` : "";
+  return `${syncConflict.count} value${syncConflict.count === 1 ? " was" : "s were"} changed on both devices ` +
+    `at the ${syncConflict.label || "sync"} of ${new Date(syncConflict.at).toLocaleString()}; the later clock won` +
+    (shown ? ` (${shown}${more})` : "") + ".";
+}
+/* Dismiss clears the warning WITHOUT touching data — the merge stays merged. It exists because the
+   common case is that the clock picked right and he just wants the pill green again; making him press
+   Undo to clear it would turn a warning into a reason to overwrite something. */
+function conflictDismiss() {
+  syncConflict = null;
+  conflictWrite(null);
+  renderSyncStatus();
+  recoveryRefresh();
+  recoverySay("Warning cleared. Nothing was changed — the merged copy stays as it is.", "");
 }
 
 /* mergeRemoteState() finishes with merged.updatedAt = the incoming blob's own timestamp. That is correct
@@ -6656,7 +7052,15 @@ function adoptAsLocalTruth(blob) {
   mergeRemoteState(blob);
   state.updatedAt = Date.now();
   store.write(state, { skipStamp: true, skipSync: true });
-  if (syncConfigured() && syncOriginOk()) syncPush();
+  /* The base described how this device's copy related to GitHub's, and this just replaced that copy
+     with an unrelated one. Clearing it is not a loss: the push below writes the real base back, and
+     until it does, a merge with no base is honest where a merge against the old one would report every
+     restored key as "the other device changed this". */
+  baseClear();
+  /* Whatever collision was outstanding was about the copy that just went. Keeping the amber pill up
+     would point Undo at a merge that no longer exists. */
+  if (syncConflict) { syncConflict = null; conflictWrite(null); }
+  if (syncConfigured() && syncOriginOk()) syncPush(); else renderSyncStatus();
 }
 
 function recoverySay(msg, tone) {
@@ -6709,6 +7113,14 @@ function recoveryRefresh() {
   document.getElementById("rollbackRow").style.display = rb ? "" : "none";
   if (rb) document.getElementById("rollbackBtn").textContent =
     `⟲ Undo — restore what was here before the ${rb.label} (${new Date(rb.at).toLocaleString()})`;
+  /* The amber pill has to lead somewhere, and this is it: the explanation plus the one button that
+     undoes the merge, which is the same ring slot Undo above offers — deliberately, so there is one
+     undo mechanism in this app and not two that disagree about which copy is "the old one". */
+  const cw = document.getElementById("conflictWhy");
+  const crow = document.getElementById("conflictRow");
+  cw.textContent = syncConflict ? conflictSummary() : "";
+  cw.style.display = syncConflict ? "" : "none";
+  crow.style.display = syncConflict ? "" : "none";
 }
 
 /* ---- export ---- */
@@ -6831,6 +7243,10 @@ async function forcePull() {
       /* No timestamp comparison, and no re-stamp afterwards either: the goal is to MATCH the cloud, so
          mergeRemoteState() keeping the remote's own updatedAt is exactly right here. */
       mergeRemoteState(r.data);
+      /* This device now IS GitHub's copy, so that is the base every later merge measures against. Skip
+         it and the next pull would read the whole force-pulled blob as "changed locally". */
+      baseWrite(stateWithoutDeviceLocal(r.data));
+      if (syncConflict) { syncConflict = null; conflictWrite(null); }
       syncCfg.lastSyncedAt = Date.now();
       syncCfgWrite(syncCfg);
       syncSetStatus("idle");
@@ -7570,6 +7986,27 @@ window.addEventListener("keydown", e => {
     render();
     document.getElementById("sidebarBtn").focus();
   }
+});
+/* A tab left open on the phone overnight boots once and then never looks again: no interval, no
+   refocus pull. By morning its base is hours stale, so the first tick it takes goes out against a sha
+   GitHub replaced long ago — i.e. it is guaranteed into the conflict path, which is the one path where
+   a collision can still cost a value. Pulling when the tab comes back to the foreground keeps the base
+   fresh and turns that guaranteed conflict back into the ordinary clean merge.
+
+   Debounced hard, because iOS fires visibilitychange on every app switch, every notification shade and
+   every lock: a naive handler here would be a request storm against a rate-limited API. Skipped while
+   a sync is already running and until the boot pull has settled, so it can never double up on one. */
+const VISIBILITY_PULL_GAP = 20000;
+let lastVisibilityPullAt = 0;
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (!syncConfigured() || !syncOriginOk()) return;
+  if (syncBusy) return;
+  if (initialPullPromise && !initialPullSettled) return;
+  const now = Date.now();
+  if (now - lastVisibilityPullAt < VISIBILITY_PULL_GAP) return;
+  lastVisibilityPullAt = now;
+  syncPull(true);
 });
 window.addEventListener("hashchange", () => {
   const p = new URLSearchParams(location.hash.replace(/^#/, ""));

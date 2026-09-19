@@ -88,32 +88,49 @@
       radial-gradient(ellipse 46% 38% at 6% 104%, rgba(144,133,233,0.16), transparent 60%),
       radial-gradient(ellipse 40% 30% at 96% 88%, rgba(255,180,60,0.09), transparent 62%),
       radial-gradient(ellipse 38% 30% at -4% 8%, rgba(236,131,90,0.08), transparent 60%);
-    z-index: -5; animation: swHue 140s linear infinite;
+    z-index: -5;
+    /* Used to animate `filter: hue-rotate` (swHue) here, which — like background-position below — can't
+       run on the compositor: every frame re-rasters this whole fixed full-viewport layer. Unlike the star
+       layers, there's no transform-only equivalent of a hue shift, and a faithful fix (crossfading two
+       pre-shifted copies of this gradient stack) buys a 14° hue wobble nobody consciously perceives on a
+       "subtle background wash". Dropped instead: this is simply the old 0%/100% keyframe frame — a static
+       hue-rotate(0deg) — rendered once and never touched again. Perf audit, 19 Sep 2026. */
   }
   .sw-stars-a, .sw-stars-b, .sw-stars-c { background-repeat: repeat; }
+  /* The three layers below used to animate `background-position`, which — like `filter` above — can't run
+     on the compositor: every frame re-rasters the full fixed viewport-sized layer even though nothing on
+     screen actually needs to change shape, 1,387ms of raster per idle 3s at 4x CPU throttle on a phone
+     viewport (perf audit, 19 Sep 2026). `transform: translate3d` is compositor-only, so the swDrift*
+     keyframes now move the LAYER instead of the image within it: translating a `background-repeat: repeat`
+     layer by exactly one tile (its background-size) is visually identical to not moving it at all, so the
+     loop is exactly as seamless as the old background-position version — same direction, same duration,
+     same distance, just animated a compositor-cheap way instead of a compositor-hostile one.
+     Each layer is oversized via a fixed-px `inset` (never vh/vw or %: on mobile 100vh is the LARGE
+     viewport, so a vh-sized/offset layer would jump when the URL bar shows or hides) so its translation
+     stays inside the overhang and the layer's real edge never sweeps into view. Overhang = tile size plus
+     a safety margin for sub-pixel rounding at the loop point. */
   .sw-stars-a {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260"><circle cx="12" cy="34" r="1" fill="white" opacity="0.5"/><circle cx="75" cy="12" r="0.7" fill="white" opacity="0.35"/><circle cx="140" cy="60" r="1.1" fill="white" opacity="0.45"/><circle cx="200" cy="25" r="0.6" fill="white" opacity="0.3"/><circle cx="55" cy="98" r="0.8" fill="white" opacity="0.4"/><circle cx="180" cy="120" r="1" fill="white" opacity="0.35"/><circle cx="30" cy="160" r="0.7" fill="white" opacity="0.45"/><circle cx="110" cy="185" r="1.2" fill="white" opacity="0.4"/><circle cx="220" cy="200" r="0.8" fill="white" opacity="0.35"/><circle cx="90" cy="140" r="0.5" fill="white" opacity="0.55"/><circle cx="160" cy="220" r="0.6" fill="white" opacity="0.3"/><circle cx="205" cy="90" r="0.5" fill="white" opacity="0.5"/><circle cx="240" cy="150" r="0.9" fill="white" opacity="0.4"/><circle cx="20" cy="230" r="0.6" fill="white" opacity="0.35"/></svg>');
-    background-size: 260px 260px; animation: swDriftSlow 220s linear infinite;
+    background-size: 260px 260px; inset: -320px; animation: swDriftSlow 220s linear infinite; will-change: transform;
   }
   .sw-stars-b {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><circle cx="18" cy="20" r="1.3" fill="white" opacity="0.7"/><circle cx="95" cy="55" r="0.9" fill="white" opacity="0.55"/><circle cx="150" cy="15" r="1" fill="white" opacity="0.6"/><circle cx="40" cy="90" r="1.4" fill="white" opacity="0.65"/><circle cx="120" cy="110" r="0.8" fill="white" opacity="0.5"/><circle cx="70" cy="140" r="1.1" fill="white" opacity="0.6"/><circle cx="160" cy="150" r="0.9" fill="white" opacity="0.5"/><circle cx="10" cy="150" r="0.7" fill="white" opacity="0.55"/></svg>');
-    background-size: 180px 180px; animation: swDriftMid 90s linear infinite, swTwinkle 6s ease-in-out infinite;
+    background-size: 180px 180px; inset: -240px; animation: swDriftMid 90s linear infinite, swTwinkle 6s ease-in-out infinite; will-change: transform;
   }
   .sw-stars-c {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><circle cx="30" cy="24" r="1.6" fill="%233ec6ff" opacity="0.5"/><circle cx="100" cy="70" r="1.3" fill="white" opacity="0.75"/><circle cx="60" cy="110" r="1.7" fill="%23ffe81f" opacity="0.4"/></svg>');
-    background-size: 140px 140px; animation: swDriftFast 55s linear infinite, swTwinkle 3.4s ease-in-out infinite reverse;
+    background-size: 140px 140px; inset: -200px; animation: swDriftFast 55s linear infinite, swTwinkle 3.4s ease-in-out infinite reverse; will-change: transform;
   }
   .sw-planet {
     z-index: -3; background-repeat: no-repeat; background-position: -6% 108%; background-size: 480px 480px;
     animation: swFloat 26s ease-in-out infinite;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="p" cx="35%25" cy="30%25" r="75%25"><stop offset="0%25" stop-color="%233c4a63" stop-opacity="0.55"/><stop offset="55%25" stop-color="%23222c3d" stop-opacity="0.45"/><stop offset="100%25" stop-color="%2305060a" stop-opacity="0.4"/></radialGradient></defs><ellipse cx="100" cy="100" rx="118" ry="30" fill="none" stroke="%23ffe81f" stroke-opacity="0.10" stroke-width="4" transform="rotate(-16 100 100)"/><circle cx="100" cy="100" r="62" fill="url(%23p)"/><ellipse cx="100" cy="100" rx="118" ry="30" fill="none" stroke="%233ec6ff" stroke-opacity="0.14" stroke-width="2.4" transform="rotate(-16 100 100)"/></svg>');
   }
-  @keyframes swDriftSlow { from { background-position: 0 0; } to { background-position: -260px 260px; } }
-  @keyframes swDriftMid  { from { background-position: 0 0; } to { background-position: 180px -180px; } }
-  @keyframes swDriftFast { from { background-position: 0 0; } to { background-position: -140px -140px; } }
+  @keyframes swDriftSlow { from { transform: translate3d(0,0,0); } to { transform: translate3d(-260px, 260px, 0); } }
+  @keyframes swDriftMid  { from { transform: translate3d(0,0,0); } to { transform: translate3d(180px, -180px, 0); } }
+  @keyframes swDriftFast { from { transform: translate3d(0,0,0); } to { transform: translate3d(-140px, -140px, 0); } }
   @keyframes swTwinkle   { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
   @keyframes swFloat     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
-  @keyframes swHue       { 0%,100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(14deg); } }
   @media (prefers-reduced-motion: reduce) {
     .sw-stars-a, .sw-stars-b, .sw-stars-c, .sw-planet, .sw-nebula, body::after { animation: none !important; }
     /* UI transitions (not just the decorative starfield): progress-bar fills, the per-tab accent-glow
@@ -1511,7 +1528,7 @@ const ASSAULT_BATTLES = [
         notes: "Full transcript of an actual completed 3★ clear (Songeta) names each unit and role: General Kenobi dispels the Shield Droids' \"Overcharge\"-type buff before it locks healing immunity, Hermit Yoda passes Grandmaster's Training/mass-assist, GMY cycles turn meter, JKR's Savior mechanic survives the opening alpha strike. Strongly corroborated by 2 EA forum posts sharing 4-of-5 units each.",
         sources: ["YouTube \"Ground War Challenge Tier 3 - Three Stars\" (Songeta, full transcript)", "EA Forums \"Ground War Event (Last tier) - Suggestions please\""] },
       { label: "Team 2: JKL Core (Anakin/Jolee)", confidence: "MODERATE-HIGH",
-        members: [["JEDIKNIGHTLUKE", "Jedi Knight Luke Skywalker"], ["GRANDMASTERYODA", "Grand Master Yoda"], ["HERMITYODA", "Hermit Yoda"], ["JOLEEBINDO", "Jolee Bindo"], [null, "General Anakin Skywalker"]],
+        members: [["JEDIKNIGHTLUKE", "Jedi Knight Luke Skywalker"], ["GRANDMASTERYODA", "Grand Master Yoda"], ["HERMITYODA", "Hermit Yoda"], ["JOLEEBINDO", "Jolee Bindo"], ["GENERALSKYWALKER", "General Skywalker"]],
         notes: "Dedicated guide video with a viewer comment confirming a successful replicated clear, plus many independent \"finally 3-starred it\" comments. A parallel creator (NOOCH2GUD) runs the same team but with General Kenobi instead of Anakin — confirms General Kenobi ↔ General Anakin Skywalker is a genuine interchangeable flex slot, not a real dispute as previously logged.",
         sources: ["YouTube \"How to three star Ground War Assault Battle!\" (CaptainAmazing, description + comments)"] },
       { label: "Team 3: JKL Core (No-GL, F2P-friendly)", confidence: "MODERATE-HIGH",
@@ -1570,7 +1587,7 @@ const ASSAULT_BATTLES = [
         unconfirmed: "Re-checked directly: Embo, Greef Karga and The Mandalorian remain the corroborated core (\"Embo seems the easiest but def requires Greef and Mando at 7* G13+\"). Bossk and Boba Fett as the final 2 slots still have NO independent corroboration after a dedicated re-check — the only other Bossk mention in the same thread is a separate, explicitly FAILED Jango-lead attempt, not support for this team.",
         sources: ["EA Forums thread 4339327 (\"Rebel roundup\")"] },
       { label: "Team 3: Veers Trooper (no Piett)", confidence: "MODERATE-HIGH",
-        members: [["VEERS", "General Veers"], ["COLONELSTARCK", "Colonel Starck"], ["DEATHTROOPER", "Death Trooper"], [null, "Shore Trooper"], [null, "Snowtrooper"]],
+        members: [["VEERS", "General Veers"], ["COLONELSTARCK", "Colonel Starck"], ["DEATHTROOPER", "Death Trooper"], ["SHORETROOPER", "Shoretrooper"], [null, "Snowtrooper"]],
         notes: "Re-verified directly: 3 separate posters in the same thread independently report successful 3-star clears with this near-identical Veers-led, Piett-free comp (one swaps Colonel Starck for a generic Stormtrooper and still reports success). A 4th poster's attempt adding Starck AND a generic Stormtrooper together explicitly failed — useful negative data. No mention of Piett anywhere in this thread. This is the most internally-consistent single-thread body of evidence found across this whole battle — consider it the \"safe\" comp, with Team 1's Piett variant as an optional upgrade.",
         sources: ["EA Forums thread 4015838 (\"Rebel Roundup\", 3 corroborating reports + 1 failed variant)"] }
     ],
@@ -1656,7 +1673,7 @@ const ASSAULT_BATTLES = [
         notes: "Correction/upgrade: this is the exact roster from a full auto-generated transcript of a completed CT3 clear — the creator explicitly walks through wave-by-wave mod/kit usage for all 5 units, states he does NOT have Reva unlocked yet, and explicitly swaps in Eighth Brother over Second Sister (\"a lot of the other guys out there are using second sister... I think it's important not to use her and show you how you can do it with eighth brother\"). This is the same roster as the general swgoh-cantina.com \"Advanced Inquisitorius\" reference previously logged at MODERATE — now independently CT3-confirmed by a primary completed-run source, not just a general listing.",
         sources: ["YouTube \"How to 3-Star Inquisitor Assault Battle Challenge Tier 3 w/o Reva - 8th Brother Rocks!!\" (Songeta, full transcript)", "swgoh-cantina.com Grand Inquisitor page"] },
       { label: "Team 2: GI + Reva", confidence: "MODERATE",
-        members: [[null, "Grand Inquisitor"], [null, "Third Sister (Reva)"], [null, "Fifth Brother"], [null, "Seventh Sister"], [null, "Eighth Brother"]],
+        members: [[null, "Grand Inquisitor"], ["THIRDSISTER", "Third Sister"], [null, "Fifth Brother"], [null, "Seventh Sister"], [null, "Eighth Brother"]],
         unconfirmed: "Reva's CT3 participation itself is now double-confirmed (the original EA forums reply plus a YouTube comment: \"I lost Reva on the last wave or I would have 3 Stars\"). No single source names all 5 GI+Reva slots together, so the last 3 are a sourced hypothesis, not a confirmed list: a faction-breakdown article states the general \"optimal\" Inquisitorius composition once Reva is unlocked is Third Sister/Grand Inquisitor/Seventh Sister/Fifth Brother/Eighth Brother — i.e. Team 1 above with Reva swapping in for Ninth Sister. Since Fifth Brother + Seventh Sister are CT3-confirmed via Team 1 and Reva is CT3-confirmed independently, this is a defensible inference, not a verified roster — treat as a strong lead. A further 2026 search pass found 4 more independently-titled CT3+Reva videos (\"Reva Fanatical Devotion Tier 3 Assault Battles 3 Star!\", \"How to three star Fanatical Devotion with Reva!\", \"Fanatical Devotion assault battle challenge tier 3 with GI lead Reva\", \"SWGOH inquisitors Assault Battle challenge tier 3 - Reva makes it easier!\") — all further corroborate that GI+Reva CT3 3-star clears are real and repeatable, but persistent YouTube rate-limiting blocked description/transcript access for every one of them this round, so none could be confirmed to name the other 3 slots. Still no single source lists all 5 GI+Reva slots together.",
         sources: ["EA Forums thread 3713158", "kahzgul.substack.com \"Faction Breakdown: The Inquisitorius\"", "YouTube \"Fanatical Devotion Assault Battle - Challenge Tier 3 w/ Reva & GI\"", "YouTube comment on \"Fanatical Devotion: Challenge Tier 3 - My Three Star Run\" (TriPollicis)", "YouTube titles found in 2026 sweep (titles only, transcripts inaccessible): \"Reva Fanatical Devotion Tier 3 Assault Battles 3 Star!\", \"How to three star Fanatical Devotion with Reva!\", \"Fanatical Devotion assault battle challenge tier 3 with GI lead Reva\", \"SWGOH inquisitors Assault Battle challenge tier 3 - Reva makes it easier!\""] },
       { label: "Team 3: Cantina Initial Inquisitorius", confidence: "MODERATE",
@@ -1865,7 +1882,7 @@ function modesCategory(v) { state.modesnav.category = v; store.write(state); ren
    out in one move. This renders the current path as "Raids › Order 66 Raid › Ollietank › Dark Side
    Clones", every earlier segment clickable as a jump back up a level. It's a read-out of state.modesnav
    only — no new state. (UX/IA design-review recommendation, 28 Aug 2026.) */
-const RAID_DETAIL_LABELS = { ollie: "Ollietank", tiny: "Tiny", notes: "Mechanics & notes" };
+const RAID_DETAIL_LABELS = { ollie: "Ollietank", tiny: "Tiny", notes: "Mechanics & notes", compare: "Compare accounts" };
 function modesCrumbRoot(cat) {
   state.modesnav.category = cat;
   if (cat === "raid") {
@@ -1912,7 +1929,10 @@ function renderModesCrumb() {
     const detail = state.modesnav.raidDetail || "ollie";
     segs.push({ label: RAID_DETAIL_LABELS[detail] || detail, act: `raidDetail('${jsAttr(detail)}')` });
     if (detail !== "notes") {
-      const rows = raidCoachForRaid(cur, detail);
+      /* "compare" isn't an account key — state.pulls.compare doesn't exist — so it needs the same
+         guard renderRaids() already applies before calling raidCoachForRaid(), or this throws deep
+         inside accountView(). Missing here is exactly what wedged the Game Modes tab. */
+      const rows = raidCoachForRaid(cur, detail === "compare" ? current : detail);
       if (rows.length > 1) {
         const i = Math.min(+(state.modesnav.raidSquad || 0), rows.length - 1);
         if (rows[i]) segs.push({ label: rows[i].sq.name, act: `raidSquad('${i}')` });
@@ -2338,7 +2358,7 @@ const META_SQUADS = [
     notes: "Full 5-unit roster matches across 2 independent sources.",
     sources: ["gaming-fans.com AAT Phase 1 Teams & Strategy", "wookieenews.com AAT Raid Guide"] },
   { name: "AAT Rebel Core (Wedge lead)", mode: "AAT Raid — Phase 1/2 damage team, ~2M damage per source", raidTier: "budget", confidence: "MODERATE",
-    members: [["WEDGEANTILLES","Wedge Antilles"], ["BIGGSDARKLIGHTER","Biggs Darklighter"], ["ADMINISTRATORLANDO","Lando Calrissian"], ["PHASMA","Captain Phasma"], [null,"Han Solo (Stormtrooper Disguise)"]],
+    members: [["WEDGEANTILLES","Wedge Antilles"], ["BIGGSDARKLIGHTER","Biggs Darklighter"], ["ADMINISTRATORLANDO","Lando Calrissian"], ["PHASMA","Captain Phasma"], ["STORMTROOPERHAN","Stormtrooper Han"]],
     notes: "Re-checked directly: the original EA Forums source still explicitly writes this exact 5-unit roster, credited there to player \"Smithie D\" (\"Wedge lead+Biggs+Lando+Phasma+StHan\"), with ~2M reported Phase 2 damage — the most concretely-attested (player-credited, damage-quantified) of the variants found, which is why it's shown here. A dedicated re-search pinned down the other 2 \"Wedge-lead\" variants to specific, phase-labeled sources rather than resolving the dispute: wookieenews.com's AAT guide lists its own Phase 2 \"Wedge Antilles\" squad as Wedge+Biggs+Commander Luke Skywalker+Han Solo (plain)+Lando, while swgoh-tippstricks.jimdofree.com's raid-organized squad guide lists a Phase 2 \"Rebel squad\" (Wedge lead) as Wedge+Biggs+Princess Leia+Admiral Ackbar+Lando (Lando flagged \"important\" there). All 3 are structured, phase-specific guides rather than casual asides, so this reads as a squad with 3 genuinely different community-documented rosters rather than one settled 5th slot.",
     sources: ["EA Forums \"AAT Raid Guide (Normal Mode)\"", "wookieenews.com AAT Raid Guide", "swgoh-tippstricks.jimdofree.com Raid Squads guide"] },
   { name: "AAT CLS Variant", mode: "AAT Raid — CLS core variant", confidence: "LOW-MODERATE",
@@ -2350,7 +2370,7 @@ const META_SQUADS = [
     notes: "2 independent EA forum threads agree on this 4-unit core with Dathcha as the commonly-recommended leader (vs. Chief Nebit as the alternative leader debate in the same threads). Re-checked directly: the only source giving a complete, explicit 5-unit roster for this specific Dathcha-led squad is a real player's reported raid-run in the \"best jawa for leader jawa team???????\" thread — \"Datcha (lead), jawa, nebit, scavenger and ewok elder\" — scoring ~360K damage in AAT Phase 1 before enrage, so Ewok Elder is now shown as the 5th slot. The competing \"Jawa Engineer\" mentions in these same threads turn out, on closer reading, to describe a *different* squad — a mixed HK-47-led Jawa/Droid Phase 2 team (\"HK47+88+86, JE+Nebit\") — not a listed 5th slot for this all-Jawa Dathcha squad, so that dispute is resolved by elimination rather than by a second source confirming Ewok Elder.",
     sources: ["EA Forums \"Are Jawas worth it?\"", "EA Forums \"best jawa for leader jawa team???????\"", "EA Forums \"AAT Raid Guide (Normal Mode)\""] },
   { name: "AAT Jedi Core (Ima-Gun Di lead)", mode: "AAT Raid (Tank Takedown) — Phase 1 Jedi team, benefits from the raid's Jedi +20% Crit Chance / health-regen passive", confidence: "MODERATE",
-    members: [[null,"Ima-Gun Di"], ["GRANDMASTERYODA","Grand Master Yoda"], [null,"Anakin Skywalker"], ["LUMINARAUNDULI","Luminara Unduli"], ["GENERALKENOBI","General Kenobi"]],
+    members: [[null,"Ima-Gun Di"], ["GRANDMASTERYODA","Grand Master Yoda"], ["ANAKINKNIGHT","Jedi Knight Anakin"], ["LUMINARAUNDULI","Luminara Unduli"], ["GENERALKENOBI","General Kenobi"]],
     notes: "Newly confirmed as AAT-specific after a dedicated search: swgoh-tippstricks.jimdofree.com's raid-squad guide is organized by raid with distinct, clearly-labeled \"HEROIC AAT TANK TAKEDOWN\" and \"HEROIC RANCOR RAID\" sections, and lists an \"Ima Gun Di\" team explicitly under AAT Phase 1: Ima-Gun Di (lead), Yoda, Anakin Skywalker, Luminara Unduli, plus a flexible 5th given as Ahsoka Tano / Aayla Secura / General Kenobi (General Kenobi shown here as the pick; the other two are equally documented alternates from the same source). This resolves the earlier ambiguous-scope concern. Independently, gaming-fans.com's AAT Phase 1 guide separately corroborates the archetype and leader — \"most people ran Ima-Gun Di lead\" for his Defense/Counter Chance, with Luminara Unduli/Barriss Offee as healers and Aayla Secura/Jedi Knight Anakin as possible teammates — but without giving one fixed 5-unit list, so it confirms the leader/core rather than the exact roster. The same jimdofree.com source also lists a separate \"Tenacity Jedi\" team led by Aayla Secura instead (same Yoda/Luminara core, Anakin or Qui-Gon Jinn, same flexible 5th) as an alternate, not tracked as its own row here.",
     sources: ["swgoh-tippstricks.jimdofree.com Raid Squads guide", "gaming-fans.com AAT Phase 1 Teams & Strategy"] }
 ];
@@ -2821,7 +2841,7 @@ const DAILY = [
 /* THREE localStorage keys, deliberately:
      "swgoh-tracker"  — everything Cloud Sync ships to GitHub (ticks, notes, planners, logs, layout…)
      PULLS_KEY        — state.pulls only: the swgoh.gg roster snapshot. DEVICE-LOCAL, never synced.
-     DEVICE_KEY       — the device-local scalars; today exactly one, lastPull. DEVICE-LOCAL, never synced.
+     DEVICE_KEY       — the device-local scalars and UI context. DEVICE-LOCAL, never synced.
    lastPull means "when did THIS browser last fetch swgoh.gg", so syncing it was a category error: it
    described one device but rode along in the shared blob, where it did two kinds of damage. It let one
    device's fresh pull suppress the other device's staleness check for up to 20h (so the device that
@@ -2833,6 +2853,13 @@ const DAILY = [
    every device re-fetches it for itself every ~20h — so syncing it meant every trivial tick committed
    647 KB to a public repo and kicked off a Pages rebuild. store.read() puts the two halves back
    together; store.write() splits them again.
+
+   DEVICE_UI_KEYS (tab, currentAccount, modesnav, views, lastTabInGroup) get the same treatment for the
+   same reason: they describe where THIS browser is sitting in the UI, not shared data, and syncing them
+   is how a transient nav value — e.g. modesnav.raidDetail briefly set to "compare" while looking at the
+   Raids tab — used to reach GitHub and wedge every OTHER device's Game Modes tab on next pull, since
+   raidDetail is written via store.write() before the render that would have caught the bad value. See
+   raidDetail()/renderRaids() below.
 
    opts (all optional):
      skipStamp — don't bump state.updatedAt (Cloud Sync's "which copy is newer" clock)
@@ -2853,11 +2880,15 @@ function pullsWrite(pulls) {
    dirty check: it catches every wholesale replacement of state.pulls (boot, merge-from-remote) but NOT
    an in-place `state.pulls[key] = …`, which is precisely why pullAll() passes { pulls: true }. */
 let pullsLastWritten = null;
-/* Same split as PULLS_KEY, minus the dirty-check gymnastics: this blob is ~20 bytes, so re-stringifying
-   it is free. deviceLastWritten is what DEVICE_KEY currently holds, so the ~70 ordinary store.write()
-   call sites — none of which touch lastPull — still do no localStorage work here at all. Shaped as an
-   object rather than a bare number so the next device-local scalar is an added field, not a new key. */
+/* Same split as PULLS_KEY, minus the dirty-check gymnastics: this whole blob is at most a few hundred
+   bytes (a handful of short strings plus the small modesnav/views/lastTabInGroup objects), so
+   re-stringifying it on every store.write() call is free — nothing here approaches the 629 KB PULLS_KEY
+   problem the dirty-check above exists for. deviceLastWritten holds a JSON signature of whatever this
+   currently holds, so a write that didn't actually change any of these fields still costs nothing. */
 const DEVICE_KEY = "swgoh-holotable-device-v1";
+/* The device-local fields carried in DEVICE_KEY alongside lastPull — see the block comment above. Kept
+   as one list so read(), write() and stateWithoutDeviceLocal() can't drift apart on which keys these are. */
+const DEVICE_UI_KEYS = ["tab", "currentAccount", "modesnav", "views", "lastTabInGroup"];
 function deviceRead() { try { return JSON.parse(localStorage.getItem(DEVICE_KEY) || "null"); } catch (e) { return null; } }
 function deviceWrite(d) {
   try { localStorage.setItem(DEVICE_KEY, JSON.stringify(d || {})); return true; }
@@ -2865,12 +2896,13 @@ function deviceWrite(d) {
 }
 let deviceLastWritten = null;
 /* The single place that strips the device-local halves of state — the roster snapshot (PULLS_KEY) and the
-   device scalars (DEVICE_KEY) — out of a blob headed for "swgoh-tracker" or for GitHub, so the storage
-   path and both syncPush payload sites cannot drift apart. */
+   device scalars + UI context (DEVICE_KEY) — out of a blob headed for "swgoh-tracker" or for GitHub, so the
+   storage path and both syncPush payload sites cannot drift apart. */
 function stateWithoutDeviceLocal(s, extra) {
   const out = Object.assign({}, s, extra || {});
   delete out.pulls;
   delete out.lastPull;
+  for (const k of DEVICE_UI_KEYS) delete out[k];
   return out;
 }
 const store = {
@@ -2891,9 +2923,16 @@ const store = {
     const deviceLastPull = isPlainObject(scalars) && typeof scalars.lastPull === "number" ? scalars.lastPull : 0;
     const blobLastPull = typeof s.lastPull === "number" ? s.lastPull : 0;
     if (deviceLastPull || blobLastPull) s.lastPull = Math.max(deviceLastPull, blobLastPull);
+    /* The UI-context keys have no "take the later one" concept the way lastPull does — they're not a
+       clock, just "whatever this browser last had". DEVICE_KEY wins whenever it has a value for a key;
+       falling through to the blob's own copy only matters for a save from before this fix, where these
+       keys still lived directly in the synced blob and DEVICE_KEY has never heard of them yet. */
+    if (isPlainObject(scalars)) {
+      for (const k of DEVICE_UI_KEYS) if (scalars[k] !== undefined) s[k] = scalars[k];
+    }
     /* Only claim DEVICE_KEY is already up to date when the value we just handed back IS the one on disk;
-       if the blob's copy won, leave it null so the next store.write() persists the merge. */
-    if (isPlainObject(scalars) && deviceLastPull >= blobLastPull) deviceLastWritten = deviceLastPull;
+       if the blob's lastPull won, leave it null so the next store.write() persists the merge. */
+    deviceLastWritten = (isPlainObject(scalars) && deviceLastPull >= blobLastPull) ? JSON.stringify(scalars) : null;
     if (opts && opts.pulls) {
       const device = pullsRead();
       const inBlob = isPlainObject(s.pulls) ? s.pulls : null;
@@ -2920,11 +2959,14 @@ const store = {
     if (opts.pulls || pulls !== pullsLastWritten) {
       if (pullsWrite(pulls)) pullsLastWritten = pulls; else ok = false;
     }
-    /* No opts flag needed: lastPull is a scalar, so value comparison sees every change — including
-       pullAll()'s in-place `state.lastPull = Date.now()`, which the identity check on `pulls` cannot. */
-    const lastPull = typeof s.lastPull === "number" ? s.lastPull : 0;
-    if (lastPull !== deviceLastWritten) {
-      if (deviceWrite({ lastPull })) deviceLastWritten = lastPull; else ok = false;
+    /* No opts flag needed: every field here is a scalar or a small plain object, so a JSON-string
+       comparison sees every change — including pullAll()'s in-place `state.lastPull = Date.now()`,
+       which the identity check on `pulls` above cannot. */
+    const deviceBits = { lastPull: typeof s.lastPull === "number" ? s.lastPull : 0 };
+    for (const k of DEVICE_UI_KEYS) deviceBits[k] = s[k];
+    const deviceBitsStr = JSON.stringify(deviceBits);
+    if (deviceBitsStr !== deviceLastWritten) {
+      if (deviceWrite(deviceBits)) deviceLastWritten = deviceBitsStr; else ok = false;
     }
     /* A quota-exceeded (or any other) write failure used to be swallowed silently here — the in-memory
        `state` object had already been mutated (s.updatedAt above, plus whatever caller change triggered
@@ -5295,25 +5337,28 @@ function renderArena() {
 /* ===================== Events & Calendar tools ===================== */
 /* findUnitByName is called ~50x per render (once per roadmap/roster unit being matched), always against
    the same `reqs` object within a single render pass. Rebuilding Object.values(reqs) + re-scanning it on
-   every call was O(n) per call for no reason, so the per-reqs index (exact-name map + the values list, for
-   the substring fallback) is memoized in a WeakMap keyed by the `reqs` object reference. Signature and
-   behavior (exact match first, then substring) are unchanged, so no call site needs to change. */
+   every call was O(n) per call for no reason, so the per-reqs exact-name map is memoized in a WeakMap
+   keyed by the `reqs` object reference. Signature is unchanged, so no call site needs to change. */
 const _unitIndexCache = new WeakMap();
 function findUnitByName(reqs, name) {
   const q = name.toLowerCase();
   const r = reqs || {};
   let idx = _unitIndexCache.get(r);
   if (!idx) {
-    const vals = Object.values(r);
     const exact = new Map();
-    vals.forEach(u => {
+    Object.values(r).forEach(u => {
       const key = (u.name || "").toLowerCase();
       if (key && !exact.has(key)) exact.set(key, u);
     });
-    idx = { vals, exact };
+    idx = { exact };
     _unitIndexCache.set(r, idx);
   }
-  return idx.exact.get(q) || idx.vals.find(u => (u.name || "").toLowerCase().includes(q));
+  /* Exact match only — deliberately no substring fallback. A `.includes(q)` fallback silently resolves
+     to the WRONG character whenever the queried unit is genuinely absent from the account's roster:
+     "Jawa" matched "Jawa Scavenger", "Plo Koon" matched his starfighter, "Darth Vader" matched
+     "Darth Vader (Duel's End)". Any of those reads as "owned" in the UI when the account doesn't actually
+     have the unit. Returning nothing for a real miss is correct; a plausible-looking wrong answer is not. */
+  return idx.exact.get(q);
 }
 /* Cross-references the Executor's Discarded Doctrine gate against a pulled roster — characters scored
    the same way as the GL Roadmap (star+gear+relic weighted), ships scored by star level only since they
@@ -6267,17 +6312,25 @@ function mergeRemoteState(remote) {
      first pull for up to 20h. An old client's blob still carries one, so this guard is what keeps such a
      blob from reintroducing the suppression bug. */
   const localLastPull = typeof state.lastPull === "number" ? state.lastPull : 0;
+  /* Same "never adopt from remote" story as lastPull, for the same reason: tab/currentAccount/modesnav/
+     views/lastTabInGroup are this browser's own UI context (DEVICE_KEY), not shared data, and a pull
+     landing mid-session shouldn't be able to yank the user to a different tab or a stale nav position —
+     an old client's blob may still carry these, since they only stopped being synced with this fix. */
+  const localDeviceUi = {};
+  for (const k of DEVICE_UI_KEYS) if (state[k] !== undefined) localDeviceUi[k] = state[k];
   const merged = mergeDefaults(Object.assign({}, remote), defaultState());
   const migrated = migrateState(merged, remoteVersion);
   const maintained = applyBootMaintenance(merged);
   merged.updatedAt = remoteUpdatedAt;
   merged.pulls = seedFromRemote ? remotePulls : localPulls;
+  Object.assign(merged, localDeviceUi);
   merged.lastPull = localLastPull;
   state = merged;
   schemaMigrationPendingPush = migrated || maintained;
   clearTimeout(syncPushTimer);
-  /* store.write() strips `pulls`/`lastPull` out of the synced blob and syncPush() strips them out of its
-     payload, so adopting remote pulls above can never send them back up. */
+  /* store.write() strips `pulls`/`lastPull`/DEVICE_UI_KEYS out of the synced blob and syncPush() strips
+     them out of its payload, so adopting remote pulls (or keeping local UI context) above can never
+     send them back up. */
   store.write(state, { skipStamp: true, skipSync: true, pulls: seedFromRemote });
   const localAccount = accountUiRead();
   selectAccount(ACCOUNTS.some(a => a.key === localAccount) ? localAccount : (ACCOUNTS.some(a => a.key === state.currentAccount) ? state.currentAccount : ACCOUNTS[0].key), { store: false, render: false });

@@ -2,6 +2,39 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- ============ CONTENT SECURITY POLICY ============ -->
+<!-- A <meta> tag and not a response header because there is nowhere to set one: this ships as a single
+     file to GitHub Pages, which serves static files with fixed headers and offers no config, and it is
+     also opened straight off disk over file:// where no server exists at all. The meta form is the only
+     delivery mechanism that covers both. The cost of that choice is that frame-ancestors, report-uri and
+     report-to are ignored in a meta policy, so none of them are here — clickjacking and violation
+     reporting are simply out of reach for this app, not solved silently elsewhere. A meta policy also
+     only governs what the parser sees after it, which is why this sits immediately below <meta charset>
+     and above the font <link>, the inline <style> and the inline <script>.
+
+     script-src is 'unsafe-inline' because it has to be: the page is 111 onclick, 24 onchange and 11
+     onblur attributes plus one large inline <script>, and there is no build step to hash or nonce them.
+     Be honest about what that means — 'unsafe-inline' allows any script an attacker manages to inject,
+     so this policy buys essentially nothing against script injection. It is not an XSS mitigation and
+     should never be cited as one. (The actual injection fix was coercing proxy-sourced fields at the
+     parse boundary; this is the layer behind that, not a replacement for it.)
+
+     connect-src is the directive doing the real work, and the reason this policy exists at all. A GitHub
+     personal access token lives in localStorage, and roster data arrives through three anonymous
+     third-party CORS proxies we do not control. If anything ever does execute in this page, connect-src
+     is what stops the token being posted to an attacker's server: the only destinations fetch() can
+     reach are the four roster routes and the GitHub Contents API. Exfiltration via <img>, CSS or a form
+     is closed off the same way — img-src is data: only, font-src is the one Google host the stylesheet
+     pulls from, and default-src 'none' denies every channel nothing here uses (workers, blobs, frames,
+     objects, media, manifests). base-uri 'none' and form-action 'none' close the two redirect tricks
+     that survive a locked-down default-src.
+
+     'self' appears nowhere on purpose. Every asset in this file is inline or a data: URI, so nothing
+     needs it on GitHub Pages — and over file:// 'self' does not reliably match anyway, so relying on it
+     would have made the policy behave differently depending on how the file was opened. The one
+     exception is img-src, which carries 'self' solely so the browser's automatic /favicon.ico probe on
+     the hosted origin is not reported as a violation; there is no <link rel="icon"> to suppress it. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://swgoh.gg https://corsproxy.io https://api.allorigins.win https://api.codetabs.com https://api.github.com; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SWGOH Holotable — Live Goal Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">

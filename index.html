@@ -314,6 +314,26 @@
   .modal-field input { background: #0d1b26; color: var(--ink-1); border: 1px solid var(--grid); border-radius: 8px;
                         padding: 8px 10px; font: inherit; font-size: 13px; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  /* ---- Backup & recovery, inside the Cloud Sync modal ---- */
+  /* Its own bordered group below the sync actions rather than three more buttons in that row: most of
+     these are destructive and two of them work with sync switched off entirely, so sitting them beside
+     Save/Cancel would have read as "more ways to sync" rather than "the way back". */
+  .recovery { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-strong); }
+  .recovery h4 { margin: 0 0 6px; font-family: "Orbitron", system-ui, sans-serif; font-size: 12px;
+                 font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+  .recovery-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 9px; }
+  .recbtn { font: inherit; font-size: 12.5px; font-weight: 650; border-radius: 8px; padding: 9px 13px;
+            cursor: pointer; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-1);
+            flex: 1 1 150px; text-align: center; }
+  .recbtn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .recbtn.danger { border-color: var(--critical); color: var(--critical); }
+  .recbtn.undo { border-color: var(--swyellow); color: var(--swyellow); flex-basis: 100%; }
+  .recovery-confirm { margin-top: 11px; padding: 11px 12px; border: 1px solid var(--critical); border-radius: 10px;
+                      background: color-mix(in srgb, var(--critical) 9%, transparent); }
+  /* pre-line, so the confirm text can put the two competing timestamps on their own lines without any
+     markup — nothing in it is ever set with innerHTML, since half of it comes out of a file the user picked. */
+  .recovery-confirm p { margin: 0 0 9px; font-size: 12.5px; line-height: 1.45; color: var(--ink-1); white-space: pre-line; }
+  #recoveryStatus { font-size: 12.5px; line-height: 1.4; margin-top: 10px; min-height: 16px; color: var(--ink-3); }
   .pullstatus { font-size: 12px; color: var(--ink-3); margin-top: 1px; max-width: 420px; text-align: right; line-height: 1.25; }
   .pullstatus.err { color: var(--serious); }
   .pullstatus.ok { color: var(--good); }
@@ -1096,7 +1116,7 @@
     .tab, .stab, .section-nav button, .daychips button, .optchip, .modchip, .optsquadchip button,
     .cqaddrow button, .rowtools button, .rowactions button, .cardtools button, .account-choice, .mobile-account-switch,
     .cqnav button, .section-nav.nav-tertiary button, .opt-jumps a, .pullbtn, .cqswitchrow, .combo > input,
-    label.item, .profile-link { min-height: 44px !important; min-width: 44px !important; }
+    label.item, .profile-link, .recbtn { min-height: 44px !important; min-width: 44px !important; }
     .chip { min-height: 0; min-width: 0; }
     /* Bare checkboxes have an intrinsic ~13px box that min-height can't grow. Size it moderately and
        expand only the tap area with a transparent ::before, so row heights barely move. */
@@ -1143,6 +1163,38 @@
         <button class="pill" onclick="syncDisconnect()" id="syncDisconnectBtn" style="margin-right:auto">Disconnect</button>
         <button class="pill" onclick="closeSyncModal()">Cancel</button>
         <button class="pullbtn" style="padding:9px 16px" onclick="syncSaveAndTest()" id="syncSaveBtn">Save &amp; sync now</button>
+      </div>
+
+      <!-- Backup & recovery. Export/Import are local-file operations and stay usable with sync switched
+           off or over file://; force pull/push are disabled with a visible reason when they can't work.
+           The file input is display:none, which also keeps it out of syncModalFocusables() — that filter
+           drops anything with a null offsetParent, so the visible label button is the one tab stop. There
+           is deliberately no form element here: form-action is 'none' in the CSP, so a form that posted
+           anywhere would be blocked — a bare file input submits nothing and is unaffected. -->
+      <div class="recovery">
+        <h4>Backup &amp; recovery</h4>
+        <div class="mnote">A backup holds everything Cloud Sync shares — ticks, notes, planners, logs, layout, event edits. It leaves out your swgoh.gg roster snapshot (~630&nbsp;KB, and one press of <b>⟳ Pull latest data</b> rebuilds it) and which tab you had open. That's why the file is tiny; nothing you typed is missing from it.</div>
+        <div class="recovery-row">
+          <button type="button" class="recbtn" id="exportBtn" onclick="exportBackup()">⬇ Export backup</button>
+          <button type="button" class="recbtn" id="importBtn" onclick="importPick()">⬆ Import backup…</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importChosen(this)">
+        <div class="recovery-row">
+          <button type="button" class="recbtn danger" id="forcePullBtn" onclick="forcePull()">↓ Force pull — cloud wins</button>
+          <button type="button" class="recbtn danger" id="forcePushBtn" onclick="forcePush()">↑ Force push — this device wins</button>
+        </div>
+        <div class="mnote" id="forceWhy" style="color:var(--ink-3);margin:7px 0 0;display:none"></div>
+        <div class="recovery-row" id="rollbackRow" style="display:none">
+          <button type="button" class="recbtn undo" id="rollbackBtn" onclick="rollbackOffer()"></button>
+        </div>
+        <div id="recoveryStatus" role="status" aria-live="polite"></div>
+        <div class="recovery-confirm" id="recConfirm" style="display:none">
+          <p id="recConfirmText"></p>
+          <div class="recovery-row">
+            <button type="button" class="recbtn" id="recCancelBtn" onclick="recoveryConfirmClose()">Cancel — change nothing</button>
+            <button type="button" class="recbtn danger" id="recGoBtn" onclick="recoveryConfirmGo()"></button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -6493,6 +6545,9 @@ function openSyncModal() {
   syncModalReturnFocus = document.activeElement;
   /* Bound once, lazily: the listener lives on the backdrop, so it only ever fires while focus is inside. */
   if (!modal.dataset.keysBound) { modal.addEventListener("keydown", syncModalKeydown); modal.dataset.keysBound = "1"; }
+  /* Before .open, not after: this only sets disabled/display/textContent, and doing it while the card is
+     still hidden means syncModalFocusables() below already sees the final set of visible controls. */
+  recoveryRefresh();
   modal.classList.add("open");
   const first = syncModalFocusables()[0];
   if (first) first.focus();
@@ -6540,6 +6595,9 @@ async function syncSaveAndTest() {
     syncSetStatus("error", String((e && e.message) || e));
   } finally {
     document.getElementById("syncSaveBtn").disabled = false;
+    /* Connecting (or failing to) changes whether force pull/push can work, and the modal stays open
+       afterwards — without this they'd sit disabled with a stale reason until it was reopened. */
+    recoveryRefresh();
   }
 }
 function syncDisconnect() {
@@ -6549,6 +6607,295 @@ function syncDisconnect() {
   syncLastError = "";
   renderSyncStatus();
   closeSyncModal();
+}
+
+/* ===================== backup & recovery ===================== */
+/* There is no undo anywhere in this app and nothing behind localStorage, so until now a sync that went
+   the wrong way was simply the end of the data — most plausibly a second device connecting for the first
+   time, pulling nothing, and pushing its near-empty state over the desktop's on the next tick. These
+   controls are the way back: a file you hold, a way to put it back, and a way to say which copy wins on
+   purpose instead of by whichever clock happened to be ahead.
+
+   The backup is stateWithoutDeviceLocal(state) — byte-for-byte the blob Cloud Sync pushes — so restoring
+   one reproduces exactly what the other device would have seen. That leaves out state.pulls by
+   construction: the roster snapshot is 629 KB of the ~647 KB in memory, it is derived data that every
+   device re-fetches for itself every ~20h, and one press of Pull rebuilds it. Including it would turn a
+   file you can keep in a mail draft into one you can't, to protect data that isn't at risk. DEVICE_UI_KEYS
+   fall out of the same helper for free, which is right — which tab this browser was on is not worth
+   carrying onto another device. */
+
+const ROLLBACK_KEY = "swgoh-holotable-rollback-v1";
+/* Device-local, single slot, and deliberately NOT session-scoped: the moment you most want the undo is
+   after reloading the page to see whether the import really did what you feared. It stashes
+   stateWithoutDeviceLocal(), not the whole state, so the slot is ~20 KB rather than ~650 KB — which
+   matters precisely because quota pressure is one of the things that lands people here. */
+function rollbackStash(label) {
+  try {
+    localStorage.setItem(ROLLBACK_KEY, JSON.stringify({ at: Date.now(), label: label, state: stateWithoutDeviceLocal(state) }));
+    return true;
+  } catch (e) {
+    console.error("Couldn't stash a rollback copy — continuing anyway:", e);
+    return false;
+  }
+}
+function rollbackRead() {
+  try {
+    const r = JSON.parse(localStorage.getItem(ROLLBACK_KEY) || "null");
+    return isPlainObject(r) && isPlainObject(r.state) && typeof r.at === "number" ? r : null;
+  } catch (e) { return null; }
+}
+
+/* mergeRemoteState() finishes with merged.updatedAt = the incoming blob's own timestamp. That is correct
+   for a pull and ruinous for a restore: a backup taken last week arrives stamped last week, the next pull
+   decides GitHub's copy is newer, and the restore is thrown straight back out — which is exactly why
+   recovering from the repo's git history doesn't work today. Stamp it AFTER the merge and push, so the
+   restored copy is unambiguously the newest thing anywhere and every device converges onto it.
+   (skipStamp because we just set updatedAt by hand; skipSync because the push below is immediate and
+   shouldn't also be queued 2.5s behind itself.) */
+function adoptAsLocalTruth(blob) {
+  mergeRemoteState(blob);
+  state.updatedAt = Date.now();
+  store.write(state, { skipStamp: true, skipSync: true });
+  if (syncConfigured() && syncOriginOk()) syncPush();
+}
+
+function recoverySay(msg, tone) {
+  const el = document.getElementById("recoveryStatus");
+  if (!el) return;
+  el.textContent = msg || "";
+  el.style.color = tone === "good" ? "var(--good)" : tone === "bad" ? "var(--serious)" : "var(--ink-3)";
+}
+
+/* This file has no confirm-dialog idiom to borrow — the single blocking prompt() in it asks for one
+   number — and stacking a second .modal-backdrop on this one would fight the focus trap that was put
+   here deliberately. So the confirmation is an inline panel inside the same card: syncModalFocusables()
+   filters on offsetParent, so showing the panel adds its two buttons to the Tab loop and hiding it takes
+   them out again, with no change to the trap itself. Focus lands on Cancel, not on the destructive
+   button — one stray Enter should not be able to spend someone's save. */
+let recoveryPendingAction = null;
+function recoveryConfirmOpen(text, goLabel, run) {
+  recoveryPendingAction = run;
+  document.getElementById("recConfirmText").textContent = text;
+  document.getElementById("recGoBtn").textContent = goLabel;
+  document.getElementById("recConfirm").style.display = "";
+  document.getElementById("recCancelBtn").focus();
+}
+function recoveryConfirmClose() {
+  recoveryPendingAction = null;
+  document.getElementById("recConfirm").style.display = "none";
+}
+function recoveryConfirmGo() {
+  const run = recoveryPendingAction;
+  recoveryConfirmClose();
+  if (typeof run === "function") Promise.resolve().then(run).catch(e => recoverySay(String((e && e.message) || e), "bad"));
+}
+
+/* Called on every modal open, and after anything that changes whether the force buttons can work. Also
+   resets the confirm panel, so a pending confirm can never survive a close/reopen and fire against
+   state it no longer describes. */
+function recoveryRefresh() {
+  recoveryConfirmClose();
+  const why = !syncConfigured()
+    ? "Force pull and force push need Cloud Sync connected — fill in the fields above and press Save & sync now first."
+    : !syncOriginOk()
+      ? "Force pull and force push need the hosted GitHub Pages URL — this page is open as a local file, which can't reach the GitHub API. Export and Import still work here."
+      : "";
+  document.getElementById("forcePullBtn").disabled = !!why;
+  document.getElementById("forcePushBtn").disabled = !!why;
+  const whyEl = document.getElementById("forceWhy");
+  whyEl.textContent = why;
+  whyEl.style.display = why ? "" : "none";
+  const rb = rollbackRead();
+  document.getElementById("rollbackRow").style.display = rb ? "" : "none";
+  if (rb) document.getElementById("rollbackBtn").textContent =
+    `⟲ Undo — restore what was here before the ${rb.label} (${new Date(rb.at).toLocaleString()})`;
+}
+
+/* ---- export ---- */
+/* Local date parts, not toISOString(): a backup taken at 9am Brisbane should not be filed under
+   yesterday because UTC hasn't caught up. */
+function backupFilename() {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  return `holotable-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+}
+/* Both blob: and data: were measured against this file's own CSP — default-src 'none' with no blob:
+   source anywhere — in Chromium, over https and over file://, with a securitypolicyviolation listener
+   attached. Neither raises a violation, because a download started by <a download> is not a subresource
+   fetch and the fetch directives never see it. So the policy needed no widening. blob: is primary
+   because it is the better-supported of the two on mobile; data: is the fallback for a browser where
+   createObjectURL is missing or throws, and a ~20 KB backup is nowhere near any URL length limit. */
+function downloadText(name, text) {
+  const a = document.createElement("a");
+  a.download = name;
+  let url = null;
+  try {
+    url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    a.href = url;
+  } catch (e) {
+    a.href = "data:application/json;charset=utf-8," + encodeURIComponent(text);
+  }
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  /* Revoke late rather than immediately: some browsers finish reading the blob after the click returns,
+     and a revoked URL there produces a silently empty file. */
+  if (url) setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+function exportBackup() {
+  try {
+    /* Indented, unlike the sync payload: this one is read by a human when something has gone wrong, and
+       may well be diffed or hand-edited. It roughly doubles the size of a file that is tiny either way. */
+    const text = JSON.stringify(stateWithoutDeviceLocal(state), null, 2);
+    const name = backupFilename();
+    downloadText(name, text);
+    recoverySay(`Saved ${name} (${Math.max(1, Math.round(text.length / 1024))} KB). Put it somewhere that isn't this browser.`, "good");
+  } catch (e) {
+    recoverySay("Export failed: " + String((e && e.message) || e), "bad");
+  }
+}
+
+/* ---- import ---- */
+function importPick() {
+  const el = document.getElementById("importFile");
+  /* Clear first, or picking the same file twice in a row fires no change event at all. */
+  el.value = "";
+  el.click();
+}
+/* Everything here runs before a single byte of `state` is touched. The realistic mistake is not a corrupt
+   file but the wrong file — a roster export, some other app's settings.json, a download that was never
+   this app's — and the cost of adopting one is the entire save. stateVersion is the cheapest marker that
+   says "this came out of here": nothing else we are plausibly handed carries it. */
+function validateBackup(text) {
+  let parsed;
+  try { parsed = JSON.parse(text); }
+  catch (e) { return { ok: false, msg: "That file isn't valid JSON, so nothing was changed — " + e.message }; }
+  if (Array.isArray(parsed)) return { ok: false, msg: "That file is a JSON array, not a Holotable backup — nothing was changed." };
+  if (!isPlainObject(parsed)) return { ok: false, msg: `That file is a bare JSON ${parsed === null ? "null" : typeof parsed}, not a Holotable backup — nothing was changed.` };
+  if (typeof parsed.stateVersion !== "number") return { ok: false, msg: "That JSON has no stateVersion, so it isn't a Holotable backup — nothing was changed." };
+  return { ok: true, parsed: parsed };
+}
+function importChosen(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onerror = () => recoverySay(`Couldn't read ${f.name} — nothing was changed.`, "bad");
+  r.onload = () => {
+    const v = validateBackup(String(r.result || ""));
+    if (!v.ok) { recoveryConfirmClose(); recoverySay(v.msg, "bad"); return; }
+    const when = v.parsed.updatedAt ? new Date(v.parsed.updatedAt).toLocaleString() : "an unrecorded time";
+    recoveryConfirmOpen(
+      `Import replaces everything on this device with the contents of ${f.name}.\n\n` +
+      `That file was last changed ${when} (schema v${v.parsed.stateVersion}).\n` +
+      `This device was last changed ${state.updatedAt ? new Date(state.updatedAt).toLocaleString() : "at an unrecorded time"}.\n\n` +
+      `The file wins. Every tick, note, planner entry and log on this device that isn't in it is gone, ` +
+      `and the restored copy is pushed to GitHub so your other device picks it up too. Your roster ` +
+      `snapshot and current tab are left alone. An Undo button appears here afterwards.`,
+      "Yes — the file wins",
+      () => {
+        const stashed = rollbackStash("import");
+        adoptAsLocalTruth(v.parsed);
+        recoveryRefresh();
+        recoverySay(`Restored from ${f.name}${syncConfigured() && syncOriginOk() ? " and pushed to GitHub." : "."}` + rollbackWarning(stashed),
+                    stashed ? "good" : "bad");
+      });
+    recoverySay(`${f.name} looks like a Holotable backup. Confirm below.`, "");
+  };
+  r.readAsText(f);
+}
+
+/* ---- force pull / force push ---- */
+/* syncPull() adopts the remote copy only when its updatedAt is newer. That gate is right for every
+   automatic pull and wrong for the one case these exist for: this device's clock ran ahead, or a stray
+   write stamped it, and the copy that is actually correct now looks older. Force pull is syncPull minus
+   the gate; force push is its mirror, with lastSha refreshed first so it lands on top of whatever is
+   there rather than bouncing off a stale-sha conflict. */
+async function forcePull() {
+  if (!syncConfigured() || !syncOriginOk()) return;
+  recoverySay("Reading the GitHub copy…", "");
+  let r;
+  try { r = await ghGetFile(syncCfg); }
+  catch (e) { recoverySay("Couldn't read GitHub: " + String((e && e.message) || e) + " — nothing was changed.", "bad"); return; }
+  if (!r.exists) { recoverySay("There's no state file in that repo yet, so there's nothing to pull — nothing was changed.", "bad"); return; }
+  const remoteWhen = r.data && r.data.updatedAt ? new Date(r.data.updatedAt).toLocaleString() : "an unrecorded time";
+  recoveryConfirmOpen(
+    `Force pull replaces everything on this device with GitHub's copy.\n\n` +
+    `GitHub's copy was last changed ${remoteWhen}.\n` +
+    `This device was last changed ${state.updatedAt ? new Date(state.updatedAt).toLocaleString() : "at an unrecorded time"}.\n\n` +
+    `GitHub wins, even though it may be the older of the two — that is the point of this button. Every ` +
+    `tick, note, planner entry and log on this device that isn't in GitHub's copy is gone. Your roster ` +
+    `snapshot and current tab are left alone. An Undo button appears here afterwards.`,
+    "Yes — GitHub's copy wins",
+    () => {
+      const stashed = rollbackStash("force pull");
+      syncCfg.lastSha = r.sha;
+      /* No timestamp comparison, and no re-stamp afterwards either: the goal is to MATCH the cloud, so
+         mergeRemoteState() keeping the remote's own updatedAt is exactly right here. */
+      mergeRemoteState(r.data);
+      syncCfg.lastSyncedAt = Date.now();
+      syncCfgWrite(syncCfg);
+      syncSetStatus("idle");
+      recoveryRefresh();
+      recoverySay("Done — this device now matches GitHub." + rollbackWarning(stashed), stashed ? "good" : "bad");
+    });
+}
+async function forcePush() {
+  if (!syncConfigured() || !syncOriginOk()) return;
+  recoverySay("Checking the GitHub copy…", "");
+  let r;
+  try { r = await ghGetFile(syncCfg); }
+  catch (e) { recoverySay("Couldn't read GitHub: " + String((e && e.message) || e) + " — nothing was changed.", "bad"); return; }
+  const remoteWhen = r.exists && r.data && r.data.updatedAt ? new Date(r.data.updatedAt).toLocaleString() : "an unrecorded time";
+  recoveryConfirmOpen(
+    `Force push replaces GitHub's copy with this device's.\n\n` +
+    (r.exists ? `GitHub's copy was last changed ${remoteWhen}.\n` : `There's no state file in that repo yet.\n`) +
+    `This device was last changed ${state.updatedAt ? new Date(state.updatedAt).toLocaleString() : "at an unrecorded time"}.\n\n` +
+    `This device wins. Anything your other device put into GitHub's copy and hasn't got locally is ` +
+    `overwritten, and the next time that device pulls it will take this copy. Nothing on THIS device ` +
+    `changes, so there is no Undo here — the previous cloud copy stays in the repo's commit history.`,
+    "Yes — this device's copy wins",
+    async () => {
+      syncCfg.lastSha = r.sha;
+      syncCfgWrite(syncCfg);
+      /* Stamp before pushing, so the copy that lands is newer than whatever it replaced — otherwise the
+         other device's next pull looks at two timestamps, likes the one it already has, and the push
+         effectively never happened. */
+      state.updatedAt = Date.now();
+      store.write(state, { skipStamp: true, skipSync: true });
+      await syncPush();
+      recoverySay(syncLastError ? "Push failed: " + syncLastError : "Done — GitHub now matches this device.", syncLastError ? "bad" : "good");
+    });
+}
+
+/* A stash that failed is exactly the situation where the user most needs to be told: they are one
+   click from an irreversible overwrite, and the reason the stash failed (a full localStorage) is itself
+   a symptom of something wrong. Say it in the same line that reports success rather than letting them
+   find out by pressing an Undo button that never appeared. */
+function rollbackWarning(stashed) {
+  return stashed ? "" : " — couldn't save an Undo copy (browser storage is full), so this one can't be reversed here.";
+}
+
+/* ---- undo ---- */
+/* Restoring stashes the outgoing copy on its way past, so the slot always holds "the other one" and Undo
+   is a toggle rather than a one-way door. Without that, an Undo pressed a fortnight after the import it
+   refers to would itself be an unrecoverable overwrite — a second way to lose data, which is the exact
+   thing this whole section exists to remove. */
+function rollbackOffer() {
+  const rb = rollbackRead();
+  if (!rb) { recoveryRefresh(); recoverySay("There's nothing stashed to undo.", "bad"); return; }
+  recoveryConfirmOpen(
+    `Undo replaces everything on this device with the copy stashed just before the ${rb.label} of ` +
+    `${new Date(rb.at).toLocaleString()}.\n\n` +
+    `Whatever is here now is stashed in its place, so you can press Undo again to come back. The ` +
+    `restored copy is pushed to GitHub as the newest version.`,
+    "Yes — put the old copy back",
+    () => {
+      const outgoing = rb.state;
+      const stashed = rollbackStash("undo");
+      adoptAsLocalTruth(outgoing);
+      recoveryRefresh();
+      recoverySay(stashed ? "Restored the stashed copy. Pressing Undo again puts back what was just replaced."
+                          : "Restored the stashed copy." + rollbackWarning(stashed), stashed ? "good" : "bad");
+    });
 }
 
 /* ===================== layout editing ===================== */

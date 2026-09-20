@@ -527,6 +527,11 @@
   label.item .autotag { display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em;
         text-decoration: none !important; color: var(--accent); border: 1px solid var(--accent);
         border-radius: 8px; padding: 0 5px; vertical-align: 1px; opacity: 0.8; }
+  /* Generated farm plan, "pick the next Legend" rows: a target button beside the candidate's readiness. */
+  .pickrow { display: flex; gap: 10px; align-items: flex-start; padding: 6px 4px; font-size: 13.5px; }
+  .pickrow button { flex: none; font: 700 11.5px/1 system-ui, sans-serif; padding: 7px 8px; cursor: pointer; color: var(--ink-2);
+                    background: rgba(255,255,255,0.04); border: 1px solid var(--grid); border-radius: 8px; }
+  .pickrow .note { color: var(--ink-3); font-size: 12px; display: block; }
   label.item.tip { align-items: center; }
   label.item.tip .chip { margin-right: 8px; }
   label.item.tip b { font-weight: 650; }
@@ -1119,7 +1124,7 @@
     .tab, .stab, .section-nav button, .daychips button, .optchip, .modchip, .optsquadchip button,
     .cqaddrow button, .rowtools button, .rowactions button, .cardtools button, .account-choice, .mobile-account-switch,
     .cqnav button, .section-nav.nav-tertiary button, .opt-jumps a, .pullbtn, .cqswitchrow, .combo > input,
-    label.item, .profile-link, .recbtn { min-height: 44px !important; min-width: 44px !important; }
+    label.item, .profile-link, .recbtn, .pickrow button { min-height: 44px !important; min-width: 44px !important; }
     .chip { min-height: 0; min-width: 0; }
     /* Bare checkboxes have an intrinsic ~13px box that min-height can't grow. Size it moderately and
        expand only the tap area with a transparent ::before, so row heights barely move. */
@@ -2341,7 +2346,7 @@ const GL_ROADMAP = {
   SUPREMELEADERKYLOREN: { name: "Supreme Leader Kylo Ren", note: "Freely farmable via cantina/LS-DS/fleet stores.", req: [["FIRSTORDERTROOPER","First Order Stormtrooper",5], ["FIRSTORDEROFFICERMALE","First Order Officer",5], ["PHASMA","Captain Phasma",5], ["FIRSTORDEREXECUTIONER","First Order Executioner",5], ["FIRSTORDERSPECIALFORCESPILOT","First Order Special Forces TIE Pilot",3], ["GENERALHUX","General Hux",5], ["FIRSTORDERTIEPILOT","First Order TIE Pilot",3], ["KYLORENUNMASKED","Kylo Ren (Unmasked)",7], ["KYLOREN","Kylo Ren",7], ["SMUGGLERHAN","Veteran Smuggler Han Solo",3], ["FOSITHTROOPER","Sith Trooper",5], ["EMPERORPALPATINE","Emperor Palpatine",7]] },
   GRANDMASTERLUKE: { name: "Jedi Master Luke Skywalker", note: "Older GL (2020) — requirement documentation is thinner; verify current relic numbers in-game before farming.", req: [["REYJEDITRAINING","Rey (Jedi Training)",7], ["MONMOTHMA","Mon Mothma",5], ["C3POCHEWBACCA","Threepio & Chewie",5], ["OLDBENKENOBI","Obi-Wan Kenobi (Old Ben)",5], ["C3POLEGENDARY","C-3PO",5], ["R2D2_LEGENDARY","R2-D2",7], ["JEDIKNIGHTLUKE","Jedi Knight Luke Skywalker",7], ["HANSOLO","Han Solo",6], ["CHEWBACCALEGENDARY","Chewbacca",6], ["HERMITYODA","Hermit Yoda",5], ["ADMINISTRATORLANDO","Lando Calrissian",5], ["PRINCESSLEIA","Princess Leia",3], ["WEDGEANTILLES","Wedge Antilles",3], ["BIGGSDARKLIGHTER","Biggs Darklighter",3]] },
   SITHPALPATINE: { name: "Sith Eternal Emperor", note: "Freely farmable; Grand Admiral Thrawn R6 is the standout relic-heavy requirement.", req: [["ADMIRALPIETT","Admiral Piett",5], ["ROYALGUARD","Royal Guard",3], ["VADER","Darth Vader",7], ["EMPERORPALPATINE","Emperor Palpatine",7], ["DIRECTORKRENNIC","Director Krennic",4], ["COUNTDOOKU","Count Dooku",6], ["SITHMARAUDER","Sith Marauder",7], ["DARTHSIDIOUS","Darth Sidious",7], ["MAUL","Darth Maul",4], ["GRANDMOFFTARKIN","Grand Moff Tarkin",3], ["VEERS","General Veers",3], ["COLONELSTARCK","Colonel Starck",3], ["GRANDADMIRALTHRAWN","Grand Admiral Thrawn",6], ["ANAKINKNIGHT","Jedi Knight Anakin Skywalker",7]] },
-  JEDIMASTERKENOBI: { name: "Jedi Master Kenobi", note: "Wat Tambor R7 is guild-gated (Geonosis TB ‘Separatist Might’ + Guild Events Store) — the one requirement here you cannot solo-farm.", req: [["GENERALKENOBI","General Kenobi",8], ["MACEWINDU","Mace Windu",3], ["AAYLASECURA","Aayla Secura",3], ["QUIGONJINN","Qui-Gon Jinn",3], ["GRANDMASTERYODA","Grand Master Yoda",8], ["CLONESERGEANTPHASEI","Clone Sergeant (Phase I)",5], ["CC2224","CC-2224 \"Cody\"",5], ["SHAAKTI","Shaak Ti",7], ["GRIEVOUS","General Grievous",7], ["MAGNAGUARD","Magnaguard",5], ["WATTAMBOR","Wat Tambor",7], ["JANGOFETT","Jango Fett",7], ["CADBANE","Cad Bane",5]] },
+  JEDIMASTERKENOBI: { name: "Jedi Master Kenobi", note: "Wat Tambor R7 is guild-gated (Geonosis TB ‘Separatist Might’ + Guild Events Store) — the one requirement here you cannot solo-farm.", gated: ["WATTAMBOR"], req: [["GENERALKENOBI","General Kenobi",8], ["MACEWINDU","Mace Windu",3], ["AAYLASECURA","Aayla Secura",3], ["QUIGONJINN","Qui-Gon Jinn",3], ["GRANDMASTERYODA","Grand Master Yoda",8], ["CLONESERGEANTPHASEI","Clone Sergeant (Phase I)",5], ["CC2224","CC-2224 \"Cody\"",5], ["SHAAKTI","Shaak Ti",7], ["GRIEVOUS","General Grievous",7], ["MAGNAGUARD","Magnaguard",5], ["WATTAMBOR","Wat Tambor",7], ["JANGOFETT","Jango Fett",7], ["CADBANE","Cad Bane",5]] },
   LORDVADER: { name: "Lord Vader", note: "Freely farmable; Bad Batch squad (Hunter/Tech/Wrecker/Echo) pulls double duty for TB.", req: [["PADMEAMIDALA","Padmé Amidala",8], ["GENERALSKYWALKER","General Skywalker",8], ["COUNTDOOKU","Count Dooku",8], ["ARCTROOPER501ST","ARC Trooper",8], ["CT210408","CT-210408 \"Echo\"",7], ["ZAMWESELL","Zam Wesell",7], ["GRANDMOFFTARKIN","Grand Moff Tarkin",7], ["NUTEGUNRAY","Nute Gunray",7], ["BADBATCHHUNTER","Hunter",5], ["BADBATCHTECH","Tech",5], ["BADBATCHWRECKER","Wrecker",5], ["TUSKENRAIDER","Tusken Raider",5], ["EMBO","Embo",5], ["BADBATCHECHO","Echo (Bad Batch)",5]] },
   JABBATHEHUTT: { name: "Jabba the Hutt", note: "Freely farmable; Bounty Hunter-heavy roster also strengthens GAC/TW offense.", req: [["KRRSANTAN","Krrsantan",5], ["HANSOLO","Han Solo",8], ["GAMORREANGUARD","Gamorrean Guard",3], ["GREEDO","Greedo",6], ["UNDERCOVERLANDO","Skiff Guard (Lando Calrissian)",5], ["JEDIKNIGHTLUKE","Jedi Knight Luke Skywalker",7], ["JAWA","Jawa",3], ["URORRURRR","URoRRuR'R'R",4], ["C3POLEGENDARY","C-3PO",7], ["BOUSHH","Boushh (Leia Organa)",5], ["AURRA_SING","Aurra Sing",6], ["FENNECSHAND","Fennec Shand",7], ["BOBAFETT","Boba Fett",7], ["HUMANTHUG","Mob Enforcer",3]] },
   GLLEIA: { name: "GL Leia Organa", note: "Freely farmable — the wall is stars, not relics; most requirements sit below 7★.", req: [["CAPTAINREX","Captain Rex",7], ["PRINCESSKNEESAA","Princess Kneesaa",7], ["WICKET","Wicket",3], ["ADMINISTRATORLANDO","Lando Calrissian",5], ["ADMIRALACKBAR","Admiral Ackbar",3], ["SCOUTTROOPER_V3","Scout Trooper",7], ["R2D2_LEGENDARY","R2-D2",8], ["HOTHHAN","Captain Han Solo",5], ["HOTHLEIA","Rebel Officer Leia Organa",5], ["CHIEFCHIRPA","Chief Chirpa",3], ["CAPTAINDROGAN","Captain Drogan",7], ["COMMANDERLUKESKYWALKER","Commander Luke Skywalker",7], ["BOUSHH","Boushh (Leia Organa)",5], ["C3POCHEWBACCA","Threepio & Chewie",7], ["LOBOT","Lobot",3]] },
@@ -2734,6 +2739,7 @@ const BASELINE = {
 /* Static guidance (farm phases + game modes) — Claude refreshes these on request */
 const GUIDANCE = {
   ollie: {
+    planFor: "GLLEIA",                          // the Legend these phases (and FARM_CHECKS.ollie) were written for — see farmPlanFor()
     glSub: "Target: GL Leia Organa. The wall is stars, not just relics — most required units are below 7★.",
     phases: [
       { t: "Phase 1 — cheap relic wins (no star gates)", items: [
@@ -2772,6 +2778,7 @@ const GUIDANCE = {
     ]
   },
   tiny: {
+    planFor: "GLLEIA",
     glSub: "Recommended target: GL Leia Organa — closest high-value GL; every requirement owned and farmable, no guild-currency gates. Runner-up: Jabba.",
     phases: [
       { t: "Phase 1 — fast finishes", items: [
@@ -2894,6 +2901,168 @@ function glProgressSummary(v) {
   const open = v.reqRows.filter(r => !r.done);
   const least = [...open].sort((a, b) => a.pct - b.pct)[0];
   return `${v.doneCount} of ${v.reqRows.length} requirements met${least ? ` · least complete: ${least.name} (${least.cur} → ${least.need})` : ""}.`;
+}
+
+/* ===================== derived farm plan =====================
+   GUIDANCE above is hand-written for ONE Legend per account (`planFor`) and FARM_CHECKS ticks it by
+   position. Every other case — the other nine Legends, and Leia herself once she is unlocked or fully
+   met — comes from here, built from the same reqRows the GL Roadmap tab renders, so the plan can never
+   name a unit, a current state or a target the roster does not back. Nothing in this file knows WHERE
+   a shard or a relic material comes from, and the generated notes do not pretend to: they say how far a
+   unit has to go and what else it counts toward, never which node or store to hit.
+
+   Phase order is a scheduling decision, not a cost ranking:
+     1. star gates   shard farms run on energy, which no relic climb competes for, and the longest farm
+                     sets the calendar — so every one of these is cheaper started today than after the
+                     "cheap wins" (which it would not have sped up anyway). Longest farm first.
+     2. cheap wins   the `close` bucket: two relic tiers or fewer from done, shortest first. These move
+                     the requirement count, not the unlock date.
+     3. long climbs  the `grind` bucket, LONGEST FIRST — the opposite of the cheap-wins instinct, on
+                     purpose. Relic materials are one serial budget, so climb order does not change the
+                     total, but the biggest climb is the critical path that decides the unlock date, and
+                     R7+ tiers draw on the scarcest materials, which should never sit idle waiting for a
+                     cheaper unit to finish.
+   A star-gated unit appears twice (7★ in phase 1, its relic in 2 or 3): relic tiers need G13, not
+   stars, so the two farms run side by side — exactly how the hand-written plan lists Captain Drogan.
+
+   Ticking. Keys are derived from the item, never from its position: `${account}-p:${unit}:${s7|rN}`.
+   A roster change moves an item between phases or relabels it (R5 → R6) and the key does not move with
+   it, so a hand tick keeps pointing at the same fact — positional keys would tick the wrong line the
+   first time the list reshuffled. A hand tick means "done in-game, swgoh.gg hasn't caught up yet": the
+   moment the roster confirms it the item goes auto (the same disabled box the hand-written plan uses)
+   and the hand tick is merely redundant, never wrong. The Legend is deliberately NOT in the key — Count
+   Dooku R8 is the same fact whether Lord Vader or Hondo asked for it, so switching target keeps the
+   tick. The keys live in state.ticks and merge under the generic per-key rule, so Cloud Sync needs no
+   new MERGE_RULES entry and STATE_VERSION is untouched. The "-p" in the key is what makes tick() do a
+   full render, the same as the hand-written "-p0-1" keys. */
+const STAR_SHARDS_CUM = [0, 10, 25, 50, 80, 145, 230, 330];   // shards to REACH each star; 7★ = 330 total
+function planItemKey(acct, spec) { return `${acct}-p:${spec.id}:${spec.type === "star" ? "s" : "r"}${spec.min}`; }
+/* Other Legends this account does not own that also ask for the unit — the one cross-reference the data
+   can honestly make, and worth making: a unit that serves two Legends is a better use of the week. */
+function planAlsoNeeded(reqs, glId, unitId) {
+  return GL_ORDER.filter(gid => gid !== glId && !(reqs && reqs[gid])).map(gid => {
+    const r = GL_ROADMAP[gid].req.find(x => x[0] === unitId);
+    return r ? `${GL_ROADMAP[gid].name} (R${r[2]})` : null;
+  }).filter(Boolean);
+}
+/* Which plan the Farm tab and "Next farm actions" show for this account and its current target:
+   { hand: true } when GUIDANCE has phases written for exactly this Legend and she is still open —
+   otherwise a generated one, so the hand-written Leia plan is an override, not the only path. */
+function farmPlanFor(acct, v) {
+  const g = GUIDANCE[acct];
+  if (g && g.phases && g.planFor === v.glId && !v.owned && v.doneCount < v.reqRows.length) return { hand: true };
+  return generatedPlan(acct, v);
+}
+function generatedPlan(acct, v) {
+  const reqs = v.src.reqs || {}, gl = v.gl, glId = v.glId;
+  const mk = (spec, name, note, text) => {
+    const u = reqs[spec.id];
+    const met = specMet(reqs, spec);
+    const k = planItemKey(acct, spec);
+    const manual = !met && !!state.ticks[k];
+    const cur = unitProgress(u, spec.type === "relic" ? spec.min : 0).cur;
+    const label = text || `${(u && u.name) || name}: ${cur} → ${spec.type === "star" ? `${spec.min}★` : `R${spec.min}`}`;
+    return { k, spec, text: label, note, met, manual, open: !met && !manual };
+  };
+  const alsoTxt = id => {
+    const also = planAlsoNeeded(reqs, glId, id);
+    return also.length ? ` · also needed by ${also.slice(0, 2).join(", ")}${also.length > 2 ? ` +${also.length - 2} more` : ""}` : "";
+  };
+  const phases = [];
+  const head = { title: gl.name, sub: "generated from your roster", note: gl.note, chips: null };
+  /* The candidates for "next": every Legend this account does not own, closest first by the same
+     materials-weighted average the readiness tile shows. */
+  const nextPick = () => GL_ORDER.filter(gid => gid !== glId && !reqs[gid])
+    .map(gid => ({ gid, vv: accountView(acct, gid) }))
+    .sort((a, b) => b.vv.avg - a.vv.avg || b.vv.doneCount - a.vv.doneCount).slice(0, 3);
+
+  if (v.owned) {
+    /* Unlocked. Two honest things to say: keep building the Legend herself (yardstick: this account's
+       own other Legends — the one relic target the data can justify), and pick the next one. */
+    const own = reqs[glId] || {};
+    const yard = GL_ORDER.filter(gid => gid !== glId && reqs[gid]).map(gid => ({ name: GL_ROADMAP[gid].name, r: reqs[gid].r || 0 }));
+    const top = yard.reduce((m, y) => Math.max(m, y.r), 0);
+    head.sub = "unlocked ✓";
+    head.note = `${gl.name} is on this account${own.r ? ` at R${own.r}` : own.g ? ` at G${own.g}` : ""}. The requirement plan is finished; what follows is what the roster can still say.`;
+    if (top > (own.r || 0)) {
+      phases.push({ id: "phase-build", t: `Keep building ${gl.name}`, n: "A fresh Legend is the account's weakest Legend until her relic catches up.",
+        items: [mk(relic(glId, top), gl.name, `match your other Legends — ${yard.map(y => `${y.name} R${y.r}`).join(", ")}`)] });
+    }
+    phases.push({ id: "phase-next", t: "Pick the next Legend", n: "Closest first, by the same materials-weighted readiness as the tile. Set one as the target and this plan rebuilds for it.", pick: nextPick(), items: [] });
+    return { hand: false, glId, owned: true, head, phases };
+  }
+
+  const gates = [], close = [], grind = [], met = [];
+  v.reqRows.forEach(r => {
+    const u = reqs[r.id], need = +r.need.slice(1);
+    if (r.done) { met.push(mk(relic(r.id, need), r.name, `R${need} required` + alsoTxt(r.id), `${(u && u.name) || r.name}: ${r.cur}`)); return; }
+    const stars = u ? (u.s || 0) : 0, gear = u ? (u.g || 1) : 1, rel = u ? (u.r || 0) : 0;
+    if (stars < 7) {
+      /* Star promotions always cost shards, so the count is safe for an unlocked unit — but an unlock
+         can be a Journey/legendary event that hands over 5★ or 7★ outright (GAS, JKL…), and the data
+         cannot tell those from node farms, so a locked unit gets no number at all. */
+      const shards = u ? `up to ${STAR_SHARDS_CUM[7] - STAR_SHARDS_CUM[Math.min(stars, 7)]} shards to 7★` : "not unlocked yet";
+      /* `gated` is the one shard-source fact the roadmap states outright (see the Legend's note); it is
+         a property of the shards, so it rides on the star item and not on the relic climb. */
+      const gated = (gl.gated || []).includes(r.id) ? " · guild-gated shards — see the note above" : "";
+      gates.push({ sort: stars, item: mk(star(r.id, 7), r.name, shards + gated + alsoTxt(r.id)) });
+    }
+    if (rel < need) {
+      const tiers = need - rel, parts = [];
+      if (gear < 13) parts.push(`G${gear} → G13`);
+      parts.push(`${tiers} relic tier${tiers === 1 ? "" : "s"}`);
+      /* Relic tiers need G13, not stars, so a star-gated unit's climb is not blocked — say so, since the
+         "star-gated" chip on the Roadmap tab reads as if it were. The scarce-material point about R7+
+         is made once in the phase blurb rather than on every line. */
+      const note = parts.join(", then ") + (stars < 7 ? " · runs alongside the shard farm" : "");
+      /* The row's `remaining` counts missing stars too; strip them so a star-gated unit's relic half is
+         bucketed on the same ≤6 line unitProgress draws for a 7★ one. */
+      const relicRemaining = r.remaining - Math.max(0, 7 - stars);
+      (relicRemaining <= 6 ? close : grind).push({ sort: relicRemaining, item: mk(relic(r.id, need), r.name, note + alsoTxt(r.id)) });
+    }
+  });
+  const items = (list, dir) => list.sort((a, b) => dir * (a.sort - b.sort) || a.item.text.localeCompare(b.item.text)).map(x => x.item);
+  const n = v.reqRows.length;
+  head.chips = v.counts;
+  if (v.doneCount === n) {
+    head.sub = "every requirement met";
+    head.note = `All ${n} requirements for ${gl.name} are met on this account — the unlock event is the only thing left.`;
+    phases.push({ id: "phase-unlock", t: `Unlock ${gl.name}`, n: "",
+      items: [mk(star(glId, 1), gl.name, "requirements done — run the Journey Guide event", `${gl.name}: all ${n} requirements met → unlock`)] });
+    phases.push({ id: "phase-next", t: "Pick the next Legend", n: "Closest first, by the same materials-weighted readiness as the tile. Set one as the target and this plan rebuilds for it.", pick: nextPick(), items: [] });
+  } else {
+    head.note = `${gl.note} ${v.doneCount} of ${n} requirements met.`;
+    if (gates.length) phases.push({ id: "phase-gates", t: "Phase 1 — break the star gates", items: items(gates, 1),
+      n: "Shard farms run on energy, which nothing below competes for, and the longest farm sets the calendar — start every one of these now, longest first." });
+    if (close.length) phases.push({ id: "phase-close", t: `Phase ${gates.length ? 2 : 1} — cheap relic wins`, items: items(close, 1),
+      n: "Two relic tiers or fewer from done. Shortest first: these move the requirement count, not the unlock date." });
+    if (grind.length) phases.push({ id: "phase-grind", t: `Phase ${1 + (gates.length ? 1 : 0) + (close.length ? 1 : 0)} — the long relic climbs`, items: items(grind, -1),
+      n: "Longest first, on purpose: the biggest climb is the critical path that sets the unlock date, and the top tiers use the scarcest materials — those should never wait for a cheaper unit to finish." });
+  }
+  if (met.length) phases.push({ id: "phase-met", t: `Already met — ${met.length} of ${n}`, n: "", items: met.sort((a, b) => a.text.localeCompare(b.text)) });
+  return { hand: false, glId, owned: false, head, phases };
+}
+/* Farm-tab cards for a generated plan. Met items use the same disabled auto box as the hand-written
+   plan; open items are real checkboxes keyed by planItemKey, so a hand tick survives any reshuffle. */
+function generatedPlanCards(plan, live) {
+  const srcNote = live ? "Current roster from the latest pull" : "Current roster from the saved baseline snapshot";
+  const chips = plan.head.chips ? `<div class="statuscounts">
+      <span class="chip done">✓ ${plan.head.chips.done} done</span>
+      <span class="chip close">→ ${plan.head.chips.close} close</span>
+      <span class="chip stargate">★ ${plan.head.chips.stargate} star-gated</span>
+      <span class="chip grind">⛭ ${plan.head.chips.grind} long grind</span></div>` : "";
+  const cards = [{ id: "plan-head", w: 12, html: `<div class="cardtitle">${escapeHtml(plan.head.title)} <span class="sub">— ${escapeHtml(plan.head.sub)}</span></div>
+      <div class="mnote">${escapeHtml(plan.head.note)}</div>${chips}
+      <div class="prog-summary">${srcNote} — rebuilt on every pull and target change. Tick a line by hand when it's done in-game before swgoh.gg catches up. Shard and material sources aren't tracked, so none are claimed.</div>` }];
+  plan.phases.forEach(p => cards.push({ id: p.id, html: `<div class="phase"><div class="cardtitle">${escapeHtml(p.t)}</div>
+      ${p.n ? `<div class="mnote">${escapeHtml(p.n)}</div>` : ""}
+      ${(p.pick || []).map(c => `<div class="pickrow"><button type="button" onclick="switchGlTarget('${c.gid}')">Target →</button>
+          <span><b>${escapeHtml(c.vv.gl.name)}</b> — ${c.vv.avg}% · ${c.vv.doneCount}/${c.vv.reqRows.length} reqs met<span class="note">${escapeHtml(c.vv.gl.note)}</span></span></div>`).join("")}
+      ${(p.pick && !p.pick.length) ? `<div class="mnote">Every Legend in the roadmap is already on this account.</div>` : ""}
+      ${(p.items || []).map(it => it.met
+        ? tickboxAuto(it.k, escapeHtml(it.text), `${escapeHtml(it.note)}<br>${srcNote}`, true)
+        : tickbox(it.k, escapeHtml(it.text), escapeHtml(it.note) + (it.manual ? `<br>ticked by hand — the roster hasn't confirmed it yet` : ""))).join("")}</div>` }));
+  return cards;
 }
 
 /* Coach's corner — flagged priorities per account */
@@ -3516,7 +3685,7 @@ const DEFAULT_SPAN = { overview: 6, leia: 6, gaps: 6, coach: 6, farm: 6, modes: 
 
 /* ===================== progress math ===================== */
 function unitProgress(u, reqRelic) {
-  if (!u) return { pct: 0, cur: "Not unlocked", status: "stargate", done: false };
+  if (!u) return { pct: 0, cur: "Not unlocked", status: "stargate", done: false, remaining: 7 + 12 + reqRelic * 3 };
   const stars = u.s || 0, gear = u.g || 1, relic = u.r || 0;
   /* relic tiers weighted ×3 vs star/gear steps — they dominate real material cost */
   const total = 7 + 12 + reqRelic * 3;
@@ -3526,7 +3695,9 @@ function unitProgress(u, reqRelic) {
   const remaining = total - have;
   const status = done ? "done" : (stars < 7 ? "stargate" : (remaining <= 6 ? "close" : "grind"));
   const cur = (stars < 7 ? stars + "★ " : "") + (relic > 0 ? "R" + relic : "G" + gear);
-  return { pct, cur, status, done };
+  /* `remaining` is the weighted step count the status buckets are cut from; the derived farm plan sorts
+     and re-buckets on it, so it travels out with the row rather than being recomputed there. */
+  return { pct, cur, status, done, remaining };
 }
 function glTargetFor(key) { return state.glTarget[key] || "GLLEIA"; }
 function accountView(key, glId) {
@@ -7747,9 +7918,19 @@ function render() {
     document.getElementById("datasrc").innerHTML = `<span class="datasrc-label">Data: ${escapeHtml(s.fetchedLabel)}</span> <a class="profile-link" href="${escapeHtml(acctProfileUrl(acct))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(acct.label)}'s swgoh.gg profile to refresh it">Refresh on swgoh.gg ↗</a>`;
 
     const nextUp = [];
-    g.phases.forEach((p, pi) => p.items.forEach((it, ii) => {
-      if (!isFarmDone(current, s.reqs, pi, ii)) nextUp.push({ t: farmActionLabel(current, s.reqs, pi, ii, it), ph: p.t });
-    }));
+    const plan = farmPlanFor(current, v);
+    if (plan.hand) {
+      g.phases.forEach((p, pi) => p.items.forEach((it, ii) => {
+        if (!isFarmDone(current, s.reqs, pi, ii)) nextUp.push({ t: farmActionLabel(current, s.reqs, pi, ii, it), ph: p.t });
+      }));
+    } else {
+      /* A hand-ticked item is off the list too: the user has said it is done, and the roster will agree
+         on the next pull. A "pick the next Legend" phase contributes its closest candidate as one line. */
+      plan.phases.forEach(p => {
+        (p.items || []).forEach(it => { if (it.open) nextUp.push({ t: escapeHtml(it.text), ph: p.t }); });
+        if (p.pick && p.pick.length) nextUp.push({ t: `Pick the next Legend — ${escapeHtml(p.pick[0].vv.gl.name)} is closest at ${p.pick[0].vv.avg}%`, ph: p.t });
+      });
+    }
 
     document.getElementById("ovGrid").innerHTML = wrapCards("overview", [
       { id: "readiness", w: 4, html: v.owned ? `
@@ -7871,6 +8052,8 @@ function render() {
 
   /* ---- farm tab ---- */
   safeRender("Farm plan", "farmPlan", () => {
+    const plan = farmPlanFor(current, v);
+    if (!plan.hand) { document.getElementById("farmPlan").innerHTML = wrapCards("farm", generatedPlanCards(plan, v.live)); return; }
     document.getElementById("farmPlan").innerHTML = wrapCards("farm",
       g.phases.map((p, pi) => ({
         id: "phase-" + (pi + 1),

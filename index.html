@@ -1253,6 +1253,9 @@
   <!-- ============ OVERVIEW ============ -->
   <div class="tabpane" id="pane-overview">
     <div class="sortable" id="ovGrid" data-pane="overview"></div>
+    <!-- Filled by the Overview pane render: the one-line form of the Data health card, shown only
+         when nothing is aging or stale. A card that exists to say "nothing to do" gets ignored. -->
+    <div class="mnote" id="dataHealthLine"></div>
     <div class="tiles" id="tiles"></div>
     <details style="margin-top:9px" class="banner" id="metaBanner"><summary><b>Holonet update:</b> GL Roadmap now covers all 10 Galactic Legends</summary><div class="banner-detail">Including <b>Pirate King Hondo Ohnaka</b> (Sept 2025) — browse any Legend to see real progress once you pull live data.</div></details>
   </div>
@@ -1300,7 +1303,7 @@
   <!-- ============ GAME MODES ============ -->
   <div class="tabpane" id="pane-modes">
     <h2>Game modes</h2>
-    <div class="h2sub">Current state of the game: Order 66 + Naboo raids · Rise of the Empire TB · GAC (3v3 season) · Era 09 “Myths &amp; Legends” to 20 Oct 2026</div>
+    <div class="h2sub">Current state of the game: Order 66 + Naboo raids · Rise of the Empire TB · GAC (3v3 season) · <span data-snap-era>Era 09 “Myths &amp; Legends” to 20 Oct 2026</span></div>
 
     <div class="modescrumb" id="modesCrumb"></div>
     <div class="cqnav" id="modesCatNav"></div>
@@ -1327,7 +1330,7 @@
   <!-- ============ TIER LIST ============ -->
   <div class="tabpane" id="pane-tierlist">
     <h2>Tier List — what's actually winning</h2>
-    <div class="h2sub">Live battle-data rankings from swgoh.gg's Tier List tool: win-rate lower bound across millions of real first-attempt GAC battles, not opinion. 5v5 Squads, 3v3 Squads, and Fleet — the categories this app's GAC Planner, TW Coord, and Roster Gap Radar already plan around.</div>
+    <div class="h2sub">Live battle-data rankings from swgoh.gg's Tier List tool: win-rate lower bound across millions of real first-attempt GAC battles, not opinion. 5v5 Squads, 3v3 Squads, and Fleet — the categories this app's GAC Planner, TW Coord, and Roster Gap Radar already plan around. Built-in snapshot <span data-snap="tierlist"></span>.</div>
     <div class="cqnav section-nav" id="tierlistNav"></div>
     <div class="sortable" id="tierlistGrid" data-pane="tierlist"></div>
   </div>
@@ -1336,7 +1339,7 @@
   <div class="tabpane" id="pane-mods">
     <h2>Best mods — search any character</h2>
     <div class="h2sub">From swgoh.gg's per-character mod reports (top-player usage). All 332 characters with published mod reports ship built-in; a handful of very new/niche units have no report on swgoh.gg yet.</div>
-    <div class="mnote">Snapshot as of 8 Aug 2026. “↻ try live refresh” attempts a live pull — swgoh.gg's bot protection blocks most proxy routes for these pages, so the snapshot is the reliable source.</div>
+    <div class="mnote">Snapshot <span data-snap="bestmods"></span>. “↻ try live refresh” attempts a live pull — swgoh.gg's bot protection blocks most proxy routes for these pages, so the snapshot is the reliable source.</div>
     <div class="card" style="margin-bottom:9px">
       <div class="modsearchrow">
         <!-- Enter / arrows / Escape are handled by attachCharCombo() (wired in initModsTabAsync) -->
@@ -1371,7 +1374,7 @@
   <div class="tabpane" id="pane-tb">
     <h2>Territory Battle — Rise of the Empire planner</h2>
     <div class="h2sub">Special-mission bottleneck tracker: the 6-slot Operation platoons are easy to fill from faction depth, but each phase's named-character Special Mission is a scarce-pair gate — this tracks who's assigned so the same pair isn't needed in two zones at once.</div>
-    <div class="mnote">Zone/phase data as of 9 Aug 2026 — ask Claude to refresh if a phase gets reworked.</div>
+    <div class="mnote">Zone/phase data <span data-snap="tb-rote"></span> — ask Claude to refresh if a phase gets reworked.</div>
     <div class="cqaddrow" style="margin-bottom:9px"><button onclick="tbResetAll()">↺ Reset all phases (new TB)</button></div>
     <div class="cqnav section-nav" id="tbNav"></div>
     <div class="sortable" id="tbGrid" data-pane="tb"></div>
@@ -1389,7 +1392,7 @@
   <div class="tabpane" id="pane-events">
     <h2>Events &amp; Calendar</h2>
     <div class="h2sub">Upcoming game-wide events plus your own entries — guild-specific TW/TB timing and GAC seasons aren't on a public feed, so log those yourself. The Executor card tracks blueprint progress to 7&#9733; (and the unlock gate, for an account that hasn't unlocked it yet).</div>
-    <div class="mnote">Seed list read directly off swgoh.gg/events/ as of 16 Aug 2026 (live DOM read, not the swgohevents.com feed) — ask Claude to re-pull it if this list looks stale.</div>
+    <div class="mnote">Seed list read directly off swgoh.gg/events/ <span data-snap="events"></span> (live DOM read, not the swgohevents.com feed) — ask Claude to re-pull it if this list looks stale.</div>
     <div class="cqnav section-nav" id="eventsNav"></div>
     <div class="sortable" id="eventsGrid" data-pane="events"></div>
   </div>
@@ -1406,7 +1409,7 @@
   <div class="tabpane" id="pane-gac">
     <h2 id="gacTitle">Grand Arena Championships — counter &amp; offense planner</h2>
     <div class="h2sub">Log what your opponent defended per zone, cross-reference the curated counters table, then plan your offense/banner order before you commit a squad.</div>
-    <div class="mnote">Counters are a mid-core meta reference as of 9 Aug 2026 — verify against what you actually see on scout.</div>
+    <div class="mnote">Counters are a mid-core meta reference <span data-snap="gac-counters"></span> — verify against what you actually see on scout.</div>
     <div class="cqaddrow" id="gacAddZone" style="margin-bottom:9px"><button onclick="gacZoneAdd()">+ Log opponent zone intel</button></div>
     <div class="cqnav section-nav" id="gacNav"></div>
     <div class="sortable" id="gacGrid" data-pane="gac"></div>
@@ -1568,10 +1571,13 @@ const EXECUTOR_REQ = {
    shardsPerRun free once per occurrence; extra runs cost refreshCrystals for refreshShards, capped at
    refreshMax per occurrence; packs (packCrystals for packShards) are unlimited but strictly worse per
    blueprint, so always exhaust refreshes first. asOf/source are carried into the card on purpose: this
-   file has gone stale behind undated snapshots before, so the age has to be legible on screen. */
+   file has gone stale behind undated snapshots before, so the age has to be legible on screen.
+   asOf is ISO because it used to be "17 Sep 2026" and the card fed it to Date.parse, which is only
+   defined for that spelling by convention — V8 obliges, JSC returns NaN, and the 90-day warning
+   below therefore never fired on an iPhone. It is the SNAPSHOTS entry's source of truth too. */
 const EXECUTOR_EVENT = { name: "Discarded Doctrine", anchorISO: "2026-09-15", dayOfMonth: 15,
   shardsPerRun: 10, refreshCrystals: 999, refreshShards: 10, refreshMax: 19,
-  packCrystals: 1250, packShards: 10, asOf: "17 Sep 2026", source: "swgohevents.com/event/executor" };
+  packCrystals: 1250, packShards: 10, asOf: "2026-09-17", source: "swgohevents.com/event/executor" };
 const SHIP_STAR_COST = { 5: 65, 6: 85, 7: 100 };   // blueprints to REACH that star (330 cumulative from 4*)
 /* Ground War (Assault Battle) — researched 22 Aug 2026 via live web search (swgoh.gg's event page,
    swgoh.wiki, EA forums, community walkthroughs) while this event is live on the calendar. Faction-
@@ -1972,7 +1978,7 @@ function assaultBattleHtml(ab, detail) {
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Tier gates <span class="sub">— per swgoh.wiki</span></div>
     <div class="cqteams">${ab.tiers.map(t => `<div class="cqteam"><b style="color:var(--ink-1)">${escapeHtml(t.tier)}:</b> ${escapeHtml(t.gate)}</div>`).join("")}</div>
     <div class="srcline" style="margin-top:8px">Sources: ${escapeHtml(ab.sources.join(" · "))} — verify in-game, CG occasionally adjusts event gates.</div>`;
-  return `<div class="cardtitle">${escapeHtml(ab.label)} <span class="sub">— squad recommendations</span></div>
+  return `<div class="cardtitle">${escapeHtml(ab.label)} <span class="sub">— squad recommendations</span>${snapChipHtml("assault-battles")}</div>
     <div class="mnote">${escapeHtml(ab.factionNote)} ${escapeHtml(ab.mechanicNote)}</div>
     ${detail === "roster" ? unitTable : detail === "strategy" ? strategyBlock : teamsBlock + fixedSquadOptBtn}`;
 }
@@ -2213,8 +2219,8 @@ function eraTierReadiness(tier, reqs) {
     + `<div style="color:var(--ink-3);font-size:11px">best EL ${bestEl || "—"}, gate ${tier.el}${missing ? ` · ${missing} not unlocked` : ""}</div>`;
 }
 function eraOverviewHtml() {
-  return `<div class="cardtitle">Era of Myths &amp; Legends <span class="sub">— 28 Jul → 20 Oct 2026</span></div>
-    <div class="mnote">The current Era (Era 09). Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so most of this category is sourced reference. The Era Level parts, though, ARE live: swgoh.gg's pull carries a per-unit Era Level for the Era units and a collective Era Level for the ~25 Loaned Units, so the <b>New units</b>, <b>DJJ Journey Guide</b> and <b>Era Coliseum</b> sections show real progress rather than reference figures. What's still unresolved is flagged as such in place (the EL cap, the Journey EL-gate numbers, and how the Journey applies its EL gate).</div>
+  return `<div class="cardtitle">Era of Myths &amp; Legends <span class="sub">— 28 Jul → 20 Oct 2026</span>${snapChipHtml("era")}</div>
+    <div class="mnote">${eraCurrentPhrase()} Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so most of this category is sourced reference. The Era Level parts, though, ARE live: swgoh.gg's pull carries a per-unit Era Level for the Era units and a collective Era Level for the ~25 Loaned Units, so the <b>New units</b>, <b>DJJ Journey Guide</b> and <b>Era Coliseum</b> sections show real progress rather than reference figures. What's still unresolved is flagged as such in place (the EL cap, the Journey EL-gate numbers, and how the Journey applies its EL gate).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Era units stay inside the Era ${eraChip("HIGH")}</div>
     <div class="intelnote">Era units — the 7 new characters AND the ~25 temporary <b>“Loaned Units”</b> (existing permanent-roster characters temporarily boosted this Era) — can ONLY be used in Era content (Coliseum, Era Challenges, Episode/Journey content). They are NOT usable in GAC, TW, Arena or other Legacy modes for the duration of the Era. At Era end, all Era-unit investment converts automatically to permanent Legacy stats via a fixed Era Level lookup table — see the “Era Level &amp; currency” section for the confirmed conversion points and the one genuinely unresolved number (the EL cap). Two independent fetches of the same official EA Forums 10-Year Anniversary/Title Update post agreed on all of this.</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">After the Era ends</div>
@@ -3351,7 +3357,7 @@ function defaultState() {
       squad: { ollie: [], tiny: [] }            // per-account selected characters (base_ids, first = primary)
     },
     layout: {
-      order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags"] }, hidden: {},
+      order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags", "datahealth"] }, hidden: {},
       size: {},                                 // { pane: { cardId: { w: gridSpan(3-12), h: minHeightPx|0 } } }
       density: "cozy",
       /* First-ever load only (mergeDefaults only fills a key that's truly absent, so this never
@@ -5222,7 +5228,7 @@ function fleetStatus(fleet, reqs) {
   }));
 }
 function fleetTierHtml(reqs) {
-  return `<div class="cardtitle">Fleet tier reference <span class="sub">— flagship ownership, Season 81</span></div>
+  return `<div class="cardtitle">Fleet tier reference <span class="sub">— flagship ownership, Season 81</span>${snapChipHtml("meta-fleets")}</div>
     <div class="mnote">Flagship-only check (supporting lineups above cover the two confirmed comps) — live win-rate/tier data from swgoh.gg's Tier List tool, pulled ${TIER_LIST.updated}. <a href="#" style="color:var(--accent)" onclick="switchTab('tierlist');return false;">Full Tier List tab →</a></div>
     <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px">
       ${META_FLEET_TIER.map(f => {
@@ -5329,7 +5335,7 @@ function renderGaps(s) {
   const scoredFleets = META_FLEETS.map(fl => ({ sq: fl, st: fleetStatus(fl, s.reqs || {}) }))
     .sort((a, b) => bucketOrder[a.st.bucket] - bucketOrder[b.st.bucket] || b.st.ownedN - a.st.ownedN);
   const rosterProvenance = state.pulls[current] ? "the latest saved pull" : "the built-in baseline snapshot";
-  document.getElementById("gapsSub").innerHTML = `Cross-references ${rosterProvenance} against a curated top-squad reference (Squad Arena, Fleet Arena, GAC, TW, raids — Sith Triumvirate, Rancor, AAT, Order 66, Naboo) to surface teams you're close to fielding and per-unit bottlenecks. Squad strategy reference reviewed 9 Aug 2026; roster values use the source identified here.` +
+  document.getElementById("gapsSub").innerHTML = `Cross-references ${rosterProvenance} against a curated top-squad reference (Squad Arena, Fleet Arena, GAC, TW, raids — Sith Triumvirate, Rancor, AAT, Order 66, Naboo) to surface teams you're close to fielding and per-unit bottlenecks. Squad strategy reference ${snapNoteHtml("meta-squads")}; roster values use the source identified here.` +
     (state.pulls[current]
       ? (state.pulls[current].charDataLive === false ? ` <b style="color:var(--accent)">swgoh.gg isn't returning per-character roster data right now — gear/relic readiness below is from ${state.pulls[current].charDataAt ? escapeHtml(new Date(state.pulls[current].charDataAt).toLocaleDateString()) : "an earlier pull"}, not this session's pull.</b>` : "")
       : ` <b style="color:var(--accent)">Showing your last saved snapshot — press "Pull latest data" for a full, live roster picture.</b>`);
@@ -5344,7 +5350,7 @@ function renderGaps(s) {
   }));
   const noteCards = RAID_NOTES.map((n, i) => ({
     id: "raidnote" + i,
-    html: `<div class="cardtitle">${escapeHtml(n.name)} <span class="chip stargate">⚠ unconfirmed squad</span></div>
+    html: `<div class="cardtitle">${escapeHtml(n.name)} <span class="chip stargate">⚠ unconfirmed squad</span>${snapChipHtml("raid-notes")}</div>
       <div class="mnote">${escapeHtml(n.note)}</div>`
   }));
   const fleetCards = scoredFleets.map((x, i) => ({
@@ -5764,9 +5770,12 @@ function executorShardsSet(acctKey, val) {
 function executorProgressHtml() {
   const ev = EXECUTOR_EVENT;
   const chipText = { done: "✓ ready", close: "→ close", stargate: "★ not started", grind: "⛭ grinding" };
-  const asOfMs = Date.parse(ev.asOf);
-  const ageDays = isNaN(asOfMs) ? null : Math.floor((Date.now() - asOfMs) / 86400000);
-  const stale = ageDays !== null && ageDays > 90;
+  /* Age and shelf life both come from the snapshot registry now. What was here — Date.parse() on a
+     "17 Sep 2026" string — returned NaN on any JSC browser, so `stale` was false forever and this
+     card's whole warning was dead code on the phone. snapState() parses ISO itself. */
+  const execSnap = snapState(SNAP_BY_KEY["executor-event"]);
+  const ageDays = execSnap.age;
+  const stale = execSnap.state !== "fresh";
   const plural = (k, word, suffix) => `${k} ${word}${k === 1 ? "" : (suffix || "s")}`;
   const body = ACCOUNTS.map(a => {
     const v = executorProgress(a.key);
@@ -5804,12 +5813,14 @@ function executorProgressHtml() {
   return `<div class="cardtitle">Executor <span class="sub">${escapeHtml(ev.name)} blueprints — the only source, ${ev.shardsPerRun} free per occurrence</span></div>
     <div class="mnote">Unlocks at 4★; reaching 5★/6★/7★ costs ${SHIP_STAR_COST[5]}/${SHIP_STAR_COST[6]}/${SHIP_STAR_COST[7]} blueprints. The event runs monthly on the ${ev.dayOfMonth}th and is auto-listed on the calendar below.</div>
     ${body}
-    <div class="mnote"${stale ? ` style="color:var(--serious);font-weight:650"` : ""}>Costs and cadence as of ${escapeHtml(ev.asOf)}, per ${escapeHtml(ev.source)}${stale ? ` — that snapshot is ${ageDays} days old, past its ~90-day shelf life: re-check before spending crystals.` : "."} Blueprint counts are typed by hand — the live pull only carries the star level.</div>`;
+    <div class="srcline">Unlock gate (${EXECUTOR_REQ.chars.length} characters + ${EXECUTOR_REQ.ships.length} ships, level ${EXECUTOR_REQ.playerLevel}+) ${snapNoteHtml("executor-req")} — the rows above show it only for an account that hasn't unlocked the ship yet.</div>
+    <div class="mnote"${stale ? ` style="color:var(--serious);font-weight:650"` : ""}>Costs and cadence ${snapNoteHtml("executor-event")}, per ${escapeHtml(ev.source)}${stale ? ` — that snapshot is ${ageDays} days old, past its ${SNAP_BY_KEY["executor-event"].halfLife}-day shelf life: re-check before spending crystals.` : "."} Blueprint counts are typed by hand — the live pull only carries the star level.</div>`;
 }
 function executorReadinessHtml() {
   const chipText = { done: "✓ ready", close: "→ close", stargate: "★ not started", grind: "⛭ grinding" };
   const accts = ACCOUNTS.map(a => ({ acct: a, v: executorReadiness(a.key) }));
   return `<div class="cardtitle">Executor readiness <span class="sub">Discarded Doctrine gate — ${EXECUTOR_REQ.chars.length} characters + ${EXECUTOR_REQ.ships.length} ships, player level ${EXECUTOR_REQ.playerLevel}+</span></div>
+    <div class="mnote">Requirement list ${snapNoteHtml("executor-req")} — verify in-game before spending relic/gear materials.</div>
     ${accts.map(({ acct, v }) => `
       <div class="prog-summary" style="margin-bottom:6px"><b style="color:var(--ink-1)">${escapeHtml(acct.label)}</b> — ${v.doneCount}/${v.total} requirements met (${v.avg}% avg)${v.live ? "" : ` <span style="color:var(--ink-3)">(no live pull yet — showing baseline/last-saved roster)</span>`}</div>
       <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
@@ -6241,7 +6252,7 @@ function raidCoachRowHtml(x, acctKey) {
 }
 function raidCoachHtmlForRaid(ri, detail, squadIndex) {
   const accounts = detail === "notes" ? [] : detail === "compare" ? ACCOUNTS : ACCOUNTS.filter(a => a.key === detail);
-  return `<div class="cardtitle">${escapeHtml(ri.label)} <span class="sub">— best available now vs. what to build towards</span></div>
+  return `<div class="cardtitle">${escapeHtml(ri.label)} <span class="sub">— best available now vs. what to build towards</span>${snapChipHtml("raid-intel")}</div>
     <div class="mnote">Full team rosters below — leader always marked (L). Cross-referenced against each account's pulled roster (7★ G12+ = battle-ready) — same readiness logic as Roster Gaps. "Work towards" marks the aspirational/max-score build; "budget option" is the cheaper alternative that still clears well. Each squad's own confidence chip and sources reflect how well-corroborated that exact roster is — verify anything below HIGH/MODERATE-HIGH before committing relic investment. Notes at the bottom cover mechanics and alternatives that never resolved to a checkable roster.</div>
     ${accounts.map(a => {
       const rows = raidCoachForRaid(ri, a.key);
@@ -6369,7 +6380,7 @@ function liveDatacronsHtml() {
 function datacronHtml() {
   const live = liveDatacronsHtml();
   return `${live}
-    <div class="cardtitle"${live ? ' style="margin-top:14px"' : ""}>Datacron recommendations <span class="sub">static reference as of 9 Aug 2026 — sets rotate</span></div>
+    <div class="cardtitle"${live ? ' style="margin-top:14px"' : ""}>Datacron recommendations <span class="sub">static reference ${snapNoteHtml("datacrons")} — sets rotate</span></div>
     <div class="mnote">Datacrons ARE in the live pull now (swgoh.gg's player API added a top-level "datacrons" array — verified by a direct fetch, 2 Sep 2026; the "no API exposes this" note that used to be here is outdated). See "Your equipped datacrons" above for live tracking of what's actually built. The recommendations below stay static guidance on which GL to farm datacrons for next, since the API only reports what's equipped, not what's worth building. Rule of thumb: T3 = alignment bonus (cheap, broad value), T6 = faction bonus (the real power spike, realistic minimum "worth it" tier), T9 = named-character bonus.</div>
     ${DATACRON_RECS.map(d => `<div style="padding:7px 0;border-bottom:1px solid var(--grid)">
       <b style="color:var(--ink-1)">${escapeHtml(d.gl)}</b> <span class="chip ${d.confidence.startsWith("High") ? "done" : "stargate"}">${chipGlyph(d.confidence.startsWith("High") ? "done" : "stargate")} ${escapeHtml(d.confidence)}</span><br>
@@ -6407,7 +6418,7 @@ function renderConquest() {
   const staleBanner = rs && rs.stale
     ? `<div class="banner" style="margin:8px 0 2px"><b>This reference is Conquest ${CQDATA.conquest}</b> — swgoh.gg lists its window as ending ${cqLongDate(CQDATA.knownThrough)}, and today is past that. If a new conquest has started in-game, the feats, daily plan, data disks and enemy intel on this tab are the previous one's: ask Claude to research and refresh this tab (and its run-cadence anchor).</div>`
     : "";
-  meta.innerHTML = `Red crate: <b style="color:var(--accent)">${CQDATA.redCrate} keycards</b> (up to ${CQDATA.skippable} skippable) · Hard mode, 3★ all nodes · snapshot ${CQDATA.captured} · <a href="https://swgoh4.life/conquest/plan" target="_blank" rel="noopener">live site ↗</a>${staleBanner}`;
+  meta.innerHTML = `Red crate: <b style="color:var(--accent)">${CQDATA.redCrate} keycards</b> (up to ${CQDATA.skippable} skippable) · Hard mode, 3★ all nodes · snapshot ${snapNoteHtml("conquest")} · <a href="https://swgoh4.life/conquest/plan" target="_blank" rel="noopener">live site ↗</a>${staleBanner}`;
   const views = [["plan", "My daily plan"], ["feats", "Feats & teams"], ["disks", "Data disks"], ["enemies", "Enemies"]];
   nav.innerHTML = views.map(v => `<button class="${state.cq.view === v[0] ? "active" : ""}" onclick="cqView('${v[0]}')">${v[1]}</button>`).join("");
   const viewLabel = (views.find(v => v[0] === state.cq.view) || ["", String(state.cq.view)])[1];
@@ -7500,7 +7511,7 @@ function toggleShow(key) { state.layout.show[key] = !state.layout.show[key]; sto
 function toggleSidebar() { state.layout.sidebarCollapsed = !state.layout.sidebarCollapsed; store.write(state); render(); }
 function setDensity(d) { state.layout.density = d; store.write(state); render(); }
 function resetLayout() {
-  state.layout = { order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags"] }, hidden: {}, size: {}, density: "cozy", sidebarCollapsed: true,
+  state.layout = { order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags", "datahealth"] }, hidden: {}, size: {}, density: "cozy", sidebarCollapsed: true,
                    show: { tiles: true, epigraph: true, banner: true } };
   store.write(state); render();
 }
@@ -7607,6 +7618,279 @@ const CHIP_GLYPH = { done: "✓", close: "→", stargate: "★", grind: "⛭", f
 const chipGlyph = cls => CHIP_GLYPH[cls] || "•";
 const chipText = { done: "✓ Done", close: "→ Close", stargate: "★ Star-gated", grind: "⛭ Long grind" };
 const sevText = { fixnow: "! Fix now", improve: "↗ Improve", watch: "◉ Watch", keep: "✓ Keep doing" };
+/* ===================== Snapshot decay: how old is each built-in reference? =====================
+   Roughly a dozen references in this file were researched once, pasted in, and presented as current
+   ever since. Exactly ONE of them ever checked itself against the clock: CQDATA.knownThrough, via
+   cqRunStatus().stale. Everything else carried a prose "as of 9 Aug" that nothing ever compared
+   against today — so the app told you which squads counter which, which datacron set to build and
+   which mods to slot from six-week-old research, and it read exactly as authoritative as the roster
+   pull taken thirty seconds ago. This registry generalises CQDATA's check to all of them.
+
+   It is NOT a second copy of the data, and it deliberately does not refresh anything:
+     • `asOf` is DERIVED from the snapshot's own constant wherever one exists — TIER_LIST.updated,
+       CQDATA.captured/knownThrough, BESTMODS.fetched, EVENTS_SEED_CAPTURED, EXECUTOR_EVENT.asOf. A
+       registry that can disagree with the data it describes is worse than no registry. The entries
+       carrying a literal date are exactly the ones whose date lived nowhere but a source comment;
+       for those the registry IS the constant now, and the on-screen prose is rendered from it
+       (snapNoteHtml) rather than being a second hand-typed copy that can drift.
+     • Dates are ISO. `Date.parse("17 Sep 2026")` is a non-standard format: V8 accepts it, JSC does
+       not. EXECUTOR_EVENT.asOf was in that spelling, so the Executor card's `ageDays > 90` warning
+       evaluated NaN > 90 === false and had never once fired on an iPhone. snapISO() parses both
+       spellings itself and never calls Date.parse, so no surface here can acquire that bug again.
+     • `halfLife` is per entry, in days, and deliberately not one global number — a datacron set that
+       rotates every few weeks and a 332-character mod aggregate that barely moves in a quarter do not
+       decay at the same rate. `why` on each entry is the reasoning, not a restatement of the number.
+     • `expires` is a HARD end date, for data that stops being true on a known day rather than fading
+       out: a Conquest window, an Era. Past it the entry is stale whatever its age.
+     • `hint` is what to actually ask for, because "this is old" without "ask Claude to re-pull X" is
+       just guilt.
+   States: age < halfLife → fresh · < 2×halfLife → aging · otherwise, or past `expires` → stale.
+
+   DELIBERATELY NOT LISTED: BASELINE. It is hand-maintained and dated too, but it is the *fallback*
+   roster for an account with no live pull, and every surface that reads it already says which of the
+   two it is showing ("showing baseline/last-saved roster", and fetchedLabel in the header). That is a
+   strictly better signal than an age chip, and putting it in Data health would nag someone who pulls
+   daily to refresh something their pull already replaced. The mechanics tables (OPT_ARCHETYPES,
+   SHIP_STAR_COST, STAR_SHARDS_CUM, RAID_TICKET_TYPES, PAYOUT_TIERS) are game constants, not research
+   snapshots, and carry no date to age.
+
+   NO NEW STATE. The Data health card is dismissable through the layout machinery every other card
+   already uses (hideCard → state.layout.hidden.overview), which merges with the rest of `layout` under
+   the default three-way rule — no MERGE_RULES entry and no STATE_VERSION bump. That is the right
+   answer as well as the cheap one: a per-device "I've seen this" flag for a card whose whole job is to
+   nag would have to be "maintain"-ruled to stay device-local, and a dismissal synced from the phone
+   silencing the desktop is precisely the failure this change exists to stop. */
+const SNAP_MONTH = { jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+                     jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12" };
+/* Accepts "2026-08-16" and this file's older "16 Aug 2026" spelling; returns ISO, or null if neither.
+   Hand-rolled rather than Date.parse for the Safari reason in the block comment above. */
+function snapISO(s) {
+  const t = String(s == null ? "" : s).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  const m = /^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})$/.exec(t);
+  if (!m) return null;
+  const mo = SNAP_MONTH[m[2].slice(0, 3).toLowerCase()];
+  return mo ? `${m[3]}-${mo}-${String(m[1]).padStart(2, "0")}` : null;
+}
+/* UTC midnight of an ISO date, and of the viewer's LOCAL calendar today — the same convention
+   cqRunStatus() uses, so the two staleness checks can't disagree by a day at a boundary. `new
+   Date(Date.now())` rather than `new Date()` on purpose: a test that pins the clock does it by
+   overriding Date.now, which the no-arg constructor ignores in V8. */
+function snapDay(iso) { const p = String(iso || "").split("-").map(Number); return Date.UTC(p[0], p[1] - 1, p[2]); }
+function snapToday(nowMs) { const n = new Date(nowMs === undefined || nowMs === null ? Date.now() : nowMs); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); }
+function snapLabel(iso) { const d = snapISO(iso); return d ? new Date(d + "T12:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "unknown date"; }
+
+const SNAPSHOTS = [
+  /* Half-life 28: the documented Conquest period is 14 live + 14 off. One full period past the
+     capture and the feats, disk intel and daily plan describe a run nobody is playing any more. The
+     hard end is swgoh.gg's own window end for this conquest number — the check that already drove the
+     banner on that tab, now just expressed in the same vocabulary as everything else. */
+  { key: "conquest", label: `Conquest ${CQDATA.conquest} plan, feats & enemy intel`, tab: "conquest",
+    asOf: snapISO(CQDATA.captured), expires: snapISO(CQDATA.knownThrough), halfLife: 28,
+    hint: "ask Claude to re-capture swgoh4.life for the conquest that's actually live" },
+  /* Half-life 14: a calendar snapshot is the one thing here that is guaranteed to rot — every row has
+     a date on it and most of them are in the past within a fortnight. The tab's existing "has run out"
+     notice is the floor case of this; the chip covers the window before the last row expires, where
+     the list still looks live but is mostly history. */
+  { key: "events", label: "Events calendar seed", tab: "events",
+    asOf: snapISO(EVENTS_SEED_CAPTURED), halfLife: 14,
+    hint: "ask Claude to re-read swgoh.gg/events/" },
+  /* Half-life 30: swgoh.gg's bands are recomputed per GAC season and the season rolls about monthly —
+     this is literally Season 80/81 data, and a season boundary is what invalidates it, not gradual
+     drift. The tab calls itself "Live battle-data rankings", which is the single most confident claim
+     in the file; a month is as long as that word survives. */
+  { key: "tierlist", label: "swgoh.gg Tier List rankings", tab: "tierlist",
+    asOf: snapISO(TIER_LIST.updated), halfLife: 30,
+    hint: "ask Claude to re-pull swgoh.gg/tier-list/ (5v5, 3v3, Fleet)" },
+  /* Half-life 21 — the shortest here, and self-declared: the source comment says sets "rotate every
+     few weeks and only the newest 1-2 stay farmable". Three weeks is one rotation; past two of them
+     the recommendation can be pointing at a set that is no longer in the store at all, which is worse
+     than no recommendation because it sends you looking for it. */
+  { key: "datacrons", label: "Datacron set recommendations", tab: "intel",
+    asOf: "2026-08-09", halfLife: 21,
+    hint: "ask Claude to check the current datacron store and re-do the per-GL picks" },
+  /* Half-life 30: same clock as the Tier List — the counter meta turns over with GAC seasons and GL
+     releases. An individual matchup ("Thrawn fractures Rey") outlives that, but the *set* of defenses
+     worth listing does not, and a counters table that has quietly stopped mentioning the squad you are
+     staring at on scout is the failure mode. */
+  { key: "gac-counters", label: "GAC/TW counter matchups", tab: "gac",
+    asOf: "2026-08-09", halfLife: 30,
+    hint: "ask Claude to re-research the mid-core GAC defense/counter table" },
+  /* Half-life 30: this feeds Roster Gap Radar, which is what talks people into relic spend, and relic
+     spend is irreversible. The five names inside a squad are stable for months; the question of which
+     squads are worth chasing turns over every GL release. Erring short is the right direction for the
+     one reference here that costs real resources to act on. */
+  { key: "meta-squads", label: "Roster Gap Radar squad reference", tab: "gaps",
+    asOf: "2026-08-09", halfLife: 30,
+    hint: "ask Claude to re-research the curated top-squad list (Arena/GAC/TW/raids)" },
+  /* Half-life 60: the fleet meta is the slowest-moving competitive meta in the game — a handful of
+     capital ships, a new one two or three times a year, and the tier bands in this file barely moved
+     between the seasons it was pulled across. Twice the squad half-life, for the same reason the squad
+     one is 30. */
+  { key: "meta-fleets", label: "Fleet Arena tier reference", tab: "gaps",
+    asOf: "2026-08-09", halfLife: 60,
+    hint: "ask Claude to re-pull swgoh.gg's GAC Fleet Offense tier list" },
+  /* Half-life 120: a 332-character aggregate of top-player mod usage. One unit's loadout shifting
+     barely moves the whole, and the underlying advice ("Speed + Health on Pao") is the slowest-changing
+     data in this file after the event gates. Four months is roughly when enough of the roster has
+     turned over to matter. */
+  { key: "bestmods", label: "Best Mods snapshot (332 characters)", tab: "mods",
+    asOf: snapISO(BESTMODS.fetched), halfLife: 120,
+    hint: "press ↻ try live refresh, or ask Claude to re-pull swgoh.gg's best-mods pages" },
+  /* Half-life 120: zone and phase layout for Rise of the Empire is effectively fixed content and
+     changes only on a rework. The scarce-pair special missions it actually tracks change with it. Note
+     the Phase 5 row says "(unconfirmed)" — that is a research GAP, not decay, and no amount of
+     freshness fixes it; it is left saying so. */
+  { key: "tb-rote", label: "TB: Rise of the Empire special missions", tab: "tb",
+    asOf: "2026-08-09", halfLife: 120,
+    hint: "ask Claude to re-check the RotE phase/special-mission gates (Phase 5 is still unconfirmed)" },
+  /* Half-life 180: Assault Battles are fixed events. The mechanics, faction locks and tier gates
+     change only when CG reworks one, which is rare and announced. Dated from the OLDEST pass in the
+     set (Ground War, 22 Aug) rather than the newest, so the chip describes the weakest link. */
+  { key: "assault-battles", label: "Assault Battle teams & gates", tab: "modes",
+    asOf: "2026-08-22", halfLife: 180,
+    hint: "ask Claude to re-sweep the 9 Assault Battles for team/gate changes" },
+  /* Half-life 90: raids are fixed content too, but unlike Assault Battles their best teams move
+     whenever a relevant kit is reworked or a new unit lands in the faction — a quarter is about the
+     observed cadence for "the top-score team for this raid is now something else". */
+  { key: "raid-intel", label: "Raid Team Coach reference", tab: "modes",
+    asOf: "2026-08-17", halfLife: 90,
+    hint: "ask Claude to re-research per-raid top-score and budget teams" },
+  /* Half-life 90: the same nature as raid-intel — these are the raids/phases where that pass found no
+     confidently-sourced squad. They age for the same reason, and a re-check is exactly how one of them
+     stops being a note and becomes a squad. */
+  { key: "raid-notes", label: "Raid phases with no sourced squad", tab: "gaps",
+    asOf: "2026-08-09", halfLife: 90,
+    hint: "ask Claude to re-check HSTR P3 / AAT for a sourced squad" },
+  /* Half-life 30 AND a hard expiry: an Era is time-boxed by construction — 12 weeks, with a published
+     end date. The half-life covers the research going out of date inside the window (unit kits, the
+     Coliseum leaderboard); `expires` covers the part that is not decay at all. On 21 Oct the sentence
+     "the current Era (Era 09)" is simply false, and before this nothing in the file would have
+     noticed. This entry is what the strapline and the Era overview card both now read from. */
+  { key: "era", label: "Era 09 “Myths & Legends” reference", tab: "modes",
+    asOf: "2026-08-29", expires: "2026-10-20", halfLife: 30,
+    hint: "ask Claude which Era is current and to re-research its units, Journey and Coliseum" },
+  /* Half-life 180: the Discarded Doctrine UNLOCK gate — which characters at which stars. Event
+     requirements are set once and adjusted rarely; the file's own note says "CG occasionally adjusts
+     event gates", and occasionally is the operative word. */
+  { key: "executor-req", label: "Executor unlock gate (Discarded Doctrine)", tab: "events",
+    asOf: "2026-08-09", halfLife: 180,
+    hint: "ask Claude to re-check the Discarded Doctrine requirement list on swgoh.wiki" },
+  /* Half-life 90, matching the ~90-day shelf life the card already claimed in prose — the number is
+     here now instead of being a magic literal next to a comparison that never fired. Crystal costs and
+     refresh caps for one event are stable; they change when CG re-prices the event. */
+  { key: "executor-event", label: "Executor blueprint economy", tab: "events",
+    asOf: snapISO(EXECUTOR_EVENT.asOf), halfLife: 90,
+    hint: "ask Claude to re-check swgohevents.com/event/executor for refresh/pack pricing" },
+  /* Half-life 180: GL unlock requirements are the most stable research in the file — they change when
+     a Legend is ADDED, which is a release, not a drift. The base_id mapping underneath is verified
+     against swgoh.gg's character API and does not rot at all; what ages is "all ten Legends" being
+     still all of them. */
+  { key: "gl-roadmap", label: "Galactic Legend unlock requirements", tab: "leia",
+    asOf: "2026-08-08", halfLife: 180,
+    hint: "ask Claude whether a new Galactic Legend has been released and to re-check relic targets" }
+];
+const SNAP_BY_KEY = Object.fromEntries(SNAPSHOTS.map(s => [s.key, s]));
+/* Reuses the existing chip vocabulary rather than inventing a third colour language: green/done for
+   fresh, amber/grind for aging, red/fixnow for stale — and the glyph comes from CHIP_GLYPH for free,
+   which is what keeps these legible under deuteranopia like every other chip in the file. */
+const SNAP_CHIP = { fresh: "done", aging: "grind", stale: "fixnow" };
+function snapAge(entry, nowMs) {
+  const iso = entry && snapISO(entry.asOf);
+  if (!iso) return null;
+  return Math.floor((snapToday(nowMs) - snapDay(iso)) / 86400000);
+}
+function snapState(entry, nowMs) {
+  const age = snapAge(entry, nowMs);
+  const expISO = entry && entry.expires ? snapISO(entry.expires) : null;
+  const expired = !!expISO && snapToday(nowMs) > snapDay(expISO);
+  /* An unparseable asOf reads as stale, not as fresh: a snapshot whose date we cannot even read is the
+     last thing that should get a green tick. */
+  if (age === null) return { state: "stale", age: null, expired, expISO };
+  const hl = +entry.halfLife > 0 ? +entry.halfLife : 30;
+  return { state: expired || age >= hl * 2 ? "stale" : age >= hl ? "aging" : "fresh", age, expired, expISO };
+}
+/* Rounded to the unit someone would actually say out loud. Exact days below three weeks, because
+   that's where the number still means something. */
+function snapAgeText(age) {
+  if (age === null) return "age unknown";
+  if (age <= 0) return "captured today";
+  if (age < 21) return `${age} day${age === 1 ? "" : "s"} old`;
+  if (age < 75) return `${Math.round(age / 7)} weeks old`;
+  const m = Math.round(age / 30);
+  return `${m} month${m === 1 ? "" : "s"} old`;
+}
+function snapChipHtml(key, nowMs) {
+  const e = SNAP_BY_KEY[key];
+  if (!e) return "";
+  const st = snapState(e, nowMs);
+  const cls = SNAP_CHIP[st.state];
+  const tip = st.expired
+    ? `${e.label} — the window this described ended ${snapLabel(st.expISO)}. ${e.hint}.`
+    : `${e.label} — captured ${snapLabel(e.asOf)}, half-life ${e.halfLife} days. ${st.state === "fresh" ? "Within its refresh window." : e.hint + "."}`;
+  return ` <span class="chip ${cls}" title="${escapeHtml(tip)}">${chipGlyph(cls)} ${st.state}${st.expired ? " · window ended" : ` · ${snapAgeText(st.age)}`}</span>`;
+}
+/* "as of <date> <chip>" — the phrase that replaces a hand-typed prose date, so the date on screen and
+   the date the chip is computed from are the same string by construction. */
+function snapNoteHtml(key, nowMs) {
+  const e = SNAP_BY_KEY[key];
+  if (!e) return "";
+  return `as of ${escapeHtml(snapLabel(e.asOf))}${snapChipHtml(key, nowMs)}`;
+}
+/* The strapline and the Era overview card both hard-coded the Era window and the words "the current
+   Era". 20 Oct is a hard end, so after it the honest sentence is a different sentence, not a redder
+   one. Both surfaces read from here so they cannot drift apart. */
+function eraWindowHtml(nowMs) {
+  const e = SNAP_BY_KEY["era"];
+  const st = snapState(e, nowMs);
+  return st.expired
+    ? `Era 09 &ldquo;Myths &amp; Legends&rdquo; ended ${escapeHtml(snapLabel(st.expISO))} — which Era is current now isn't in this file${snapChipHtml("era", nowMs)}`
+    : `Era 09 &ldquo;Myths &amp; Legends&rdquo; to ${escapeHtml(snapLabel(st.expISO))}`;
+}
+function eraCurrentPhrase(nowMs) {
+  const e = SNAP_BY_KEY["era"];
+  const st = snapState(e, nowMs);
+  return st.expired
+    ? `Era 09, which ran 28 Jul – ${escapeHtml(snapLabel(st.expISO))} and has ended — everything below describes that Era, not whatever is running now.`
+    : `The current Era (Era 09).`;
+}
+/* Static markup can't call a template function, so the handful of provenance notes that live in the
+   page's own HTML carry `data-snap="<key>"` and are filled in here. This runs at boot and at the end
+   of every render(), and touches ONLY elements that are always in the document — it must not depend on
+   any pane having been drawn, because render() is gated on the visible tab (see PANE_TABS). */
+function paintSnapChips(nowMs) {
+  document.querySelectorAll("[data-snap]").forEach(el => {
+    const key = el.getAttribute("data-snap");
+    el.innerHTML = el.hasAttribute("data-snap-chip") ? snapChipHtml(key, nowMs) : snapNoteHtml(key, nowMs);
+  });
+  document.querySelectorAll("[data-snap-era]").forEach(el => { el.innerHTML = eraWindowHtml(nowMs); });
+}
+/* Only what needs attention, worst first. A card listing everything would be a second copy of the
+   registry; the point is the short list of things to re-pull. */
+function dataHealthRows(nowMs) {
+  const rank = { stale: 0, aging: 1 };
+  return SNAPSHOTS.map(e => ({ e, st: snapState(e, nowMs) }))
+    .filter(x => x.st.state !== "fresh")
+    .sort((a, b) => (rank[a.st.state] - rank[b.st.state]) || ((b.st.age || 0) - (a.st.age || 0)));
+}
+function dataHealthCard(nowMs) {
+  const rows = dataHealthRows(nowMs);
+  if (!rows.length) return null;
+  const nStale = rows.filter(r => r.st.state === "stale").length;
+  const tabName = key => (SUBTABS.find(t => t.key === key) || { label: key }).label;
+  return { id: "datahealth", w: 12, html: `<div class="cardtitle">Data health <span class="sub">— ${rows.length} of ${SNAPSHOTS.length} built-in references want a re-pull${nStale ? `, ${nStale} overdue` : ""}</span></div>
+    <div class="mnote">These are hand-researched snapshots, not live data. Nothing below has changed — this only says how old each one is and what to ask for.</div>
+    ${rows.map(({ e, st }) => `<div style="padding:7px 0;border-bottom:1px solid var(--grid)">
+      <b style="color:var(--ink-1)">${escapeHtml(e.label)}</b>${snapChipHtml(e.key, nowMs)}
+      <div style="color:var(--ink-2);font-size:12px;margin-top:3px">${escapeHtml(e.hint)}</div>
+      <div class="srcline">as of ${escapeHtml(snapLabel(e.asOf))}${st.expired ? ` · window ended ${escapeHtml(snapLabel(st.expISO))}` : ""} · half-life ${e.halfLife}d · <a href="#" style="color:var(--accent)" onclick="switchTab('${e.tab}');return false;">${escapeHtml(tabName(e.tab))} →</a></div>
+    </div>`).join("")}` };
+}
+/* Everything fresh is one line, not a card — a card that exists only to say "nothing to do" is the
+   thing people learn to stop reading. */
+function dataHealthLineHtml(nowMs) {
+  return dataHealthRows(nowMs).length ? "" : `All ${SNAPSHOTS.length} built-in reference snapshots are inside their refresh window — nothing to re-pull.`;
+}
 const fmtM = n => n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n.toLocaleString();
 const initialHash = new URLSearchParams(location.hash.replace(/^#/, ""));
 const hashAccount = initialHash.get("account"), hashTab = initialHash.get("tab");
@@ -7978,6 +8262,7 @@ function render() {
       });
     }
 
+    const dataHealth = dataHealthCard();
     document.getElementById("ovGrid").innerHTML = wrapCards("overview", [
       { id: "readiness", w: 4, html: v.owned ? `
           <div class="cardtitle">${escapeHtml(v.gl.name)} <span class="sub">— ${acct.label}</span></div>
@@ -8012,8 +8297,14 @@ function render() {
           <ul class="nextup">${nextUp.slice(0, 4).map((n, i) =>
             `<li><span class="n">${String(i + 1).padStart(2, "0")}</span><span>${n.t}<span class="ph">${n.ph}</span></span></li>`).join("") ||
             "<li>Everything done — ask Claude for the next plan!</li>"}</ul>
-          <div class="prog-summary" id="ovFarmProg"></div>` }
+          <div class="prog-summary" id="ovFarmProg"></div>` },
+      /* Only present when something is actually aging or stale; otherwise #dataHealthLine below
+         says so in one line. Hiding it is the ordinary card hide — no new state, see SNAPSHOTS. */
+      ...(dataHealth ? [dataHealth] : [])
     ]);
+    const dhLine = document.getElementById("dataHealthLine");
+    dhLine.innerHTML = dataHealthLineHtml();
+    dhLine.style.display = dhLine.innerHTML ? "" : "none";   /* an empty .mnote still costs its margin */
   });
 
   /* ---- GL Roadmap tab ---- */
@@ -8030,7 +8321,8 @@ function render() {
     const blocker = [...v.reqRows].filter(r => !r.done).sort((a, b) => a.pct - b.pct)[0];
     const noteCard = { id: "note", html: `<div class="cardtitle">${escapeHtml(v.gl.name)} <span class="sub">${v.owned ? "— already owned ✓" : "— " + v.doneCount + "/" + v.reqRows.length + " requirements met"}</span></div>
           ${blocker ? `<div class="intelnote"><b>Least complete requirement:</b> ${escapeHtml(blocker.name)} — current ${escapeHtml(blocker.cur)}, needs ${escapeHtml(blocker.need)}.</div>` : ""}
-          <div class="prog-summary">${escapeHtml(v.gl.note)}</div>` };
+          <div class="prog-summary">${escapeHtml(v.gl.note)}</div>
+          <div class="srcline">Unlock requirements ${snapNoteHtml("gl-roadmap")}.</div>` };
     const jointCard = { id: "joint", html: glJointHtml() };
     document.getElementById("glTables").innerHTML = v.owned
       ? wrapCards("leia", [noteCard, jointCard])
@@ -8150,6 +8442,10 @@ function render() {
   PLAN_FLOW.forEach(p => { const el = document.getElementById("flow-" + p.key); if (el) el.innerHTML = ""; });
 
   document.querySelectorAll("input[data-k]").forEach(el => { el.checked = !!state.ticks[el.dataset.k]; });
+  /* The provenance notes that live in the page's own static markup (Best Mods, TB, Events, GAC
+     counters, Tier List, the Game modes strapline). Deliberately outside every safeRender: those
+     elements are always in the document, so this must not — and does not — wait on a pane. */
+  paintSnapChips();
   updateProg(v);
   bindDnD();
 }

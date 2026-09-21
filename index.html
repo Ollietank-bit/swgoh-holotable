@@ -3169,6 +3169,33 @@ let pullsLastWritten = null;
    re-stringifying it on every store.write() call is free — nothing here approaches the 629 KB PULLS_KEY
    problem the dirty-check above exists for. deviceLastWritten holds a JSON signature of whatever this
    currently holds, so a write that didn't actually change any of these fields still costs nothing. */
+/* ---- Guards for what may become `state` -------------------------------------------------------
+   Declared here, above `store`, and not beside ghGetFile where they are used: store.read() runs during
+   boot, so a const declared later would still be in its temporal dead zone and the whole script would
+   die on load. (It did, once, before this moved.)
+
+   The GitHub Contents API envelope, as distinct from the state document inside it. These keys are the
+   tell that a response described the file instead of being the file. */
+const GH_ENVELOPE_KEYS = ["sha", "git_url", "download_url", "content", "encoding", "html_url", "_links", "type", "size", "path"];
+function looksLikeGhEnvelope(v) {
+  return isPlainObject(v) && typeof v.content === "string" && typeof v.encoding === "string";
+}
+/* The guard that matters: nothing becomes `state` without looking like state first. A saved blob is a
+   plain object with a numeric stateVersion and no envelope keys. This is a shape test and not merely
+   "did it parse", because the failure that cost real data was an object that parsed perfectly and WAS
+   a plain object — it was simply the wrong object. */
+function isStatePayload(v) {
+  return isPlainObject(v) && typeof v.stateVersion === "number" && !looksLikeGhEnvelope(v);
+}
+/* Removes an envelope's keys from a state object that already swallowed one, so a device affected
+   before this fix heals itself the first time it loads. Left unhealed they inflate every push: one
+   device was observed at 377 KB against a normal 40, each sync nesting the previous state as base64
+   inside the next. */
+function stripGhEnvelope(s) {
+  if (!isPlainObject(s)) return s;
+  for (const k of GH_ENVELOPE_KEYS) if (k in s) delete s[k];
+  return s;
+}
 const DEVICE_KEY = "swgoh-holotable-device-v1";
 /* The device-local fields carried in DEVICE_KEY alongside lastPull — see the block comment above. Kept
    as one list so read(), write() and stateWithoutDeviceLocal() can't drift apart on which keys these are. */
@@ -3241,6 +3268,7 @@ const store = {
     let s;
     try { s = JSON.parse(localStorage.getItem("swgoh-tracker") || "{}"); } catch { s = {}; }
     if (!isPlainObject(s)) s = {};
+    stripGhEnvelope(s);   // heal a blob that swallowed a GitHub envelope before the ghGetFile fix
     /* Recombine the device scalars, with the same care the pulls half gets below: a pre-v4 blob — or one
        an older build re-wrote with its own copy still inside — carries its own lastPull, and dropping
        either side would either zero this device's pull clock (a needless refetch, and the "First run"
@@ -6604,17 +6632,34 @@ function b64DecodeUtf8(str) { return decodeURIComponent(escape(atob(str.replace(
    returns the actual file bytes directly — no base64, no inline-size cap (good up to 100MB, far more
    than this will ever need). */
 async function ghGetFile(cfg) {
-  const url = ghApiUrl(cfg) + `?ref=${encodeURIComponent(syncBranch())}&_=${Date.now()}`;
-  const metaRes = await fetch(url, { headers: { "Authorization": "Bearer " + cfg.token, "Accept": "application/vnd.github+json" } });
+  const base = ghApiUrl(cfg) + `?ref=${encodeURIComponent(syncBranch())}`;
+  /* TWO fetches to ONE url, differing only by Accept, is what broke this. The cache-buster was computed
+     once and shared, so to anything keying on url alone the second request was the first — and a cache
+     that doesn't honour `Vary: Accept` handed back the meta response. The raw fetch therefore received
+     the JSON envelope, JSON.parse succeeded because an envelope IS valid JSON, and it was merged into
+     state as though it were the saved blob. Ticks and the arena log went with it. Separate nonces per
+     request and no-store on both, so the two can never collide again. */
+  const nonce = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const hdrs = accept => ({ "Authorization": "Bearer " + cfg.token, "Accept": accept, "Cache-Control": "no-cache" });
+  const metaRes = await fetch(`${base}&_=m${nonce}`, { cache: "no-store", headers: hdrs("application/vnd.github+json") });
   if (metaRes.status === 404) return { exists: false, sha: null, data: null };
   if (!metaRes.ok) throw ghError(metaRes.status, `GitHub API ${metaRes.status} on GET — ${(await metaRes.text()).slice(0, 200)}`);
   const meta = await metaRes.json();
-  const rawRes = await fetch(url, { headers: { "Authorization": "Bearer " + cfg.token, "Accept": "application/vnd.github.raw+json" } });
+  const rawRes = await fetch(`${base}&_=r${nonce}`, { cache: "no-store", headers: hdrs("application/vnd.github.raw+json") });
   if (!rawRes.ok) throw ghError(rawRes.status, `GitHub API ${rawRes.status} on GET (raw) — ${(await rawRes.text()).slice(0, 200)}`);
   const text = await rawRes.text();
   let data;
   try { data = JSON.parse(text); }
   catch (e) { throw new Error(`Remote state.json isn't valid JSON (${text.length} bytes read) — ${e.message}`); }
+  /* Belt as well as braces. If an envelope arrives anyway — a proxy, a future API change, the raw
+     media type's own size fallback — the document is right there inside it, so decode rather than fail. */
+  if (looksLikeGhEnvelope(data)) {
+    try { data = JSON.parse(b64DecodeUtf8(data.content)); }
+    catch (e) { throw new Error("GitHub described the file instead of returning it, and the description wouldn't decode — nothing was merged."); }
+  }
+  if (!isStatePayload(data)) {
+    throw new Error("The remote copy doesn't look like Holotable state (no stateVersion) — refusing to merge it. Nothing on this device was changed.");
+  }
   return { exists: true, sha: meta.sha, data };
 }
 async function ghPutFile(cfg, payload, sha) {

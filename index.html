@@ -3138,8 +3138,28 @@ const TIPS = {
   ]
 };
 /* Daily routine — same habits both accounts; checkboxes auto-reset each day */
+/* Row 0 names the account's CURRENT Legend rather than Leia, and says what that Legend's wall actually
+   is — the roadmap knows whether the requirements left are star-gated or relic-heavy, so the advice can
+   too. "Stars are the wall" was true of Leia and is wrong for most of the other nine. The rest of the
+   list is mode upkeep and is Legend-agnostic already. */
+function dailyFarmRow() {
+  const v = accountView(current);
+  const open = v.reqRows.filter(r => !r.done);
+  const starred = open.filter(r => r.status === "stargate").length;
+  /* Measured across all 20 account x Legend combinations on the real rosters, star gates are never more
+     than a third of what is open and are usually zero — so a bare "stars vs relics" flip would print
+     "relics" every time and say nothing. The middle band is the useful one: name the star farms that DO
+     remain, because shards and relic mats are separate budgets and those farms should be running in
+     parallel rather than queued behind the relic climb. */
+  const wall = !open.length ? "requirements are done — bank the currency for the next Legend"
+    : starred > open.length / 2 ? "stars are the wall — the highest-return crystal spend in the game"
+    : starred ? `relic tiers are the wall, but ${starred} star farm${starred > 1 ? "s" : ""} still to run — keep both going`
+    : "relic tiers are the wall — gear and signal data, not shards";
+  return ["Spend all energy + 1–2 refreshes on " + v.gl.name + " farms", wall];
+}
 const DAILY = [
-  ["Spend all energy + 1–2 refreshes on Leia shard farms", "stars are the wall — the highest-return crystal spend in the game"],
+  null,   // replaced per account at render time by dailyFarmRow() — see above
+
   ["GAC: set defense / do attacks when the round is live", ""],
   ["Guild: 600 raid tickets + TB deploys / TW moves", ""],
   ["Fleet payout: snipe rank at your payout hour", ""],
@@ -8404,6 +8424,16 @@ const SNAPSHOTS = [
      a Legend is ADDED, which is a release, not a drift. The base_id mapping underneath is verified
      against swgoh.gg's character API and does not rot at all; what ages is "all ten Legends" being
      still all of them. */
+  /* Half-life 30: Coach's Corner is the only hand-researched layer that is about THIS roster rather than
+     about the game — "R2-D2 stuck at R1", "Scout Trooper and Lobot are the long poles", "14 of 15
+     requirements met". That makes it the fastest-rotting thing in the file, because the roster moves
+     under it every time Ollie farms: it already claimed 14 of 15 while the account read 6 of 15. Same
+     cadence as the GAC-season group, for a different reason — not because the meta moved, but because
+     the account did. The tips' own auto-retire logic drops a flag once the roster disproves it; this
+     covers the prose around them, which it cannot touch. */
+  { key: "coach-tips", label: "Coach's Corner priorities (about your roster, not the game)", tab: "coach",
+    asOf: "2026-08-09", halfLife: 30,
+    hint: "ask Claude to re-read both rosters and rewrite the Coach's Corner flags" },
   { key: "gl-roadmap", label: "Galactic Legend unlock requirements", tab: "leia",
     asOf: "2026-08-08", halfLife: 180,
     hint: "ask Claude whether a new Galactic Legend has been released and to re-check relic targets" }
@@ -9272,7 +9302,7 @@ function render() {
       { id: "momentum", w: 5, html: momentumCardHtml(current, v) },
       { id: "daily", w: 5, html: `
           <div class="cardtitle">Daily routine <span class="sub">— resets each day</span></div>
-          ${DAILY.map((it, ii) => tickbox(`d-${current}-${ii}`, it[0], it[1])).join("")}
+          ${DAILY.map((it, ii) => { const row = it || dailyFarmRow(); return tickbox(`d-${current}-${ii}`, row[0], row[1]); }).join("")}
           <div class="prog-summary" id="dailyProg"></div>` },
       { id: "flags", w: 4, html: `
           <div class="cardtitle">Top flags <span class="sub">— from Coach's corner</span></div>

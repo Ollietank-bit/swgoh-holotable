@@ -6640,7 +6640,14 @@ async function ghGetFile(cfg) {
      state as though it were the saved blob. Ticks and the arena log went with it. Separate nonces per
      request and no-store on both, so the two can never collide again. */
   const nonce = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  const hdrs = accept => ({ "Authorization": "Bearer " + cfg.token, "Accept": accept, "Cache-Control": "no-cache" });
+  /* `cache: "no-store"` below is a fetch OPTION and costs nothing. A `Cache-Control` request header is
+     not CORS-safelisted, so adding one turns these simple cross-origin GETs into preflighted ones, and
+     api.github.com's preflight doesn't allow that header — every GET then dies as "Failed to fetch"
+     before it is sent, while the PUT (which never carried it) keeps working. Measured on a public
+     GitHub endpoint with no token: plain 200, cache-option 200, Cache-Control header TypeError.
+     The per-request nonces are what actually fix the cache collision; the header was belt-and-braces
+     that broke the connection instead. Don't add it back. */
+  const hdrs = accept => ({ "Authorization": "Bearer " + cfg.token, "Accept": accept });
   const metaRes = await fetch(`${base}&_=m${nonce}`, { cache: "no-store", headers: hdrs("application/vnd.github+json") });
   if (metaRes.status === 404) return { exists: false, sha: null, data: null };
   if (!metaRes.ok) throw ghError(metaRes.status, `GitHub API ${metaRes.status} on GET — ${(await metaRes.text()).slice(0, 200)}`);

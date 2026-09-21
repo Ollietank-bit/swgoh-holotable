@@ -1303,7 +1303,7 @@
   <!-- ============ GAME MODES ============ -->
   <div class="tabpane" id="pane-modes">
     <h2>Game modes</h2>
-    <div class="h2sub">Current state of the game: Order 66 + Naboo raids · Rise of the Empire TB · GAC (3v3 season) · <span data-snap-era>Era 09 “Myths &amp; Legends” to 20 Oct 2026</span></div>
+    <div class="h2sub">Current state of the game: Order 66 + Naboo raids · Rise of the Empire TB · <span data-snap-gac>GAC (3v3 season)</span> · <span data-snap-era>Era 09 “Myths &amp; Legends” to 20 Oct 2026</span></div>
 
     <div class="modescrumb" id="modesCrumb"></div>
     <div class="cqnav" id="modesCatNav"></div>
@@ -2742,6 +2742,11 @@ const BASELINE = {
   }
 };
 
+/* Single source of truth for GAC's current format — it alternates 3v3/5v5 roughly every season, and
+   this file said "3v3" in three separate string literals with no shared root. GUIDANCE's mode headings
+   below and the strapline (see data-snap-gac) both read this instead of hand-typing it a second and
+   third time, so the next flip is one edit here, not a grep for every place someone once typed it. */
+const GAC_FORMAT = "3v3";
 /* Static guidance (farm phases + game modes) — Claude refreshes these on request */
 const GUIDANCE = {
   ollie: {
@@ -2777,7 +2782,7 @@ const GUIDANCE = {
     modes: [
       { t: "Raids — Order 66 (+ Naboo)", n: "Pirate King Hondo pirates are the most flexible top scorer; GMT + dark-side clones skeleton also scores near max.", items: [["Field one dedicated raid team", ""],["Hit a consistent personal score each week", ""]] },
       { t: "Territory Battle — Rise of the Empire", n: "Ewok/Rebel ops double as Leia farms. Gungans are dead weight without Jar Jar — skip.", items: [["Gear Ewoks for platoons + ops (= Leia farm)", ""],["Bo-Katan special mission each TB", "BKM owned — free shards"],["Deploy everything, every phase", ""]] },
-      { t: "Grand Arena (3v3 season)", n: "Biggest untapped income. Jabba, SLKR and Rey each anchor a wall.", items: [["Join + set defense every round", ""],["Climb out of Carbonite (Bronzium+)", ""],["First datacron to level 6+", ""]] },
+      { t: `Grand Arena (${GAC_FORMAT} season)`, n: "Biggest untapped income. Jabba, SLKR and Rey each anchor a wall.", items: [["Join + set defense every round", ""],["Climb out of Carbonite (Bronzium+)", ""],["First datacron to level 6+", ""]] },
       { t: "Fleet — Executor", n: "Top-50 daily payout is in reach with better payout timing; no new farm needed.", items: [["Snipe payout to crack top 50", ""]] },
       { t: "Conquest", n: "Run Hard at 8M GP; take the best crate you can clear each cycle.", items: [["Finish reachable sector feats before the cycle ends", ""]] },
       { t: "Era Challenges — Era 09", n: "Weekly, feats keyed to Myths & Legends units. Do reachable tiers; don't chase era-unit feats yet.", items: [["Clear reachable tiers weekly for era currency", ""]] }
@@ -2812,7 +2817,7 @@ const GUIDANCE = {
     modes: [
       { t: "Raids — Order 66 (+ Naboo)", n: "GMT + dark-side clones skeleton fits this roster (Piett R8/Empire); Pirates are the alternative.", items: [["Field one dedicated raid team", ""],["Hit a consistent personal score each week", ""]] },
       { t: "Territory Battle — Rise of the Empire", n: "Mandalorians, 501st and FO are strong here. Ewok gearing doubles as the Leia farm.", items: [["Ewok ops + platoons every TB", ""],["Bo-Katan special mission each TB", "BKM owned"],["Deploy everything, every phase", ""]] },
-      { t: "Grand Arena (3v3 season)", n: "Rey/SLKR/GAS + omicron'd BKM Mandalorians is a lot of wall for Carbonite.", items: [["Join + set defense every round", ""],["Climb out of Carbonite (Bronzium+)", ""],["First datacron to level 6+", ""]] },
+      { t: `Grand Arena (${GAC_FORMAT} season)`, n: "Rey/SLKR/GAS + omicron'd BKM Mandalorians is a lot of wall for Carbonite.", items: [["Join + set defense every round", ""],["Climb out of Carbonite (Bronzium+)", ""],["First datacron to level 6+", ""]] },
       { t: "Fleet — Negotiator → Executor", n: "Executor at 65% power is the upgrade path — crew is already relic'd.", items: [["Star up Executor + crew ships", ""],["Crack top 20 daily payout", ""]] },
       { t: "Conquest", n: "Run Hard; take the best crate you can clear each cycle.", items: [["Finish reachable sector feats before the cycle ends", ""]] },
       { t: "Era Challenges — Era 09", n: "Weekly, keyed to Myths & Legends units. Clear what's reachable.", items: [["Clear reachable tiers weekly for era currency", ""]] }
@@ -7716,6 +7721,15 @@ const SNAPSHOTS = [
   { key: "gac-counters", label: "GAC/TW counter matchups", tab: "gac",
     asOf: "2026-08-09", halfLife: 30,
     hint: "ask Claude to re-research the mid-core GAC defense/counter table" },
+  /* Half-life 30, no `expires`: unlike the Era, GAC's format flip has no published date this file can
+     hang a hard end on — it alternates 3v3/5v5 roughly once a season (~monthly), and the season that
+     invalidates GAC_FORMAT could land at any point, not on a date this file knows in advance. This is a
+     claim that goes wrong on a schedule, not one that drifts, so the same half-life as the Tier List and
+     GAC counters (which share that season clock) is right, and the chip should start asking within the
+     current season rather than waiting for a second one to pass. */
+  { key: "gac-format", label: `GAC format (currently ${GAC_FORMAT})`, tab: "gac",
+    asOf: "2026-09-21", halfLife: 30,
+    hint: "ask Claude to confirm whether GAC is currently 3v3 or 5v5" },
   /* Half-life 30: this feeds Roster Gap Radar, which is what talks people into relic spend, and relic
      spend is irreversible. The five names inside a squad are stable for months; the question of which
      squads are worth chasing turns over every GL release. Erring short is the right direction for the
@@ -7854,6 +7868,12 @@ function eraCurrentPhrase(nowMs) {
     ? `Era 09, which ran 28 Jul – ${escapeHtml(snapLabel(st.expISO))} and has ended — everything below describes that Era, not whatever is running now.`
     : `The current Era (Era 09).`;
 }
+/* Unlike the Era, GAC's format has no hard `expires` (see the gac-format entry) — there's no announced
+   date to swap the sentence on, only a chip that ages. The strapline reads GAC_FORMAT here instead of a
+   fourth hand-typed "3v3", so a flip is one edit to the constant, not a hunt through the markup. */
+function gacFormatHtml(nowMs) {
+  return `GAC (${GAC_FORMAT} season)${snapChipHtml("gac-format", nowMs)}`;
+}
 /* Static markup can't call a template function, so the handful of provenance notes that live in the
    page's own HTML carry `data-snap="<key>"` and are filled in here. This runs at boot and at the end
    of every render(), and touches ONLY elements that are always in the document — it must not depend on
@@ -7864,6 +7884,7 @@ function paintSnapChips(nowMs) {
     el.innerHTML = el.hasAttribute("data-snap-chip") ? snapChipHtml(key, nowMs) : snapNoteHtml(key, nowMs);
   });
   document.querySelectorAll("[data-snap-era]").forEach(el => { el.innerHTML = eraWindowHtml(nowMs); });
+  document.querySelectorAll("[data-snap-gac]").forEach(el => { el.innerHTML = gacFormatHtml(nowMs); });
 }
 /* Only what needs attention, worst first. A card listing everything would be a second copy of the
    registry; the point is the short list of things to re-pull. */

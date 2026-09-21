@@ -331,6 +331,15 @@
   .recbtn:disabled { opacity: 0.45; cursor: not-allowed; }
   .recbtn.danger { border-color: var(--critical); color: var(--critical); }
   .recbtn.undo { border-color: var(--swyellow); color: var(--swyellow); flex-basis: 100%; }
+  /* The refusal notice and the known-good list. Both carry multi-line text set with textContent (never
+     innerHTML — half of it is key names read straight out of whatever arrived over the wire), so they
+     need pre-line for the same reason .recovery-confirm p does. */
+  #guardWhy { white-space: pre-line; }
+  .recsel { font: inherit; font-size: 12.5px; border-radius: 8px; padding: 9px 11px; cursor: pointer;
+            border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-1);
+            /* full row, like .recbtn.undo: the label carries a date, a time and a size, and sharing a
+               line with the restore button truncated all three at phone width. */
+            flex: 1 1 100%; min-width: 0; }
   .recovery-confirm { margin-top: 11px; padding: 11px 12px; border: 1px solid var(--critical); border-radius: 10px;
                       background: color-mix(in srgb, var(--critical) 9%, transparent); }
   /* pre-line, so the confirm text can put the two competing timestamps on their own lines without any
@@ -1208,6 +1217,22 @@
           <button type="button" class="recbtn undo" id="conflictUndoBtn" onclick="rollbackOffer()">⟲ Undo the merge — put this device's copy back</button>
           <button type="button" class="recbtn" id="conflictDismissBtn" onclick="conflictDismiss()">Dismiss — the merge was right</button>
         </div>
+        <!-- Shown after the payload gate refused a push or a pull. Distinct from the conflict row above:
+             that one reports something already discarded, this one reports something that was NOT done,
+             and the whole reason it exists is that a sync which quietly stops is worse than the bug. -->
+        <div class="mnote" id="guardWhy" style="color:var(--serious);margin:7px 0 0;display:none"></div>
+        <div class="recovery-row" id="guardRow" style="display:none">
+          <button type="button" class="recbtn danger" id="guardPushBtn" onclick="guardPushAnyway()">↑ Push it anyway — this change is mine</button>
+          <button type="button" class="recbtn" id="guardDismissBtn" onclick="guardDismiss()">Dismiss — let sync try again</button>
+        </div>
+        <!-- Known-good copies. Deliberately in this group and not a second recovery idiom somewhere else,
+             and deliberately NOT sharing the rollback ring's single slot: restoring one stashes the
+             outgoing copy into that ring, so Undo still means "put back what Restore just replaced". -->
+        <div class="recovery-row" id="watermarkRow" style="display:none">
+          <select class="recsel" id="watermarkPick" aria-label="Known-good copies held on this device"></select>
+          <button type="button" class="recbtn undo" id="watermarkBtn" onclick="watermarkRestore()">⟲ Restore this clean copy</button>
+        </div>
+        <div class="mnote" id="watermarkWhy" style="color:var(--ink-3);margin:7px 0 0"></div>
         <div class="recovery-row" id="rollbackRow" style="display:none">
           <button type="button" class="recbtn undo" id="rollbackBtn" onclick="rollbackOffer()"></button>
         </div>
@@ -3250,6 +3275,58 @@ function conflictWrite(c) {
   try { if (c) localStorage.setItem(CONFLICT_KEY, JSON.stringify(c)); else localStorage.removeItem(CONFLICT_KEY); }
   catch (e) {}
 }
+/* WATERMARK_KEY — the known-good ring: copies of the synced payload taken at moments a sync was clean,
+   as opposed to the rollback ring, which is only written at the moment a merge discards something. That
+   distinction is the whole point. On 21 Sep 2026 a GitHub Contents API envelope was merged into state as
+   though it were the saved blob; the corruption ran across five syncs, and because rollbackStash() fires
+   after the bad data has already arrived, all three ring slots held polluted copies. Honest reporting,
+   no recovery. A watermark is taken BEFORE anything is wrong, so the ring has something to offer.
+
+   DEVICE-LOCAL, like PULLS_KEY / DEVICE_KEY / BASE_KEY / CONFLICT_KEY, and here for the sharpest form of
+   that reason: this ring exists to survive corruption that arrives over the wire, and anything kept in
+   the synced blob arrives over the wire. On the day in question the affected device pushed 163 KB of
+   envelope-in-envelope to the repo — a synced watermark would have gone up inside it and come straight
+   back down onto the other device. It would also have to fit in a ~40 KB blob, which four ~42 KB copies
+   plainly do not. The cost of device-local is that clearing the browser clears it; that is what Export
+   is for, and the note under the row says so.
+
+   Four slots at ~42 KB is ~170 KB against a ~5 MB budget already carrying 630 KB of `pulls`. */
+const WATERMARK_KEY = "swgoh-holotable-watermark-v1";
+function watermarkReadAll() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(WATERMARK_KEY) || "null");
+    return (Array.isArray(raw) ? raw : [])
+      .filter(w => isPlainObject(w) && isPlainObject(w.state) && typeof w.at === "number")
+      .sort((a, b) => b.at - a.at);
+  } catch (e) { return []; }
+}
+/* Same shed-the-oldest-and-retry idiom as rollbackStash(), for the same reason: quota pressure is
+   exactly when the newest clean copy is worth more than a fortnight-old one. */
+function watermarkWriteAll(list) {
+  for (let n = list.length; n >= 1; n--) {
+    try { localStorage.setItem(WATERMARK_KEY, JSON.stringify(list.slice(0, n))); return true; }
+    catch (e) { if (n === 1) { console.error("Couldn't save a known-good copy — continuing anyway:", e); return false; } }
+  }
+  return false;
+}
+function watermarkNewest() { return watermarkReadAll()[0] || null; }
+
+/* GUARD_KEY — the last refusal by the payload gate, persisted for precisely the reason CONFLICT_KEY is:
+   the moment that matters is after the reload, and the failure being guarded against here is a sync
+   that stops without saying so. Cleared only by acting on it (push anyway, force pull, restore a clean
+   copy) or dismissing it — never by a later sync that happened to succeed. */
+const GUARD_KEY = "swgoh-holotable-guard-v1";
+function guardRead() {
+  try {
+    const g = JSON.parse(localStorage.getItem(GUARD_KEY) || "null");
+    return isPlainObject(g) && typeof g.at === "number" && Array.isArray(g.reasons) ? g : null;
+  } catch (e) { return null; }
+}
+function guardWrite(g) {
+  try { if (g) localStorage.setItem(GUARD_KEY, JSON.stringify(g)); else localStorage.removeItem(GUARD_KEY); }
+  catch (e) {}
+}
+
 /* The single place that strips the device-local halves of state — the roster snapshot (PULLS_KEY) and the
    device scalars + UI context (DEVICE_KEY) — out of a blob headed for "swgoh-tracker" or for GitHub, so the
    storage path and both syncPush payload sites cannot drift apart. */
@@ -3369,6 +3446,9 @@ let schemaMigrationPendingPush = false;
 /* Read at boot, not reset by it: see CONFLICT_KEY above. Declared here with the other sync `let`s for
    the same reason they are — renderSyncStatus() can run from a pre-boot write. */
 let syncConflict = conflictRead();
+/* Read at boot for the same reason syncConflict is, and ranked above it in the pill: a merge that
+   overwrote something is bad news about the past, a refused sync is news about right now. */
+let syncGuard = guardRead();
 /* STATE_VERSION describes the *shape* of the saved blob, and is stored as state.stateVersion.
    Purely additive changes need NOTHING here — mergeDefaults() below backfills new keys on its own.
    Bump this and add a step to migrateState() only for a genuinely breaking change: a key renamed, a
@@ -6697,6 +6777,9 @@ function syncSetStatus(kind, msg) {
 function syncStatusLabel() {
   if (!syncConfigured()) return { cls: "", text: "☁ Sync" };
   if (syncBusy) return { cls: "busy", text: "☁ Syncing…" };
+  /* Ranked above "Sync error" and far above "Synced": a refusal is not a transport failure that will
+     clear itself on the next try, it is a decision this device made and is waiting to be told about. */
+  if (syncGuard) return { cls: "err", text: syncGuard.dir === "push" ? "⛔ Push refused" : "⛔ Pull refused" };
   if (syncLastError) return { cls: "err", text: "⚠ Sync error" };
   /* Ranked above "Synced": the sync DID succeed, and saying only that is precisely the lie this
      change exists to stop telling. Stays up across reloads and later clean syncs until it is acted on
@@ -6713,9 +6796,292 @@ function renderSyncStatus() {
   const s = syncStatusLabel();
   el.className = "syncstatus" + (s.cls ? " " + s.cls : "");
   el.textContent = s.text;
-  el.title = syncLastError ? syncLastError
+  el.title = syncGuard ? guardSummary() + "\n(Click to open Cloud Sync → Backup & recovery.)"
+    : syncLastError ? syncLastError
     : syncConflict ? conflictSummary() + " Click to undo the merge or dismiss this."
     : "Cloud Sync — click to configure";
+}
+
+/* ===================== payload sanity, and the known-good watermark =====================
+   Two nets, one rule between them. Neither is a re-fix of the 21 Sep 2026 envelope bug (isStatePayload
+   and the per-request nonces are that); both are what should have caught it anyway, whatever the cause.
+
+   WHY SIZE IS THE WEAKEST SIGNAL. The obvious reading of that day is "the blob went 40 KB -> 377 KB ->
+   525 KB, so refuse a payload that grows too fast". It is the wrong lesson. state.history grows on
+   purpose — roughly 78 KB a year on the measured churn model — so any ratio ("3x the last push") is a
+   timer, not a test: it fires on entirely legitimate data at whatever date the ratio implies, and the
+   user learns to click past it. Worse, a ratio is silent about the corruption that ISN'T large: an
+   envelope that happened to be small, a branch quietly emptied, a clock zeroed. Size is a symptom here,
+   not the disease.
+
+   What actually distinguished that day from a year of growth, in descending order of how cheap and
+   unambiguous the signal is:
+
+     1. TOP-LEVEL KEYS THE SCHEMA HAS NEVER HAD. The envelope brought sha / content / encoding /
+        download_url / _links. There is no tuning parameter, no threshold and no false-positive path
+        for "is this key one of ours" — the allowed set is read straight off defaultState(), so adding
+        a branch up there needs nothing here. Split in two, because this file's own convention is that
+        purely additive schema changes do NOT bump STATE_VERSION, which means a staged rollout can
+        legitimately hand this device a key it has never seen: a novel key that is a GitHub envelope key
+        is a hard reject, any other novel key is only a suspicion.
+     2. BRANCHES COLLAPSING TO EMPTY. ticks 3 -> 0, arena.log 48 rows -> 0, cq myPlan 214 rows -> 0. This
+        is directional — growth is normal, a branch that HAD content and now has none is a deletion
+        nobody asked for — and it is per-branch, so three of them firing at once is three signals and one
+        of them firing alone is not a reason to stop syncing.
+     3. AN IMPOSSIBLE CLOCK. updatedAt ended at 0, i.e. 1970, and that is what made the incident a
+        one-way ratchet: the device lost every subsequent timestamp comparison. Refusing a payload whose
+        clock is zero where the known-good copy has a real one closes the ratchet for a byte of code.
+     4. SIZE, and only in the two forms growth cannot trip. An absolute ceiling (1.5 MB) that a year of
+        history would need decades to approach, and a rate measured as BYTES PER DAY SINCE THE LAST
+        KNOWN-GOOD COPY rather than as a ratio: 25 KB of slack plus 4 KB a day, against a measured
+        legitimate 0.21 KB a day. The allowance grows nineteen times faster than the data does, which is
+        the property a ratio lacks — it can never be overtaken by ordinary use, so it never becomes the
+        alert nobody reads. On 21 Sep it was +337 KB inside one day.
+
+   The verdict rule is deliberately dull: any hard signal refuses; any TWO soft signals refuse; one soft
+   signal on its own does not. So a user clearing one planner on purpose syncs normally, and that same
+   clear alongside an unexplained 300 KB does not.
+
+   WHAT "CLEAN ENOUGH TO WATERMARK" MEANS. Not "the merge reported no collisions" — that day's merges
+   reported collisions on envelope keys while the app data was still fine, and a collision-free merge of
+   garbage is still garbage. A payload is watermarked only when ALL of:
+     - it would also have been allowed to push, with not even one soft signal against it (stricter than
+       the gate on purpose: the gate decides whether to proceed, the watermark decides what to trust);
+     - the merge in THIS sync cycle discarded nothing. Note what that is not: it is not "the amber
+       conflict warning is clear". That warning is deliberately sticky — it survives reloads and later
+       clean syncs until it is acted on — and using it here was tried and was wrong, because it disarms
+       the net permanently on any device carrying an old undismissed warning. Every device upgrading
+       onto a build that adds a branch gets exactly one such warning on its first boot (the new branch
+       exists locally, has never existed remotely, and with no base yet the merge can only call that a
+       collision), so the sticky version means the watermark ring is never armed at all on precisely the
+       devices most likely to need it. What matters is whether the copy being watermarked was arrived at
+       by throwing something away just now;
+     - and the sync ENDED with this device and GitHub holding the same payload — a push that landed, or
+       a pull that needed no push back. "Known-good" means both sides had it, not just this one.
+   Those three together are what makes a watermark a fact rather than an opinion.
+
+   HOW MANY, HOW FAR APART. Four, spaced by TIME and not by sync count, because that day's corruption ran
+   across five syncs that could as easily have been five minutes apart: a ring that advances per sync is
+   flushed by a burst, a ring that advances per elapsed hour is not. One slot is LIVE — replaced by every
+   clean sync, at most once every ten minutes, so a restore never costs more recent work than it has to.
+   The other three are COMMITTED: the live copy is only committed when the newest committed one is
+   already WM_GAP (6 h) old, and the committed list is then thinned by dropping whichever interior copy
+   sits closest to its neighbours in log-age. That combination is what gives a useful spread at every
+   cadence this app actually syncs at, which a fixed ladder of age bands does not — measured over 120
+   simulated days, a ladder degenerated at ten-minute and hourly cadence to three copies all within two
+   hours of each other, i.e. one copy with extra steps. What this keeps instead, at ten-minute cadence
+   after 40 days: now, 9 h, 3 days, 40 days; at daily cadence after 200 days: now, 6 days, 34 days,
+   200 days. The oldest is never thinned, so it is a last-resort copy from the first clean sync this
+   device ever had. Burst resistance falls out of the same rule: ten clean syncs ten minutes apart move
+   only the live slot and leave the other three untouched, and corrupt syncs write nothing at all. */
+
+const GUARD_BYTES_MAX  = 1500000;     /* hard ceiling: the Contents API stops inlining around 1 MB, and
+                                         78 KB a year would need the better part of two decades to get here */
+const GUARD_STEP_BYTES = 25600;       /* free slack per check — one long session of real typing */
+const GUARD_DAY_BYTES  = 4096;        /* plus this per day since the known-good copy, vs a measured 0.21 KB */
+const GUARD_SHRINK     = 0.5;         /* smaller than half the known-good copy is a soft signal */
+const GUARD_FUTURE_MS  = 7 * 86400000;
+const WM_DEPTH   = 4;
+const WM_GAP     = 6 * 3600000;       /* minimum age of the newest committed copy before the live one joins it */
+const WM_REFRESH_MS = 10 * 60000;     /* don't rewrite ~170 KB of localStorage on every 2.5 s push debounce */
+
+/* applyBootMaintenance() writes these two and they were never in the defaultState() literal, so they
+   would read as novel keys on every single payload without this. */
+const GUARD_EXTRA_KEYS = ["eventsSeedVersion", "eventsSeeded"];
+let guardKnownKeysCache = null;
+function guardKnownKeys() {
+  if (!guardKnownKeysCache) guardKnownKeysCache = new Set(Object.keys(defaultState()).concat(GUARD_EXTRA_KEYS));
+  return guardKnownKeysCache;
+}
+function guardKb(n) {
+  const sign = n < 0 ? "-" : "";
+  const kb = Math.abs(n) / 1024;
+  return kb < 1 ? sign + Math.abs(Math.round(n)) + " bytes" : sign + (kb < 10 ? kb.toFixed(1) : Math.round(kb)) + " KB";
+}
+function guardBytes(v) { try { return JSON.stringify(v).length; } catch (e) { return -1; } }
+function guardAt(obj, path) {
+  let cur = obj;
+  for (const k of path.split(".")) { if (!isPlainObject(cur)) return undefined; cur = cur[k]; }
+  return cur;
+}
+/* "How much is in this branch", in the one shape-agnostic sense the tracked branches share: a list's
+   rows, a map's entries, and — for a map OF lists, which is what arena.log and cq…myPlan are — the rows
+   across all of them. That last case is why this reports 48 and 214 for the two branches the incident
+   was measured in, rather than 2 and 14. */
+function guardCount(v) {
+  if (Array.isArray(v)) return v.length;
+  if (isPlainObject(v)) {
+    let n = 0;
+    for (const k of Object.keys(v)) n += Array.isArray(v[k]) ? v[k].length : 1;
+    return n;
+  }
+  return 0;
+}
+/* Only the non-daily ticks count. applyBootMaintenance() deletes every d-* key at the date rollover, so
+   counting them would turn midnight on a save whose ticks are all dailies into a data-loss signal. */
+function guardTickCount(v) { return isPlainObject(v) ? Object.keys(v).filter(k => !k.startsWith("d-")).length : 0; }
+/* The branches whose disappearance is a loss rather than something the app does on purpose. Deliberately
+   absent: `tb` (tbResetAll() and the TB run rollover empty it by design), modsData/modsChars/modsRecent
+   (derived caches, and already "local" in MERGE_RULES), raidProgress/raidTickets/guildCurrency (fixed
+   two-key maps that can never reach zero, so they would only ever contribute noise). */
+const GUARD_BRANCHES = [
+  "ticks",
+  "arena.log", "arena.opponents",
+  "cq.byAccount.ollie.myPlan", "cq.byAccount.tiny.myPlan",
+  "events.items",
+  "gac.ollie.zones", "gac.ollie.offense", "gac.tiny.zones", "gac.tiny.offense",
+  "tw.zones",
+  "history.ollie.obs", "history.ollie.ev", "history.tiny.obs", "history.tiny.ev",
+  "layout.order"
+];
+function guardBranchCount(p, path) {
+  if (!isPlainObject(p)) return 0;
+  return path === "ticks" ? guardTickCount(p.ticks) : guardCount(guardAt(p, path));
+}
+
+/* The test itself. `cand` is the payload about to be sent or adopted; `ref` is the last copy this device
+   knows to have been good (a watermark, or the sync base before there is one), and `refAt` is when that
+   was. A null `ref` is normal on a device that has never completed a sync, and leaves only the absolute
+   checks — which is honest: with nothing to compare against there is no basis for a relative judgement,
+   and refusing on that basis would just stop a new device ever syncing. */
+function payloadInspect(cand, ref, refAt) {
+  const hard = [], soft = [];
+  const bytes = guardBytes(cand);
+  if (!isPlainObject(cand)) {
+    hard.push("it isn't a JSON object at all");
+    return { verdict: "reject", ok: false, hard, soft, reasons: hard, bytes: bytes, refBytes: 0 };
+  }
+  if (typeof cand.stateVersion !== "number" || !isFinite(cand.stateVersion) || cand.stateVersion < 1)
+    hard.push("it carries no usable stateVersion, so it isn't this app's saved data");
+
+  /* Signal 1. */
+  const known = guardKnownKeys();
+  const novel = Object.keys(cand).filter(k => !known.has(k));
+  const envelope = novel.filter(k => GH_ENVELOPE_KEYS.indexOf(k) !== -1);
+  if (envelope.length)
+    hard.push(`it carries GitHub API envelope keys (${envelope.slice(0, 6).join(", ")}) — that is a description of the file, not the file`);
+  else if (novel.length && !(cand.stateVersion > STATE_VERSION))
+    soft.push(`${novel.length} top-level key${novel.length === 1 ? "" : "s"} this app has never written (${novel.slice(0, 6).join(", ")})`);
+
+  /* Signal 3. Checked before the size work because it is the cheapest and the most decisive. */
+  const ua = cand.updatedAt;
+  if (typeof ua !== "number" || !isFinite(ua) || ua < 0) hard.push("its updatedAt isn't a timestamp");
+  else if (ua === 0 && isPlainObject(ref) && (ref.updatedAt || 0) > 0)
+    hard.push("its updatedAt is 0 — 1 Jan 1970 — where the known-good copy has a real one; a zeroed clock loses every later comparison, which is how one bad sync became five");
+  else if (ua > Date.now() + GUARD_FUTURE_MS) soft.push("its updatedAt is more than a week in the future");
+
+  /* Signal 4a, the absolute half. */
+  if (bytes < 0) hard.push("it can't be serialised back to JSON");
+  else if (bytes > GUARD_BYTES_MAX) hard.push(`it is ${guardKb(bytes)}, past the ${guardKb(GUARD_BYTES_MAX)} ceiling this app's data has no way to reach`);
+
+  let refBytes = 0;
+  if (isPlainObject(ref)) {
+    refBytes = guardBytes(ref);
+    /* Signal 2. */
+    for (const path of GUARD_BRANCHES) {
+      const a = guardBranchCount(ref, path), b = guardBranchCount(cand, path);
+      if (a > 0 && b === 0) soft.push(`${path} went from ${a} to nothing`);
+    }
+    /* Signal 4b, the rate half — per day, not per push, for the reason in the section comment. */
+    if (bytes >= 0 && refBytes > 0) {
+      const days = Math.max(0, (Date.now() - (refAt || 0)) / 86400000);
+      const allow = GUARD_STEP_BYTES + GUARD_DAY_BYTES * days;
+      if (bytes - refBytes > allow)
+        soft.push(`it grew ${guardKb(bytes - refBytes)} since the known-good copy of ${refAt ? new Date(refAt).toLocaleString() : "an unrecorded time"}, against an allowance of ${guardKb(allow)}`);
+      if (bytes < refBytes * GUARD_SHRINK)
+        soft.push(`it is ${Math.round(100 - 100 * bytes / refBytes)}% smaller than the known-good copy (${guardKb(bytes)} against ${guardKb(refBytes)})`);
+    }
+  }
+  const verdict = hard.length ? "reject" : soft.length >= 2 ? "reject" : soft.length ? "suspect" : "ok";
+  return { verdict, ok: verdict !== "reject", hard, soft, reasons: hard.concat(soft), bytes, refBytes };
+}
+
+/* Outbound reference: the newest known-good copy, or the sync base before one exists. The base is the
+   right fallback and the in-memory state is not — the base is a copy we know GitHub held, which is the
+   same kind of fact a watermark is, just without the sanity checks behind it. */
+function guardCheckOutbound(payload) {
+  const w = watermarkNewest();
+  if (w) return payloadInspect(payload, w.state, w.at);
+  const b = baseRead();
+  return payloadInspect(payload, b, b ? (syncCfg.lastSyncedAt || 0) : 0);
+}
+/* Inbound reference: the same, and deliberately NOT the in-memory state. Measuring an incoming blob
+   against whatever this device happens to be holding would manufacture a refusal out of "this device is
+   simply further along", which is the ordinary state of two devices. Measuring it against a copy we
+   know GitHub held asks the right question: has the REMOTE changed implausibly. */
+function guardCheckInbound(remote) {
+  const w = watermarkNewest();
+  if (w) return payloadInspect(remote, w.state, w.at);
+  const b = baseRead();
+  return payloadInspect(remote, b, b ? (syncCfg.lastSyncedAt || 0) : 0);
+}
+
+function guardBlock(dir, v) {
+  syncGuard = { at: Date.now(), dir: dir, reasons: v.reasons.slice(0, 8), hard: v.hard.length, bytes: v.bytes, refBytes: v.refBytes };
+  guardWrite(syncGuard);
+  renderSyncStatus();
+  const modal = document.getElementById("syncModal");
+  if (modal && modal.classList.contains("open")) { recoveryRefresh(); recoverySay(guardSummary(), "bad"); }
+}
+function guardClear() {
+  if (!syncGuard) return;
+  syncGuard = null;
+  guardWrite(null);
+  renderSyncStatus();
+}
+/* One block of text used verbatim in three places — the pill's tooltip, the modal's notice, and the
+   status line — because a refusal that is described differently in each is a refusal nobody trusts. */
+function guardSummary() {
+  if (!syncGuard) return "";
+  const rs = (syncGuard.reasons || []).map(r => "• " + r).join("\n");
+  return (syncGuard.dir === "push"
+      ? "Cloud Sync refused to send this device's copy to GitHub"
+      : "Cloud Sync refused to merge GitHub's copy into this device") +
+    ` at ${new Date(syncGuard.at).toLocaleString()}, because it doesn't look like this app's data:\n${rs}\n` +
+    "Nothing was changed anywhere, and syncing is paused until you say which way to go. " +
+    (syncGuard.dir === "push"
+      ? "If you meant this change, press “Push it anyway”. If you didn't, restore a known-good copy below — it is pushed up, and sync resumes."
+      : "If GitHub's copy really is the one you want, use “↓ Force pull — cloud wins”. If it isn't, restore a known-good copy below and it is pushed up over it.");
+}
+
+/* ring is newest-first; ring[0] is the live slot and the rest are committed. The live copy is committed
+   only once the newest committed one is WM_GAP old — that is what stops a busy hour filling every slot
+   with copies of the same ten minutes — and the committed list is then thinned back to depth by dropping
+   the interior copy whose two neighbours are closest together in log-age, i.e. the one whose loss costs
+   the least coverage. Neither the live slot nor the oldest copy is ever a thinning candidate. */
+function watermarkPromote(ring, entry) {
+  const live = ring.length ? ring[0] : null;
+  let committed = ring.slice(1);
+  if (live && (!committed.length || live.at - committed[0].at >= WM_GAP)) committed = [live].concat(committed);
+  const out = [entry].concat(committed);
+  while (out.length > WM_DEPTH) {
+    const now = out[0].at;
+    let worst = 1, worstSpan = Infinity;
+    for (let i = 1; i < out.length - 1; i++) {
+      const span = Math.log(now - out[i + 1].at + WM_GAP) - Math.log(now - out[i - 1].at + WM_GAP);
+      if (span < worstSpan) { worstSpan = span; worst = i; }
+    }
+    out.splice(worst, 1);
+  }
+  return out;
+}
+/* Called only from the two places a sync ends with this device and GitHub provably holding the same
+   payload. opts.accept is the user having said so out loud — a force push, an import, an Undo, a
+   restore, a "push it anyway" — where the soft signals are not evidence of anything except that the
+   user did something big on purpose. The hard checks still apply even then: nothing structurally broken
+   becomes a watermark, whoever asked. The older slots survive either way, because the bands above keep
+   them. */
+function maybeWatermark(payload, why, opts) {
+  const accept = !!(opts && opts.accept);
+  if (opts && opts.discarded && !accept) return null;
+  const prev = watermarkNewest();
+  if (prev && !accept && Date.now() - prev.at < WM_REFRESH_MS) return null;
+  const v = payloadInspect(payload, prev ? prev.state : null, prev ? prev.at : 0);
+  if (v.hard.length) return null;
+  if (v.soft.length && !accept) return null;
+  const entry = { at: Date.now(), label: why || "sync", bytes: v.bytes, state: payload };
+  watermarkWriteAll(watermarkPromote(watermarkReadAll(), entry));
+  return entry;
 }
 
 /* ===================== three-way merge ===================== */
@@ -7032,11 +7398,24 @@ async function syncPull(showStatus) {
        syncMergeRemote() decide whether there is anything to do: when remote still matches this
        device's base it returns without touching state, so the common case is as cheap as the old
        comparison was. */
+    /* Inbound gate. The corruption arrived FROM the remote, and a device that refuses to push poison
+       while happily adopting it is half a net. Runs before syncMergeRemote() touches anything, so a
+       refusal costs nothing but the sync. */
+    const gv = guardCheckInbound(r.data);
+    if (!gv.ok) {
+      syncCfgWrite(syncCfg);
+      if (showStatus) syncSetStatus("idle"); else syncBusy = false;
+      guardBlock("pull", gv);
+      return null;
+    }
     const res = syncMergeRemote(r.data, "pull");
     /* "Synced" means local and GitHub now hold the same data. A merge that produced something neither
        side had yet is NOT that until the push below lands, so don't claim it. */
     if (!res.pushNeeded) syncCfg.lastSyncedAt = Date.now();
     syncCfgWrite(syncCfg);
+    /* A pull that needs no push back ended with both sides holding the same payload — one of exactly
+       two moments where "known-good" is a fact rather than a hope. (The other is a landed push.) */
+    if (!res.pushNeeded) maybeWatermark(stateWithoutDeviceLocal(state), "pull", { discarded: res.collisions.length > 0 });
     if (res.pushNeeded) scheduleSyncPush();
     if (showStatus) syncSetStatus("idle");
     return { exists: true, data: r.data, merged: res };
@@ -7045,15 +7424,23 @@ async function syncPull(showStatus) {
     return null;
   }
 }
-async function syncPush(stampAfterInitialPull) {
+/* opts.force: the user has said out loud that this copy is the one they want — force push, import,
+   Undo, a watermark restore, or the "push it anyway" button on a refusal. It skips the gate AND tells
+   maybeWatermark() to accept the result, because otherwise a legitimate big change would leave the
+   reference stuck behind it and every later push would need the same override again. */
+async function syncPush(stampAfterInitialPull, opts) {
   if (!syncConfigured() || !syncOriginOk()) return;
   if (initialPullPromise && !initialPullSettled) { try { await initialPullPromise; } catch (e) {} }
   if (stampAfterInitialPull) {
     state.updatedAt = Date.now();
     store.write(state, { skipStamp: true, skipSync: true });
   }
-  syncSetStatus("syncing");
   const payload = stateWithoutDeviceLocal(state);
+  if (!(opts && opts.force)) {
+    const gv = guardCheckOutbound(payload);
+    if (!gv.ok) { guardBlock("push", gv); return; }
+  }
+  syncSetStatus("syncing");
   try {
     const newSha = await ghPutFile(syncCfg, payload, syncCfg.lastSha);
     syncCfg.lastSha = newSha;
@@ -7064,6 +7451,11 @@ async function syncPush(stampAfterInitialPull) {
        would claim this device's edits were already shared, and the next merge would yield every one of
        them to the other device as "unchanged here". */
     baseWrite(payload);
+    maybeWatermark(payload, "push", { accept: !!(opts && opts.force) });
+    /* Clears a refused PUSH, because this one landed. Deliberately not a refused PULL: a push of our own
+       copy says nothing whatever about the remote copy we declined, and clearing it here would put the
+       pill back to green while the poison sat in the repo waiting for the next foreground. */
+    if (syncGuard && syncGuard.dir === "push") guardClear();
     syncSetStatus("idle");
   } catch (e) {
     const msg = String((e && e.message) || e);
@@ -7086,14 +7478,27 @@ async function syncPush(stampAfterInitialPull) {
              device's edits. Either way one side's work was gone and the pill went green. Merge
              unconditionally — the clock is consulted inside threeWay(), per key, and only where both
              devices really did change the same one. */
-          if (r.exists) syncMergeRemote(r.data, "push");
+          let retryDiscarded = false;
+          if (r.exists) {
+            const gvin = guardCheckInbound(r.data);
+            if (!gvin.ok) { guardBlock("pull", gvin); syncBusy = false; renderSyncStatus(); return; }
+            retryDiscarded = syncMergeRemote(r.data, "push").collisions.length > 0;
+          }
           /* Never below the stamp syncMergeRemote() already gave the merged copy: that one is deliberately
              above the remote's, and a Date.now() from a device whose clock runs slow would undo it. */
           const payload2 = stateWithoutDeviceLocal(state, { updatedAt: Math.max(Date.now(), state.updatedAt || 0) });
+          /* Same gate on the recovery push: this one carries a merge of whatever was just pulled, so it
+             is if anything the more dangerous of the two. */
+          if (!(opts && opts.force)) {
+            const gv2 = guardCheckOutbound(payload2);
+            if (!gv2.ok) { guardBlock("push", gv2); return; }
+          }
           state.updatedAt = payload2.updatedAt;
           const newSha2 = await ghPutFile(syncCfg, payload2, syncCfg.lastSha);
           syncCfg.lastSha = newSha2; syncCfg.lastSyncedAt = Date.now(); syncCfgWrite(syncCfg);
           baseWrite(payload2);
+          maybeWatermark(payload2, "push", { accept: !!(opts && opts.force), discarded: retryDiscarded });
+          if (syncGuard && syncGuard.dir === "push") guardClear();
           syncSetStatus("idle");
           return;
         } catch (e2) {
@@ -7194,6 +7599,19 @@ async function syncSaveAndTest() {
        "pulled nothing, pushed a near-empty state over the desktop's" case the recovery group below was
        built for. Merge here too rather than picking a winner by clock: whichever side is emptier, its
        keys are simply absent and the other side's are kept. */
+    /* Connecting is the one moment with neither a watermark nor a base to judge against, so only the
+       absolute checks can fire here — which is the right amount of suspicion: an envelope or a blob with
+       no stateVersion is still refused, and "that repo holds less than this device" is not yet a fact
+       about anything. */
+    if (r.exists) {
+      const gv = guardCheckInbound(r.data);
+      if (!gv.ok) {
+        guardBlock("pull", gv);
+        ms.textContent = "Connected, but that repo's state.json was refused — " + gv.reasons[0] + ". Nothing on this device was changed; see Backup & recovery below.";
+        ms.style.color = "var(--serious)";
+        return;
+      }
+    }
     const connectMerge = r.exists ? syncMergeRemote(r.data, "connect") : { applied: false, pushNeeded: true, collisions: [] };
     if (r.exists && connectMerge.applied && !connectMerge.pushNeeded && !schemaMigrationPendingPush) {
       ms.textContent = "Connected — pulled newer data from GitHub and applied it here.";
@@ -7327,7 +7745,12 @@ function adoptAsLocalTruth(blob) {
   /* Whatever collision was outstanding was about the copy that just went. Keeping the amber pill up
      would point Undo at a merge that no longer exists. */
   if (syncConflict) { syncConflict = null; conflictWrite(null); }
-  if (syncConfigured() && syncOriginOk()) syncPush(); else renderSyncStatus();
+  /* Every caller of this — import, Undo, a watermark restore — is a wholesale replace the user has just
+     confirmed by name. The gate exists to catch changes nobody asked for, so it must not stand between
+     someone and the copy they picked; force also lets the result become the new reference, which is what
+     stops the very next automatic push being refused for the same reason. */
+  guardClear();
+  if (syncConfigured() && syncOriginOk()) syncPush(false, { force: true }); else renderSyncStatus();
 }
 
 function recoverySay(msg, tone) {
@@ -7388,6 +7811,96 @@ function recoveryRefresh() {
   cw.textContent = syncConflict ? conflictSummary() : "";
   cw.style.display = syncConflict ? "" : "none";
   crow.style.display = syncConflict ? "" : "none";
+  /* The refusal notice. Same shape as the conflict notice above on purpose — one idiom for "something
+     happened to your data, here is the button" — but it says what was NOT done rather than what was. */
+  const gw = document.getElementById("guardWhy");
+  const grow = document.getElementById("guardRow");
+  gw.textContent = syncGuard ? guardSummary() : "";
+  gw.style.display = syncGuard ? "" : "none";
+  grow.style.display = syncGuard ? "" : "none";
+  /* "Push it anyway" is meaningless for a refused PULL — there is nothing of ours that was held back —
+     and offering it would read as a way to overwrite the other device by accident. */
+  document.getElementById("guardPushBtn").style.display =
+    (syncGuard && syncGuard.dir === "push" && syncConfigured() && syncOriginOk()) ? "" : "none";
+  /* The known-good copies. Options are built with createElement, not innerHTML: the label carries a
+     timestamp and a size and nothing user-supplied, but this whole section exists because data from
+     elsewhere turned out to be trusted once already. */
+  const wms = watermarkReadAll();
+  const sel = document.getElementById("watermarkPick");
+  const keep = sel.value;
+  while (sel.firstChild) sel.removeChild(sel.firstChild);
+  wms.forEach((w, i) => {
+    const o = document.createElement("option");
+    o.value = String(w.at);
+    o.textContent = `${new Date(w.at).toLocaleString()} — ${guardKb(typeof w.bytes === "number" ? w.bytes : guardBytes(w.state))}` +
+                    (i === 0 ? " (newest)" : "");
+    sel.appendChild(o);
+  });
+  if (wms.some(w => String(w.at) === keep)) sel.value = keep;
+  document.getElementById("watermarkRow").style.display = wms.length ? "" : "none";
+  document.getElementById("watermarkWhy").textContent = wms.length
+    ? `${wms.length} known-good cop${wms.length === 1 ? "y" : "ies"} kept on this device, spanning back to ` +
+      `${new Date(wms[wms.length - 1].at).toLocaleString()}. One is taken whenever a sync ends with this device and ` +
+      `GitHub holding the same data and that data passes every sanity check — never when a merge has had to ` +
+      `discard something. They live in this browser only, so an Export still matters.`
+    : "No known-good copy yet — one is taken after the next sync that ends with this device and GitHub holding the same, sane data.";
+}
+
+/* ---- the payload gate: acting on a refusal ---- */
+/* Dismiss lets the ordinary sync loop try again. It changes no data and makes no claim that the refusal
+   was wrong — if the payload is still implausible the very next push refuses again and says the same
+   thing, which is the correct behaviour for a button whose only job is to stop shouting for a moment. */
+function guardDismiss() {
+  guardClear();
+  recoveryRefresh();
+  recoverySay("Refusal cleared. Nothing was changed — the next sync will try again, and will refuse again if the copy still looks wrong.", "");
+}
+/* The override. Deliberately not a confirm panel: the refusal notice directly above it already lists
+   every reason in full, and stacking a second wall of text on top of the first is how people learn to
+   click past both. */
+async function guardPushAnyway() {
+  if (!syncGuard || syncGuard.dir !== "push") { recoveryRefresh(); return; }
+  if (!syncConfigured() || !syncOriginOk()) { recoverySay("Cloud Sync isn't connected, so there's nothing to push.", "bad"); return; }
+  guardClear();
+  recoveryRefresh();
+  recoverySay("Pushing this device's copy to GitHub anyway…", "");
+  await syncPush(false, { force: true });
+  recoveryRefresh();
+  recoverySay(syncLastError
+    ? "Push failed: " + syncLastError
+    : "Pushed. This copy is now the one later changes are measured against, and the older known-good copies below are untouched.",
+    syncLastError ? "bad" : "good");
+}
+
+/* ---- restoring a known-good copy ---- */
+/* Routed through the same confirm panel, the same rollbackStash() and the same adoptAsLocalTruth() as
+   Import and Undo, which is what keeps the two mechanisms from fighting: a restore STASHES into the
+   rollback ring rather than reading from it, so Undo still means exactly "put back what the last
+   replacement replaced" — including this one. Nothing in the watermark path ever reads or evicts a
+   rollback slot, and nothing in the rollback path ever writes a watermark. */
+function watermarkRestore() {
+  const sel = document.getElementById("watermarkPick");
+  const at = Number(sel && sel.value);
+  const w = watermarkReadAll().find(x => x.at === at);
+  if (!w) { recoveryRefresh(); recoverySay("That copy is no longer on this device — pick another.", "bad"); return; }
+  const when = new Date(w.at).toLocaleString();
+  recoveryConfirmOpen(
+    `Restore replaces everything on this device with the known-good copy taken at ${when} ` +
+    `(${guardKb(typeof w.bytes === "number" ? w.bytes : guardBytes(w.state))}, after a clean ${w.label}).\n\n` +
+    `This device was last changed ${state.updatedAt ? new Date(state.updatedAt).toLocaleString() : "at an unrecorded time"}.\n\n` +
+    `Every tick, note, planner entry and log made since ${when} is gone. Your roster snapshot and current ` +
+    `tab are left alone. Whatever is here now is stashed first, so Undo brings it straight back. The ` +
+    `restored copy is pushed to GitHub as the newest version, so your other device takes it too.`,
+    "Yes — put the clean copy back",
+    () => {
+      const stashed = rollbackStash("restore of the clean copy from " + when);
+      adoptAsLocalTruth(cloneData(w.state));
+      recoveryRefresh();
+      recoverySay(`Restored the known-good copy from ${when}` +
+                  (syncConfigured() && syncOriginOk() ? " and pushed it to GitHub." : ".") + rollbackWarning(stashed),
+                  stashed ? "good" : "bad");
+    });
+  recoverySay(`About to restore the copy from ${when}. Confirm below.`, "");
 }
 
 /* ---- export ---- */
@@ -7496,8 +8009,14 @@ async function forcePull() {
   catch (e) { recoverySay("Couldn't read GitHub: " + String((e && e.message) || e) + " — nothing was changed.", "bad"); return; }
   if (!r.exists) { recoverySay("There's no state file in that repo yet, so there's nothing to pull — nothing was changed.", "bad"); return; }
   const remoteWhen = r.data && r.data.updatedAt ? new Date(r.data.updatedAt).toLocaleString() : "an unrecorded time";
+  /* Force pull is the deliberate "GitHub wins" button and stays available even when the gate refused
+     that same copy — otherwise a device could end up with no way to accept a remote it had rejected.
+     But it says so first, in the confirmation, with the reasons: this is the one button that can adopt
+     something the app has already called implausible. */
+  const gv = payloadInspect(r.data, (watermarkNewest() || {}).state || baseRead(), (watermarkNewest() || {}).at || 0);
+  const gvWarn = gv.ok ? "" : `⚠ This app does not think GitHub's copy is sound:\n${gv.reasons.map(x => "• " + x).join("\n")}\nPulling it anyway will put that copy on this device.\n\n`;
   recoveryConfirmOpen(
-    `Force pull replaces everything on this device with GitHub's copy.\n\n` +
+    `Force pull replaces everything on this device with GitHub's copy.\n\n` + gvWarn +
     `GitHub's copy was last changed ${remoteWhen}.\n` +
     `This device was last changed ${state.updatedAt ? new Date(state.updatedAt).toLocaleString() : "at an unrecorded time"}.\n\n` +
     `GitHub wins, even though it may be the older of the two — that is the point of this button. Every ` +
@@ -7514,6 +8033,9 @@ async function forcePull() {
          it and the next pull would read the whole force-pulled blob as "changed locally". */
       baseWrite(stateWithoutDeviceLocal(r.data));
       if (syncConflict) { syncConflict = null; conflictWrite(null); }
+      /* The user has answered the refusal by choosing the remote, so the block is resolved. No watermark
+         here: this device now matches a copy the gate may well have just called implausible. */
+      guardClear();
       syncCfg.lastSyncedAt = Date.now();
       syncCfgWrite(syncCfg);
       syncSetStatus("idle");
@@ -7544,7 +8066,9 @@ async function forcePush() {
          effectively never happened. */
       state.updatedAt = Date.now();
       store.write(state, { skipStamp: true, skipSync: true });
-      await syncPush();
+      guardClear();
+      await syncPush(false, { force: true });
+      recoveryRefresh();
       recoverySay(syncLastError ? "Push failed: " + syncLastError : "Done — GitHub now matches this device.", syncLastError ? "bad" : "good");
     });
 }

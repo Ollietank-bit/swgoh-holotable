@@ -7745,11 +7745,50 @@ function tipJumpAttr(target) {
   return `jumpToView('${jsAttr(target.tab)}'${v.length ? `,'${jsAttr(v[0])}','${jsAttr(v[1])}'` : ""})`;
 }
 
+/* ===================== pane gating =====================
+   render() draws nineteen pane containers and CSS then picks the one the active tab shows. Drawing all
+   nineteen every time meant a tab switch — or a checkbox tick, which re-renders — paid for every tab,
+   which is what is felt on a phone. Only the containers the VISIBLE tab owns are drawn now; the rest
+   are left alone and marked dirty, and render() runs again on every switchTab, so a pane is drawn the
+   moment its tab becomes visible — synchronously, inside the same task that flips .tabpane.active, so
+   the browser cannot paint between the two and the pane is never shown empty.
+
+   The mapping is read off the MARKUP, not off SUBTABS, because the two disagree in both directions:
+   "modes" (Weekly goals) is a container inside the COACH pane, not the Game modes tab, and the Game
+   modes tab owns four containers. The `mods` tab owns no render() container at all — its content is
+   static markup plus initModsTabAsync(), which switchTab still fires and which this does not touch. */
+const PANE_TABS = {
+  ovGrid: "overview", glTables: "leia", tips: "coach", modes: "coach", farmPlan: "farm",
+  modesCatNav: "modes", raidBody: "modes", abBody: "modes", eraBody: "modes",
+  gapsGrid: "gaps", cqBody: "conquest", tbGrid: "tb", twGrid: "tw", arenaGrid: "arena",
+  gacGrid: "gac", intelGrid: "intel", eventsGrid: "events", modoptGrid: "modopt", tierlistGrid: "tierlist"
+};
+/* Invalidation is deliberately blunt: every render() call re-dirties every pane. `state` is replaced
+   wholesale by a Cloud Sync merge, by an import and by Undo, it is re-read per account on a switch, and
+   render() has 25 call sites — so a scheme that worked out which panes a given change touched would be
+   a list to keep in step with the rest of the file forever, and its failure mode is a pane quietly
+   showing yesterday's data. The dirty set is what makes the gate SAFE, not what makes it fast: the only
+   thing finer invalidation could save is redrawing an unchanged tab you navigate back to. */
+const paneDirty = new Set(Object.keys(PANE_TABS));
+function markAllPanesDirty() { Object.keys(PANE_TABS).forEach(id => paneDirty.add(id)); }
+
+/* The "N/39 ready" badge on the Roster Gaps nav button is chrome — it is drawn whatever tab you are on,
+   so gating cannot remove it — and it is the single most expensive thing left in the chrome: 39 squads
+   × up to 5 members, and a member with no verified base_id falls back to findUnitByName(), which is a
+   linear scan of the whole roster. It depends on nothing but the account's roster object, which is
+   state.pulls[account].reqs (or BASELINE's) and is only ever REPLACED, never mutated in place — so
+   caching on that object's identity is exact, not a heuristic. A pull, an import, a sync merge and an
+   account switch each hand it a different object and recompute. */
 /* Error containment for render(). Every pane is drawn inside one of these, so a throw in one pane's
    data (a malformed saved row, a renamed field) leaves that pane showing a short error notice and the
    rest of the page fully rendered, instead of aborting render() halfway and leaving the whole app in a
-   half-drawn state. The real error still goes to the console. */
+   half-drawn state. The real error still goes to the console.
+   This is also the gate: a container whose owning tab is not the visible one is skipped, and stays dirty. */
 function safeRender(label, gridId, fn) {
+  const owner = PANE_TABS[gridId];
+  if (owner && owner !== curTab) return;          // not visible — left alone, still dirty
+  if (owner && !paneDirty.has(gridId)) return;    // visible and already drawn for this data
+  if (owner) paneDirty.delete(gridId);
   try { fn(); }
   catch (e) {
     console.error(`[render] "${label}" pane failed:`, e);
@@ -7811,6 +7850,10 @@ function syncMobileNavOverlayState(mobileNavOpen) {
   mobileNavWasOpen = mobileNavOpen;
 }
 function render() {
+  /* Everything below the chrome is gated on the visible tab (see PANE_TABS). render() is only ever
+     called because something changed — a tick, a pull, a sync merge, an account switch, a tab switch —
+     so every pane the gate skips is assumed out of date and redrawn when its tab is next shown. */
+  markAllPanesDirty();
   const acct = ACCOUNTS.find(a => a.key === current);
   const g = GUIDANCE[current];
   const v = accountView(current);
@@ -7900,6 +7943,14 @@ function render() {
         `<button class="pill" onclick="showCard('${h.pane}','${h.id}')">⊕ ${h.id}</button>`).join("")
     : "";
 
+  /* #datasrc lives in the <header>, not in the Overview pane, so it has to be written with the chrome:
+     written inside the (now gated) Overview pane it would read whatever account/tab you last had
+     Overview open on. Same markup, moved out — nothing about what it says has changed. */
+  /* swgoh.gg only re-scrapes a profile when someone visits it — a "Pull latest data" here just reads
+     whatever swgoh.gg last scraped, which can be stale for days. This link opens the currently
+     selected account's own profile so visiting it forces that resync before you pull. */
+  document.getElementById("datasrc").innerHTML = `<span class="datasrc-label">Data: ${escapeHtml(s.fetchedLabel)}</span> <a class="profile-link" href="${escapeHtml(acctProfileUrl(acct))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(acct.label)}'s swgoh.gg profile to refresh it">Refresh on swgoh.gg ↗</a>`;
+
   /* ---- overview ---- */
   safeRender("Overview", "ovGrid", () => {
     document.getElementById("tiles").innerHTML = [
@@ -7911,11 +7962,6 @@ function render() {
       { lbl: "GAC", val: s.gac, note: s.gacNote },
       { lbl: "Abilities", val: s.extraNote, note: "zetas &amp; omicrons unlocked" }
     ].map(t => `<div class="tile"><div class="lbl">${t.lbl}</div><div class="val">${t.val}</div><div class="note">${t.note}</div></div>`).join("");
-
-    /* swgoh.gg only re-scrapes a profile when someone visits it — a "Pull latest data" here just reads
-       whatever swgoh.gg last scraped, which can be stale for days. This link opens the currently
-       selected account's own profile so visiting it forces that resync before you pull. */
-    document.getElementById("datasrc").innerHTML = `<span class="datasrc-label">Data: ${escapeHtml(s.fetchedLabel)}</span> <a class="profile-link" href="${escapeHtml(acctProfileUrl(acct))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(acct.label)}'s swgoh.gg profile to refresh it">Refresh on swgoh.gg ↗</a>`;
 
     const nextUp = [];
     const plan = farmPlanFor(current, v);
@@ -8104,7 +8150,7 @@ function render() {
   PLAN_FLOW.forEach(p => { const el = document.getElementById("flow-" + p.key); if (el) el.innerHTML = ""; });
 
   document.querySelectorAll("input[data-k]").forEach(el => { el.checked = !!state.ticks[el.dataset.k]; });
-  updateProg();
+  updateProg(v);
   bindDnD();
 }
 function tick(el) {
@@ -8115,17 +8161,41 @@ function tick(el) {
   if (el.dataset.k.includes("-p") || el.dataset.k.startsWith(current + "-t")) render();
   else updateProg();
 }
-function updateProg() {
-  const boxes = [...document.querySelectorAll("#farmPlan input[type=checkbox]")];
-  const done = boxes.filter(b => b.checked).length;
+/* The farm-plan tally, computed from the plan data and state.ticks rather than by counting the Farm
+   pane's checkboxes. It has to be: the same number is printed twice, on #farmProg (Farm tab) and
+   #ovFarmProg (OVERVIEW tab), and with the Farm pane gated away while you sit on Overview a DOM count
+   would read 0 / 0 there. Mirrors exactly what the Farm pane renders:
+     hand-written plan — one box per GUIDANCE phase item, checked by isFarmDone() (the roster spec where
+       FARM_CHECKS has one, otherwise the manual tick);
+     generated plan — one box per phase item, checked when the item is met (auto) or hand-ticked, which
+       generatedPlan() has already folded into `open`. */
+function farmProgCounts(acct, v) {
+  const plan = farmPlanFor(acct, v);
+  let done = 0, total = 0;
+  if (plan.hand) {
+    (GUIDANCE[acct].phases || []).forEach((p, pi) => p.items.forEach((it, ii) => {
+      total++; if (isFarmDone(acct, v.src.reqs, pi, ii)) done++;
+    }));
+  } else {
+    plan.phases.forEach(p => (p.items || []).forEach(it => { total++; if (!it.open) done++; }));
+  }
+  return { done, total };
+}
+/* `v` is passed in by render(), which has already built it; the direct callers (tick()) let it default. */
+function updateProg(v) {
+  const view = v || accountView(current);
+  const { done, total } = farmProgCounts(current, view);
+  const farmText = `Farm plan: ${done} / ${total} checked`;
   const el = document.getElementById("farmProg");
-  if (el) el.textContent = `Farm plan: ${done} / ${boxes.length} checked`;
+  if (el) el.textContent = farmText;
   const el2 = document.getElementById("ovFarmProg");
-  if (el2) el2.textContent = `Farm plan: ${done} / ${boxes.length} checked`;
-  const dBoxes = [...document.querySelectorAll('input[data-k^="d-"]')];
-  const dDone = dBoxes.filter(b => b.checked).length;
+  if (el2) el2.textContent = farmText;
+  /* The daily routine's boxes only ever exist on the Overview pane, so a DOM count was never wrong
+     here — but it is the same tally from the same place, and this way it costs nothing when the pane
+     is gated away. */
+  const dDone = DAILY.filter((it, ii) => !!state.ticks[`d-${current}-${ii}`]).length;
   const dEl = document.getElementById("dailyProg");
-  if (dEl) dEl.textContent = dDone === dBoxes.length ? `All ${dBoxes.length} done today — good hunting ✓` : `Today: ${dDone} / ${dBoxes.length} done`;
+  if (dEl) dEl.textContent = dDone === DAILY.length ? `All ${DAILY.length} done today — good hunting ✓` : `Today: ${dDone} / ${DAILY.length} done`;
 }
 function closeMobileNav() { if (window.innerWidth <= 900) state.layout.sidebarCollapsed = true; }
 function switchAcct(k) {

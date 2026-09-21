@@ -548,6 +548,14 @@
   .nextup li:last-child { border-bottom: none; }
   .nextup .n { color: var(--accent); font-weight: 650; font-variant-numeric: tabular-nums; flex: none; font-family: "Orbitron", system-ui, sans-serif; font-size: 12px; }
   .nextup .ph { color: var(--ink-3); font-size: 11.5px; display: block; }
+  /* "What's moved" list (Overview) and the per-row move marker on the GL Roadmap — same rhythm as .nextup */
+  .moved { list-style: none; }
+  .moved li { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--grid); font-size: 13px; }
+  .moved li:last-child { border-bottom: none; }
+  .moved .step { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .moved .step.down, .req .mv.down { color: var(--serious); }
+  .moved .when { margin-left: auto; color: var(--ink-3); font-size: 11.5px; }
+  .req .mv { display: block; font-style: normal; font-size: 11px; color: var(--good); line-height: 1.3; }
 
   .banner { border: 1px solid var(--swyellow); border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px;
             color: var(--ink-2); background: rgba(255,232,31,0.05); }
@@ -3362,7 +3370,7 @@ function defaultState() {
       squad: { ollie: [], tiny: [] }            // per-account selected characters (base_ids, first = primary)
     },
     layout: {
-      order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags", "datahealth"] }, hidden: {},
+      order: { overview: ["nextup", "daily", "flags", "readiness", "momentum", "eventflags", "datahealth"] }, hidden: {},
       size: {},                                 // { pane: { cardId: { w: gridSpan(3-12), h: minHeightPx|0 } } }
       density: "cozy",
       /* First-ever load only (mergeDefaults only fills a key that's truly absent, so this never
@@ -3407,6 +3415,10 @@ function defaultState() {
        existing saves; executorShardsSet re-stamps all three on every edit. */
     executor: { ollie: { shards: 55, star: 5, at: 1789603200000 },
                 tiny:  { shards: 55, star: 4, at: 1789603200000 } },
+    /* Roster history: per account, `obs` = minutes-since-epoch of every pull that saw the roster, `ev` =
+       [minute, unitId, before, after] for every unit whose stars/gear/relic changed between two pulls.
+       SYNCED on purpose — see the "roster history" section for why this is a record, not a cache. */
+    history: { ollie: { obs: [], ev: [] }, tiny: { obs: [], ev: [] } },
     gac: {                                      // account-specific GAC worksheets
       ollie: { initialized: false, zones: [], offense: [] },
       tiny: { initialized: false, zones: [], offense: [] }
@@ -3540,6 +3552,15 @@ function applyBootMaintenance(target) {
     target.events.items = EVENTS_SEED.map((e, i) => ({ id: "seed" + i, ...e })).concat(mine);
     target.eventsSeedVersion = EVENTS_SEED_VERSION;
     target.eventsSeeded = true;
+    changed = true;
+  }
+  /* The "What's moved" card is new, and a saved Overview order predates it: orderCards() would append it
+     below the fold, which for the phone means nobody sees the one card that answers "did this month
+     work". Slot it once, next to the readiness card it annotates. A user who drags it elsewhere or hides
+     it is left alone — it is only inserted while the order has never heard of it. */
+  const ovOrder = target.layout && target.layout.order && target.layout.order.overview;
+  if (Array.isArray(ovOrder) && !ovOrder.includes("momentum") && ovOrder.includes("readiness")) {
+    ovOrder.splice(ovOrder.indexOf("readiness") + 1, 0, "momentum");
     changed = true;
   }
   const today = new Date().toDateString();
@@ -3952,7 +3973,11 @@ async function pullAll() {
     for (const a of ACCOUNTS) {
       st.textContent = `Pulling ${a.label} — `;
       const j = await fetchPlayer(a.code, m => { st.textContent = `Pulling ${a.label} — ${m}`; });
-      state.pulls[a.key] = parsePlayer(j, state.pulls[a.key]);
+      const prevPull = state.pulls[a.key];
+      state.pulls[a.key] = parsePlayer(j, prevPull);
+      /* The one moment the old and new rosters both exist: diff them into state.history before the old
+         one is gone. history is synced state, so the ordinary stamping write below carries it. */
+      historyRecord(a.key, prevPull, state.pulls[a.key]);
       /* Persist per account, not once at the end: if a later account's fetch fails, the account(s) that
          already succeeded keep their freshly-pulled data instead of being lost with the whole batch.
          state.lastPull stays untouched until every account is in, so a partial pull still counts as
@@ -6698,6 +6723,9 @@ const MERGE_RULES = [
   [/^legacyMigration$/, "legacy"],
   [/^events\.items$/, "byId"],
   [/^arena\.log\.[^.]+$/, "rows"],
+  /* roster history: append-only facts whose identity is their own contents; two devices that saw the same
+     promotion on different days both keep their row and historyNormalise() reconciles them at read time */
+  [/^history\.[^.]+\.(obs|ev)$/, "rows"],
   [/^cq\.byAccount\.[^.]+\.myPlan\.[^.]+$/, "rows"],
   [/^gac\.[^.]+\.(zones|offense)$/, "rows"],
   [/^tw\.zones$/, "rows"]
@@ -7516,7 +7544,7 @@ function toggleShow(key) { state.layout.show[key] = !state.layout.show[key]; sto
 function toggleSidebar() { state.layout.sidebarCollapsed = !state.layout.sidebarCollapsed; store.write(state); render(); }
 function setDensity(d) { state.layout.density = d; store.write(state); render(); }
 function resetLayout() {
-  state.layout = { order: { overview: ["nextup", "daily", "flags", "readiness", "eventflags", "datahealth"] }, hidden: {}, size: {}, density: "cozy", sidebarCollapsed: true,
+  state.layout = { order: { overview: ["nextup", "daily", "flags", "readiness", "momentum", "eventflags", "datahealth"] }, hidden: {}, size: {}, density: "cozy", sidebarCollapsed: true,
                    show: { tiles: true, epigraph: true, banner: true } };
   store.write(state); render();
 }
@@ -7969,14 +7997,380 @@ const tickboxAuto = (k, text, note, checked) =>
 /* `title` labels which slice of the requirement list this table holds. The 15 requirements are split
    across two side-by-side cards; without a heading each half reads as a separate dataset rather than a
    continuation of the same one. */
-function reqRowsHtml(rows, title) {
+/* ===================== roster history — what moved, and at what pace =====================
+   pullAll() overwrites state.pulls on every fetch, so until now the app could not answer the two
+   questions a tracker exists for: what changed since last time, and at this rate, when. This section
+   is the memory. It records a DELTA LOG, not snapshots: one row per unit whose stars/gear/relic differ
+   from the previous pull, plus one timestamp per pull that observed the roster. A snapshot per pull is
+   629 KB; the log costs what actually happens on the roster, which for a real account is a few units a
+   day — measured at ~50 KB for a year of daily pulls, both accounts (see historyRecord's caps).
+
+   Every unit is logged, not just the current Legend's requirements. The target switches — Tiny is one
+   requirement from Leia and will move on — and a log kept only for Leia would be worthless that day.
+   With the whole roster in the log, pace and changes for ANY Legend, including one not in GL_ROADMAP
+   yet, are derived at read time from the same rows.
+
+   SYNCED, in the ordinary blob under state.history, and this is a deliberate reversal of the pulls
+   decision. pulls are a cache: every device refetches them and a lost copy costs one pull. History is a
+   record: a lost copy costs the months it took to collect, and "what changed since last time" must read
+   the same on the phone and the desktop or it is not an answer. Merging is safe because rows are
+   append-only facts with a stable identity (their own contents): MERGE_RULES gives history.*.obs and
+   history.*.ev the "rows" union. Two devices observing the same promotion on different days do produce
+   two rows — historyNormalise() collapses them at read time, keeping the earliest sighting, so the merge
+   itself never has to understand the data.
+
+   Encoding. Timestamps are whole minutes since the epoch (8 digits, not 13); a unit's level is one
+   integer, s*10000 + g*100 + r, so 71306 reads as 7★ G13 R6 in a raw backup and 0 is "not unlocked".
+   An event row is [minute, unitId, before, after]; an observation row is just the minute.
+
+   Nothing here invents a cadence. The Executor card prints an exact date because its cadence is a rule
+   of the game; farming has no such rule, so this section refuses to print a date until the history can
+   carry one — see historyView() for the exact policy — and prints a month-level RANGE when it does. */
+const HISTORY_KEEP_DAYS = 400;       /* one year plus slack; older rows are pruned on the next pull */
+const HISTORY_MAX_EVENTS = 4000;     /* per account — ~10× a plausible year, a ceiling not a target */
+const HISTORY_MAX_OBS = 800;
+const HISTORY_OBS_GAP_MIN = 360;     /* re-pulls inside one sitting are one observation; obs DAYS are what the policy counts anyway */
+/* The honesty policy, in one place. A pace (steps per week) needs two weeks across three separate pull
+   days — one interval is a sample of one. A DATE needs six weeks across six pull days: four weeks of
+   recent pace plus at least two weeks before it, so there are two independent stretches to disagree
+   with each other. Their disagreement is the range that gets printed; without it there is nothing
+   honest to say about how wrong the date might be. */
+const PACE_MIN_DAYS = 14, PACE_MIN_OBS = 3;
+const DATE_MIN_DAYS = 42, DATE_MIN_OBS = 6;
+const PACE_RECENT_DAYS = 28, PACE_WINDOW_DAYS = 84;
+const PACE_STALE_DAYS = 14;          /* older last pull than this and the pace is about the past */
+const HISTORY_SINCE_DAYS = 28;       /* the "what's moved" window */
+
+function hvPack(u) { return u ? Math.min(u.s || 0, 9) * 10000 + Math.min(u.g || 1, 99) * 100 + Math.min(u.r || 0, 99) : 0; }
+function hvUnpack(v) { return v ? { s: Math.floor(v / 10000), g: Math.floor(v / 100) % 100, r: v % 100 } : null; }
+function historyFor(key) {
+  state.history = isPlainObject(state.history) ? state.history : {};
+  const h = state.history[key] = isPlainObject(state.history[key]) ? state.history[key] : {};
+  if (!Array.isArray(h.obs)) h.obs = [];
+  if (!Array.isArray(h.ev)) h.ev = [];
+  return h;
+}
+/* Called by pullAll() with the roster it is about to replace and the one replacing it. Returns true when
+   it recorded anything. A units-less partial pull (charDataLive false) observed nothing about the roster
+   and records nothing — its reqs are yesterday's, forwarded. The first recording for an account seeds
+   the observation list with the PREVIOUS pull's own charDataAt: that roster was genuinely observed then,
+   which is what lets the very first diff carry a real "since 6 Sep" instead of starting from zero. */
+function historyRecord(key, prev, next, nowMs) {
+  if (!next || next.charDataLive === false || !isPlainObject(next.reqs) || !Object.keys(next.reqs).length) return false;
+  const now = nowMs || Date.now();
+  const tsNow = Math.floor(now / 60000);
+  const h = historyFor(key);
+  const prevReqs = prev && isPlainObject(prev.reqs) && Object.keys(prev.reqs).length ? prev.reqs : null;
+  if (prevReqs && !h.obs.length && !h.ev.length) {
+    const at = prev.charDataAt || prev.fetchedAt;
+    if (at && at < now) h.obs.push(Math.floor(at / 60000));
+  }
+  if (prevReqs) {
+    const ids = new Set(Object.keys(prevReqs).concat(Object.keys(next.reqs)));
+    for (const id of ids) {
+      const a = hvPack(prevReqs[id]), b = hvPack(next.reqs[id]);
+      /* b === 0 is a unit the API stopped returning, not a roster event; a unit cannot be un-unlocked */
+      if (a !== b && b !== 0) h.ev.push([tsNow, id, a, b]);
+    }
+  }
+  const lastObs = h.obs.length ? h.obs[h.obs.length - 1] : 0;
+  if (tsNow - lastObs >= HISTORY_OBS_GAP_MIN) h.obs.push(tsNow);
+  const floor = tsNow - HISTORY_KEEP_DAYS * 1440;
+  h.obs = h.obs.filter(t => t >= floor).slice(-HISTORY_MAX_OBS);
+  h.ev = h.ev.filter(e => e[0] >= floor).slice(-HISTORY_MAX_EVENTS);
+  return true;
+}
+/* Read-time repair of whatever the log holds after merges: rows sorted by time, and per unit a clean
+   chain where each row's `from` is the previous row's `to`. A second device that saw the same promotion
+   later produces a row whose `to` is already the running value — dropped. One that saw two promotions
+   as one jump produces a row that skips a value — kept, re-based on the running value. Dates are always
+   the EARLIEST sighting of a level, which is the tightest honest bound on when it happened. */
+function historyNormalise(h) {
+  const obs = [...new Set((h.obs || []).filter(t => typeof t === "number"))].sort((a, b) => a - b);
+  const byId = new Map();
+  (h.ev || []).forEach(r => {
+    if (!Array.isArray(r) || typeof r[0] !== "number" || typeof r[1] !== "string") return;
+    if (!byId.has(r[1])) byId.set(r[1], []);
+    byId.get(r[1]).push({ ts: r[0], id: r[1], from: +r[2] || 0, to: +r[3] || 0 });
+  });
+  const ev = [];
+  for (const rows of byId.values()) {
+    rows.sort((a, b) => a.ts - b.ts);
+    let running = rows[0].from;
+    for (const e of rows) {
+      if (e.to === running) continue;
+      ev.push({ ts: e.ts, id: e.id, from: running, to: e.to });
+      running = e.to;
+    }
+  }
+  ev.sort((a, b) => a.ts - b.ts);
+  return { obs, ev };
+}
+/* Human forms. hvLevel matches unitProgress's `cur` ("6★ R5", "R7", "G12"); hvStep names only what
+   moved, so a relic promotion reads "R6→R7" rather than two full levels side by side. */
+function hvLevel(v) { const u = hvUnpack(v); return !u ? "not unlocked" : (u.s < 7 ? u.s + "★ " : "") + (u.r > 0 ? "R" + u.r : "G" + u.g); }
+function hvStep(from, to) {
+  const a = hvUnpack(from), b = hvUnpack(to);
+  if (!b) return "removed";
+  if (!a) return "unlocked at " + hvLevel(to);
+  const moved = [a.s !== b.s, a.g !== b.g, a.r !== b.r].filter(Boolean).length;
+  if (moved === 1) {
+    if (a.s !== b.s) return a.s + "★→" + b.s + "★";
+    if (a.r !== b.r) return (a.r ? "R" + a.r : "G" + a.g) + "→R" + b.r;   /* G13→R1, not R0→R1 */
+    return "G" + a.g + "→G" + b.g;
+  }
+  return hvLevel(from) + " → " + hvLevel(to);
+}
+function hvIsRegression(from, to) { const a = hvUnpack(from), b = hvUnpack(to); return !!(a && b && (b.s < a.s || b.g < a.g || b.r < a.r)); }
+function hvDay(tsMin) { const d = new Date(tsMin * 60000); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); }
+function hvDate(tsMin, nowMs) {
+  const d = new Date(tsMin * 60000), sameYear = d.getFullYear() === new Date(nowMs || Date.now()).getFullYear();
+  return d.toLocaleDateString(undefined, sameYear ? { day: "numeric", month: "short" } : { day: "numeric", month: "short", year: "numeric" });
+}
+function hvMonth(ms) { return new Date(ms).toLocaleDateString(undefined, { month: "short", year: "numeric" }); }
+const hvPlural = (n, w, s) => `${n} ${w}${n === 1 ? "" : (s || "s")}`;
+
+/* Pure given state: everything both cards and the requirement-row markers show, for one account and one
+   Legend, at `nowMs`. The roster at any past time T is rebuilt from the current roster by walking each
+   unit's events backwards — the earliest event after T holds the level at T — so no snapshot is ever
+   stored and switching Legend is just a different set of unit ids to sum over.
+
+   Windows start at an OBSERVATION, never at an arbitrary day: a change is only known to have happened
+   between two pulls, so a window whose start falls inside a 30-day gap between pulls would credit every
+   change seen at the gap's end to whichever side it fell on. Snapping the start back to the last pull at
+   or before the nominal day makes every window a run of fully-observed intervals, at the cost of the
+   window being a little longer than its name — which is why `pace.days` is reported, not assumed.
+
+   Verdicts, in the order they are tested, each with a reason code the cards turn into a sentence:
+     pace        none | nopull | first | span | obs | stale | zero | ok
+     projection  owned | done | (any pace failure) | regression | dspan | dobs | spread | stalled | ok
+   "regression" is a requirement whose level went DOWN in the window and is still below where it was:
+   the game never demotes a unit, so this is swgoh.gg data or the wrong profile, and a pace built on it
+   is a pace built on a lie. A regression that has since been re-earned nets to zero and passes. */
+function historyView(key, glId, nowMs) {
+  const now = nowMs || Date.now();
+  const tsNow = Math.floor(now / 60000);
+  const H = historyNormalise(historyFor(key));
+  const vv = accountView(key, glId);
+  const reqs = vv.src.reqs || {};
+  const reqMap = new Map(vv.gl.req.map(([id, name, rr]) => [id, { name, rr }]));
+  const byId = new Map();
+  H.ev.forEach(e => { if (!byId.has(e.id)) byId.set(e.id, []); byId.get(e.id).push(e); });
+  const nameOf = id => (reqs[id] && reqs[id].name) || (reqMap.get(id) || {}).name || id;
+  const allTs = [...new Set(H.obs.concat(H.ev.map(e => e.ts)))].sort((a, b) => a - b);
+  const first = allTs[0] || 0, last = allTs.length ? allTs[allTs.length - 1] : 0;
+  const obsDays = new Set(allTs.map(hvDay)).size;
+  const spanDays = first ? (last - first) / 1440 : 0;
+  const staleDays = last ? Math.floor((tsNow - last) / 1440) : 0;
+  const snap = T => { let s = first; for (const t of allTs) { if (t <= T) s = t; else break; } return s; };
+  const valueAt = (id, T) => { const evs = byId.get(id); if (evs) for (const e of evs) if (e.ts > T) return e.from; return hvPack(reqs[id]); };
+  const totalOf = rr => 7 + 12 + rr * 3;
+  const haveAt = T => { let have = 0; for (const [id, { rr }] of reqMap) have += totalOf(rr) - unitProgress(hvUnpack(valueAt(id, T)), rr).remaining; return have; };
+  const haveNow = haveAt(Infinity);
+  const remaining = vv.reqRows.reduce((s, r) => s + r.remaining, 0);
+  const perWeek = (a, b) => (b - a) <= 0 ? null : (haveAt(b) - haveAt(a)) / ((b - a) / 1440) * 7;
+
+  /* what's moved: requirement events in the since-window, newest first, plus a count of the rest */
+  const sinceTs = first ? snap(tsNow - HISTORY_SINCE_DAYS * 1440) : 0;
+  const recentEv = H.ev.filter(e => e.ts > sinceTs);
+  const changes = recentEv.filter(e => reqMap.has(e.id)).map(e => {
+    const rr = reqMap.get(e.id).rr;
+    const wasDone = unitProgress(hvUnpack(e.from), rr).done, isDone = unitProgress(hvUnpack(e.to), rr).done;
+    return { id: e.id, name: nameOf(e.id), ts: e.ts, step: hvStep(e.from, e.to), met: !wasDone && isDone, regression: hvIsRegression(e.from, e.to) };
+  }).reverse();
+  const otherEv = recentEv.filter(e => !reqMap.has(e.id));
+  const elsewhere = { count: new Set(otherEv.map(e => e.id)).size, names: [...new Set(otherEv.slice().reverse().map(e => nameOf(e.id)))].slice(0, 3) };
+  const blockerRow = [...vv.reqRows].filter(r => !r.done).sort((a, b) => a.pct - b.pct)[0] || null;
+  let blocker = null;
+  if (blockerRow) {
+    const evs = byId.get(blockerRow.id) || [];
+    const lastEv = evs.length ? evs[evs.length - 1] : null;
+    blocker = { id: blockerRow.id, name: blockerRow.name, cur: blockerRow.cur, need: blockerRow.need,
+      lastMoved: lastEv ? lastEv.ts : 0, step: lastEv ? hvStep(lastEv.from, lastEv.to) : "",
+      quietDays: first ? Math.floor(((lastEv ? last - lastEv.ts : last - first)) / 1440) : 0 };
+  }
+  /* per-requirement marker for the roadmap rows: the latest move inside the since-window */
+  const moved = new Map();
+  changes.forEach(c => { if (!moved.has(c.id)) moved.set(c.id, c); });
+
+  /* pace */
+  const fullStart = first ? snap(tsNow - PACE_WINDOW_DAYS * 1440) : 0;
+  const recentStart = first ? snap(tsNow - PACE_RECENT_DAYS * 1440) : 0;
+  const regressions = H.ev.filter(e => e.ts > fullStart && reqMap.has(e.id) && hvIsRegression(e.from, e.to)).map(e => {
+    const rr = reqMap.get(e.id).rr;
+    const healed = unitProgress(reqs[e.id], rr).remaining <= unitProgress(hvUnpack(e.from), rr).remaining;
+    return { id: e.id, name: nameOf(e.id), ts: e.ts, step: hvStep(e.from, e.to), healed };
+  });
+  const unhealed = regressions.filter(r => !r.healed);
+  const pace = { ok: false, reason: "none", perWeek: 0, days: 0, from: fullStart, to: last, obsDays, spanDays, staleDays, need: { days: PACE_MIN_DAYS, obs: PACE_MIN_OBS } };
+  if (!first) pace.reason = "none";
+  else if (!vv.live) pace.reason = "nopull";   /* events are self-contained, but a rate needs today's roster to rebuild from */
+  else if (obsDays < 2) pace.reason = "first";
+  else if (spanDays < PACE_MIN_DAYS) pace.reason = "span";
+  else if (obsDays < PACE_MIN_OBS) pace.reason = "obs";
+  else if (staleDays > PACE_STALE_DAYS) pace.reason = "stale";
+  else {
+    pace.perWeek = perWeek(fullStart, last) || 0;
+    pace.days = (last - fullStart) / 1440;
+    pace.reason = pace.perWeek > 0 ? "ok" : "zero";
+    pace.ok = pace.perWeek > 0;
+  }
+  /* how the window's steps and the remaining steps split by kind — the one caveat the data can make
+     about its own rate: relic tiers R6+ come slowest, and a history with none in it says nothing about them */
+  const comp = { did: { star: 0, gear: 0, relic: 0, high: 0 }, left: { star: 0, gear: 0, relic: 0, high: 0 } };
+  for (const [id, { rr }] of reqMap) {
+    const a = hvUnpack(valueAt(id, fullStart)) || { s: 0, g: 1, r: 0 }, b = hvUnpack(valueAt(id, Infinity)) || { s: 0, g: 1, r: 0 };
+    const cl = u => ({ s: Math.min(u.s, 7), g: Math.min(Math.max(u.g - 1, 0), 12), r: Math.min(u.r, rr) });
+    const A = cl(a), B = cl(b);
+    comp.did.star += Math.max(0, B.s - A.s); comp.did.gear += Math.max(0, B.g - A.g); comp.did.relic += Math.max(0, B.r - A.r);
+    comp.did.high += Math.max(0, B.r - Math.max(A.r, 5));
+    comp.left.star += 7 - B.s; comp.left.gear += 12 - B.g; comp.left.relic += rr - B.r;
+    comp.left.high += Math.max(0, rr - Math.max(B.r, 5));
+  }
+
+  /* projection: the two independent stretches and the range they disagree by */
+  const projection = { ok: false, reason: "", recentPerWeek: 0, earlierPerWeek: 0, earlierDays: 0, recentDays: 0,
+    earliestDays: 0, latestDays: 0, earliestMs: 0, latestMs: 0, uneven: false, openEnded: false, need: { days: DATE_MIN_DAYS, obs: DATE_MIN_OBS } };
+  if (vv.owned) projection.reason = "owned";
+  else if (remaining <= 0) projection.reason = "done";
+  else if (!pace.ok) projection.reason = pace.reason;
+  else if (unhealed.length) projection.reason = "regression";
+  else if (spanDays < DATE_MIN_DAYS) projection.reason = "dspan";
+  else if (obsDays < DATE_MIN_OBS) projection.reason = "dobs";
+  else {
+    projection.recentPerWeek = perWeek(recentStart, last) || 0;
+    projection.earlierPerWeek = perWeek(fullStart, recentStart) || 0;
+    projection.recentDays = (last - recentStart) / 1440;
+    projection.earlierDays = (recentStart - fullStart) / 1440;
+    const recentObsDays = new Set(allTs.filter(t => t >= recentStart).map(hvDay)).size;
+    if (projection.earlierDays < 7 || recentObsDays < 3) projection.reason = "spread";
+    else if (projection.recentPerWeek <= 0) projection.reason = "stalled";
+    else {
+      const rates = [projection.recentPerWeek, projection.earlierPerWeek].filter(r => r > 0);
+      const hi = Math.max(...rates), lo = Math.min(...rates);
+      projection.earliestDays = remaining / hi * 7;
+      projection.latestDays = remaining / lo * 7;
+      projection.openEnded = projection.earlierPerWeek <= 0;   /* the earlier stretch never moved: no honest upper bound */
+      projection.uneven = hi / lo > 3;
+      projection.earliestMs = now + projection.earliestDays * 86400000;
+      projection.latestMs = now + projection.latestDays * 86400000;
+      projection.reason = "ok";
+      projection.ok = true;
+    }
+  }
+  return { key, glId: vv.glId, glName: vv.gl.name, owned: vv.owned, first, last, sinceTs, obsDays, spanDays, staleDays,
+    changes, elsewhere, blocker, moved, pace, projection, regressions, remaining, haveNow, comp, pulls: H.obs.length };
+}
+/* The sentence for a pace or projection that is being withheld. One voice for both cards. */
+function historyWhyNot(hv) {
+  const p = hv.pace, pj = hv.projection;
+  const reason = pj.reason || p.reason;
+  const obsLeft = n => hvPlural(Math.max(0, n - hv.obsDays), "more pull day");
+  switch (reason) {
+    case "owned": return `${hv.glName} is already unlocked here — pick the next Legend above to get a pace for it.`;
+    case "done": return `Every ${hv.glName} requirement is met — nothing left to pace.`;
+    case "nopull": return `This browser has no roster pull of its own yet — the history is here, but a pace needs today's roster to measure against. Pull once.`;
+    case "spread": return `The pulls are bunched: a date needs at least a week of history before the last ${PACE_RECENT_DAYS} days to compare against, and at least three pull days inside them.`;
+    case "first": return `History started ${hvDate(hv.first)} — everything so far is from one day. What changed appears from the next pull; a pace needs ${PACE_MIN_DAYS} days across ${PACE_MIN_OBS} pull days, a projected date ${DATE_MIN_DAYS} across ${DATE_MIN_OBS}.`;
+    case "none": {
+      /* the roster on disk was itself pulled at a known time, so the FIRST pull already yields a diff */
+      const prev = state.pulls[hv.key], at = prev && (prev.charDataAt || prev.fetchedAt);
+      return at ? `No history yet — it starts with your next pull, compared against the roster pulled ${hvDate(Math.floor(at / 60000))}.`
+                : `No history yet. It starts with the next pull, and what changed shows from the pull after that.`;
+    }
+    case "span": return `Not enough history yet — ${hvPlural(Math.floor(hv.spanDays), "day")} of pulls since ${hvDate(hv.first)}. A pace needs ${PACE_MIN_DAYS}; a projected date needs ${DATE_MIN_DAYS}.`;
+    case "obs": return `Not enough separate pulls yet — ${hvPlural(hv.obsDays, "pull day")} across ${Math.floor(hv.spanDays)} days. A pace needs ${PACE_MIN_OBS} (${obsLeft(PACE_MIN_OBS)}).`;
+    case "stale": return `The last roster pull was ${hvPlural(hv.staleDays, "day")} ago (${hvDate(hv.last)}). Pull again before trusting a pace — anything since then is unobserved.`;
+    case "zero": return `Nothing has moved toward ${hv.glName} in the ${Math.round(p.days)} days observed. No date until something does.`;
+    case "regression": return `A requirement went backwards (${hv.regressions.filter(r => !r.healed).map(r => `${r.name} ${r.step} on ${hvDate(r.ts)}`).join(", ")}) and hasn't come back. Units don't demote in-game, so this is swgoh.gg data or the wrong profile — no date until the roster reads straight again.`;
+    case "dspan": return `A projected date needs ${DATE_MIN_DAYS} days of history — ${Math.floor(hv.spanDays)} so far, so ${hvPlural(Math.ceil(DATE_MIN_DAYS - hv.spanDays), "more day")}. Two stretches of pace have to exist before they can disagree, and that disagreement is the only honest error bar.`;
+    case "dobs": return `A projected date needs ${DATE_MIN_OBS} separate pull days — ${hv.obsDays} so far (${obsLeft(DATE_MIN_OBS)}).`;
+    case "stalled": return `Nothing has moved toward ${hv.glName} in the last ${Math.round(pj.recentDays)} days${pj.earlierPerWeek > 0 ? `, after ${pj.earlierPerWeek.toFixed(1)} steps/week in the ${Math.round(pj.earlierDays)} days before` : ""}. No date while it's stalled.`;
+    default: return "";
+  }
+}
+/* "in 14–31 weeks (Jan–May 2027)". Months, never days: the Executor gets days from a fixed cadence; a farm
+   rate has none, and the two-stretch range is the whole of what is known about the error. */
+function historyProjectionText(hv) {
+  const pj = hv.projection;
+  if (!pj.ok) return "";
+  const wk = d => Math.max(1, Math.round(d / 7));
+  const tooFar = pj.latestDays > 3 * 365;
+  const same = hvMonth(pj.earliestMs) === hvMonth(pj.latestMs);
+  let when;
+  if (pj.openEnded) when = `no earlier than ${hvMonth(pj.earliestMs)} — at the last ${Math.round(pj.recentDays)} days' pace of ${pj.recentPerWeek.toFixed(1)} steps/week, with nothing moving in the ${Math.round(pj.earlierDays)} days before that, so there is no honest upper bound`;
+  else if (tooFar) when = `${hvMonth(pj.earliestMs)} at the faster stretch's pace, and more than three years at the slower one`;
+  else if (same) when = `around ${hvMonth(pj.earliestMs)}, in ${wk(pj.earliestDays)}–${wk(pj.latestDays)} weeks`;
+  else when = `between ${hvMonth(pj.earliestMs)} and ${hvMonth(pj.latestMs)}, in ${wk(pj.earliestDays)}–${wk(pj.latestDays)} weeks`;
+  const basis = `(last ${Math.round(pj.recentDays)} days ${pj.recentPerWeek.toFixed(1)}/wk, the ${Math.round(pj.earlierDays)} days before ${pj.earlierPerWeek.toFixed(1)}/wk)`;
+  return `${pj.uneven ? "Too uneven to plan around — " : ""}${hv.remaining} steps to go: ${when} ${basis}.`;
+}
+function historyCompText(hv) {
+  const c = hv.comp, kinds = k => [k.star ? hvPlural(k.star, "star") : "", k.gear ? hvPlural(k.gear, "gear level") : "", k.relic ? hvPlural(k.relic, "relic tier") + (k.high ? ` (${k.high} of them R6+)` : "") : ""].filter(Boolean).join(", ") || "nothing";
+  const warn = hv.pace.ok && c.did.high === 0 && c.left.high * 3 > hv.remaining / 2
+    ? " None of the observed progress was an R6+ tier, and those are most of what's left — expect the real pace to be slower than this."
+    : "";
+  return `Moved in the last ${Math.round(hv.pace.days || hv.spanDays)} days: ${kinds(c.did)}. Left: ${kinds(c.left)}.${warn}`;
+}
+/* Overview card: the "since last time" answer. Requirement moves in the last four weeks, the rest of the
+   roster in one line, how long the least-complete requirement has sat still, and one line of pace that
+   points at the Roadmap for the rest. */
+function momentumCardHtml(key, v) {
+  const hv = historyView(key, v.glId);
+  const acct = ACCOUNTS.find(a => a.key === key) || { label: key };
+  const title = `<div class="cardtitle">What's moved <span class="sub">— ${hv.first ? `since ${escapeHtml(hvDate(hv.sinceTs))}` : "no history yet"}, toward ${escapeHtml(hv.glName)} (${escapeHtml(acct.label)})</span></div>`;
+  if (!hv.first) return title + `<div class="mnote">${escapeHtml(historyWhyNot(hv))}</div>
+    <div class="srcline">History is built only from your own pulls — every line here will name a unit, its before and after, and the pull that saw it.</div>`;
+  const list = hv.changes.length
+    ? `<ul class="moved">${hv.changes.slice(0, 8).map(c => `<li><b>${escapeHtml(c.name)}</b> <span class="step${c.regression ? " down" : ""}">${escapeHtml(c.step)}</span>${c.met ? ` <span class="chip done">✓ requirement met</span>` : ""}${c.regression ? ` <span class="chip fixnow">↓ went backwards</span>` : ""}<span class="when">${escapeHtml(hvDate(c.ts))}</span></li>`).join("")}</ul>` +
+      (hv.changes.length > 8 ? `<div class="mnote">+ ${hv.changes.length - 8} more requirement moves in the window.</div>` : "")
+    : `<div class="mnote">No ${escapeHtml(hv.glName)} requirement has moved since ${escapeHtml(hvDate(hv.sinceTs))}${hv.pulls > 1 ? ` (${hvPlural(hv.pulls, "pull")})` : ""}.</div>`;
+  const elsewhere = hv.elsewhere.count
+    ? `<div class="mnote">Elsewhere on the roster: ${hvPlural(hv.elsewhere.count, "unit")} moved${hv.elsewhere.names.length ? ` — ${hv.elsewhere.names.map(escapeHtml).join(", ")}${hv.elsewhere.count > hv.elsewhere.names.length ? "…" : ""}` : ""}.</div>`
+    : "";
+  const b = hv.blocker;
+  const blocker = b && !hv.owned
+    ? `<div class="prog-summary"><b>${escapeHtml(b.name)}</b> (least complete, ${escapeHtml(b.cur)} → ${escapeHtml(b.need)}) ${b.lastMoved ? `last moved ${escapeHtml(hvDate(b.lastMoved))} (${escapeHtml(b.step)})` : `hasn't moved in the ${hvPlural(b.quietDays, "day")} observed`}.</div>`
+    : "";
+  const paceLine = hv.pace.ok
+    ? `Pace: ≈${hv.pace.perWeek.toFixed(1)} steps/week over ${Math.round(hv.pace.days)} days${hv.projection.ok ? "" : " — no date yet"}.`
+    : historyWhyNot(hv);
+  return title + list + elsewhere + blocker +
+    `<div class="prog-summary">${escapeHtml(paceLine)} <a href="#" style="color:var(--accent)" onclick="switchTab('leia');return false;">GL Roadmap →</a></div>`;
+}
+/* Roadmap card: the "at this rate, when" answer, in the Executor card's register — a number, a date, and
+   exactly what it rests on — except that here the date is a range and is often, deliberately, absent. */
+function paceCardHtml(key, v) {
+  const hv = historyView(key, v.glId);
+  const p = hv.pace, pj = hv.projection;
+  const basis = hv.first
+    ? `Built from ${hvPlural(hv.pulls, "roster pull")} on ${hvPlural(hv.obsDays, "day")}, ${escapeHtml(hvDate(hv.first))} → ${escapeHtml(hvDate(hv.last))}${hv.staleDays > 1 ? ` (${hv.staleDays} days ago)` : ""}.`
+    : "Nothing recorded yet.";
+  const hero = p.ok
+    ? `<div class="hero">${p.perWeek < 10 ? p.perWeek.toFixed(1) : Math.round(p.perWeek)}<small> steps / week, last ${Math.round(p.days)} days</small></div>`
+    : "";
+  const verdict = pj.ok
+    ? `<div class="prog-summary" style="font-size:13.5px;color:var(--ink-1)">${escapeHtml(historyProjectionText(hv))}</div>`
+    : `<div class="prog-summary"${pj.reason === "regression" ? ` style="color:var(--serious)"` : ""}>${escapeHtml(historyWhyNot(hv))}</div>`;
+  const comp = p.ok ? `<div class="prog-summary">${escapeHtml(historyCompText(hv))}</div>` : "";
+  const healed = hv.regressions.filter(r => r.healed);
+  const healedNote = healed.length ? `<div class="mnote">Data blip, since corrected: ${healed.map(r => `${escapeHtml(r.name)} ${escapeHtml(r.step)} on ${escapeHtml(hvDate(r.ts))}`).join(", ")}.</div>` : "";
+  return `<div class="cardtitle">Pace <span class="sub">— ${escapeHtml(hv.glName)}, from your own pulls</span></div>
+    ${hero}${verdict}${comp}${healedNote}
+    <div class="srcline">${basis} Steps are weighted the way the readiness % is: a relic tier counts 3, a star or a gear level 1 (${hv.remaining} left). A date appears only once two separate stretches of pace exist to disagree — ${DATE_MIN_DAYS} days across ${DATE_MIN_OBS} pull days — and is given to the month, because farming has no fixed cadence to be more precise from.</div>`;
+}
+
+/* `moved` (optional): unit id → the latest recorded move in the history window, from historyView(). The
+   marker sits under the current level so a row that just moved is visible without leaving the table. */
+function reqRowsHtml(rows, title, moved) {
+  const mv = r => { const m = moved && moved.get(r.id); return m ? `<em class="mv${m.regression ? " down" : ""}" title="${escapeHtml(m.step)} — seen ${escapeHtml(hvDate(m.ts))}">${m.regression ? "↓" : "↑"} ${escapeHtml(m.step)} · ${escapeHtml(hvDate(m.ts))}</em>` : ""; };
   return (title ? `<div class="cardtitle">${escapeHtml(title)}</div>` : "") +
     `<div class="req headrow"><span>Requirement</span><span>Needed</span><span>Current</span><span>Progress</span><span>Status</span></div>` +
     rows.map(r => `
       <div class="req" data-unit="${escapeHtml(r.id || "")}">
         <span class="unit">${escapeHtml(r.name)}</span>
         <span class="need">${r.need}</span>
-        <span class="cur">${r.cur}</span>
+        <span class="cur">${r.cur}${mv(r)}</span>
         <span class="meter" title="${r.pct}%"><i class="${r.pct === 100 ? "full " : ""}st-${r.status}" style="width:${r.pct}%"></i></span>
         <span><span class="chip ${r.status}">${chipText[r.status]}</span></span>
       </div>`).join("");
@@ -8299,6 +8693,7 @@ function render() {
             <span class="chip grind">⛭ ${v.counts.grind} long grind</span>
           </div>
           <div class="prog-summary">${escapeHtml(glProgressSummary(v))}</div>` },
+      { id: "momentum", w: 5, html: momentumCardHtml(current, v) },
       { id: "daily", w: 5, html: `
           <div class="cardtitle">Daily routine <span class="sub">— resets each day</span></div>
           ${DAILY.map((it, ii) => tickbox(`d-${current}-${ii}`, it[0], it[1])).join("")}
@@ -8345,11 +8740,13 @@ function render() {
           <div class="prog-summary">${escapeHtml(v.gl.note)}</div>
           <div class="srcline">Unlock requirements ${snapNoteHtml("gl-roadmap")}.</div>` };
     const jointCard = { id: "joint", html: glJointHtml() };
+    const paceCard = { id: "pace", html: paceCardHtml(current, v) };
+    const moved = historyView(current, v.glId).moved;
     document.getElementById("glTables").innerHTML = v.owned
       ? wrapCards("leia", [noteCard, jointCard])
-      : wrapCards("leia", [noteCard, jointCard,
-          { id: "reqs-1", html: reqRowsHtml(v.reqRows.slice(0, half), `Requirements 1–${half} of ${v.reqRows.length}`) },
-          { id: "reqs-2", html: reqRowsHtml(v.reqRows.slice(half), `Requirements ${half + 1}–${v.reqRows.length} of ${v.reqRows.length}`) }
+      : wrapCards("leia", [noteCard, paceCard, jointCard,
+          { id: "reqs-1", html: reqRowsHtml(v.reqRows.slice(0, half), `Requirements 1–${half} of ${v.reqRows.length}`, moved) },
+          { id: "reqs-2", html: reqRowsHtml(v.reqRows.slice(half), `Requirements ${half + 1}–${v.reqRows.length} of ${v.reqRows.length}`, moved) }
         ]);
   });
 

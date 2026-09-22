@@ -3221,7 +3221,17 @@ let pullsLastWritten = null;
 
    The GitHub Contents API envelope, as distinct from the state document inside it. These keys are the
    tell that a response described the file instead of being the file. */
-const GH_ENVELOPE_KEYS = ["sha", "git_url", "download_url", "content", "encoding", "html_url", "_links", "type", "size", "path"];
+/* "name" and "url" belong on this list too. A real GitHub Contents API envelope has exactly twelve
+   keys — name, path, sha, size, url, html_url, git_url, download_url, type, content, encoding, _links —
+   and this list only ever had ten of them. That gap is why the 21 Sep fix didn't fully close the door:
+   stripGhEnvelope() cleaned ten fields off an already-swallowed envelope and left these two sitting in
+   state permanently, and the hard "this is a GitHub envelope" check below never fired on them either —
+   they only ever reached payloadInspect() as "2 top-level keys this app has never written", a soft
+   signal instead of the outright reject this actually is. Found 22 Sep 2026: the same two keys visible,
+   unhealed, in rollback-ring snapshots going back to a 21 Sep import — three separate sync events over
+   two days, none of which could fully clear it because the code doing the clearing didn't know these
+   two counted. */
+const GH_ENVELOPE_KEYS = ["sha", "git_url", "download_url", "content", "encoding", "html_url", "_links", "type", "size", "path", "name", "url"];
 function looksLikeGhEnvelope(v) {
   return isPlainObject(v) && typeof v.content === "string" && typeof v.encoding === "string";
 }

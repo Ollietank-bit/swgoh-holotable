@@ -1552,7 +1552,7 @@ const EPIGRAPHS = {
 };
 /* ===================== Events & Calendar ===================== */
 /* Seed list read directly off swgoh.gg/events/ (Claude in Chrome, live DOM read — not the swgohevents.com
-   feed) at 2026-09-22 09:48 UTC, all 18 events shown ("Showing 18 events"). That page shows each event as a
+   feed) at 2026-09-27 08:16 UTC, all 14 events shown ("Showing 14 events"). That page shows each event as a
    relative countdown ("Starts in 3d 21h" / "8h 12m Left"), which was converted to absolute calendar dates
    against that exact capture timestamp — so the dates below are exact as of the capture, not estimated.
    cat is swgoh.gg's own event-type label verbatim (Legendary, Fleet Mastery, Marquee, Era Challenge, Era
@@ -1560,36 +1560,35 @@ const EPIGRAPHS = {
    mirror of their taxonomy rather than an invented one. "ends" is only set for the 3 events that were
    already LIVE at capture time (their remaining time was known); upcoming events only show a start date
    since swgoh.gg doesn't expose their end date until they go live. Discarded Doctrine (the Executor
-   fleet-mastery unlock the readiness card tracks separately) isn't in this capture at all — its next
-   occurrence is 15 Oct, further out than anything swgoh.gg's page currently lists (this capture's longest
-   countdown is 14d 8h), so its absence here is expected, not a miss. Guild-specific TW/TB timing and your
-   GAC season still aren't on any public feed — log those yourself with "+ Add event" below. Ask Claude to
-   re-browse swgoh.gg/events/ if this list is looking stale. */
+   fleet-mastery unlock the readiness card tracks separately) still isn't in this capture — its next
+   occurrence (15 Oct) now falls inside this capture's window (longest countdown here is 23d 9h, to 20 Oct),
+   but it's tracked via EXECUTOR_EVENT's own monthly anchor rather than appearing on swgoh.gg's events page,
+   so its absence from EVENTS_SEED is still expected, not a miss. Five events not seen in the 22 Sep capture
+   joined this list as the ten already-past rows from that capture rolled off: Jaxxon (Era Challenge),
+   Shattered Empire, Jakku, Peridea Patrol and Bespin. Guild-specific TW/TB timing and your GAC season still
+   aren't on any public feed — log those yourself with "+ Add event" below. Ask Claude to re-browse
+   swgoh.gg/events/ if this list is looking stale. */
 const EVENTS_SEED = [
-  { name: "Stormtrooper (Concept)", cat: "Era Challenge", date: "2026-09-22", ends: "2026-09-22", note: "Earn Era Currency! — live now." },
-  { name: "Call Answered", cat: "Era Battle", date: "2026-09-22", ends: "2026-09-22", note: "Guardians of Tomorrow — live now." },
-  { name: "Defense of Dathomir", cat: "Special", date: "2026-09-22", ends: "2026-09-23", note: "Earn Mother Talzin Shards! — live now." },
-  { name: "Contraband Cargo", cat: "Resource Event", date: "2026-09-22", note: "Earn Rare Rewards!" },
-  { name: "Action Jaxxon", cat: "Marquee", date: "2026-09-22", note: "Earn Rewards Daily!" },
-  { name: "Terrible Tings", cat: "Legendary", date: "2026-09-22", note: "Earn Darth Jar Jar Shards!" },
-  { name: "Rebel Roundup", cat: "Assault Battle", date: "2026-09-23", note: "Battle Rebels!" },
-  { name: "Smuggler's Run II", cat: "Resource Event", date: "2026-09-23", note: "Earn Rare Rewards!" },
-  { name: "Ghosts of Dathomir", cat: "Special", date: "2026-09-24", note: "Investigate Dathomir!" },
-  { name: "Smuggler's Run III", cat: "Resource Event", date: "2026-09-25", note: "Earn Rare Rewards!" },
-  { name: "Training Droid Smuggling", cat: "Resource Event", date: "2026-09-25", note: "Earn Training Droids!" },
-  { name: "Ground War", cat: "Assault Battle", date: "2026-09-26", note: "Battle Separatists!" },
-  { name: "Galactic Bounties II", cat: "Special", date: "2026-09-27", note: "Very Rare Event!" },
+  { name: "Terrible Tings", cat: "Legendary", date: "2026-09-27", ends: "2026-10-20", note: "Earn Darth Jar Jar Shards! — live now." },
+  { name: "Action Jaxxon", cat: "Marquee", date: "2026-09-27", ends: "2026-09-29", note: "Earn Rewards Daily! — live now." },
+  { name: "Galactic Bounties II", cat: "Special", date: "2026-09-27", ends: "2026-09-28", note: "Very Rare Event! — live now." },
   { name: "Endor", cat: "Omega Battle", date: "2026-09-28", note: "Now with Zetas!" },
+  { name: "Smuggler's Run", cat: "Resource Event", date: "2026-09-28", note: "Earn Rare Rewards!" },
   { name: "Coven of Shadows", cat: "Special", date: "2026-09-29", note: "Battle the Witch Kingdom of Dathomir!" },
+  { name: "Jaxxon", cat: "Era Challenge", date: "2026-09-29", note: "Earn Era Currency!" },
   { name: "Duel of the Fates", cat: "Assault Battle", date: "2026-09-30", note: "Battle Darth Maul!" },
   { name: "Stardust Transmission", cat: "Fleet Mastery", date: "2026-09-30", note: "Earn Profundity Blueprints!" },
-  { name: "The Wanderer's Blade", cat: "Marquee", date: "2026-10-06", note: "Earn Rewards Daily! — the 16 Aug capture had this as an absolute \"Starts Oct 7\"; this capture's countdown (14d 8h from 22 Sep) lands on Oct 6 instead — a day's drift either way is normal rounding on swgoh.gg's own countdown display, not a correction of fact." }
+  { name: "Shattered Empire", cat: "Era Battle", date: "2026-09-30", note: "Secure the Galaxy!" },
+  { name: "Jakku", cat: "Omega Battle", date: "2026-10-02", note: "Now with Zetas!" },
+  { name: "Peridea Patrol", cat: "Assault Battle", date: "2026-10-03", note: "Battle Ezra Bridger (Exile)!" },
+  { name: "Bespin", cat: "Omega Battle", date: "2026-10-05", note: "Now with Zetas!" },
+  { name: "The Wanderer's Blade", cat: "Marquee", date: "2026-10-06", note: "Earn Rewards Daily!" }
 ];
-const EVENTS_SEED_VERSION = 4;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
+const EVENTS_SEED_VERSION = 5;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
 /* The day the seed list above was read off swgoh.gg — a calendar snapshot has a shelf life, and once
    its rows are all in the past the tab would otherwise sit there looking like a live feed with nothing
    on it. Named here so the "run out" notice and the tab's provenance line can't drift apart. */
-const EVENTS_SEED_CAPTURED = "22 Sep 2026";
+const EVENTS_SEED_CAPTURED = "27 Sep 2026";
 /* Discarded Doctrine requirements, per swgoh.wiki (captured 9 Aug 2026) — verify in-game before spending
    relic/gear materials, CG occasionally adjusts event gates. Matched against pulled roster data by unit
    name (ships aren't tracked by base_id elsewhere in this file, so name-matching is the robust option). */

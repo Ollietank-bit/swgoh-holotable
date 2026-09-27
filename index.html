@@ -1363,7 +1363,7 @@
   <!-- ============ TIER LIST ============ -->
   <div class="tabpane" id="pane-tierlist">
     <h2>Tier List — what's actually winning</h2>
-    <div class="h2sub">Live battle-data rankings from swgoh.gg's Tier List tool: win-rate lower bound across millions of real first-attempt GAC battles, not opinion. 5v5 Squads, 3v3 Squads, and Fleet — the categories this app's GAC Planner, TW Coord, and Roster Gap Radar already plan around. Built-in snapshot <span data-snap="tierlist"></span>.</div>
+    <div class="h2sub">Live battle-data rankings from swgoh.gg's Tier List tool: an Elo-style rating computed from millions of real first-attempt GAC battles, not opinion. 5v5 Squads, 3v3 Squads, and Fleet — the categories this app's GAC Planner, TW Coord, and Roster Gap Radar already plan around. Built-in snapshot <span data-snap="tierlist"></span>.</div>
     <div class="cqnav section-nav" id="tierlistNav"></div>
     <div class="sortable" id="tierlistGrid" data-pane="tierlist"></div>
   </div>
@@ -6490,7 +6490,7 @@ function renderTierList() {
   META_FLEETS.forEach(fl => { if (fl.tlFleet) trackedFleet.set(fl.tlFleet, fl.name); });
 
   const introCard = { id: "intro", w: 12, html: `<div class="cardtitle">Source &amp; methodology</div>
-    <div class="mnote">Pulled from <a href="${TIER_LIST.url}" target="_blank" rel="noopener" style="color:var(--accent)">swgoh.gg's Tier List tool ↗</a> on ${TIER_LIST.updated}. Rankings use a win-rate <i>lower bound</i> across real first-attempt, full-squad GAC battles (Kyber league) — not opinion or theorycraft, and a squad needs enough battle volume before it's trusted, so a high win rate on a tiny sample won't outrank a slightly lower one backed by 100K+ battles. Bands (S/A/B/C/D) and win rates shift as each season's data accumulates — re-check the source before committing zeta/relic investment to something new. The site's Units and Datacrons sub-lists (individual character/datacron impact, a different grain than full squads) aren't duplicated here — see them live at the link above. Rows with a "→ Roster Gaps" link are already tracked in this app's own squad reference, so you can jump straight to a readiness check against your own roster.</div>` };
+    <div class="mnote">Pulled from <a href="${TIER_LIST.url}" target="_blank" rel="noopener" style="color:var(--accent)">swgoh.gg's Tier List tool ↗</a> on ${TIER_LIST.updated}. As of that pull, rankings are driven by the site's own Elo-style rating computed across real first-attempt, full-squad GAC battles — not a simple win-rate lower bound as earlier snapshots described, and not opinion or theorycraft. That means a squad with a higher raw win rate can still rank below one with more Elo-weighted battle volume (a squad needs enough battle volume before it's trusted). Bands (S/A/B/C/D), ratings, and win rates shift as each season's data accumulates — re-check the source before committing zeta/relic investment to something new. The site's Units and Datacrons sub-lists (individual character/datacron impact, a different grain than full squads) aren't duplicated here — see them live at the link above. Rows with a "→ Roster Gaps" link are already tracked in this app's own squad reference, so you can jump straight to a readiness check against your own roster.</div>` };
 
   const catCards = TIER_LIST.categories.map(cat => {
     const tracker = cat.key === "fleet" ? trackedFleet : trackedSquad[cat.key];

@@ -2123,19 +2123,23 @@ function renderAssaultBattles() {
 }
 /* ===================== Eras (Game modes 3rd category) ===================== */
 /* Era of Myths & Legends reference — researched 29 Aug 2026 (official EA Forums 10-Year Anniversary/
-   Title Update posts, swgoh.gg news, Holotables.xyz community leaderboard, player forum threads).
-   Same honesty rules as ASSAULT_BATTLES/RAID_INTEL: every claim below traces to a source, confidence
-   is graded per-fact, and disputed/unconfirmed items are flagged in the UI copy rather than smoothed
-   over (see the EL-cap dispute in the leveling section and the Journey EL-gate footnote).
+   Title Update posts, swgoh.gg news, Holotables.xyz community leaderboard, player forum threads);
+   re-verified and corrected 28 Sep 2026 (official EA Forums Game Info Hub "Era of Myths & Legends" post
+   read directly, swgoh.gg's dedicated Era page, refreshed Holotables.xyz Coliseum leaderboards for all
+   4 bosses — the original pass only had Krayt Dragon). Same honesty rules as ASSAULT_BATTLES/RAID_INTEL:
+   every claim below traces to a source, confidence is graded per-fact, and disputed/unconfirmed items
+   are flagged in the UI copy rather than smoothed over.
 
    LIVE-TRACKED on the Era Level axis since 3 Sep 2026. The original build was reference-only on the
    assumption that nothing Era-Level-shaped existed in the swgoh.gg pull; that assumption was checked
    against the live player API and is wrong. The API carries a per-unit `era_level` (non-zero only on
    Era units — parsePlayer() now stores it as reqs[base_id].el) and a top-level
    `loaned_unit_era_level` (the collective EL of the ~25 Loaned Units — parsePlayer() stores it as
-   pull.loanedEraLevel). So real EL progress IS shown here; what stays flagged as unresolved is only
-   what genuinely is: the EL cap (95 vs 135), the unreconciled Journey EL-gate figures, and whether
-   the Journey's EL gate is applied per-unit or account-wide (see eraTierReadiness).
+   pull.loanedEraLevel). So real EL progress IS shown here. The 28 Sep pass resolved the two things
+   flagged unresolved on 29 Aug: the Journey's per-tier EL gate turned out to name one specific unit for
+   Tiers 1-3 (see eraTierReadiness), and the EL cap is stated as 135 on swgoh.gg's own Era page. What's
+   left genuinely open: Journey Tier 4's EL gate doesn't name a unit the way Tiers 1-3 do, and the EL-135
+   cap isn't corroborated by the official EA post itself (see the leveling section for both).
 
    Unit identity: 3 of the 7 Era units are unlocked on the tracked accounts and their base_ids are
    therefore VERIFIED against swgoh.gg's own data (LUKESTARKILLER, MARAJADESKYWALKER, YODADSV) — those
@@ -2179,10 +2183,15 @@ const ERA_UNITS = [
     synergy: "Sith trio anchor — this Era's Journey Guide unit (see the DJJ Journey Guide section).",
     src: "Kit corroborated by two independent fetches of the official kit post." }
 ];
-/* "Terrible Tings" Solo Journey — 4 tiers, 330 total DJJ shards (80 to activate). EL gates are the
-   swgoh.gg-news figures; a separate EA-forums fetch gave slightly different numbers that were never
-   reconciled — hence MODERATE on the exact EL values but HIGH on the tier shape itself (4 tiers,
-   escalating 4★→7★, The Ronin joining at Tier 3).
+/* "Terrible Tings" Solo Journey — 4 tiers, 330 total DJJ shards (80 to activate). RESOLVED 28 Sep 2026:
+   read the official EA Forums Game Info Hub post itself (forums.ea.com/blog/swgoh-game-info-hub-en/
+   era-of-myths--legends/13578773, "Version 4.0") directly rather than a secondhand summary. The EL
+   numbers (90/95/110/125) were never actually in dispute — both prior fetches agreed on them. What was
+   genuinely unclear is now settled: each of Tiers 1-3 gates its EL requirement on ONE specific named
+   unit, not the whole 5-unit core — Tier 1: Yoda (Dark Side Vision) at EL 90; Tier 2: Starkiller (Luke
+   Concept) at EL 95; Tier 3: Mara Jade Skywalker at EL 110. Tier 4's entry text ("At 7 Stars and EL 125")
+   lists all 6 required units without singling one out the way Tiers 1-3 do — that one stays genuinely
+   ambiguous (all 6? any one? account-wide?) and is flagged as such in the UI rather than guessed at.
    Members use the house [base_id, "Name"] convention: a real id where it's verified against the live
    pull, null (name-matched) for the units that have never appeared in one. */
 const ERA_JOURNEY_CORE5 = [
@@ -2193,27 +2202,50 @@ const ERA_JOURNEY_CORE5 = [
   [null,                "Jaxxon"]
 ];
 const ERA_JOURNEY_TIERS = [
-  { tier: 1, stars: 4, el: 90,  shards: 80,  units: ERA_JOURNEY_CORE5 },
-  { tier: 2, stars: 5, el: 95,  shards: 65,  units: ERA_JOURNEY_CORE5 },
-  { tier: 3, stars: 6, el: 110, shards: 85,  units: [...ERA_JOURNEY_CORE5, [null, "The Ronin"]] },
-  { tier: 4, stars: 7, el: 125, shards: 100, units: [...ERA_JOURNEY_CORE5, [null, "The Ronin"]] }
+  { tier: 1, stars: 4, el: 90,  elUnit: ["YODADSV", "Yoda (Dark Side Vision)"],      shards: 80,  units: ERA_JOURNEY_CORE5 },
+  { tier: 2, stars: 5, el: 95,  elUnit: ["LUKESTARKILLER", "Starkiller (Luke Concept)"], shards: 65,  units: ERA_JOURNEY_CORE5 },
+  { tier: 3, stars: 6, el: 110, elUnit: ["MARAJADESKYWALKER", "Mara Jade Skywalker"], shards: 85,  units: [...ERA_JOURNEY_CORE5, [null, "The Ronin"]] },
+  { tier: 4, stars: 7, el: 125, elUnit: null, shards: 100, units: [...ERA_JOURNEY_CORE5, [null, "The Ronin"]] }
 ];
 /* Crowd-submitted Krayt Dragon squads from Holotables.xyz's Coliseum leaderboard — community data, not
    official guidance, so every one is capped at MODERATE. Names only (no ownership table): Coliseum
    power reportedly draws from Era Level rather than gear/relic/mods, so this file's normal 7★/G12
    readiness math would be the wrong lens even for the loaned units it does track elsewhere. */
+/* Refreshed 28 Sep 2026 directly off Holotables.xyz's per-boss leaderboard pages (holotables.xyz/boss/
+   krayt-dragon, /jotaz, /zeffo-tomb-guardians, /dryax) — the 29 Aug pass only covered Krayt Dragon (the
+   other 3 bosses' leaderboards genuinely didn't have data yet at the time); all 4 are covered now. The
+   29 Aug Krayt Dragon numbers are also badly stale on their own terms: top damage there has gone from
+   ~23K to over 1.1M as accounts' Era Levels climbed over the following month — a reminder that these
+   raw damage/percent figures decay fast even inside one Era and are a snapshot, not a target. */
 const ERA_COLISEUM_SQUADS = [
-  { label: "Moff Gideon lead", result: "Tier 12 · 22,903 dmg",
-    members: ["Moff Gideon (L)", "Yoda (Dark Side Vision)", "Mara Jade Skywalker", "Darth Talon", "Dark Trooper"],
-    note: "Submitter's note: “Yoda solos tier 10-11 shortly after start, apply basic as much as possible.”" },
-  { label: "JKL lead (Yoda build)", result: "Tier 11 · 76%",
-    members: ["Jedi Knight Luke Skywalker (L)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis", "Yoda (Dark Side Vision)", "Mace Windu"] },
-  { label: "JKL lead (Starkiller swap)", result: "Tier 11 · 73%",
-    members: ["Jedi Knight Luke Skywalker (L)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis", "Starkiller (Luke Concept)", "Mace Windu"],
-    note: "Same JKL core as the Yoda build with Starkiller (Luke Concept) in for Yoda." },
-  { label: "JKL lead (Qi'ra build)", result: "Tier 8 · 78%",
-    members: ["Jedi Knight Luke Skywalker (L)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis", "Yoda (Dark Side Vision)", "Qi'ra"],
-    note: "Submitter's note: “Start with Mara basic. Use JKL's first special, save Vulnerable for burrow.”" }
+  { boss: "Krayt Dragon", label: "Darth Jar Jar lead (Cal Kestis/Chewbacca)", result: "Tier 12 · 1,105,104 dmg",
+    members: ["Darth Jar Jar (L)", "Mara Jade Skywalker", "Yoda (Dark Side Vision)", "Jedi Knight Cal Kestis (loaned)", "Chewbacca (loaned)"] },
+  { boss: "Krayt Dragon", label: "Darth Jar Jar lead (Sith loaned core)", result: "Tier 12 · 1,054,555 dmg",
+    members: ["Darth Jar Jar (L)", "Yoda (Dark Side Vision)", "Darth Sidious (loaned)", "Darth Talon (loaned)", "Darth Maul (loaned)"] },
+  { boss: "Krayt Dragon", label: "JKL lead (Cal Kestis/DJJ)", result: "Tier 12 · 656,663 dmg",
+    members: ["Jedi Knight Luke Skywalker (L, loaned)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis (loaned)", "Yoda (Dark Side Vision)", "Darth Jar Jar"] },
+  { boss: "Jotaz", label: "Cal Kestis lead (Mace/Starkiller)", result: "Tier 12 · 1,974,866 dmg",
+    members: ["Jedi Knight Cal Kestis (L, loaned)", "Mara Jade Skywalker", "Jedi Knight Luke Skywalker (loaned)", "Mace Windu (loaned)", "Starkiller (Luke Concept)"] },
+  { boss: "Jotaz", label: "JKL lead (Dark Trooper/Gideon)", result: "Tier 12 · 1,807,100 dmg",
+    members: ["Jedi Knight Luke Skywalker (L, loaned)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis (loaned)", "Dark Trooper (loaned)", "Moff Gideon (loaned)"] },
+  { boss: "Jotaz", label: "JKL lead (Cal Kestis/Talon/Yoda)", result: "Tier 12 · 532,516 dmg",
+    members: ["Jedi Knight Luke Skywalker (L, loaned)", "Jedi Knight Cal Kestis (loaned)", "Darth Talon (loaned)", "Mara Jade Skywalker", "Yoda (Dark Side Vision)"],
+    note: "Submitter's note: “Jotaz jumps ahead of Mara's 2nd special — 100% TM for JKL and her bonus turn. Think it's cheating.”" },
+  { boss: "Zeffo Tomb Guardians", label: "JKL lead (Gideon/DJJ)", result: "Tier 12 · 3,002,060 dmg",
+    members: ["Jedi Knight Luke Skywalker (L, loaned)", "Mara Jade Skywalker", "Moff Gideon (loaned)", "Yoda (Dark Side Vision)", "Darth Jar Jar"] },
+  { boss: "Zeffo Tomb Guardians", label: "JKL lead (Cal Kestis/DJJ)", result: "Tier 12 · 854,165 dmg",
+    members: ["Jedi Knight Luke Skywalker (L, loaned)", "Jedi Knight Cal Kestis (loaned)", "Darth Jar Jar", "Mara Jade Skywalker", "Yoda (Dark Side Vision)"],
+    note: "Submitter's note: “Yoda 2nd special on DJJ. Had JKL lead. Tried to gun down one guardian — DJJ does some weird bonus-turn things.”" },
+  { boss: "Zeffo Tomb Guardians", label: "JKL lead (Cal Kestis/Barriss)", result: "Tier 11 · 77%",
+    members: ["Jedi Knight Luke Skywalker (L, loaned)", "Mara Jade Skywalker", "Yoda (Dark Side Vision)", "Jedi Knight Cal Kestis (loaned)", "Barriss Offee (loaned)"],
+    note: "Submitter's note: “Cleared tier 10 with same lineup. Barriss gets 1 heal in then she's out.”" },
+  { boss: "Dryax", label: "JKL lead (Cal Kestis/DJJ)", result: "Tier 12 · 3,175,000 dmg",
+    members: ["Jedi Knight Luke Skywalker (L, loaned)", "Mara Jade Skywalker", "Jedi Knight Cal Kestis (loaned)", "Darth Jar Jar", "Yoda (Dark Side Vision)"] },
+  { boss: "Dryax", label: "Darth Jar Jar lead (Starkiller/Jaxxon)", result: "Tier 12 · 1,943,211 dmg",
+    members: ["Darth Jar Jar (L)", "Starkiller (Luke Concept)", "Mara Jade Skywalker", "Yoda (Dark Side Vision)", "Jaxxon"] },
+  { boss: "Dryax", label: "Darth Jar Jar lead (Sith loaned core)", result: "Tier 12 · 392,491 dmg",
+    members: ["Darth Jar Jar (L)", "Yoda (Dark Side Vision)", "Darth Talon (loaned)", "Dark Trooper (loaned)", "Mara Jade Skywalker"],
+    note: "Submitter's note: “Yoda special 2 on DJJ at the beginning. DJJ used all abilities. Yoda mainly basics and special 1.”" }
 ];
 function eraChip(c) { return `<span class="chip ${ASSAULT_CONF_CHIP[c] || "watch"}">${escapeHtml(c)}</span>`; }
 function eraAcctFor(key) { return state.pulls[key] || BASELINE[key] || {}; }
@@ -2232,29 +2264,43 @@ function eraUnitCell(reqs, id, name, need) {
   const ok = need && s >= need;
   return `<td style="${ok ? "color:var(--good);font-weight:600" : ""}">${s}★${el ? ` · <span style="color:var(--accent)">EL ${el}</span>` : ""}</td>`;
 }
-/* Per-tier Journey readiness: BOTH gates, star and Era Level, checked live per required unit.
-   ASSUMPTION, stated in the UI copy next to this: the EL gate is applied PER REQUIRED UNIT, because
-   era_level is a per-unit field in the API. Whether the game checks it per-unit or account-wide could
-   not be confirmed from any source, so the honest reading is surfaced rather than hidden — the "best
-   EL" figure is printed too so an account-wide interpretation can be eyeballed from the same cell. */
+/* Per-tier Journey readiness: star gate checked across every required unit (confirmed correct — the
+   official post lists all of them under each tier's star requirement). The EL gate, RESOLVED 28 Sep
+   2026 from the official post's own wording: Tiers 1-3 each name exactly ONE required unit that must
+   hit the EL threshold (see ERA_JOURNEY_TIERS' `elUnit`), so those tiers check that specific unit.
+   Tier 4 doesn't single one out in the source text, so it keeps the old conservative "any unit" reading
+   (best EL shown) with that ambiguity stated in place rather than guessed at. */
 function eraTierReadiness(tier, reqs) {
-  let starMet = 0, elMet = 0, missing = 0, bestEl = 0;
+  let starMet = 0, missing = 0, bestEl = 0;
   tier.units.forEach(([id, name]) => {
     const u = eraFindUnit(reqs, id, name);
     if (!u) { missing++; return; }
     if ((u.s || 0) >= tier.stars) starMet++;
     const el = u.el || 0;
     if (el > bestEl) bestEl = el;
-    if (el >= tier.el) elMet++;
   });
   const n = tier.units.length;
   const tone = v => v === n ? "color:var(--good);font-weight:600" : "";
-  return `<span style="${tone(starMet)}">stars ${starMet}/${n}</span> · <span style="${tone(elMet)}">EL ${elMet}/${n}</span>`
-    + `<div style="color:var(--ink-3);font-size:11px">best EL ${bestEl || "—"}, gate ${tier.el}${missing ? ` · ${missing} not unlocked` : ""}</div>`;
+  let elLine, elDetail;
+  if (tier.elUnit) {
+    const [gid, gname] = tier.elUnit;
+    const gu = eraFindUnit(reqs, gid, gname);
+    const gEl = gu ? (gu.el || 0) : 0;
+    const gateMet = !!gu && gEl >= tier.el;
+    elLine = `<span style="${gateMet ? "color:var(--good);font-weight:600" : ""}">EL gate ${gateMet ? "met" : gu ? "not yet" : "not unlocked"}</span>`;
+    elDetail = `${escapeHtml(gname)} EL ${gu ? gEl : "—"} (needs ${tier.el})`;
+  } else {
+    let elMet = 0;
+    tier.units.forEach(([id, name]) => { const u = eraFindUnit(reqs, id, name); if (u && (u.el || 0) >= tier.el) elMet++; });
+    elLine = `<span style="${tone(elMet)}">EL ${elMet}/${n}</span>`;
+    elDetail = `best EL ${bestEl || "—"}, gate ${tier.el} (which unit(s) this applies to is unconfirmed for this tier)`;
+  }
+  return `<span style="${tone(starMet)}">stars ${starMet}/${n}</span> · ${elLine}`
+    + `<div style="color:var(--ink-3);font-size:11px">${elDetail}${missing ? ` · ${missing} not unlocked` : ""}</div>`;
 }
 function eraOverviewHtml() {
   return `<div class="cardtitle">Era of Myths &amp; Legends <span class="sub">— 28 Jul → 20 Oct 2026</span>${snapChipHtml("era")}</div>
-    <div class="mnote">${eraCurrentPhrase()} Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so most of this category is sourced reference. The Era Level parts, though, ARE live: swgoh.gg's pull carries a per-unit Era Level for the Era units and a collective Era Level for the ~25 Loaned Units, so the <b>New units</b>, <b>DJJ Journey Guide</b> and <b>Era Coliseum</b> sections show real progress rather than reference figures. What's still unresolved is flagged as such in place (the EL cap, the Journey EL-gate numbers, and how the Journey applies its EL gate).</div>
+    <div class="mnote">${eraCurrentPhrase()} Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so most of this category is sourced reference. The Era Level parts, though, ARE live: swgoh.gg's pull carries a per-unit Era Level for the Era units and a collective Era Level for the ~25 Loaned Units, so the <b>New units</b>, <b>DJJ Journey Guide</b> and <b>Era Coliseum</b> sections show real progress rather than reference figures. The Journey's per-tier EL gate (which unit it applies to) was resolved 28 Sep 2026 from the official post itself; what's still genuinely unresolved is flagged in place (the exact EL cap, and Journey Tier 4's EL gate specifically).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Era units stay inside the Era ${eraChip("HIGH")}</div>
     <div class="intelnote">Era units — the 7 new characters AND the ~25 temporary <b>“Loaned Units”</b> (existing permanent-roster characters temporarily boosted this Era) — can ONLY be used in Era content (Coliseum, Era Challenges, Episode/Journey content). They are NOT usable in GAC, TW, Arena or other Legacy modes for the duration of the Era. At Era end, all Era-unit investment converts automatically to permanent Legacy stats via a fixed Era Level lookup table — see the “Era Level &amp; currency” section for the confirmed conversion points and the one genuinely unresolved number (the EL cap). Two independent fetches of the same official EA Forums 10-Year Anniversary/Title Update post agreed on all of this.</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">After the Era ends</div>
@@ -2301,13 +2347,15 @@ function eraJourneyHtml() {
         <td style="font-size:11.5px">${eraTierReadiness(t, reqsTiny)}</td>
       </tr>`).join("")}
     </table></div>
-    <div class="mnote" style="margin-top:8px">The per-account columns check <b>both gates live</b> — star level and Era Level — for every unit that tier requires, from the pulled roster (swgoh.gg returns a per-unit Era Level for Era units). Each cell also prints the highest EL on the required set against the tier's gate, and how many of the required units aren't unlocked yet.</div>
-    <div class="intelnote"><b>Assumption — how the EL gate is applied:</b> these columns check the tier's EL gate <b>per required unit</b>, because <code>era_level</code> is a per-unit field in the API. Whether the game itself checks it per-unit or account-wide could not be confirmed from any source found ${eraChip("LOW-MODERATE")} — so the “best EL” figure is shown alongside, and an account-wide reading can be eyeballed from it. Treat the per-unit count as the conservative view.</div>
-    <div class="intelnote"><b>EL gates are MODERATE confidence:</b> the figures shown (EL 90/95/110/125) are the swgoh.gg-news version. A separate EA-forums fetch gave slightly different EL numbers that were never reconciled against a primary source. The tier <b>shape</b> itself is HIGH confidence — 4 tiers, escalating 4★→7★, The Ronin joining at Tier 3.</div>
-    <div class="srcline">Sources: swgoh.gg news (tier/EL/shard table) · official EA Forums post summary (Week-9 unlock) · unreconciled EA-forums fetch (competing EL figures, flagged above) · live swgoh.gg player API (per-unit era_level, verified 3 Sep 2026).</div>`;
+    <div class="mnote" style="margin-top:8px">The per-account columns check <b>both gates live</b> — star level (every required unit) and the tier's Era Level gate — from the pulled roster (swgoh.gg returns a per-unit Era Level for Era units).</div>
+    <div class="intelnote"><b>RESOLVED 28 Sep 2026 — how the EL gate is applied:</b> read directly off the official EA Forums Game Info Hub post itself (not a secondhand summary). Tiers 1-3 each gate their EL requirement on <b>one specific named unit</b>, not the whole core: Tier 1 → Yoda (Dark Side Vision) at EL 90; Tier 2 → Starkiller (Luke Concept) at EL 95; Tier 3 → Mara Jade Skywalker at EL 110 ${eraChip("HIGH")}. Tier 4's own entry text ("At 7 Stars and EL 125") lists all 6 required units without singling one out the way Tiers 1-3 do, so that one genuinely stays unresolved — shown as an any-unit/EL-125 reading with the best EL on hand printed alongside ${eraChip("LOW-MODERATE")}.</div>
+    <div class="intelnote"><b>EL gate values (90/95/110/125):</b> HIGH confidence — read straight off the official post's Journey Guide entry-requirements section, "Version 4.0". The tier <b>shape</b> is likewise HIGH confidence — 4 tiers, escalating 4★→7★, The Ronin joining at Tier 3.</div>
+    <div class="srcline">Sources: official EA Forums Game Info Hub, "Era of Myths &amp; Legends" (forums.ea.com/blog/swgoh-game-info-hub-en/era-of-myths--legends/13578773, Version 4.0 — full Journey Guide tier/EL/shard requirements read directly, 28 Sep 2026) · live swgoh.gg player API (per-unit era_level, verified 3 Sep 2026).</div>`;
 }
 function eraColiseumHtml() {
-  const squads = ERA_COLISEUM_SQUADS.map(sq => `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--grid)">
+  const bossOrder = ["Krayt Dragon", "Jotaz", "Zeffo Tomb Guardians", "Dryax"];
+  const squads = bossOrder.map(boss => {
+    const rows = ERA_COLISEUM_SQUADS.filter(sq => sq.boss === boss).map(sq => `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--grid)">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-weight:700;color:var(--ink-1);font-size:13px">${escapeHtml(sq.label)}</span>
         <span style="color:var(--ink-3);font-size:11.5px">${escapeHtml(sq.result)}</span>
@@ -2316,6 +2364,8 @@ function eraColiseumHtml() {
       <div class="cqteams" style="margin-top:4px">${sq.members.map(m => `<div class="cqteam">${escapeHtml(m)}</div>`).join("")}</div>
       ${sq.note ? `<div class="intelnote">${escapeHtml(sq.note)}</div>` : ""}
     </div>`).join("");
+    return `<div class="cardtitle" style="margin-top:14px;font-size:13px">${escapeHtml(boss)}</div>${rows}`;
+  }).join("");
   /* Collective Era Level of the ~25 Loaned Units, straight off the pull (top-level
      loaned_unit_era_level). Modest one-liner, not a readiness widget — there's no sourced target to
      measure it against. */
@@ -2327,14 +2377,14 @@ function eraColiseumHtml() {
   return `<div class="cardtitle">Era Coliseum <span class="sub">— daily boss battles, unlocks at Player Level 10</span></div>
     <div class="mnote">Optional (very rewarding) lane alongside the Episode Track and Era Store — not gated, and not required to progress the core Era track. Current bosses: <b>Krayt Dragon, Zeffo Tomb Guardians, Jotaz, Dryax</b> ${eraChip("HIGH")} (multiple sources agree).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Scoring: once-daily high-water-mark ${eraChip("HIGH")}</div>
-    <div class="intelnote">Official wording: <b>“Bosses will rotate daily, with players attempting to achieve new high scores each day”</b> — once you've hit your best score for a boss that day, there's no need to keep re-battling it. No public day-by-day rotation calendar was found — that's a genuine gap, not an omission. Scoring is damage/point-based with escalating numbered tiers per boss (up to ~12): for Krayt Dragon, Tier 1 ≈ 11,000 pts up through Tier 11 ≈ 600,000 pts, with Tier 12 uncapped ${eraChip("MODERATE-HIGH")} — one community data source, Krayt-specific; the other 3 bosses' tier tables weren't found.</div>
+    <div class="intelnote">Official wording: <b>“Bosses will rotate daily, with players attempting to achieve new high scores each day”</b> — once you've hit your best score for a boss that day, there's no need to keep re-battling it. No public day-by-day rotation calendar was found — that's a genuine gap, not an omission. Scoring is damage/point-based with escalating numbered tiers per boss (up to ~12): for Krayt Dragon, Tier 1 ≈ 11,000 pts up through Tier 11 ≈ 600,000 pts, with Tier 12 uncapped ${eraChip("MODERATE-HIGH")} — one community data source, Krayt-specific; the other 3 bosses' own tier-point tables still weren't found (only their leaderboard results, refreshed below).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Rewards: two tracks</div>
     <div class="mnote">(1) One-time era-long <b>milestone rewards</b>, and (2) a <b>DAILY leaderboard reward</b> — daily, not weekly (this corrects an earlier assumption). The Coliseum leaderboard is one of the primary sources of <b>Relic 10 materials</b> ${eraChip("HIGH")} (official). Player-reported daily Era Currency payouts scale steeply by rank — e.g. top 10 ≈ 1,000/day vs rank 1001+ ≈ 10/day — but that's a single player forum post ${eraChip("LOW-MODERATE")}, treat as anecdotal.</div>
-    <div class="cardtitle" style="margin-top:14px;font-size:13px">Community-submitted Krayt Dragon squads <span class="sub">— Holotables.xyz crowd leaderboard, not official</span></div>
-    <div class="mnote">Coliseum squads mix the new Era units with the ~25 temporary <b>Loaned Units</b> (boosted existing characters this Era — e.g. Moff Gideon, Darth Talon, Dark Trooper, Jedi Knight Luke Skywalker, Jedi Knight Cal Kestis, Mace Windu, Qi'ra) — it is NOT restricted to the 6-7 new units. Mods are reportedly “irrelevant” to Coliseum performance since power draws from Era Level, not gear/relic/mods ${eraChip("MODERATE")} — community-reported, not officially confirmed — which is also why no per-account ownership table is shown here: this file's normal gear-based readiness math would be the wrong lens.</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">Community-submitted squads, all 4 bosses <span class="sub">— Holotables.xyz crowd leaderboard, not official</span></div>
+    <div class="mnote">Refreshed 28 Sep 2026 — the 29 Aug pass only had Krayt Dragon squads (Jotaz/Zeffo/Dryax leaderboards genuinely had no submissions yet); all 4 bosses are covered now, top 2-3 squads each. Coliseum squads mix the new Era units with the ~25 temporary <b>Loaned Units</b> (boosted existing characters this Era — e.g. Moff Gideon, Darth Talon, Dark Trooper, Jedi Knight Luke Skywalker, Jedi Knight Cal Kestis, Mace Windu, Barriss Offee) — it is NOT restricted to the 6-7 new units, and a loaned Jedi Knight Luke Skywalker/Jedi Knight Cal Kestis core now leads most of the top boards. Mods are reportedly “irrelevant” to Coliseum performance since power draws from Era Level, not gear/relic/mods ${eraChip("MODERATE")} — community-reported, not officially confirmed — which is also why no per-account ownership table is shown here: this file's normal gear-based readiness math would be the wrong lens.</div>
     <div class="mnote"><b>Your Loaned Units:</b> ${loanedLine} — the Loaned pool levels collectively, so it's one Era Level per account rather than a per-unit figure. Live from the pull.</div>
     ${squads}
-    <div class="srcline">Sources: official EA Forums post (boss list, daily rotation quote, high-water-mark scoring, Relic 10 materials) · Holotables.xyz crowd-submitted Coliseum leaderboard (squads, Krayt tier points — community data, MODERATE) · single player forum post (rank payouts, LOW-MODERATE) · live swgoh.gg player API (Loaned Units Era Level, verified 3 Sep 2026).</div>`;
+    <div class="srcline">Sources: official EA Forums Game Info Hub post (boss list, daily rotation quote, high-water-mark scoring, Relic 10 materials) · Holotables.xyz crowd-submitted Coliseum leaderboards, all 4 bosses (squads/results — community data, MODERATE, refreshed 28 Sep 2026) · single player forum post (rank payouts, LOW-MODERATE) · live swgoh.gg player API (Loaned Units Era Level, verified 3 Sep 2026).</div>`;
 }
 function eraChallengesHtml() {
   return `<div class="cardtitle">Era Challenges <span class="sub">— the Galactic Challenges replacement</span></div>
@@ -2362,10 +2412,10 @@ function eraLevelingHtml() {
       <tr><td>EL 95</td><td>Level 85 · Relic 6 · Ability 8 (Zeta)</td></tr>
     </table></div>
     <div class="mnote" style="margin-top:6px">Unused Era Materials/Currency also convert to Legacy materials at Era end.</div>
-    <div class="cardtitle" style="margin-top:14px;font-size:13px">Disputed: the Era Level cap itself</div>
-    <div class="intelnote"><b>Unresolved — two sources give different caps.</b> At the system's original launch (~Nov 2025) the cap was <b>EL 95</b>. A later community update (27 Apr 2026, pre-dating this Era) reportedly raised it to <b>EL 135</b> (converting to Relic 8). The live Journey Guide's own Tier 4 gate (EL 125) means the cap is <b>at least EL 125 for the current Era</b> — but the exact current maximum (135, or higher still) was not independently confirmed against a primary source for Myths &amp; Legends specifically. Read as: “cap confirmed at least EL 125 (Journey Tier 4); a since-superseded community update once cited EL 135/Relic 8 as the new ceiling, not independently re-confirmed for this Era.”</div>
+    <div class="cardtitle" style="margin-top:14px;font-size:13px">The Era Level cap: EL 135</div>
+    <div class="intelnote"><b>Largely resolved 28 Sep 2026.</b> swgoh.gg's own dedicated page for this Era (swgoh.gg/eras/ERA09_MYTHS/) states outright: <b>"Max Era Level: 135."</b> That's specific to Myths &amp; Legends, not a carried-forward figure from an older Era or a since-superseded community post ${eraChip("MODERATE-HIGH")} — one site, but a purpose-built Era reference page rather than a forum comment. It isn't independently corroborated by the official EA Forums post itself (which doesn't state a cap in the sections fetched), so it's not bumped to HIGH. The Journey Guide's own Tier 4 gate (EL 125) still independently confirms the cap is at least that high.</div>
     <div class="mnote"><b>No “Era Energy” found:</b> no evidence of a distinct Era Energy resource exists in any source checked — Coliseum appears to be attempt-based (once-daily high-water-mark), not energy-based. Stated plainly rather than assuming a mechanic into existence.</div>
-    <div class="srcline">Sources: official EA Forums 10-Year Anniversary/Title Update post (conversion table, currency sources — two independent fetches agreed) · community update 27 Apr 2026 (EL 135 claim, unconfirmed for this Era) · community material-naming reports (MODERATE) · live swgoh.gg player API (per-unit era_level + loaned_unit_era_level, verified 3 Sep 2026).</div>`;
+    <div class="srcline">Sources: official EA Forums Game Info Hub, "Era of Myths &amp; Legends" post (conversion table, currency sources, Journey Tier 4 EL gate) · swgoh.gg's Era of Myths &amp; Legends page (swgoh.gg/eras/ERA09_MYTHS/, EL 135 cap, checked 28 Sep 2026) · community material-naming reports (MODERATE) · live swgoh.gg player API (per-unit era_level + loaned_unit_era_level, verified 3 Sep 2026).</div>`;
 }
 function eraView(v) { state.modesnav.eraView = v; store.write(state); renderEras(); }
 function renderEras() {
@@ -8673,7 +8723,7 @@ const SNAPSHOTS = [
      "the current Era (Era 09)" is simply false, and before this nothing in the file would have
      noticed. This entry is what the strapline and the Era overview card both now read from. */
   { key: "era", label: "Era 09 “Myths & Legends” reference", tab: "modes",
-    asOf: "2026-08-29", expires: "2026-10-20", halfLife: 30,
+    asOf: "2026-09-28", expires: "2026-10-20", halfLife: 30,
     hint: "ask Claude which Era is current and to re-research its units, Journey and Coliseum" },
   /* Half-life 180: the Discarded Doctrine UNLOCK gate — which characters at which stars. Event
      requirements are set once and adjusted rarely; the file's own note says "CG occasionally adjusts

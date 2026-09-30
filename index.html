@@ -1541,7 +1541,7 @@ const EPIGRAPHS = {
   modes:    `<b>“This is where the fun begins.”</b> — weekly battle stations.`,
   mods:     `<b>“Six dots, perfectly balanced.”</b> — Mod Station protocol, Fleet Command.`,
   modopt:   `<b>“Use what you have, Commander.”</b> — the best loadout is the one already in your hangar.`,
-  tierlist: `<b>“I find your lack of data… disturbing.”</b> — nearly 11 million real battles beat a hunch.`,
+  tierlist: `<b>“I find your lack of data… disturbing.”</b> — almost 9 million real battles beat a hunch.`,
   conquest: `<b>“The path to the red crate is long, but the keycards are worth it.”</b> — sector by sector, Commander.`,
   tb:       `<b>“Many Bothans died to bring us this information.”</b> — platoon assignments, planned right.`,
   tw:       `<b>“It's a trap!”</b> — coordinate the zones, Admiral.`,
@@ -2353,7 +2353,7 @@ function eraJourneyHtml() {
     <div class="srcline">Sources: official EA Forums Game Info Hub, "Era of Myths &amp; Legends" (forums.ea.com/blog/swgoh-game-info-hub-en/era-of-myths--legends/13578773, Version 4.0 — full Journey Guide tier/EL/shard requirements read directly, 28 Sep 2026) · live swgoh.gg player API (per-unit era_level, verified 3 Sep 2026).</div>`;
 }
 function eraColiseumHtml() {
-  const bossOrder = ["Krayt Dragon", "Jotaz", "Zeffo Tomb Guardians", "Dryax"];
+  const bossOrder = [...new Set(ERA_COLISEUM_SQUADS.map(sq => sq.boss))];   /* derived, so a new boss in the data cannot be silently dropped */
   const squads = bossOrder.map(boss => {
     const rows = ERA_COLISEUM_SQUADS.filter(sq => sq.boss === boss).map(sq => `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--grid)">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -2471,14 +2471,14 @@ const META_SQUADS = [
     sources: ["swgoh.gg GAC leader-teammate usage data (Season 83, 3v3)", "allclash.com \"The Teams in Star Wars Galaxy of Heroes\" (23 Aug 2026)", "ahnaldt101.com Grand Arena team rankings (17 Sep 2026)"] },
   { name: "Rey (GL) Jedi", mode: "GAC off/def", confidence: "LOW",
     members: [["GLREY","Rey (GL)"], ["BENSOLO","Ben Solo"], ["LUMINARAUNDULI","Luminara Unduli"], ["BASTILASHANDARK","Bastila Shan (Fallen)"], ["PADAWANOBIWAN","Padawan Obi-Wan"]],
-    notes: "Standing check only, 27 Sep 2026 — composition not independently re-verified. Corrected same day after further checking: this GL DOES still appear on the current 3v3 GAC Tier List, just under the short name \"Rey\" (A-tier, 81.1% WR, 2,524 battles) rather than a full \"GL Rey\"/\"Rey (Jedi Master)\" label — the live squad card under that entry runs Amilyn Holdo/BB-8/Ben Solo/Rey (Jedi Training), the same GL Rey core tracked here, not a separate non-GL unit. She doesn't show on the current 5v5 list. Down from being an S-tier tracked top pick last pass, but not the total drop earlier phrasing implied." },
+    notes: "Standing check only, 30 Sep 2026 — composition not independently re-verified. The live 3v3 Tier List has a row labelled \"Rey\" (A-tier, 81.1% WR, only 2,524 battles; B-tier 63.1% over 1,066 battles on 5v5), but its teammates (Amilyn Holdo, BB-8, Ben Solo, Rey (Jedi Training)) differ from the core tracked here (Ben Solo, Luminara, Fallen Bastila, Padawan Obi-Wan) and the tier list does not say which Rey that row is — so this entry is deliberately NOT linked to it. Treat the tier-list row as an unconfirmed lead, not a match." },
   { name: "Jabba the Hutt (GL) Bounty Hunters", mode: "TW/GAC defense holder", confidence: "HIGH",
     members: [["JABBATHEHUTT","Jabba the Hutt (GL)"], ["KRRSANTAN","Krrsantan"], ["BOUSHH","Boushh"], ["UNDERCOVERLANDO","Skiff Guard (Lando Calrissian)"], ["EMBO","Embo"]],
     notes: "Re-confirmed 27 Sep 2026 — a current (23 Aug 2026) guide gives this exact 5-unit roster.",
     sources: ["allclash.com \"The Teams in Star Wars Galaxy of Heroes\" (23 Aug 2026)"] },
-  { name: "Grand Admiral Thrawn (GL) Empire", mode: "GAC def / TW def", confidence: "LOW-MODERATE",
-    members: [["GRANDADMIRALTHRAWN","Grand Admiral Thrawn (GL)"], ["ADMIRALPIETT","Admiral Piett"], ["MOFFGIDEONS1","Moff Gideon"], ["DEATHTROOPER","Death Trooper"], ["GRANDMOFFTARKIN","Grand Moff Tarkin"]],
-    notes: "Standing check only, 27 Sep 2026 — composition not independently re-verified. Live win rate has fallen hard: only 52.0% at 3v3 (1,455 battles, Season 83), and this leader no longer places in either current tier list's top bands, down from being tracked here as a straightforward top squad. Win rate is an offense-side measure (per this app's own Tier List caveat) so a defense-specific hold rate could still be fine — left in rather than dropped, but treat as declining rather than confirmed top-meta." },
+  { name: "Grand Admiral Thrawn Empire", mode: "GAC def / TW def", confidence: "LOW-MODERATE",
+    members: [["GRANDADMIRALTHRAWN","Grand Admiral Thrawn"], ["ADMIRALPIETT","Admiral Piett"], ["MOFFGIDEONS1","Moff Gideon"], ["DEATHTROOPER","Death Trooper"], ["GRANDMOFFTARKIN","Grand Moff Tarkin"]],
+    notes: "Standing check, 30 Sep 2026. Correction: Grand Admiral Thrawn is NOT a Galactic Legend — swgoh.gg's live player API returns is_galactic_legend = false for him (checked on both accounts), so the \"(GL)\" label this entry carried was wrong and has been removed. Composition not independently re-verified. Live win rate has fallen hard: only 52.0% at 3v3 (1,455 battles, Season 83), and this leader does not place in either current tier list's top bands (neither tier list shows him in its top rows). Win rate is an offense-side measure (per this app's own Tier List caveat) so a defense-specific hold rate could still be fine — left in rather than dropped, but treat as declining rather than confirmed top-meta." },
   { name: "Ahsoka Tano Rebels", mode: "Squad Arena / GAC / TW, no GL needed", tl5v5: "Ahsoka Tano", tl3v3: "Ahsoka Tano", confidence: "HIGH",
     members: [["GLAHSOKATANO","Ahsoka Tano"], ["EZRAEXILE","Ezra Bridger (Exile)"], ["PADAWANSABINE","Padawan Sabine Wren"], ["HUYANG","Huyang"], ["GENERALSYNDULLA","General Syndulla"]],
     notes: "Re-confirmed 27 Sep 2026 — identical 5-unit roster given verbatim by two independent current guides.",
@@ -2490,11 +2490,11 @@ const META_SQUADS = [
     sources: ["swgoh.gg GAC leader-teammate usage data (Season 83, 3v3)", "ahnaldt101.com Grand Arena team rankings (17 Sep 2026)"] },
   { name: "Darth Traya Sith", mode: "Squad Arena / GAC / TW def", tl5v5: "Darth Traya", tl3v3: "Darth Traya", confidence: "HIGH",
     members: [[null,"Darth Traya"], [null,"Darth Nihilus"], [null,"Savage Opress"]],
-    notes: "New addition, 27 Sep 2026 — flagged as A-tier 5v5 / B-tier 3v3 by the original pass, but a same-day re-check could not find \"Darth Traya\" as an exact leader match on either the live 5v5 or 3v3 GAC Tier List (nor is she in this app's own Tier List data) — treat those tier letters as unconfirmed, not sourced fact, until re-verified on scout. This exact 3-unit core (Nihilus + Savage Opress) is the dominant pairing in swgoh.gg's own Season 83 teammate-usage data — used in roughly 71% of the 4,508 sampled battles, well clear of the next-most-common pairings (Nihilus+Sion, or swapping in Darth Talon). base_ids not independently confirmed; falls back to name-matching.",
+    notes: "Verified 30 Sep 2026 on the live swgoh.gg tier lists: Darth Traya is A-tier on 5v5 (#20, 85.6% WR, 79.5K battles, Season 82) and B-tier on 3v3 (#28, 83.3% WR, 76.9K battles, Season 83) — the original A/B flag was right and the tier letters are now sourced. This exact 3-unit core (Nihilus + Savage Opress) is the dominant pairing in swgoh.gg's own Season 83 teammate-usage data — used in roughly 71% of the 4,508 sampled battles, well clear of the next-most-common pairings (Nihilus+Sion, or swapping in Darth Talon). base_ids not independently confirmed; falls back to name-matching.",
     sources: ["swgoh.gg GAC leader-teammate usage data (Season 83, 3v3, 4,508 battles)"] },
   { name: "Dark Trooper Moff Gideon Empire", mode: "Squad Arena / GAC / TW def", tl5v5: "Dark Trooper Moff Gideon", tl3v3: "Dark Trooper Moff Gideon", confidence: "MODERATE",
     members: [[null,"Dark Trooper Moff Gideon"], ["MOFFGIDEONS1","Moff Gideon"], ["SCOUTTROOPER_V3","Scout Trooper"]],
-    notes: "New addition, 27 Sep 2026 — a distinct unit/leader from the plain \"Moff Gideon\" already tracked as a teammate inside the Grand Admiral Thrawn (GL) Empire squad above (base_id MOFFGIDEONS1 there). The original pass flagged this as B-tier on both current 5v5 and 3v3 tier lists (90.0% / 87.8%), but a same-day re-check could not find \"Dark Trooper Moff Gideon\" (or plain \"Moff Gideon\") as an exact leader match on either live GAC Tier List, nor is it in this app's own Tier List data — treat that tier/WR claim as unconfirmed until re-verified on scout. This 3-unit core (Moff Gideon + Scout Trooper) is the single most common pairing in swgoh.gg's own Season 83 teammate-usage data (~41% of 13.3K sampled battles), clearly ahead of a Snowtrooper Commander/TIE Fighter Pilot pairing and others. Leader's own base_id not independently confirmed; falls back to name-matching.",
+    notes: "Verified in part, 30 Sep 2026: Dark Trooper Moff Gideon IS on the live 5v5 tier list — B-tier (#38, 90.0% WR, 4,347 battles, Season 82), a high win rate on a small sample. He was not among the 3v3 rows checked (ranks 1-38 plus the hidden A-tier rows), so the earlier \"87.8% 3v3\" figure is still unconfirmed. Distinct unit/leader from the plain \"Moff Gideon\" tracked as a teammate inside the Grand Admiral Thrawn Empire squad above (base_id MOFFGIDEONS1 there). This 3-unit core (Moff Gideon + Scout Trooper) is the single most common pairing in swgoh.gg's own Season 83 teammate-usage data (~41% of 13.3K sampled battles). Leader's own base_id not independently confirmed; falls back to name-matching.",
     sources: ["swgoh.gg GAC leader-teammate usage data (Season 83, 3v3, 13.3K battles)"] },
   { name: "Rotta the Hutt Bounty Hunters", mode: "Squad Arena / GAC / TW def", tl5v5: "Rotta the Hutt", tl3v3: "Rotta the Hutt", confidence: "MODERATE",
     members: [[null,"Rotta the Hutt"], ["GAMORREANGUARD","Gamorrean Guard"], ["CADBANE","Cad Bane"]],
@@ -2605,7 +2605,8 @@ const META_SQUADS = [
     notes: "Newly confirmed as AAT-specific after a dedicated search: swgoh-tippstricks.jimdofree.com's raid-squad guide is organized by raid with distinct, clearly-labeled \"HEROIC AAT TANK TAKEDOWN\" and \"HEROIC RANCOR RAID\" sections, and lists an \"Ima Gun Di\" team explicitly under AAT Phase 1: Ima-Gun Di (lead), Yoda, Anakin Skywalker, Luminara Unduli, plus a flexible 5th given as Ahsoka Tano / Aayla Secura / General Kenobi (General Kenobi shown here as the pick; the other two are equally documented alternates from the same source). This resolves the earlier ambiguous-scope concern. Independently, gaming-fans.com's AAT Phase 1 guide separately corroborates the archetype and leader — \"most people ran Ima-Gun Di lead\" for his Defense/Counter Chance, with Luminara Unduli/Barriss Offee as healers and Aayla Secura/Jedi Knight Anakin as possible teammates — but without giving one fixed 5-unit list, so it confirms the leader/core rather than the exact roster. The same jimdofree.com source also lists a separate \"Tenacity Jedi\" team led by Aayla Secura instead (same Yoda/Luminara core, Anakin or Qui-Gon Jinn, same flexible 5th) as an alternate, not tracked as its own row here.",
     sources: ["swgoh-tippstricks.jimdofree.com Raid Squads guide", "gaming-fans.com AAT Phase 1 Teams & Strategy"] }
 ];
-/* Fleet Arena reference — from swgoh.gg's live GAC Fleet Offense Tier List (Season 81, pulled 9 Aug 2026,
+/* Fleet Arena reference — from swgoh.gg's live GAC Fleet Offense Tier List (originally Season 81, pulled 9 Aug 2026;
+   re-checked against Season 83 on 30 Sep 2026 — every tier placement unchanged,
    based on 3.55M first-attempt Kyber-league battles). Matched by unit name, not base_id — ship base_ids
    aren't independently verified elsewhere in this file the way character base_ids are (see the GL Roadmap
    comment above), so name-matching against the pulled roster is the honest option. Two fleets below ship
@@ -2613,8 +2614,8 @@ const META_SQUADS = [
    tier-only (flagship ownership/star check) since their exact supporting lineups weren't confirmed by this
    research pass — verify at swgoh.gg/gac/ship-counters/ before committing zeta/relic investment to a comp. */
 const META_FLEETS = [
-  { name: "Leviathan (First Order)", mode: "Fleet Arena — S-tier, Season 81", tlFleet: "Leviathan", members: [["Leviathan", 7], ["Fury-class Interceptor", 7], ["B-28 Extinction-class Bomber", 7], ["TIE Dagger", 7]] },
-  { name: "Profundity (Rebel)", mode: "Fleet Arena — A-tier, Season 81", tlFleet: "Profundity", members: [["Profundity", 7], ["Han's Millennium Falcon", 7], ["Outrider", 7], ["Rebel Y-wing", 7]] }
+  { name: "Leviathan (First Order)", mode: "Fleet Arena — S-tier, Season 83", tlFleet: "Leviathan", members: [["Leviathan", 7], ["Fury-class Interceptor", 7], ["B-28 Extinction-class Bomber", 7], ["TIE Dagger", 7]] },
+  { name: "Profundity (Rebel)", mode: "Fleet Arena — A-tier, Season 83", tlFleet: "Profundity", members: [["Profundity", 7], ["Han's Millennium Falcon", 7], ["Outrider", 7], ["Rebel Y-wing", 7]] }
 ];
 /* Corrected 27 Sep 2026 (Opus review pass): Endurance and Home One had drifted out of sync with the
    freshly-pulled TIER_LIST fleet category below — this list wasn't touched in the same-day refresh that
@@ -2640,7 +2641,7 @@ const META_FLEET_TIER = [
    Season 82 (3.53M battles); 3v3 and Fleet are both Season 83 and still "in progress" per the site itself,
    so their bands can still move before the season closes. */
 const TIER_LIST = {
-  updated: "27 Sep 2026",
+  updated: "30 Sep 2026",
   url: "https://swgoh.gg/tier-list/",
   categories: [
     { key: "5v5", label: "5v5 Squads (GAC)", url: "https://swgoh.gg/tier-list/gac/", season: 82, battles: "3.53M first-attempt battles",
@@ -2660,28 +2661,41 @@ const TIER_LIST = {
         { leader: "Queen Amidala", tier: "A", wr: 77.1, battles: "21.3K" },
         { leader: "Jedi Master Kenobi", tier: "A", wr: 83.6, battles: "93.8K" },
         { leader: "Pirate King Hondo Ohnaka", tier: "A", wr: 81.9, battles: "19.6K" },
-        { leader: "Rotta the Hutt", tier: "B", wr: 82.2, battles: "27.7K" }
+        { leader: "Darth Malgus", tier: "A", wr: 91.3, battles: "78.8K" },
+        { leader: "Darth Traya", tier: "A", wr: 85.6, battles: "79.5K" },
+        { leader: "Jabba the Hutt", tier: "B", wr: 80.4, battles: "21.3K" },
+        { leader: "Jedi Master Luke Skywalker", tier: "B", wr: 81.5, battles: "34.7K" },
+        { leader: "Rotta the Hutt", tier: "B", wr: 76.0, battles: "22.6K" },
+        { leader: "Dark Trooper Moff Gideon", tier: "B", wr: 90.0, battles: "4,347" }
       ] },
     { key: "3v3", label: "3v3 Squads (GAC)", url: "https://swgoh.gg/tier-list/3v3/", season: 83, battles: "2.65M first-attempt battles",
       squads: [
         { leader: "Sith Eternal Emperor", tier: "S", wr: 89.9, battles: "37.4K" },
-        { leader: "The Stranger", tier: "S", wr: 91.2, battles: "55.7K" },
+        { leader: "The Stranger", tier: "S", wr: 91.2, battles: "55.8K" },
         { leader: "Lord Vader", tier: "S", wr: 92.7, battles: "34.1K" },
         { leader: "Supreme Leader Kylo Ren", tier: "S", wr: 89.7, battles: "82.5K" },
-        { leader: "Darth Bane", tier: "S", wr: 89.9, battles: "67.9K" },
+        { leader: "Darth Bane", tier: "S", wr: 89.9, battles: "68K" },
         { leader: "Leia Organa", tier: "S", wr: 80.1, battles: "127K" },
-        { leader: "Ahsoka Tano", tier: "A", wr: 91.3, battles: "7,986" },
+        { leader: "Ahsoka Tano", tier: "A", wr: 91.2, battles: "7,989" },
         { leader: "Queen Amidala", tier: "A", wr: 82.7, battles: "68.3K" },
         { leader: "Rey", tier: "A", wr: 81.1, battles: "2,524" },
         { leader: "Ugnaught", tier: "A", wr: 93.1, battles: "29.6K" },
         { leader: "Jedi Master Kenobi", tier: "A", wr: 86.5, battles: "71.6K" },
         { leader: "Cere Junda", tier: "A", wr: 87.4, battles: "66.6K" },
         { leader: "Bo-Katan (Mand'alor)", tier: "A", wr: 84.2, battles: "68.5K" },
-        { leader: "Hondo Ohnaka", tier: "A", wr: 91.5, battles: "9,505" },
+        { leader: "Hondo Ohnaka", tier: "A", wr: 91.5, battles: "9,507" },
         { leader: "Satele Shan", tier: "A", wr: 77.8, battles: "82K" },
         { leader: "Darth Maul", tier: "A", wr: 94.4, battles: "46" },
         { leader: "Ezra Bridger", tier: "A", wr: 91.1, battles: "1,977" },
-        { leader: "Rotta the Hutt", tier: "A", wr: 89.8, battles: "33.2K" }
+        { leader: "Cassian Andor (Undercover)", tier: "A", wr: 87.5, battles: "5,113" },
+        { leader: "Rotta the Hutt", tier: "A", wr: 86.1, battles: "29K" },
+        { leader: "Darth Malgus", tier: "A", wr: 92.0, battles: "49.1K" },
+        { leader: "Maz Kanata", tier: "A", wr: 88.8, battles: "8,685" },
+        { leader: "Jedi Master Luke Skywalker", tier: "A", wr: 85.1, battles: "47.8K" },
+        { leader: "Jabba the Hutt", tier: "A", wr: 86.7, battles: "30K" },
+        { leader: "Baylan Skoll", tier: "A", wr: 86.8, battles: "65.6K" },
+        { leader: "Pirate King Hondo Ohnaka", tier: "A", wr: 76.3, battles: "4,327" },
+        { leader: "Great Mothers", tier: "A", wr: 79.2, battles: "57.8K" }
       ] },
     { key: "fleet", label: "Fleet (GAC)", url: "https://swgoh.gg/tier-list/fleet/", season: 83, battles: "2.65M first-attempt battles",
       squads: [
@@ -2689,13 +2703,13 @@ const TIER_LIST = {
         { leader: "Profundity", tier: "A", wr: 98.5, battles: "30.6K" },
         { leader: "Executor", tier: "B", wr: 92.8, battles: "15.7K" },
         { leader: "Home One", tier: "B", wr: 95.8, battles: "1,159" },
-        { leader: "Chimaera", tier: "B", wr: 83.3, battles: "3,276" },
-        { leader: "Endurance", tier: "C", wr: 49.3, battles: "565" },
-        { leader: "Negotiator", tier: "C", wr: 80.0, battles: "7,619" },
+        { leader: "Chimaera", tier: "B", wr: 83.4, battles: "3,281" },
+        { leader: "Endurance", tier: "C", wr: 49.2, battles: "566" },
+        { leader: "Negotiator", tier: "C", wr: 80.0, battles: "7,620" },
         { leader: "Executrix", tier: "C", wr: 64.8, battles: "954" },
-        { leader: "Malevolence", tier: "C", wr: 66.0, battles: "5,712" },
+        { leader: "Malevolence", tier: "C", wr: 66.0, battles: "5,714" },
         { leader: "Raddus", tier: "D", wr: 71.2, battles: "1,632" },
-        { leader: "Finalizer", tier: "D", wr: 28.4, battles: "807" }
+        { leader: "Finalizer", tier: "D", wr: 28.4, battles: "809" }
       ] }
   ]
 };
@@ -2773,7 +2787,7 @@ const RAID_INTEL = [
    (5v5, still the relevant format for Territory War) — mid-core meta, not bleeding-edge whale comps.
    Squad selection and "def" rosters were verified against the S/A-tier DEFENSE-side leaderboards pulled
    directly from swgoh.gg on the research date, not offense placement or general popularity. Four squads
-   from the 9 Aug 2026 pass — Grand Admiral Thrawn (GL), Padme Amidala (Naboo/Separatist), the JMK/GAS
+   from the 9 Aug 2026 pass — Grand Admiral Thrawn, Padme Amidala (Naboo/Separatist), the JMK/GAS
    utility squad, and the GMY "Humbling" squad — no longer place in either format's top defense tiers and
    were dropped rather than carried forward unverified. The "why"/counter reasoning below is drawn from
    established kit mechanics and community consensus, the same methodology as the original pass — swgoh.gg
@@ -2857,54 +2871,55 @@ const TB_ROTE = [
   ]}
 ];
 
-/* Baseline snapshot — account-level fields (GP/arena/GAC) refreshed via a live swgoh.gg pull 2 Sep 2026;
-   the per-unit `reqs` below were themselves refreshed 3 Sep 2026 from swgoh.gg's live `units` array, so
+/* Baseline snapshot — every field (account-level GP/arena/GAC AND per-unit `reqs`) refreshed via a live
+   swgoh.gg API pull on 30 Sep 2026 (earlier passes: 2 Sep account fields, 3 Sep per-unit reqs). The notes
+   below describe the 3 Sep pass; from swgoh.gg's live `units` array, so
    the API DOES return per-character gear/relic detail (fetchPlayer sets charDataLive when that array is
    present). The degraded path — charDataLive:false, keeping the last known per-unit reqs — exists only
    for if swgoh.gg ever stops returning it. Shown until the first live pull from this browser. */
 const BASELINE = {
   ollie: {
-    fetchedAt: null, fetchedLabel: "Claude review · 3 Sep 2026 (all figures live via swgoh.gg, including per-unit reqs — press Pull latest data to refresh)",
-    gp: 8055025, gpChar: 4775963, gpShip: 3279062, glCount: 3,
-    glNote: "Jabba R9 · SLKR R9 · Rey R8", fleetRank: 66, fleetNote: "Executor fleet",
-    gac: "Carb 5", gacNote: "983 SR", extraNote: "127 zetas · 8 omis",
-    loanedEraLevel: 66,
+    fetchedAt: null, fetchedLabel: "Claude review · 30 Sep 2026 (all figures live via swgoh.gg, including per-unit reqs — press Pull latest data to refresh)",
+    gp: 8183401, gpChar: 4875028, gpShip: 3308373, glCount: 3,
+    glNote: "Jabba R9 · SLKR R9 · Rey R8", fleetRank: 80, fleetNote: "Executor fleet",
+    gac: "Carb 5", gacNote: "1,330 SR", extraNote: "129 zetas · 8 omis",
+    loanedEraLevel: 89,
     reqs: {
       /* Per-unit values refreshed 3 Sep 2026 from the live swgoh.gg units array (the API never actually
          dropped it — see the note in fetchPlayer()). The 7 Aug snapshot this replaced was badly stale:
          Wicket 4★G12 → 7★R3, Kneesaa 4★R5 → 7★R7, Drogan 3★G5 → 6★R5, Threepio & Chewie 4★G12 → 7★G13. */
       CAPTAINREX:{s:7,g:13,r:7}, COMMANDERLUKESKYWALKER:{s:7,g:13,r:5}, C3POCHEWBACCA:{s:7,g:13,r:0},
-      PRINCESSKNEESAA:{s:7,g:13,r:7}, SCOUTTROOPER_V3:{s:7,g:5,r:0}, CAPTAINDROGAN:{s:6,g:13,r:5},
-      R2D2_LEGENDARY:{s:7,g:13,r:1}, HOTHHAN:{s:7,g:13,r:3}, HOTHLEIA:{s:7,g:13,r:3},
+      PRINCESSKNEESAA:{s:7,g:13,r:7}, SCOUTTROOPER_V3:{s:7,g:13,r:5}, CAPTAINDROGAN:{s:7,g:13,r:7},
+      R2D2_LEGENDARY:{s:7,g:13,r:7}, HOTHHAN:{s:7,g:13,r:3}, HOTHLEIA:{s:7,g:13,r:3},
       BOUSHH:{s:7,g:13,r:5}, ADMINISTRATORLANDO:{s:7,g:13,r:3}, WICKET:{s:7,g:13,r:3},
-      CHIEFCHIRPA:{s:7,g:12,r:0}, LOBOT:{s:7,g:8,r:0}, ADMIRALACKBAR:{s:7,g:12,r:0},
+      CHIEFCHIRPA:{s:7,g:13,r:3}, LOBOT:{s:7,g:12,r:0}, ADMIRALACKBAR:{s:7,g:13,r:3},
       /* GLs already owned (from glNote) — marks them "owned" on the GL Roadmap until a live pull fills in real requirement-unit data */
       JABBATHEHUTT:{s:7,g:13,r:9}, SUPREMELEADERKYLOREN:{s:7,g:13,r:9}, GLREY:{s:7,g:13,r:8},
       /* Era units (Era of Myths & Legends), live 3 Sep 2026. `el` = Era Level, the real progression
          axis for these — the g/r values are the API's derived legacy-equivalents and the Eras tab
          deliberately never shows them (see eraUnitCell). Only the 3 unlocked Era units exist here;
          the other 4 are absent from the pull because they aren't unlocked. */
-      LUKESTARKILLER:{s:3,g:7,r:0,el:55}, MARAJADESKYWALKER:{s:3,g:6,r:0,el:47}, YODADSV:{s:3,g:6,r:0,el:47}
+      LUKESTARKILLER:{s:3,g:8,r:0,el:69}, MARAJADESKYWALKER:{s:3,g:8,r:0,el:67}, YODADSV:{s:3,g:8,r:0,el:67}
     }
   },
   tiny: {
     fetchedAt: null, fetchedLabel: "Claude review · 3 Sep 2026 (all figures live via swgoh.gg, including per-unit reqs — press Pull latest data to refresh)",
-    gp: 7763554, gpChar: 4575986, gpShip: 3187568, glCount: 2,
-    glNote: "Rey R8 · SLKR R8 (+GAS R8)", fleetRank: 37, fleetNote: "Negotiator fleet",
-    gac: "Carb 5", gacNote: "1,106 SR", extraNote: "116 zetas · 6 omis",
-    loanedEraLevel: 67,
+    gp: 7880405, gpChar: 4696499, gpShip: 3183906, glCount: 3,
+    glNote: "Rey R8 · SLKR R8 · Leia R0 (+GAS R8)", fleetRank: 37, fleetNote: "Negotiator fleet",
+    gac: "Carb 4", gacNote: "1,548 SR", extraNote: "125 zetas · 6 omis",
+    loanedEraLevel: 90,
     reqs: {
       /* Per-unit values refreshed 3 Sep 2026 from the live swgoh.gg units array. The 7 Aug estimates
          this replaced undersold the account badly — 11 of 15 Leia requirements are actually done. */
       CAPTAINREX:{s:7,g:13,r:7}, COMMANDERLUKESKYWALKER:{s:7,g:13,r:7}, C3POCHEWBACCA:{s:7,g:13,r:7},
-      PRINCESSKNEESAA:{s:7,g:13,r:7}, SCOUTTROOPER_V3:{s:7,g:13,r:6}, CAPTAINDROGAN:{s:7,g:13,r:5},
-      R2D2_LEGENDARY:{s:7,g:12,r:0}, HOTHHAN:{s:7,g:13,r:5}, HOTHLEIA:{s:7,g:13,r:5},
-      BOUSHH:{s:7,g:13,r:5}, ADMINISTRATORLANDO:{s:7,g:13,r:5}, WICKET:{s:7,g:13,r:3},
-      CHIEFCHIRPA:{s:7,g:13,r:3}, LOBOT:{s:7,g:12,r:0}, ADMIRALACKBAR:{s:7,g:13,r:3},
+      PRINCESSKNEESAA:{s:7,g:13,r:7}, SCOUTTROOPER_V3:{s:7,g:13,r:7}, CAPTAINDROGAN:{s:7,g:13,r:7},
+      R2D2_LEGENDARY:{s:7,g:13,r:8}, HOTHHAN:{s:7,g:13,r:5}, HOTHLEIA:{s:7,g:13,r:5},
+      BOUSHH:{s:7,g:13,r:6}, ADMINISTRATORLANDO:{s:7,g:13,r:5}, WICKET:{s:7,g:13,r:3},
+      CHIEFCHIRPA:{s:7,g:13,r:3}, LOBOT:{s:7,g:13,r:3}, ADMIRALACKBAR:{s:7,g:13,r:3},
       /* GLs already owned (from glNote) — marks them "owned" on the GL Roadmap until a live pull fills in real requirement-unit data */
-      GLREY:{s:7,g:13,r:8}, SUPREMELEADERKYLOREN:{s:7,g:13,r:8}, GENERALSKYWALKER:{s:7,g:13,r:8},
-      /* Era units (Era of Myths & Legends), live 3 Sep 2026 — see the note on the ollie block above. */
-      LUKESTARKILLER:{s:3,g:7,r:0,el:55}, YODADSV:{s:3,g:6,r:0,el:48}, MARAJADESKYWALKER:{s:3,g:5,r:0,el:34}
+      GLREY:{s:7,g:13,r:8}, SUPREMELEADERKYLOREN:{s:7,g:13,r:8}, GENERALSKYWALKER:{s:7,g:13,r:8}, GLLEIA:{s:7,g:9,r:0},
+      /* Era units (Era of Myths & Legends), live 30 Sep 2026 — see the note on the ollie block above. */
+      LUKESTARKILLER:{s:3,g:8,r:0,el:69}, YODADSV:{s:3,g:8,r:0,el:68}, MARAJADESKYWALKER:{s:3,g:8,r:0,el:69}
     }
   }
 };
@@ -3254,7 +3269,7 @@ const TIPS = {
     { sev: "fixnow", t: "C-3PO & Chewie stuck at R0 — Leia needs R7", note: "This is the actual long pole now, not R2-D2: gear is already G13, so it's a straight 7-tier relic climb — the single biggest ask left on the account. Feed it signal data first.", check: relic("C3POCHEWBACCA", 7) },
     { sev: "fixnow", t: "Lobot is G12 with 0 relic (Leia needs R3)", note: "One gear piece short of G13 before the relic climb even starts — the second real long pole now that the star wall is down. Push him to G13, then start relics.", check: [gear("LOBOT", 13), relic("LOBOT", 3)] },
     { sev: "keep", t: "Leia's star wall is completely down — all 15 requirements are 7★", note: "Huge shift since August: even Captain Drogan (was 6★) got there, and he's now fully done at R7. From here Leia is a pure relic race — no more shard farms competing with the relic push for currency.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
-    { sev: "improve", t: "Six Leia relic wins are only two tiers away", note: "Lando R3→R5, Commander Luke R5→R7, Scout Trooper R5→R7, R2-D2 R6→R8, Captain Han R3→R5, ROLO R3→R5 — all already G13, no star gates. Clearing these takes Leia from 7/15 to 13/15 done for a few weeks of mid-tier relic mats.", check: [relic("ADMINISTRATORLANDO", 5), relic("COMMANDERLUKESKYWALKER", 7), relic("SCOUTTROOPER_V3", 7), relic("R2D2_LEGENDARY", 8), relic("HOTHHAN", 5), relic("HOTHLEIA", 5)] },
+    { sev: "improve", t: "Six Leia relic wins are only two tiers away", note: "Lando R3→R5, Commander Luke R5→R7, Scout Trooper R5→R7, R2-D2 R7→R8, Captain Han R3→R5, ROLO R3→R5 — all already G13, no star gates. Clearing these takes Leia from 7/15 to 13/15 done for a few weeks of mid-tier relic mats.", check: [relic("ADMINISTRATORLANDO", 5), relic("COMMANDERLUKESKYWALKER", 7), relic("SCOUTTROOPER_V3", 7), relic("R2D2_LEGENDARY", 8), relic("HOTHHAN", 5), relic("HOTHLEIA", 5)] },
     { sev: "keep", t: "Ewok trio (Wicket, Chief Chirpa, Kneesaa) is fully done for Leia", note: "All three hit their Leia relic targets already — the TB double-dip gearing paid off. Ewok TB ops are now just TB scoring, not a Leia farm anymore." },
     { sev: "improve", t: "No General Skywalker despite 8.18M GP", note: "Not urgent — but after Leia, Padmé → GAS (Ahsoka's GL) is the next journey, and his 501st also carries a whole RotE zone." },
     { sev: "watch", t: "Freeze luxury relics until Leia is done", note: "With only C3PO & Chewie and Lobot left as real long poles, every relic mat should still have a Leia address — a Kelleran or Paz sidegrade now is exactly how GLs slip a year." },
@@ -3267,7 +3282,7 @@ const TIPS = {
     { sev: "improve", t: "2 Set 33 datacrons built — the Tier 6 is great, the Tier 3 needs work", note: "Your Tier 6 Set 33 is close to the ceiling for a single datacron — keep it. The second is still only Tier 3; level it up toward T6 to unlock its full alignment payoff." },
     { sev: "improve", t: "Jedi Master Luke Skywalker is the clear next target — 6 of 14 requirements already met", note: "Chewbacca is one relic tier from done (R5→R6). C-3PO (R3→R5) and Hermit Yoda (R3→R5) are two tiers out. Note the roadmap itself flags this as an older (2020) GL with thinner documentation — verify current relic numbers in-game before committing hard.", check: [relic("CHEWBACCALEGENDARY", 6), relic("C3POLEGENDARY", 5), relic("HERMITYODA", 5)] },
     { sev: "watch", t: "Five Jedi Master Luke units need gear before relics even start", note: "Mon Mothma (G12), Obi-Wan Kenobi/Old Ben (G10), Princess Leia (G8), Wedge Antilles (G8) and Biggs Darklighter (G5) are all still R0 — Biggs is the furthest back and the one to start feeding gear first." },
-    { sev: "fixnow", t: "Executor is still only 4★ (63.5K power) — weaker than your active Negotiator", note: "Crew has been done for a while: Boba Fett R10, Piett R10, Razor Crest fully starred (7★). Hull stars are the only reason Negotiator (7★, 66K power) still edges it out — get Executor to 7★ and it becomes the stronger ship immediately." },
+    { sev: "fixnow", t: "Executor is still only 4★ (63.5K power) — weaker than your active Negotiator", note: "Crew has been done for a while: Boba Fett R8, Piett R8, Razor Crest fully starred (7★). Hull stars are the only reason Negotiator (7★, 66K power) still edges it out — get Executor to 7★ and it becomes the stronger ship immediately." },
     { sev: "watch", t: "Freeze luxury relics until Jedi Master Luke's near-done units land", note: "Chewbacca, C-3PO and Hermit Yoda are all two tiers or fewer away — finish those before spending relic mats on anything not on this chain." },
     { sev: "watch", t: "Jedi Knight Revan is a dead end without Darth Revan or Malak", note: "Still G10 with no further Old Republic support on this account — zero further investment until after the next Legend push, if ever." },
     { sev: "keep", t: "Mandalorian squad (Bo-Katan Mand'alor R8, both omicrons)", note: "Genuinely meta for GAC and TW — keep it modded and together." }
@@ -5697,7 +5712,7 @@ function fleetStatus(fleet, reqs) {
   }));
 }
 function fleetTierHtml(reqs) {
-  return `<div class="cardtitle">Fleet tier reference <span class="sub">— flagship ownership, Season 81</span>${snapChipHtml("meta-fleets")}</div>
+  return `<div class="cardtitle">Fleet tier reference <span class="sub">— flagship ownership, Season 83</span>${snapChipHtml("meta-fleets")}</div>
     <div class="mnote">Flagship-only check (supporting lineups above cover the two confirmed comps) — live win-rate/tier data from swgoh.gg's Tier List tool, pulled ${TIER_LIST.updated}. <a href="#" style="color:var(--accent)" onclick="switchTab('tierlist');return false;">Full Tier List tab →</a></div>
     <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px">
       ${META_FLEET_TIER.map(f => {
@@ -6332,7 +6347,7 @@ const EVENT_CAT_CHIP = {
   "Resource Event": "keep"
 };
 const eventCrud = makeListCrud(() => state.events.items,
-  () => ({ id: "e" + Date.now(), name: "New event", cat: "Other", date: new Date().toISOString().slice(0, 10), ends: "", note: "" }),
+  () => ({ id: "e" + Date.now(), name: "New event", cat: "Other", date: localISODate(), ends: "", note: "" }),
   renderEvents);
 /* Event rows are addressed by their stable id rather than position, because the list is re-sorted by
    date on every render — resolve the id to an index for the shared crud. */
@@ -6389,9 +6404,11 @@ function eventReminderHtml() {
       <b style="font-size:13px">${escapeHtml(e.name)}</b>
     </div>`).join("");
 }
+/* Local calendar date (YYYY-MM-DD). toISOString() is UTC, so in AU evenings it reports yesterday. */
+function localISODate(d) { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 function eventsListHtml(mode) {
   const allItems = state.events.items.concat(executorDerivedEvents()).sort((a, b) => a.date.localeCompare(b.date));
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localISODate();
   const upcoming = allItems.filter(e => (e.ends || e.date) >= today);
   const items = mode === "next" ? (upcoming.length ? upcoming : allItems).slice(0, 8) : allItems;
   return `<div class="cardtitle">${mode === "next" ? "Current & next events" : "All events"} <span class="sub">— ${items.length} shown</span></div>
@@ -6591,7 +6608,8 @@ function gacDefenseForAccount(acctKey) {
   /* Squads whose own `mode` explicitly warns against fielding on defense (e.g. Darth Bane — "do not use
      on defense") must never surface in this recommendation list, no matter how strong their offense
      tier/readiness looks. */
-  const defenseOk = m => !/do not use on defense/i.test(m || "");
+  /* Raid squads are offense-only team builds, not defenses — exclude them as well as anything flagged "do not use on defense". */
+  const defenseOk = m => !/do not use on defense|raid/i.test(m || "");
   const squads = META_SQUADS.filter(sq => defenseOk(sq.mode)).map(sq => { const st = squadStatus(sq, reqs); return { sq, st, ...gacDefenseRank(sq, st, "squad") }; })
     .sort((a, b) => a.bucketRank - b.bucketRank || a.tierRank - b.tierRank || b.wr - a.wr);
   const fleets = META_FLEETS.filter(fl => defenseOk(fl.mode)).map(fl => { const st = fleetStatus(fl, reqs); return { sq: fl, st, ...gacDefenseRank(fl, st, "fleet") }; })
@@ -8683,7 +8701,7 @@ const SNAPSHOTS = [
      between the seasons it was pulled across. Twice the squad half-life, for the same reason the squad
      one is 30. */
   { key: "meta-fleets", label: "Fleet Arena tier reference", tab: "gaps",
-    asOf: "2026-08-09", halfLife: 60,
+    asOf: "2026-09-30", halfLife: 60,
     hint: "ask Claude to re-pull swgoh.gg's GAC Fleet Offense tier list" },
   /* Half-life 120: a 332-character aggregate of top-player mod usage. One unit's loadout shifting
      barely moves the whole, and the underlying advice ("Speed + Health on Pao") is the slowest-changing

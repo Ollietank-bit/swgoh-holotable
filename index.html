@@ -1322,6 +1322,14 @@
           <button type="button" class="recbtn" id="importBtn" onclick="importPick()">⬆ Import backup…</button>
         </div>
         <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importChosen(this)">
+        <!-- rp: the roster snapshot (state.pulls) is device-local and never in the backup above; these write it
+             out / read it back on demand only. Same hidden-file-input pattern as importFile. -->
+        <div class="mnote" id="rpSnapWhy" style="color:var(--ink-3);margin:9px 0 0"></div>
+        <div class="recovery-row">
+          <button type="button" class="recbtn" id="rpSnapExportBtn" onclick="rpExportSnapshot()">⬇ Export roster snapshot</button>
+          <button type="button" class="recbtn" id="rpSnapImportBtn" onclick="rpImportPick()">⬆ Import roster snapshot…</button>
+        </div>
+        <input type="file" id="rpSnapFile" accept="application/json,.json" style="display:none" onchange="rpImportChosen(this)">
         <div class="recovery-row">
           <button type="button" class="recbtn danger" id="forcePullBtn" onclick="forcePull()">↓ Force pull — cloud wins</button>
           <button type="button" class="recbtn danger" id="forcePushBtn" onclick="forcePush()">↑ Force push — this device wins</button>
@@ -4399,10 +4407,21 @@ const FETCH_TIMEOUT = 20000;
 async function fetchRaw(url, ms, asText) {
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), ms);
+  /* Accept: application/json on every JSON fetch (1 Oct 2026). swgoh.gg intermittently answered the player
+     API with an HTML page instead of JSON; asking for JSON explicitly is what reliably got JSON back in a
+     real browser tab. Safe on the proxy routes too, not just "swgoh.gg direct": Accept is a CORS-safelisted
+     request header (Fetch spec, "CORS-safelisted request-header") as long as its value is <=128 bytes and
+     free of the unsafe bytes ( " ( ) : < > ? @ [ \ ] { } ), which "application/json" is — so the request
+     stays a "simple" GET with NO preflight, and a proxy that never lists Accept in
+     Access-Control-Allow-Headers is unaffected. fetch() already sends "Accept: *\/*" on every request, so
+     each proxy was always receiving an Accept header; only its value changes (and a proxy that forwards
+     it now forwards the right one). my-rp-check proves the no-preflight claim against a real cross-origin
+     server that rejects OPTIONS. Text fetches (Best Mods HTML pages) keep the browser default. */
+  const init = asText ? {} : { headers: { Accept: "application/json" } };
   try {
     let r;
     try {
-      r = await fetch(url, { signal: ctl.signal });
+      r = await fetch(url, Object.assign({ signal: ctl.signal }, init));
     } catch (e) {
       /* Some browser extensions (and a few proxy front-ends) intercept fetch() and try to relay the call
          — including its options object — via window.postMessage for logging/inspection. AbortSignal isn't
@@ -4413,13 +4432,15 @@ async function fetchRaw(url, ms, asText) {
          retrying the exact same request without an abort signal, so the fetch can still go through — that
          one retry just isn't interruptible by FETCH_TIMEOUT if it hangs. */
       if (e && /AbortSignal object could not be cloned/i.test(e.message || "")) {
-        r = await fetch(url);
+        r = await fetch(url, init);
       } else {
         throw e;
       }
     }
     if (!r.ok) throw new Error("HTTP " + r.status);
-    return asText ? await r.text() : await r.json();
+    /* Not r.json(): an HTML body (bot check / rate-limit page) surfaced as a cryptic "Unexpected token <".
+       Read the text, then parse — rpParseJson() names that case clearly so the caller can retry it. */
+    return asText ? await r.text() : rpParseJson(await r.text(), r);
   } finally { clearTimeout(t); }
 }
 async function fetchJson(url, ms) { return fetchRaw(url, ms, false); }
@@ -4428,7 +4449,7 @@ async function fetchPlayer(code, onStatus) {
   for (const rt of ROUTES) {
     try {
       onStatus(rt.name + "…");
-      const j = await fetchJson(rt.url(API(code)), FETCH_TIMEOUT);
+      const j = await rpFetchRetry(rt, API(code), FETCH_TIMEOUT, false, onStatus);
       /* Only "data" is required here. CORRECTION (3 Sep 2026): an earlier note claimed swgoh.gg's
          public player API had stopped returning the top-level "units" array as of ~22 Aug 2026. That
          was a false alarm — the "verification" was done through a fetch tool that truncates large
@@ -4440,7 +4461,7 @@ async function fetchPlayer(code, onStatus) {
          result honestly rather than wiping every readiness check to empty. */
       if (!j || !j.data) throw new Error("unexpected response shape");
       return j;
-    } catch (e) { lastErr = e; }
+    } catch (e) { lastErr = rpRouteErr(lastErr, rt, e); }
   }
   throw lastErr || new Error("all routes failed");
 }
@@ -4450,7 +4471,7 @@ async function fetchViaProxies(url, { asText = false, ms = FETCH_TIMEOUT, onStat
   for (const rt of ROUTES) {
     try {
       onStatus(rt.name + "…");
-      const data = await fetchRaw(rt.url(url), ms, asText);
+      const data = await rpFetchRetry(rt, url, ms, asText, onStatus);
       if (!validate(data)) throw new Error("unexpected response shape");
       return data;
     } catch (e) { lastErr = e; }
@@ -4586,14 +4607,23 @@ function parsePlayer(j, prev) {
   };
 }
 async function pullAll() {
+  /* One pull at a time: the in-card "⟳ Pull latest data" buttons stay clickable while the header one is
+     disabled, and a second concurrent run doubles the request rate swgoh.gg sees — which is exactly what
+     tips it into answering with a bot-check page (see rpParseJson). */
+  if (rpPullBusy) return;
+  rpPullBusy = true;
   const btn = document.getElementById("pullBtn"), st = document.getElementById("pullStatus");
   btn.disabled = true; st.className = "pullstatus";
+  const rpResults = [];
   try {
     for (const a of ACCOUNTS) {
       st.textContent = `Pulling ${a.label} — `;
-      const j = await fetchPlayer(a.code, m => { st.textContent = `Pulling ${a.label} — ${m}`; });
+      /* One account failing no longer aborts the batch: record why and move on to the next account. */
+      let j, next;
+      try { j = await fetchPlayer(a.code, m => { st.textContent = `Pulling ${a.label} — ${m}`; }); next = parsePlayer(j, state.pulls[a.key]); }
+      catch (e) { rpResults.push({ a, err: e }); continue; }
       const prevPull = state.pulls[a.key];
-      state.pulls[a.key] = parsePlayer(j, prevPull);
+      state.pulls[a.key] = next;
       /* The one moment the old and new rosters both exist: diff them into state.history before the old
          one is gone. history is synced state, so the ordinary stamping write below carries it. */
       historyRecord(a.key, prevPull, state.pulls[a.key]);
@@ -4612,7 +4642,10 @@ async function pullAll() {
       store.write(state, { pulls: true, skipStamp: true, skipSync: true });
       arenaAutoLog(a.key, state.pulls[a.key]);
       store.write(state);
+      rpResults.push({ a });
     }
+    /* Any account failed → per-account report, and state.lastPull is NOT set (partial = still stale). */
+    if (rpResults.some(x => x.err)) { rpPullReport(st, rpResults); return; }
     state.lastPull = Date.now();
     store.write(state);
     /* charDataLive: false means swgoh.gg answered but without its per-unit roster array (see fetchPlayer/
@@ -4623,12 +4656,230 @@ async function pullAll() {
       ? "⚠ Updated GP/arena/mods " + new Date().toLocaleString() + " — swgoh.gg isn't returning per-character roster data right now, so gear/relic tracking for " + staleChar.map(a => a.label).join(" & ") + " is showing an earlier pull instead. Not a proxy issue — confirmed against the API directly."
       : "✓ Updated " + new Date().toLocaleString();
   } catch (e) {
-    st.className = "pullstatus err";
-    st.textContent = "Pull failed (" + (e && e.message ? e.message : e) + ") — the free CORS proxies this app relies on are unreliable and go down often. This usually isn't something a retry fixes. Showing last saved data. Ask Claude to pull fresh data for you directly instead — it can fetch swgoh.gg without needing a proxy.";
+    rpPullReport(st, [{ a: null, err: e }]);
   } finally {
+    rpPullBusy = false;
     btn.disabled = false;
     render();
+    rpRefresh();
   }
+}
+
+/* ===================== rp: robust pull + roster snapshot export/import (1 Oct 2026) ===================== */
+/* Real-world, 1 Oct 2026: swgoh.gg/api/player/{code}/ intermittently answered with an HTML page (body starts
+   "<!DOCTYPE") instead of JSON — it came back as JSON with "Accept: application/json" once the page had
+   settled, and as HTML without Accept, straight after navigation, or after rapid repeated calls. Root cause
+   unconfirmed (content negotiation, a cache keyed without Accept, or a Cloudflare bot check / rate limit);
+   the error below carries the HTTP status, content-type and page <title> so the next occurrence says which. */
+const RP_HTML_RETRY_MS = 1500;
+let rpPullBusy = false;
+function rpParseJson(text, r) {
+  const body = String(text == null ? "" : text);
+  try { return JSON.parse(body); }
+  catch (e) {
+    const head = body.slice(0, 4000);
+    if (/^\s*</.test(head)) {
+      const ct = ((r && r.headers && r.headers.get("content-type")) || "").split(";")[0].trim();
+      const title = ((head.match(/<title[^>]*>([^<]*)/i) || [])[1] || "").replace(/\s+/g, " ").trim().slice(0, 60);
+      const err = new Error("route returned a web page instead of JSON (bot check / rate limit) [HTTP " +
+        (r && r.status ? r.status : "?") + (ct ? " " + ct : "") + (title ? ', "' + title + '"' : "") + "]");
+      err.rpWebPage = true;
+      throw err;
+    }
+    throw new Error("route returned something that isn't JSON (" + (body.trim() ? e.message : "empty body") + ")");
+  }
+}
+/* One route, plus ONE short retry on that same route when it answered with a web page — the observed
+   HTML responses were transient. Any other failure (network, HTTP status, timeout) moves straight on to
+   the next route exactly as before. */
+async function rpFetchRetry(rt, url, ms, asText, onStatus) {
+  try { return await fetchRaw(rt.url(url), ms, asText); }
+  catch (e) {
+    if (!e || !e.rpWebPage) throw e;
+    if (typeof onStatus === "function") onStatus(rt.name + " sent a web page — retrying once…");
+    await new Promise(res => setTimeout(res, RP_HTML_RETRY_MS));
+    return await fetchRaw(rt.url(url), ms, asText);
+  }
+}
+/* Folds each route's failure into one error, so a web-page answer from swgoh.gg direct isn't hidden behind
+   whatever the last proxy said. Identical messages collapse to the bare message (the old wording). */
+function rpRouteErr(prev, rt, e) {
+  const parts = ((prev && prev.rpParts) || []).concat([{ name: rt.name.replace(/^proxy: /, ""), msg: String((e && e.message) || e || "failed") }]);
+  const groups = [];
+  parts.forEach(p => { const g = groups.find(x => x.msg === p.msg); if (g) g.names.push(p.name); else groups.push({ msg: p.msg, names: [p.name] }); });
+  const err = new Error(groups.length === 1 ? groups[0].msg : groups.map(g => g.names.join(", ") + ": " + g.msg).join("; "));
+  err.rpParts = parts;
+  err.rpWebPage = !!((prev && prev.rpWebPage) || (e && e.rpWebPage));
+  return err;
+}
+function rpPullReport(st, results) {
+  const failed = results.filter(x => x.err);
+  const msgOf = x => String((x.err && x.err.message) || x.err || "failed");
+  const web = failed.some(x => x.err && x.err.rpWebPage);
+  const allFailed = failed.length === results.length && results.length > 0;
+  const sameMsg = failed.every(x => msgOf(x) === msgOf(failed[0]));
+  const perAcct = results.map(x => x.err ? "✗ " + (x.a ? x.a.label : "pull") + ": " + msgOf(x) : "✓ " + x.a.label).join(", ");
+  const head = allFailed
+    ? "Pull failed (" + (sameMsg ? msgOf(failed[0]) : perAcct) + ")"
+    : "⚠ Partial pull " + new Date().toLocaleString() + " — " + perAcct + " (the updated account is saved; this still counts as an old pull until every account comes in)";
+  const why = web
+    ? " — swgoh.gg sent back a web page instead of roster data, usually its bot check or a rate limit. That passes on its own: wait a minute and press Pull again."
+    : " — the free CORS proxies this app relies on are unreliable and go down often. This usually isn't something a retry fixes.";
+  st.className = "pullstatus err";
+  st.textContent = head + why + " Showing last saved data" + (allFailed ? "" : " for " + failed.map(x => x.a ? x.a.label : "the rest").join(" & ")) +
+    ". Ask Claude to pull fresh data for you directly instead — it can fetch swgoh.gg without needing a proxy — or hand it this device's saved roster with ☁ Sync → ⬇ Export roster snapshot.";
+}
+
+/* ---- roster snapshot export / import ----
+   state.pulls is DEVICE-LOCAL (PULLS_KEY): deliberately not in exportBackup(), the Cloud Sync payload or
+   any synced field, so nothing outside this browser — the owner's assistant included — can ever see the
+   dashboard's own roster pull. These two buttons write it out / read it back ON DEMAND only. Nothing here
+   touches stateWithoutDeviceLocal(), the backup, state.lastPull or any synced field, and the import write
+   is { pulls: true, skipStamp: true, skipSync: true } — the same device-local write pullAll() uses. */
+const RP_SNAP_KIND = "holotable-roster-snapshot", RP_SNAP_VERSION = 1;
+function rpSnapAccounts() { return ACCOUNTS.filter(a => state.pulls && isPlainObject(state.pulls[a.key])); }
+function rpSnapFilename() {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  return `holotable-roster-snapshot-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+}
+function rpAcctLabel(k) { const a = ACCOUNTS.find(x => x.key === k); return a ? a.label : String(k); }
+function rpWhen(ms) { return typeof ms === "number" && ms > 0 ? new Date(ms).toLocaleString() : "an unrecorded time"; }
+function rpRefresh() {
+  const btn = document.getElementById("rpSnapExportBtn"), why = document.getElementById("rpSnapWhy");
+  if (!btn || !why) return;
+  const has = rpSnapAccounts().length > 0;
+  btn.disabled = !has;
+  btn.title = has ? "Download this device's swgoh.gg roster snapshot as a JSON file" : "No roster snapshot on this device yet — press ⟳ Pull latest data first";
+  why.textContent = has
+    ? "Roster snapshot: this device's last swgoh.gg pull, kept apart from the backup and never synced. Export it to hand it to Claude or carry it to another device."
+    : "Roster snapshot: there's none on this device yet — press ⟳ Pull latest data first, then it can be exported. Importing one still works.";
+}
+function rpExportSnapshot() {
+  try {
+    const accts = rpSnapAccounts();
+    if (!accts.length) { rpRefresh(); recoverySay("There's no roster snapshot on this device yet — press ⟳ Pull latest data first, then export it.", "bad"); return; }
+    const accounts = {};
+    accts.forEach(a => { accounts[a.key] = state.pulls[a.key]; });
+    const text = JSON.stringify({ kind: RP_SNAP_KIND, version: RP_SNAP_VERSION, exportedAt: new Date().toISOString(), accounts });
+    const name = rpSnapFilename();
+    downloadText(name, text);
+    recoverySay(`Saved ${name} (${Math.max(1, Math.round(text.length / 1024))} KB) — ` +
+      accts.map(a => `${a.label} pulled ${rpWhen(state.pulls[a.key].fetchedAt)}`).join(", ") +
+      ". It's this device's roster only: not part of the backup, never synced.", "good");
+  } catch (e) {
+    recoverySay("Roster snapshot export failed: " + String((e && e.message) || e), "bad");
+  }
+}
+function rpImportPick() {
+  const el = document.getElementById("rpSnapFile");
+  el.value = "";
+  el.click();
+}
+const rpNum = v => typeof v === "number" && Number.isFinite(v);
+const rpStrArr = v => Array.isArray(v) && v.every(x => typeof x === "string");
+/* Strict shape check against what parsePlayer() returns. Required: fetchedAt, gp, reqs, mods (every render
+   path leans on those). Every other parsePlayer field is optional — a snapshot taken from an older pull
+   may predate it — but must have the right type when present. Returns "" when sound, else the reason. */
+function rpPullProblem(p) {
+  if (!isPlainObject(p)) return "isn't an object";
+  if (!rpNum(p.fetchedAt) || p.fetchedAt <= 0) return "has no valid fetchedAt (pull time)";
+  if (p.fetchedAt > Date.now() + 86400000) return "has a pull time in the future";
+  if (!rpNum(p.gp) || p.gp < 0) return "has no valid gp";
+  if (!isPlainObject(p.reqs)) return "has no reqs (unit list)";
+  if (!Array.isArray(p.mods)) return "has no mods list";
+  for (const k of ["fetchedLabel", "glNote", "squadLeader", "fleetLeader", "fleetNote", "gac", "gacNote", "extraNote"])
+    if (k in p && typeof p[k] !== "string") return `has a non-text ${k}`;
+  for (const k of ["gpChar", "gpShip", "loanedEraLevel", "glCount"]) if (k in p && !rpNum(p[k])) return `has a non-numeric ${k}`;
+  for (const k of ["squadRank", "fleetRank"]) if (k in p && !rpNum(p[k]) && p[k] !== "—") return `has an invalid ${k}`;
+  if ("charDataLive" in p && typeof p.charDataLive !== "boolean") return "has an invalid charDataLive";
+  if ("charDataAt" in p && p.charDataAt !== null && !rpNum(p.charDataAt)) return "has an invalid charDataAt";
+  if ("gacSeason" in p && !(isPlainObject(p.gacSeason) && Object.values(p.gacSeason).every(rpNum))) return "has an invalid gacSeason";
+  for (const [id, u] of Object.entries(p.reqs)) {
+    if (!isPlainObject(u) || !rpNum(u.s) || !rpNum(u.g) || !rpNum(u.r) || (u.t !== "char" && u.t !== "ship") ||
+        ("name" in u && typeof u.name !== "string") || ("z" in u && !rpStrArr(u.z)) || ("o" in u && !rpStrArr(u.o)) || ("el" in u && !rpNum(u.el)))
+      return `has a malformed unit (${String(id).slice(0, 40)})`;
+  }
+  const stat = s => isPlainObject(s) && typeof s.n === "string" && rpNum(s.v) && typeof s.pct === "boolean";
+  for (const m of p.mods) {
+    if (!isPlainObject(m) || !["set", "slot", "rarity", "tier", "level"].every(k => rpNum(m[k])) || typeof m.char !== "string" ||
+        !stat(m.pri) || !Array.isArray(m.sec) || !m.sec.every(stat)) return "has a malformed mod";
+  }
+  if ("datacrons" in p && !(Array.isArray(p.datacrons) && p.datacrons.every(d => isPlainObject(d) && rpStrArr(d.stats) && rpStrArr(d.abilities))))
+    return "has a malformed datacrons list";
+  return "";
+}
+/* Never throws: everything that isn't exactly a v1 roster snapshot for known accounts is refused with a
+   reason, before a single byte of state is touched. */
+function rpValidateSnapshot(text) {
+  try {
+    let s;
+    try { s = JSON.parse(text); }
+    catch (e) { return { ok: false, msg: "That file isn't valid JSON, so nothing was changed — " + e.message }; }
+    if (!isPlainObject(s)) return { ok: false, msg: `That file is a JSON ${Array.isArray(s) ? "array" : s === null ? "null" : typeof s}, not a Holotable roster snapshot — nothing was changed.` };
+    if (s.kind !== RP_SNAP_KIND) return { ok: false, msg: typeof s.stateVersion === "number"
+      ? "That's a Holotable backup, not a roster snapshot — use ⬆ Import backup… for it. Nothing was changed."
+      : "That JSON isn't a Holotable roster snapshot (no kind: \"holotable-roster-snapshot\") — nothing was changed." };
+    if (s.version !== RP_SNAP_VERSION) return { ok: false, msg: `That roster snapshot is format v${String(s.version).slice(0, 20)}, and this build reads only v${RP_SNAP_VERSION} — nothing was changed.` };
+    if (typeof s.exportedAt !== "string" || !Number.isFinite(Date.parse(s.exportedAt))) return { ok: false, msg: "That roster snapshot has no valid exportedAt date — nothing was changed." };
+    if (!isPlainObject(s.accounts) || !Object.keys(s.accounts).length) return { ok: false, msg: "That roster snapshot holds no accounts — nothing was changed." };
+    for (const [k, p] of Object.entries(s.accounts)) {
+      if (!ACCOUNTS.some(a => a.key === k)) return { ok: false, msg: `That roster snapshot names an account this app doesn't track ("${String(k).slice(0, 40)}") — nothing was changed.` };
+      const why = rpPullProblem(p);
+      if (why) return { ok: false, msg: `That roster snapshot's ${rpAcctLabel(k)} entry ${why} — nothing was changed.` };
+    }
+    return { ok: true, parsed: s };
+  } catch (e) {
+    return { ok: false, msg: "That file couldn't be checked (" + String((e && e.message) || e) + ") — nothing was changed." };
+  }
+}
+/* Newer strictly by the pull's own fetchedAt — the field parsePlayer() stamps at parse time. */
+function rpSnapNewer(snap, cur) { return !isPlainObject(cur) || !rpNum(cur.fetchedAt) || snap.fetchedAt > cur.fetchedAt; }
+function rpImportChosen(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  if (f.size > 25 * 1024 * 1024) { recoveryConfirmClose(); recoverySay(`${f.name} is far too big to be a roster snapshot — nothing was changed.`, "bad"); return; }
+  const r = new FileReader();
+  r.onerror = () => recoverySay(`Couldn't read ${f.name} — nothing was changed.`, "bad");
+  r.onload = () => {
+    const v = rpValidateSnapshot(String(r.result || ""));
+    if (!v.ok) { recoveryConfirmClose(); recoverySay(v.msg, "bad"); return; }
+    const entries = ACCOUNTS.filter(a => a.key in v.parsed.accounts).map(a => ({ a, snap: v.parsed.accounts[a.key] }));
+    const line = x => {
+      const cur = state.pulls && state.pulls[x.a.key];
+      const head = `• ${x.a.label} — GP ${Number(x.snap.gp).toLocaleString()} · pulled ${rpWhen(x.snap.fetchedAt)}`;
+      return rpSnapNewer(x.snap, cur)
+        ? head + (isPlainObject(cur) ? ` — newer than this device's (${rpWhen(cur.fetchedAt)}), will be imported` : " — this device has none, will be imported")
+        : head + ` — not newer than this device's (${rpWhen(cur.fetchedAt)}), skipped`;
+    };
+    const preview = entries.map(line).join("\n");
+    const toTake = entries.filter(x => rpSnapNewer(x.snap, state.pulls && state.pulls[x.a.key]));
+    if (!toTake.length) {
+      recoveryConfirmClose();
+      recoverySay(`Nothing imported from ${f.name} — this device already has the same or a newer pull for every account in it: ${entries.map(line).join(" ")}`, "");
+      return;
+    }
+    recoveryConfirmOpen(
+      `Import the roster snapshot from ${f.name} (exported ${rpWhen(Date.parse(v.parsed.exportedAt))})?\n\n${preview}\n\n` +
+      `Only the roster on this device changes. Ticks, notes, logs, the backup and Cloud Sync are untouched, ` +
+      `and the next ⟳ Pull latest data replaces it as usual.`,
+      `Yes — import ${toTake.map(x => x.a.label).join(" & ")}`,
+      () => {
+        if (!isPlainObject(state.pulls)) state.pulls = {};
+        /* Re-checked at confirm time: a pull may have landed while the panel was open. */
+        const done = toTake.filter(x => rpSnapNewer(x.snap, state.pulls[x.a.key]));
+        if (!done.length) { recoverySay("Nothing imported — a newer pull arrived on this device in the meantime.", ""); return; }
+        done.forEach(x => { state.pulls[x.a.key] = x.snap; });
+        store.write(state, { pulls: true, skipStamp: true, skipSync: true });
+        render();
+        rpRefresh();
+        recoverySay(localWriteFail
+          ? `Imported ${done.map(x => x.a.label).join(" & ")} for now, but this browser couldn't save it (storage full or blocked) — it will be gone after a reload.`
+          : `Imported the roster snapshot for ${done.map(x => x.a.label).join(" & ")} from ${f.name}. Saved on this device only — nothing was synced.`,
+          localWriteFail ? "bad" : "good");
+      });
+    recoverySay(`${f.name} looks like a Holotable roster snapshot. Confirm below.`, "");
+  };
+  r.readAsText(f);
 }
 
 /* ===================== Best Mods (embedded swgoh.gg snapshot + best-effort live refresh) ===================== */
@@ -8529,6 +8780,7 @@ function recoveryConfirmGo() {
    state it no longer describes. */
 function recoveryRefresh() {
   recoveryConfirmClose();
+  rpRefresh();
   const why = !syncConfigured()
     ? "Force pull and force push need Cloud Sync connected — fill in the fields above and press Save & sync now first."
     : !syncOriginOk()

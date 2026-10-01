@@ -1566,30 +1566,31 @@ const EPIGRAPHS = {
    GAC season still aren't on any public feed — log those yourself with "+ Add event" below. Ask Claude to
    re-browse swgoh.gg/events/ if this list is looking stale. */
 const EVENTS_SEED = [
-  { name: "Stormtrooper (Concept)", cat: "Era Challenge", date: "2026-09-22", ends: "2026-09-22", note: "Earn Era Currency! — live now." },
-  { name: "Call Answered", cat: "Era Battle", date: "2026-09-22", ends: "2026-09-22", note: "Guardians of Tomorrow — live now." },
-  { name: "Defense of Dathomir", cat: "Special", date: "2026-09-22", ends: "2026-09-23", note: "Earn Mother Talzin Shards! — live now." },
-  { name: "Contraband Cargo", cat: "Resource Event", date: "2026-09-22", note: "Earn Rare Rewards!" },
-  { name: "Action Jaxxon", cat: "Marquee", date: "2026-09-22", note: "Earn Rewards Daily!" },
-  { name: "Terrible Tings", cat: "Legendary", date: "2026-09-22", note: "Earn Darth Jar Jar Shards!" },
-  { name: "Rebel Roundup", cat: "Assault Battle", date: "2026-09-23", note: "Battle Rebels!" },
-  { name: "Smuggler's Run II", cat: "Resource Event", date: "2026-09-23", note: "Earn Rare Rewards!" },
-  { name: "Ghosts of Dathomir", cat: "Special", date: "2026-09-24", note: "Investigate Dathomir!" },
-  { name: "Smuggler's Run III", cat: "Resource Event", date: "2026-09-25", note: "Earn Rare Rewards!" },
-  { name: "Training Droid Smuggling", cat: "Resource Event", date: "2026-09-25", note: "Earn Training Droids!" },
-  { name: "Ground War", cat: "Assault Battle", date: "2026-09-26", note: "Battle Separatists!" },
-  { name: "Galactic Bounties II", cat: "Special", date: "2026-09-27", note: "Very Rare Event!" },
-  { name: "Endor", cat: "Omega Battle", date: "2026-09-28", note: "Now with Zetas!" },
-  { name: "Coven of Shadows", cat: "Special", date: "2026-09-29", note: "Battle the Witch Kingdom of Dathomir!" },
-  { name: "Duel of the Fates", cat: "Assault Battle", date: "2026-09-30", note: "Battle Darth Maul!" },
-  { name: "Stardust Transmission", cat: "Fleet Mastery", date: "2026-09-30", note: "Earn Profundity Blueprints!" },
-  { name: "The Wanderer's Blade", cat: "Marquee", date: "2026-10-06", note: "Earn Rewards Daily! — the 16 Aug capture had this as an absolute \"Starts Oct 7\"; this capture's countdown (14d 8h from 22 Sep) lands on Oct 6 instead — a day's drift either way is normal rounding on swgoh.gg's own countdown display, not a correction of fact." }
+  { name: "Terrible Tings", cat: "Legendary", date: "2026-10-01", ends: "2026-10-20", note: "Earn Darth Jar Jar Shards! — live now." },
+  { name: "Jaxxon", cat: "Era Challenge", date: "2026-10-01", ends: "2026-10-06", note: "Earn Era Currency! — live now." },
+  { name: "Shattered Empire", cat: "Era Battle", date: "2026-10-01", ends: "2026-10-01", note: "Secure the Galaxy! — live now, ends within the day." },
+  { name: "Stardust Transmission", cat: "Fleet Mastery", date: "2026-10-01", ends: "2026-10-01", note: "Earn Profundity Blueprints! — live now, ends within hours." },
+  { name: "Duel of the Fates", cat: "Assault Battle", date: "2026-10-01", ends: "2026-10-01", note: "Battle Darth Maul! — live now, ends within hours." },
+  { name: "Contraband Cargo", cat: "Resource Event", date: "2026-10-01", note: "Earn Rare Rewards!" },
+  { name: "Training Droid Smuggling", cat: "Resource Event", date: "2026-10-01", note: "Earn Training Droids!" },
+  { name: "Jakku", cat: "Omega Battle", date: "2026-10-02", note: "Now with Zetas!" },
+  { name: "Peridea Patrol", cat: "Assault Battle", date: "2026-10-03", note: "Battle Ezra Bridger (Exile)!" },
+  { name: "Credit Heist", cat: "Resource Event", date: "2026-10-04", note: "Earn Credits!" },
+  { name: "Bespin", cat: "Omega Battle", date: "2026-10-05", note: "Now with Zetas!" },
+  { name: "Call Answered", cat: "Era Battle", date: "2026-10-05", note: "Guardians of Tomorrow" },
+  { name: "Endor Escalation", cat: "Other", date: "2026-10-06", note: "Face off against an AT-ST!" },
+  { name: "The Wanderer's Blade", cat: "Marquee", date: "2026-10-06", note: "Earn Rewards Daily!" },
+  { name: "Fanatical Devotion", cat: "Assault Battle", date: "2026-10-07", note: "Battle Force Users!" },
+  { name: "Imperial Fleet", cat: "Omega Battle", date: "2026-10-09", note: "Now with Zetas!" }
 ];
-const EVENTS_SEED_VERSION = 4;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
+/* RE-READ 1 Oct 2026 01:05 UTC from swgoh.gg/events/ (Claude in Chrome, live DOM read, "Showing 16 events"),
+   countdowns converted to absolute dates against that timestamp — supersedes the 22 Sep capture described
+   above (same method, same caveats: a day's drift either way is rounding on swgoh.gg's own countdown). */
+const EVENTS_SEED_VERSION = 5;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
 /* The day the seed list above was read off swgoh.gg — a calendar snapshot has a shelf life, and once
    its rows are all in the past the tab would otherwise sit there looking like a live feed with nothing
    on it. Named here so the "run out" notice and the tab's provenance line can't drift apart. */
-const EVENTS_SEED_CAPTURED = "22 Sep 2026";
+const EVENTS_SEED_CAPTURED = "1 Oct 2026";
 /* Discarded Doctrine requirements, per swgoh.wiki (captured 9 Aug 2026) — verify in-game before spending
    relic/gear materials, CG occasionally adjusts event gates. Matched against pulled roster data by unit
    name (ships aren't tracked by base_id elsewhere in this file, so name-matching is the robust option). */
@@ -2813,7 +2814,8 @@ const GAC_COUNTERS = [
   { def: "Cere Junda Jedi Survivor", defChars: "Cere Junda, Cal Kestis, plus supporting Jedi — exact 3rd-5th slots weren't confirmable on swgoh.gg's free tier, verify against scout", counter: "Great Mothers (Nightsisters) or Sith Eternal Emperor", why: "New entry, A-tier in both formats. Lower confidence than the rows above on exact roster — treat as 'a Cere Junda/Cal Kestis Jedi squad is common' and confirm the rest on scout." }
 ];
 
-/* Datacron guidance (researched 27 Sep 2026 via swgoh.gg's live /datacrons/ set pages — ability trees,
+/* Datacron guidance (researched 27 Sep 2026, set list and expiry dates re-confirmed unchanged on 1 Oct 2026
+   against swgoh.gg's /datacrons/ index — no new set has been announced; via swgoh.gg's live /datacrons/ set pages — ability trees,
    expiration countdowns and a hidden per-set expiry timestamp — cross-checked against ahnaldt101.com's
    datacron tracker, which independently listed the same 4 active sets, faction pairs and expiry dates)
    — sets rotate every few weeks and only the newest 1-2 stay farmable, so this is directional guidance,
@@ -2822,7 +2824,7 @@ const GAC_COUNTERS = [
    expires ~Dec 24 2026), Set 34 "The Art of Command" (Empire · Jedi Vanguard, expires ~Nov 26 2026),
    Set 33 "Supremacy Directive" (Resistance · First Order, expires ~Oct 29 2026 — same set the 9 Aug
    pass found, still farmable), Set 32 "Necessary Means" (role-based: Attacker · Support, not a faction
-   set, expires ~Oct 1 2026 — only days left, not worth starting fresh). None of the four tags Rebel
+   set, expires Oct 1 2026 — gone within hours of the 1 Oct re-check, not worth starting fresh). None of the four tags Rebel
    Alliance, Ewok, Bounty Hunter or Scoundrel at T6, so Leia/Jabba's "no current set" call from 9 Aug is
    re-verified, not just carried forward stale.
    Correction from the 9 Aug pass: Set 33's T9 (named-character) tier has NO "Supreme Leader Kylo Ren"
@@ -5256,6 +5258,11 @@ function optSeeBest(name) {
        internally consistent (the countdown, the cadence, and the Monday requirement all agree) but is
        one derivation weaker than a direct swgoh.gg read; re-verify against swgoh.gg's conquest-history
        page on the NEXT refresh if convenient.
+       RE-CHECKED 1 Oct 2026 against swgoh.gg/conquest/: it lists Conquest 25 as START Sep 28, 2026 —
+       confirming cycle.anchor directly — but END Oct 12, 2026, which is the end of the FIRST live
+       occurrence, not the 70-day window end (Conquest 24 is listed as the full Jul 06 → Sep 14). Whether
+       swgoh.gg will extend that end date, or the later occurrences really run, is not yet confirmed, so
+       knownThrough is deliberately left at the derived 2026-12-07 rather than guessed in either direction.
      • redCrate (664 keycards) and skippable (34) matched the 7 Aug snapshot's values exactly and were
        re-confirmed live rather than assumed unchanged.
      • One raw-data oddity kept as-is rather than guessed away: Sector 2's "Mini Boss — Palpatine" second
@@ -8671,7 +8678,7 @@ const SNAPSHOTS = [
      the recommendation can be pointing at a set that is no longer in the store at all, which is worse
      than no recommendation because it sends you looking for it. */
   { key: "datacrons", label: "Datacron set recommendations", tab: "intel",
-    asOf: "2026-09-27", halfLife: 21,
+    asOf: "2026-10-01", halfLife: 21,
     hint: "ask Claude to check the current datacron store and re-do the per-GL picks" },
   /* Half-life 30: same clock as the Tier List — the counter meta turns over with GAC seasons and GL
      releases. An individual matchup ("Thrawn fractures Rey") outlives that, but the *set* of defenses

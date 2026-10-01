@@ -749,6 +749,24 @@
   .intelnote b { color: var(--ink-2); }
   /* Citation line ("Sources: …") — quietest tier of all: it is provenance, never guidance. */
   .srcline { margin-top: 5px; font-size: 11px; color: var(--ink-3); line-height: 1.45; }
+  /* fold-*: collapsible secondary prose (native <details>) — see foldMore() */
+  .fold-more { margin: 8px 0 4px; }
+  .fold-more > summary { display: flex; align-items: center; gap: 7px; min-height: 32px; padding: 4px 8px; cursor: pointer; list-style: none;
+    font-size: 12px; font-weight: 650; color: var(--ink-2); border: 1px solid var(--grid); border-radius: 8px; background: rgba(255,255,255,0.025);
+    user-select: none; -webkit-tap-highlight-color: transparent; }
+  .fold-more > summary::-webkit-details-marker { display: none; }
+  .fold-more > summary::before { content: "▸"; flex: none; color: var(--accent); font-size: 11px; }
+  .fold-more[open] > summary::before { content: "▾"; }
+  .fold-more > summary:hover { color: var(--ink-1); border-color: color-mix(in srgb, var(--accent) 45%, var(--grid)); }
+  .fold-more > summary:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+  .fold-more > .fold-body { padding-top: 2px; }
+  .fold-more + .mnote, .fold-more + .cardtitle { margin-top: 10px; }
+  .fold-more.fold-boss > summary { color: var(--ink-1); font-size: 13px; }
+  .fold-legend { margin: 6px 0 0; padding: 6px 9px; border-left: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 0 6px 6px 0;
+    background: rgba(255,255,255,0.03); font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+  .fold-legend b { color: var(--ink-1); }
+  .fold-tip { text-decoration: underline dotted var(--ink-3); text-underline-offset: 2px; cursor: help; }
+  @media (pointer: coarse) { .fold-more > summary { min-height: 44px; } }
   .cqsecthead { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
     color: var(--accent); margin: 12px 0 3px; }
   .cqsecthead:first-child { margin-top: 0; }
@@ -802,6 +820,27 @@
     border: 1px solid var(--grid); border-radius: 8px; padding: 8px 12px; max-width: 340px; width: 100%; }
   .cqline input[type=date] { background: var(--page); color: var(--ink-2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 12.5px; color-scheme: dark; }
   .cqline input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+  /* edit-*: Events / Conquest read-only-by-default edit toggle, and Conquest tick labels + tap targets */
+  .edit-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 8px; }
+  .edit-toggle[aria-pressed="true"] { color: var(--accent); border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 13%, var(--surface-2)); }
+  .edit-hint { font-size: 12px; color: var(--ink-3); }
+  .cqline .edit-cqcheck { display: inline-flex; align-items: center; justify-content: center; flex: none; cursor: pointer; }
+  .cqline label.txt { cursor: pointer; }
+  .cqline .edit-cqcheck input { margin: 3px 0 0; accent-color: var(--accent); cursor: pointer; }
+  @media (pointer: coarse) {
+    .edit-bar .edit-toggle { min-height: 44px; min-width: 44px; }
+    .cqline .edit-cqcheck { min-width: 44px; min-height: 44px; margin: -6px 0 -6px -8px; }
+    .cqline .edit-cqcheck input { margin: 0; }
+    .cqline label.txt { padding: 6px 0; }
+    #cqBody select.cqselect, #cqBody .cqrun a, #cqBody .cqintel a[onclick], #cqBody .refdetails > summary, #cqBody .cqrun summary {
+      display: inline-flex; align-items: center; min-height: 44px; }
+    #cqBody .cqrun a { min-width: 44px; }
+  }
+  @media (max-width: 600px) {   /* edit mode on a phone: step text keeps the row, ✎ ↑ ↓ ✕ wrap beneath it */
+    #cqBody .cqline > .txt { flex: 1 1 calc(100% - 60px); }
+    #cqBody .cqline > .rowtools { margin-left: auto; }
+  }
 
   /* ===== 2026 visual refresh: clearer hierarchy, quieter chrome ===== */
   body { font-size: 14px; line-height: 1.5; padding: 16px 24px 20px; }
@@ -1160,6 +1199,69 @@
     input[type="checkbox"] { position: relative; width: 22px !important; height: 22px !important; }
     input[type="checkbox"]::before { content: ""; position: absolute; top: -11px; right: -11px; bottom: -11px; left: -11px; }
   }
+  /* ===== chrome: compact sticky phone header, data-age banners, offline bar, defense gear button ===== */
+  /* Above 600px the wrapper generates no box at all (display:contents), so <header> and #accountBar lay out
+     exactly as they did before it existed. Everything that changes the header is inside the media query. */
+  .chrome-sticky { display: contents; }
+  .chrome-infobtn { display: none; }
+  .chrome-banners { display: block; }
+  .chrome-banner { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 10px; padding: 7px 12px;
+                   border: 1px solid color-mix(in srgb, var(--serious) 55%, var(--border)); border-left-width: 3px;
+                   border-radius: 8px; background: color-mix(in srgb, var(--serious) 8%, var(--surface-1));
+                   color: var(--ink-2); font-size: 12.5px; line-height: 1.4; }
+  .chrome-banner-icon { flex: none; color: var(--serious); font-weight: 700; }
+  .chrome-banner-body { min-width: 0; flex: 1; }
+  .chrome-banner-line + .chrome-banner-line { margin-top: 3px; }
+  .chrome-banner-tag { color: var(--serious); font-weight: 700; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; margin-right: 4px; }
+  .chrome-banner b { color: var(--ink-1); }
+  .chrome-offline { margin: 0 0 10px; padding: 5px 12px; text-align: center; font-size: 12px; font-weight: 650;
+                    color: var(--warning); border: 1px solid color-mix(in srgb, var(--warning) 50%, var(--border));
+                    border-radius: 8px; background: color-mix(in srgb, var(--warning) 9%, var(--surface-1)); }
+  .chrome-offline[hidden] { display: none; }
+  .chrome-gearbtn { display: inline-flex; align-items: center; gap: 4px; min-height: 30px; padding: 4px 10px;
+                    font: 650 11.5px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; white-space: nowrap;
+                    color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--border-strong);
+                    border-radius: 8px; cursor: pointer; }
+  .chrome-gearbtn:hover { color: var(--accent); border-color: var(--accent); }
+  .chrome-gearbtn:focus-visible, .chrome-infobtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (pointer: coarse) { .chrome-gearbtn, .chrome-infobtn { min-height: 44px; min-width: 44px; justify-content: center; } }
+  @media (max-width: 600px) {
+    html { scroll-padding-top: 112px; }
+    /* Row 1: title · Sync · (save-failed) · ⓘ.  Row 2: account switch · Pull.  Rows 3-6 are the tagline,
+       data source, pull status and offline bar, all collapsed until needed. Row gap is 0 and the rows
+       carry their own margins, so the empty rows cost nothing. */
+    .chrome-sticky { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; column-gap: 8px; row-gap: 0;
+                     align-items: center; position: sticky; top: 0; z-index: 40; margin: -12px -14px 8px;
+                     padding: calc(8px + env(safe-area-inset-top)) 14px 8px; border-bottom: 1px solid var(--border);
+                     background: color-mix(in srgb, var(--page) 92%, transparent);
+                     -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+    .chrome-sticky > header, .chrome-sticky .hbtns, .chrome-sticky .hbtns > div { display: contents; }
+    .chrome-sticky header h1 { display: contents; font-size: 14px; line-height: 1.2; letter-spacing: .1em; }
+    .chrome-sticky header h1 .sub { display: none; }
+    .chrome-sticky #syncStatus { grid-column: 2; grid-row: 1; min-height: 32px; }
+    .chrome-sticky #localStatus { grid-column: 3; grid-row: 1; }
+    .chrome-sticky .chrome-infobtn { display: inline-flex; align-items: center; justify-content: center; grid-column: 4; grid-row: 1;
+                     min-width: 36px; min-height: 36px; padding: 0; font-size: 16px; line-height: 1; color: var(--ink-2);
+                     background: var(--surface-1); border: 1px solid var(--border); border-radius: 50%; cursor: pointer; }
+    .chrome-sticky.chrome-info-open .chrome-infobtn { color: var(--chrome-accent); border-color: var(--chrome-accent); }
+    .chrome-sticky .account-bar { grid-column: 1 / 3; grid-row: 2; margin: 6px 0 0; min-width: 0; flex-wrap: nowrap; gap: 6px; }
+    .chrome-sticky .account-bar-label { font-size: 10px; margin-right: 2px; }
+    .chrome-sticky .account-choice { min-height: 40px; padding: 6px 11px; }
+    .chrome-sticky #pullBtn { grid-column: 3 / 5; grid-row: 2; justify-self: end; width: auto; margin-top: 6px;
+                     min-height: 40px; padding: 7px 14px; white-space: nowrap; }
+    .chrome-pull-more { display: none; }
+    .chrome-sticky .pullstatus { grid-column: 1 / -1; grid-row: 5; min-width: 0; width: auto; margin: 4px 0 0; font-size: 11.5px;
+                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left !important; }
+    .chrome-sticky .pullstatus:empty, .chrome-sticky .pullstatus.ok { display: none; }
+    .chrome-sticky #datasrc { display: none; grid-column: 1 / -1; grid-row: 4; margin: 5px 0 0; }
+    .chrome-sticky.chrome-info-open header h1 .sub { display: block; grid-column: 1 / -1; grid-row: 3; margin: 6px 0 0; font-size: 11.5px; letter-spacing: normal; }
+    .chrome-sticky.chrome-info-open #datasrc { display: flex; }
+    .chrome-sticky.chrome-info-open .pullstatus { white-space: normal; overflow: visible; }
+    .chrome-sticky.chrome-info-open .pullstatus:empty { display: none; }
+    .chrome-sticky.chrome-info-open .pullstatus.ok { display: block; }
+    .chrome-sticky .chrome-offline { grid-column: 1 / -1; grid-row: 6; margin: 6px 0 0; }
+  }
+  @media (max-width: 600px) and (pointer: coarse) { .chrome-sticky .chrome-infobtn { min-width: 44px; min-height: 44px; } }
 </style>
 </head>
 <body data-tab="overview">
@@ -1169,6 +1271,7 @@
 <div class="sw-stars-c"></div>
 <div class="sw-planet"></div>
 <div class="wrap">
+  <div class="chrome-sticky" id="chromeSticky">
   <header>
     <h1>SWGOH Holotable <span class="sub">— Ollietank &amp; Tiny · guild Potentium Padawans · goal: GL Leia Organa on both</span></h1>
     <div class="hbtns">
@@ -1177,13 +1280,16 @@
       <button type="button" class="syncstatus" id="syncStatus" onclick="openSyncModal()" title="Cloud Sync — click to configure">☁ Sync</button>
       <span class="syncstatus err" id="localStatus" style="display:none" title="Local browser storage save failed — see tooltip">⚠ Save failed</span>
       <div>
-        <button class="pullbtn" id="pullBtn" onclick="pullAll()">⟳ Pull latest data</button>
+        <button class="pullbtn" id="pullBtn" onclick="pullAll()" aria-label="Pull latest data">⟳ Pull<span class="chrome-pull-more"> latest data</span></button>
         <div class="pullstatus" id="pullStatus"></div>
         <div class="datasrc" id="datasrc" style="text-align:right;margin-bottom:0"></div>
       </div>
     </div>
+    <button type="button" class="chrome-infobtn" id="chromeInfoBtn" onclick="chromeToggleInfo()" aria-expanded="false" aria-label="Show tagline, data source and pull status" title="Show tagline, data source and pull status">ⓘ</button>
   </header>
   <div class="account-bar" id="accountBar" aria-label="Active account"></div>
+  <div class="chrome-offline" id="chromeOffline" role="status" hidden></div>
+  </div>
 
   <!-- ============ CLOUD SYNC MODAL ============ -->
   <div class="modal-backdrop" id="syncModal" onclick="if(event.target===this) closeSyncModal()">
@@ -1294,6 +1400,8 @@
       <button type="button" onclick="openSyncModal();toggleMorePanel(false)">Cloud sync</button>
     </div>
   </div>
+
+  <div class="chrome-banners" id="chromeBanners"></div>
 
   <!-- ============ OVERVIEW ============ -->
   <div class="tabpane" id="pane-overview">
@@ -2273,7 +2381,7 @@ function eraFindUnit(reqs, id, name) { return (id && reqs[id]) || findUnitByName
 function eraUnitCell(reqs, id, name, need) {
   const u = eraFindUnit(reqs, id, name);
   if (!u) return `<td style="color:var(--ink-3);font-style:italic">not in pull — likely not unlocked yet</td>`;
-  const s = u.s || 0, el = u.el || 0;
+  const s = hardNum(u.s), el = hardNum(u.el);
   const ok = need && s >= need;
   return `<td style="${ok ? "color:var(--good);font-weight:600" : ""}">${s}★${el ? ` · <span style="color:var(--accent)">EL ${el}</span>` : ""}</td>`;
 }
@@ -2311,16 +2419,29 @@ function eraTierReadiness(tier, reqs) {
   return `<span style="${tone(starMet)}">stars ${starMet}/${n}</span> · ${elLine}`
     + `<div style="color:var(--ink-3);font-size:11px">${elDetail}${missing ? ` · ${missing} not unlocked` : ""}</div>`;
 }
+/* ---- fold-* : collapsible long prose (native <details>) ---------------------------------------------
+   foldMore(label, html, { key, open, cls }) wraps secondary prose (research notes, caveats, sources) in a
+   closed-by-default <details>. All text stays in the DOM. Open/closed choice survives re-renders for the
+   session via foldState (in-memory only — no storage, no synced state). `key` must be unique per place. */
+const foldState = new Map();
+function foldToggle(el) { if (el && el.dataset && el.dataset.foldKey) foldState.set(el.dataset.foldKey, !!el.open); }
+function foldMore(label, html, o) {
+  o = o || {};
+  const key = String(o.key || label);
+  const open = foldState.has(key) ? foldState.get(key) : !!o.open;
+  return `<details class="fold-more${o.cls ? " " + escapeHtml(o.cls) : ""}" data-fold-key="${escapeHtml(key)}"${open ? " open" : ""} ontoggle="foldToggle(this)"><summary>${escapeHtml(label)}</summary><div class="fold-body">${html}</div></details>`;
+}
 function eraOverviewHtml() {
   return `<div class="cardtitle">Era of Myths &amp; Legends <span class="sub">— 28 Jul → 20 Oct 2026</span>${snapChipHtml("era")}</div>
-    <div class="mnote">${eraCurrentPhrase()} Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}. This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so most of this category is sourced reference. The Era Level parts, though, ARE live: swgoh.gg's pull carries a per-unit Era Level for the Era units and a collective Era Level for the ~25 Loaned Units, so the <b>New units</b>, <b>DJJ Journey Guide</b> and <b>Era Coliseum</b> sections show real progress rather than reference figures. The Journey's per-tier EL gate (which unit it applies to) was resolved 28 Sep 2026 from the official post itself; what's still genuinely unresolved is flagged in place (the exact EL cap, and Journey Tier 4's EL gate specifically).</div>
+    <div class="mnote">${eraCurrentPhrase()} Overall structure: <b>12 weeks, 3 Episodes, 6 Marquee characters + 1 Journey Guide unit</b> per Era ${eraChip("MODERATE-HIGH")}.</div>
+    ${foldMore("What's live vs. sourced reference in this tab", `<div class="mnote">This is a time-boxed, account-bound system with its own progression axis (Era Level) — structurally different from every other mode this app tracks, so most of this category is sourced reference. The Era Level parts, though, ARE live: swgoh.gg's pull carries a per-unit Era Level for the Era units and a collective Era Level for the ~25 Loaned Units, so the <b>New units</b>, <b>DJJ Journey Guide</b> and <b>Era Coliseum</b> sections show real progress rather than reference figures. The Journey's per-tier EL gate (which unit it applies to) was resolved 28 Sep 2026 from the official post itself; what's still genuinely unresolved is flagged in place (the exact EL cap, and Journey Tier 4's EL gate specifically).</div>`, { key: "era-ov-live" })}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Era units stay inside the Era ${eraChip("HIGH")}</div>
-    <div class="intelnote">Era units — the 7 new characters AND the ~25 temporary <b>“Loaned Units”</b> (existing permanent-roster characters temporarily boosted this Era) — can ONLY be used in Era content (Coliseum, Era Challenges, Episode/Journey content). They are NOT usable in GAC, TW, Arena or other Legacy modes for the duration of the Era. At Era end, all Era-unit investment converts automatically to permanent Legacy stats via a fixed Era Level lookup table — see the “Era Level &amp; currency” section for the confirmed conversion points and the one genuinely unresolved number (the EL cap). Two independent fetches of the same official EA Forums 10-Year Anniversary/Title Update post agreed on all of this.</div>
+    ${foldMore("Era-only restriction & end-of-Era conversion (research note)", `<div class="intelnote">Era units — the 7 new characters AND the ~25 temporary <b>“Loaned Units”</b> (existing permanent-roster characters temporarily boosted this Era) — can ONLY be used in Era content (Coliseum, Era Challenges, Episode/Journey content). They are NOT usable in GAC, TW, Arena or other Legacy modes for the duration of the Era. At Era end, all Era-unit investment converts automatically to permanent Legacy stats via a fixed Era Level lookup table — see the “Era Level &amp; currency” section for the confirmed conversion points and the one genuinely unresolved number (the EL cap). Two independent fetches of the same official EA Forums 10-Year Anniversary/Title Update post agreed on all of this.</div>`, { key: "era-ov-only", open: true })}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">After the Era ends</div>
     <div class="mnote">Units move to Shipments ~1 week after the Era concludes, then to normal farming nodes on a biweekly cadence. <b>Caveat:</b> that cadence is confirmed for a different, prior Era — a pattern assumed, but not confirmed, to repeat identically for Myths &amp; Legends.</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">How this fits your daily/weekly routine</div>
     <div class="mnote"><b>Daily:</b> one Coliseum session — scoring is a once-daily high-water-mark per boss, so once you've hit your best score for the day's boss there's no need to keep re-battling (official wording; see the Coliseum section). No evidence was found of a separate “Era Energy” resource — Coliseum appears to be attempt-based, not energy-based, so it shouldn't compete with your normal energy budget. <b>Weekly:</b> Era Challenges run during the week between Marquee releases, and their 4-feat tiers are explicitly designed to be revisited as your Era Level rises during the week — worth a re-check mid-week rather than one-and-done.</div>
-    <div class="srcline">Sources: official EA Forums 10-Year Anniversary/Title Update post (two independent fetches agreed) · swgoh.gg news · prior-Era post-era farming precedent (flagged above).</div>`;
+    ${foldMore("Sources (1)", `<div class="srcline">Sources: official EA Forums 10-Year Anniversary/Title Update post (two independent fetches agreed) · swgoh.gg news · prior-Era post-era farming precedent (flagged above).</div>`, { key: "era-ov-src" })}`;
 }
 function eraUnitsHtml() {
   const reqsOllie = eraReqsFor("ollie"), reqsTiny = eraReqsFor("tiny");
@@ -2332,19 +2453,20 @@ function eraUnitsHtml() {
       </div>
       <div class="mnote" style="margin-top:5px;margin-bottom:2px"><b>Role:</b> ${escapeHtml(u.role)}</div>
       <div class="mnote" style="margin-bottom:0"><b>Synergy:</b> ${escapeHtml(u.synergy)}</div>
-      ${u.src ? `<div class="srcline">${escapeHtml(u.src)}</div>` : ""}
     </div>`).join("");
+  const unitSrcs = ERA_UNITS.filter(u => u.src).map(u => `<div class="srcline"><b>${escapeHtml(u.name)}:</b> ${escapeHtml(u.src)}</div>`).join("");
   return `<div class="cardtitle">The 7 Era units <span class="sub">— Myths &amp; Legends roster</span></div>
-    <div class="intelnote">No confirmed single 7-unit (or even 6-unit) combined squad exists across these units — they split into a <b>Sith trio</b> (Darth Jar Jar, Yoda (Dark Side Vision), The Ronin), <b>two independent Luke-Skywalker-adjacent pieces</b> (Mara Jade Skywalker, Starkiller (Luke Concept)), and <b>two faction-specific plug-ins</b> (Stormtrooper (Concept) → Imperial Troopers; Jaxxon → Scoundrels). Anything presenting one combined “Era squad” would be invented.</div>
+    ${foldMore("Why there is no single 7-unit Era squad", `<div class="intelnote">No confirmed single 7-unit (or even 6-unit) combined squad exists across these units — they split into a <b>Sith trio</b> (Darth Jar Jar, Yoda (Dark Side Vision), The Ronin), <b>two independent Luke-Skywalker-adjacent pieces</b> (Mara Jade Skywalker, Starkiller (Luke Concept)), and <b>two faction-specific plug-ins</b> (Stormtrooper (Concept) → Imperial Troopers; Jaxxon → Scoundrels). Anything presenting one combined “Era squad” would be invented.</div>`, { key: "era-un-nosquad" })}
     ${cards}
+    ${unitSrcs ? foldMore(`Per-unit sources (${ERA_UNITS.filter(u => u.src).length})`, unitSrcs, { key: "era-un-unitsrc" }) : ""}
     <div class="cardtitle" style="margin-top:16px;font-size:13px">Pulled-roster cross-check <span class="sub">— stars + Era Level, live</span></div>
-    <div class="mnote">Live from each account's pull: swgoh.gg returns a per-unit <b>Era Level</b> for Era units, so both axes are real here. Unlocked Era units DO appear in the pull, so a unit that isn't there is <b>most likely just not unlocked yet</b> ${eraChip("MODERATE-HIGH")}. <b>Gear/relic are deliberately not shown:</b> the API does return them for Era units, but they're derived legacy-equivalents of the Era Level (EL 55 reports as G7/R1) — reading them as gear progress would mislead.</div>
+    ${foldMore("How to read this table: live data, and why gear/relic are hidden", `<div class="mnote">Live from each account's pull: swgoh.gg returns a per-unit <b>Era Level</b> for Era units, so both axes are real here. Unlocked Era units DO appear in the pull, so a unit that isn't there is <b>most likely just not unlocked yet</b> ${eraChip("MODERATE-HIGH")}. <b>Gear/relic are deliberately not shown:</b> the API does return them for Era units, but they're derived legacy-equivalents of the Era Level (EL 55 reports as G7/R1) — reading them as gear progress would mislead.</div>`, { key: "era-un-howto", open: true })}
     <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%;table-layout:fixed">
       <tr><th style="text-align:left">Unit</th><th>Ollietank</th><th>Tiny</th></tr>
       ${ERA_UNITS.map(u => `<tr><td style="text-align:left">${escapeHtml(u.name)}</td>${eraUnitCell(reqsOllie, u.id, u.name)}${eraUnitCell(reqsTiny, u.id, u.name)}</tr>`).join("")}
     </table></div>
-    <div class="srcline">Base_ids for Mara Jade Skywalker, Yoda (Dark Side Vision) and Starkiller (Luke Concept) verified 3 Sep 2026 against the live swgoh.gg player API; the remaining four have never appeared in a pull, so they're matched by name until they do.</div>
-    <div class="srcline">Sources: official EA kit-reveals (Mara Jade Skywalker, Darth Jar Jar at HIGH; remainder at MODERATE-HIGH from single official-channel kit summaries).</div>`;
+    ${foldMore("Sources & id verification (2)", `<div class="srcline">Base_ids for Mara Jade Skywalker, Yoda (Dark Side Vision) and Starkiller (Luke Concept) verified 3 Sep 2026 against the live swgoh.gg player API; the remaining four have never appeared in a pull, so they're matched by name until they do.</div>
+    <div class="srcline">Sources: official EA kit-reveals (Mara Jade Skywalker, Darth Jar Jar at HIGH; remainder at MODERATE-HIGH from single official-channel kit summaries).</div>`, { key: "era-un-src" })}`;
 }
 function eraJourneyHtml() {
   const reqsOllie = eraReqsFor("ollie"), reqsTiny = eraReqsFor("tiny");
@@ -2361,9 +2483,9 @@ function eraJourneyHtml() {
       </tr>`).join("")}
     </table></div>
     <div class="mnote" style="margin-top:8px">The per-account columns check <b>both gates live</b> — star level (every required unit) and the tier's Era Level gate — from the pulled roster (swgoh.gg returns a per-unit Era Level for Era units).</div>
-    <div class="intelnote"><b>RESOLVED 28 Sep 2026 — how the EL gate is applied:</b> read directly off the official EA Forums Game Info Hub post itself (not a secondhand summary). Tiers 1-3 each gate their EL requirement on <b>one specific named unit</b>, not the whole core: Tier 1 → Yoda (Dark Side Vision) at EL 90; Tier 2 → Starkiller (Luke Concept) at EL 95; Tier 3 → Mara Jade Skywalker at EL 110 ${eraChip("HIGH")}. Tier 4's own entry text ("At 7 Stars and EL 125") lists all 6 required units without singling one out the way Tiers 1-3 do, so that one genuinely stays unresolved — shown as an any-unit/EL-125 reading with the best EL on hand printed alongside ${eraChip("LOW-MODERATE")}.</div>
-    <div class="intelnote"><b>EL gate values (90/95/110/125):</b> HIGH confidence — read straight off the official post's Journey Guide entry-requirements section, "Version 4.0". The tier <b>shape</b> is likewise HIGH confidence — 4 tiers, escalating 4★→7★, The Ronin joining at Tier 3.</div>
-    <div class="srcline">Sources: official EA Forums Game Info Hub, "Era of Myths &amp; Legends" (forums.ea.com/blog/swgoh-game-info-hub-en/era-of-myths--legends/13578773, Version 4.0 — full Journey Guide tier/EL/shard requirements read directly, 28 Sep 2026) · live swgoh.gg player API (per-unit era_level, verified 3 Sep 2026).</div>`;
+    ${foldMore("Why this gate? research notes (2)", `<div class="intelnote"><b>RESOLVED 28 Sep 2026 — how the EL gate is applied:</b> read directly off the official EA Forums Game Info Hub post itself (not a secondhand summary). Tiers 1-3 each gate their EL requirement on <b>one specific named unit</b>, not the whole core: Tier 1 → Yoda (Dark Side Vision) at EL 90; Tier 2 → Starkiller (Luke Concept) at EL 95; Tier 3 → Mara Jade Skywalker at EL 110 ${eraChip("HIGH")}. Tier 4's own entry text ("At 7 Stars and EL 125") lists all 6 required units without singling one out the way Tiers 1-3 do, so that one genuinely stays unresolved — shown as an any-unit/EL-125 reading with the best EL on hand printed alongside ${eraChip("LOW-MODERATE")}.</div>
+    <div class="intelnote"><b>EL gate values (90/95/110/125):</b> HIGH confidence — read straight off the official post's Journey Guide entry-requirements section, "Version 4.0". The tier <b>shape</b> is likewise HIGH confidence — 4 tiers, escalating 4★→7★, The Ronin joining at Tier 3.</div>`, { key: "era-jo-why" })}
+    ${foldMore("Sources (1)", `<div class="srcline">Sources: official EA Forums Game Info Hub, "Era of Myths &amp; Legends" (forums.ea.com/blog/swgoh-game-info-hub-en/era-of-myths--legends/13578773, Version 4.0 — full Journey Guide tier/EL/shard requirements read directly, 28 Sep 2026) · live swgoh.gg player API (per-unit era_level, verified 3 Sep 2026).</div>`, { key: "era-jo-src" })}`;
 }
 function eraColiseumHtml() {
   const bossOrder = [...new Set(ERA_COLISEUM_SQUADS.map(sq => sq.boss))];   /* derived, so a new boss in the data cannot be silently dropped */
@@ -2377,45 +2499,46 @@ function eraColiseumHtml() {
       <div class="cqteams" style="margin-top:4px">${sq.members.map(m => `<div class="cqteam">${escapeHtml(m)}</div>`).join("")}</div>
       ${sq.note ? `<div class="intelnote">${escapeHtml(sq.note)}</div>` : ""}
     </div>`).join("");
-    return `<div class="cardtitle" style="margin-top:14px;font-size:13px">${escapeHtml(boss)}</div>${rows}`;
+    const bossN = ERA_COLISEUM_SQUADS.filter(sq => sq.boss === boss).length;
+    return foldMore(`${boss} — ${bossN} squad${bossN === 1 ? "" : "s"}`, rows, { key: "era-co-boss-" + boss, open: boss === bossOrder[0], cls: "fold-boss" });
   }).join("");
   /* Collective Era Level of the ~25 Loaned Units, straight off the pull (top-level
      loaned_unit_era_level). Modest one-liner, not a readiness widget — there's no sourced target to
      measure it against. */
   const loanedEl = key => {
-    const v = eraAcctFor(key).loanedEraLevel || 0;
+    const v = hardNum(eraAcctFor(key).loanedEraLevel);
     return v ? `<b>EL ${v}</b>` : `<span style="color:var(--ink-3);font-style:italic">no data</span>`;
   };
   const loanedLine = `Ollietank ${loanedEl("ollie")} · Tiny ${loanedEl("tiny")}`;
   return `<div class="cardtitle">Era Coliseum <span class="sub">— daily boss battles, unlocks at Player Level 10</span></div>
     <div class="mnote">Optional (very rewarding) lane alongside the Episode Track and Era Store — not gated, and not required to progress the core Era track. Current bosses: <b>Krayt Dragon, Zeffo Tomb Guardians, Jotaz, Dryax</b> ${eraChip("HIGH")} (multiple sources agree).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Scoring: once-daily high-water-mark ${eraChip("HIGH")}</div>
-    <div class="intelnote">Official wording: <b>“Bosses will rotate daily, with players attempting to achieve new high scores each day”</b> — once you've hit your best score for a boss that day, there's no need to keep re-battling it. No public day-by-day rotation calendar was found — that's a genuine gap, not an omission. Scoring is damage/point-based with escalating numbered tiers per boss (up to ~12): for Krayt Dragon, Tier 1 ≈ 11,000 pts up through Tier 11 ≈ 600,000 pts, with Tier 12 uncapped ${eraChip("MODERATE-HIGH")} — one community data source, Krayt-specific; the other 3 bosses' own tier-point tables still weren't found (only their leaderboard results, refreshed below).</div>
+    ${foldMore("Scoring details & research caveats", `<div class="intelnote">Official wording: <b>“Bosses will rotate daily, with players attempting to achieve new high scores each day”</b> — once you've hit your best score for a boss that day, there's no need to keep re-battling it. No public day-by-day rotation calendar was found — that's a genuine gap, not an omission. Scoring is damage/point-based with escalating numbered tiers per boss (up to ~12): for Krayt Dragon, Tier 1 ≈ 11,000 pts up through Tier 11 ≈ 600,000 pts, with Tier 12 uncapped ${eraChip("MODERATE-HIGH")} — one community data source, Krayt-specific; the other 3 bosses' own tier-point tables still weren't found (only their leaderboard results, refreshed below).</div>`, { key: "era-co-score", open: true })}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Rewards: two tracks</div>
-    <div class="mnote">(1) One-time era-long <b>milestone rewards</b>, and (2) a <b>DAILY leaderboard reward</b> — daily, not weekly (this corrects an earlier assumption). The Coliseum leaderboard is one of the primary sources of <b>Relic 10 materials</b> ${eraChip("HIGH")} (official). Player-reported daily Era Currency payouts scale steeply by rank — e.g. top 10 ≈ 1,000/day vs rank 1001+ ≈ 10/day — but that's a single player forum post ${eraChip("LOW-MODERATE")}, treat as anecdotal.</div>
+    ${foldMore("Reward tracks & payout caveats", `<div class="mnote">(1) One-time era-long <b>milestone rewards</b>, and (2) a <b>DAILY leaderboard reward</b> — daily, not weekly (this corrects an earlier assumption). The Coliseum leaderboard is one of the primary sources of <b>Relic 10 materials</b> ${eraChip("HIGH")} (official). Player-reported daily Era Currency payouts scale steeply by rank — e.g. top 10 ≈ 1,000/day vs rank 1001+ ≈ 10/day — but that's a single player forum post ${eraChip("LOW-MODERATE")}, treat as anecdotal.</div>`, { key: "era-co-rewards" })}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Community-submitted squads, all 4 bosses <span class="sub">— Holotables.xyz crowd leaderboard, not official</span></div>
-    <div class="mnote">Refreshed 28 Sep 2026 — the 29 Aug pass only had Krayt Dragon squads (Jotaz/Zeffo/Dryax leaderboards genuinely had no submissions yet); all 4 bosses are covered now, top 2-3 squads each. Coliseum squads mix the new Era units with the ~25 temporary <b>Loaned Units</b> (boosted existing characters this Era — e.g. Moff Gideon, Darth Talon, Dark Trooper, Jedi Knight Luke Skywalker, Jedi Knight Cal Kestis, Mace Windu, Barriss Offee) — it is NOT restricted to the 6-7 new units, and a loaned Jedi Knight Luke Skywalker/Jedi Knight Cal Kestis core now leads most of the top boards. Mods are reportedly “irrelevant” to Coliseum performance since power draws from Era Level, not gear/relic/mods ${eraChip("MODERATE")} — community-reported, not officially confirmed — which is also why no per-account ownership table is shown here: this file's normal gear-based readiness math would be the wrong lens.</div>
+    ${foldMore("How these boards were gathered & caveats", `<div class="mnote">Refreshed 28 Sep 2026 — the 29 Aug pass only had Krayt Dragon squads (Jotaz/Zeffo/Dryax leaderboards genuinely had no submissions yet); all 4 bosses are covered now, top 2-3 squads each. Coliseum squads mix the new Era units with the ~25 temporary <b>Loaned Units</b> (boosted existing characters this Era — e.g. Moff Gideon, Darth Talon, Dark Trooper, Jedi Knight Luke Skywalker, Jedi Knight Cal Kestis, Mace Windu, Barriss Offee) — it is NOT restricted to the 6-7 new units, and a loaned Jedi Knight Luke Skywalker/Jedi Knight Cal Kestis core now leads most of the top boards. Mods are reportedly “irrelevant” to Coliseum performance since power draws from Era Level, not gear/relic/mods ${eraChip("MODERATE")} — community-reported, not officially confirmed — which is also why no per-account ownership table is shown here: this file's normal gear-based readiness math would be the wrong lens.</div>`, { key: "era-co-gather" })}
     <div class="mnote"><b>Your Loaned Units:</b> ${loanedLine} — the Loaned pool levels collectively, so it's one Era Level per account rather than a per-unit figure. Live from the pull.</div>
     ${squads}
-    <div class="srcline">Sources: official EA Forums Game Info Hub post (boss list, daily rotation quote, high-water-mark scoring, Relic 10 materials) · Holotables.xyz crowd-submitted Coliseum leaderboards, all 4 bosses (squads/results — community data, MODERATE, refreshed 28 Sep 2026) · single player forum post (rank payouts, LOW-MODERATE) · live swgoh.gg player API (Loaned Units Era Level, verified 3 Sep 2026).</div>`;
+    ${foldMore("Sources (1)", `<div class="srcline">Sources: official EA Forums Game Info Hub post (boss list, daily rotation quote, high-water-mark scoring, Relic 10 materials) · Holotables.xyz crowd-submitted Coliseum leaderboards, all 4 bosses (squads/results — community data, MODERATE, refreshed 28 Sep 2026) · single player forum post (rank payouts, LOW-MODERATE) · live swgoh.gg player API (Loaned Units Era Level, verified 3 Sep 2026).</div>`, { key: "era-co-src" })}`;
 }
 function eraChallengesHtml() {
   return `<div class="cardtitle">Era Challenges <span class="sub">— the Galactic Challenges replacement</span></div>
     <div class="mnote">Era Challenges replace Galactic Challenges for the duration of the Era, and run during the week BETWEEN Marquee releases ${eraChip("HIGH")} (official).</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">The 4-feat revisit system ${eraChip("MODERATE-HIGH")}</div>
-    <div class="intelnote">Reworked (as of the Era-of-Andor-era patch) into a <b>4-feat system</b>: each tier has 4 feats with escalating Era Level requirements, explicitly designed so you can revisit and redo a tier as your Era Level improves during the week. This is a <b>fixed EL-threshold ladder</b> — NOT a dynamic per-player auto-scaling difficulty.</div>
+    ${foldMore("How the 4-feat ladder works (research note)", `<div class="intelnote">Reworked (as of the Era-of-Andor-era patch) into a <b>4-feat system</b>: each tier has 4 feats with escalating Era Level requirements, explicitly designed so you can revisit and redo a tier as your Era Level improves during the week. This is a <b>fixed EL-threshold ladder</b> — NOT a dynamic per-player auto-scaling difficulty.</div>`, { key: "era-ch-feat", open: true })}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Rewards</div>
     <div class="mnote">Clearing tiers awards <b>Era Shipment Currency</b> (confirmed); a full itemized reward table was not found — another honest gap rather than a guess. Some players report tiers are hard to clear for average rosters and effectively cap out early ${eraChip("LOW-MODERATE")} — forum sentiment, presented as player sentiment rather than fact.</div>
     <div class="mnote"><b>Routine tip:</b> because the feat ladder is fixed-threshold and revisit-friendly, check back mid-week after Era Levels gained from Coliseum/Marquees — a tier that walled you on Monday may clear by Thursday.</div>
-    <div class="srcline">Sources: official EA Forums posts (replacement + between-Marquee cadence at HIGH; 4-feat rework at MODERATE-HIGH) · player forum sentiment (difficulty, LOW-MODERATE, anecdotal).</div>`;
+    ${foldMore("Sources (1)", `<div class="srcline">Sources: official EA Forums posts (replacement + between-Marquee cadence at HIGH; 4-feat rework at MODERATE-HIGH) · player forum sentiment (difficulty, LOW-MODERATE, anecdotal).</div>`, { key: "era-ch-src" })}`;
 }
 function eraLevelingHtml() {
   return `<div class="cardtitle">Era Level progression &amp; currency</div>
     <div class="mnote"><b>Era Level is live-pulled</b> ${eraChip("HIGH")} — swgoh.gg's player API returns a per-unit Era Level for each unlocked Era unit and a collective one for the Loaned Units pool, both verified against the live API on 3 Sep 2026. Your current figures are in the <b>New units</b> table (per unit) and the <b>Era Coliseum</b> section (Loaned Units); read them against the conversion table below to see what each unit banks at Era end. Manual entry isn't needed.</div>
-    <div class="mnote"><b>Era Materials</b> follow an Aurebesh-Mark naming convention mirroring the normal Gear system — e.g. “Mk I Grek Ability Module” through “Mk VIII [color] Ability Module/Performance Core” ${eraChip("MODERATE")}; a full per-tier quantity table was not found.</div>
+    ${foldMore("Era Materials naming convention", `<div class="mnote"><b>Era Materials</b> follow an Aurebesh-Mark naming convention mirroring the normal Gear system — e.g. “Mk I Grek Ability Module” through “Mk VIII [color] Ability Module/Performance Core” ${eraChip("MODERATE")}; a full per-tier quantity table was not found.</div>`, { key: "era-lv-mats" })}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">Era Currency: sources &amp; sink</div>
     <div class="mnote"><b>Earned from</b>: Coliseum (daily, rank-based), Era Marquee Events, Era Journey Events, Episode Track milestones, or purchased ${eraChip("HIGH")} (official). <b>Spent in</b>: the “Era Shipment” store on Era Materials ${eraChip("MODERATE")} — itemized store contents not found.</div>
-    <div class="intelnote"><b>Terminology footnote — two OTHER currencies exist</b> and even players find the overlap confusing: (1) <b>Episode Currency</b> — a different, weekly-resetting currency for the separate Episode Shipment (Omicron/Omega mats, Focused Datacrons, gear, mod slicing mats — NOT Era Materials); (2) <b>Era Level Currency</b> — an end-of-era-only conversion mechanic, 12,000:1 into standard Era Currency. Era Currency is the main concept to track; these two are mentioned so the in-game names don't mislead, not tracked separately here.</div>
+    ${foldMore("Terminology footnote: two other currencies exist", `<div class="intelnote"><b>Terminology footnote — two OTHER currencies exist</b> and even players find the overlap confusing: (1) <b>Episode Currency</b> — a different, weekly-resetting currency for the separate Episode Shipment (Omicron/Omega mats, Focused Datacrons, gear, mod slicing mats — NOT Era Materials); (2) <b>Era Level Currency</b> — an end-of-era-only conversion mechanic, 12,000:1 into standard Era Currency. Era Currency is the main concept to track; these two are mentioned so the in-game names don't mislead, not tracked separately here.</div>`, { key: "era-lv-term" })}
     <div class="cardtitle" style="margin-top:14px;font-size:13px">End-of-Era conversion to Legacy ${eraChip("HIGH")}</div>
     <div class="mnote">At Era end, ALL Era-unit investment converts automatically to permanent Legacy stats via a fixed lookup table (Era Level → Character Level / Gear-or-Relic tier / Ability level). Confirmed example points (two independent fetches of the official EA Forums post agreed):</div>
     <div style="overflow-x:auto;margin-top:6px"><table class="cqspeedtable" style="width:100%">
@@ -2426,9 +2549,9 @@ function eraLevelingHtml() {
     </table></div>
     <div class="mnote" style="margin-top:6px">Unused Era Materials/Currency also convert to Legacy materials at Era end.</div>
     <div class="cardtitle" style="margin-top:14px;font-size:13px">The Era Level cap: EL 135</div>
-    <div class="intelnote"><b>Largely resolved 28 Sep 2026.</b> swgoh.gg's own dedicated page for this Era (swgoh.gg/eras/ERA09_MYTHS/) states outright: <b>"Max Era Level: 135."</b> That's specific to Myths &amp; Legends, not a carried-forward figure from an older Era or a since-superseded community post ${eraChip("MODERATE-HIGH")} — one site, but a purpose-built Era reference page rather than a forum comment. It isn't independently corroborated by the official EA Forums post itself (which doesn't state a cap in the sections fetched), so it's not bumped to HIGH. The Journey Guide's own Tier 4 gate (EL 125) still independently confirms the cap is at least that high.</div>
+    ${foldMore("Why EL 135? research note & confidence", `<div class="intelnote"><b>Largely resolved 28 Sep 2026.</b> swgoh.gg's own dedicated page for this Era (swgoh.gg/eras/ERA09_MYTHS/) states outright: <b>"Max Era Level: 135."</b> That's specific to Myths &amp; Legends, not a carried-forward figure from an older Era or a since-superseded community post ${eraChip("MODERATE-HIGH")} — one site, but a purpose-built Era reference page rather than a forum comment. It isn't independently corroborated by the official EA Forums post itself (which doesn't state a cap in the sections fetched), so it's not bumped to HIGH. The Journey Guide's own Tier 4 gate (EL 125) still independently confirms the cap is at least that high.</div>`, { key: "era-lv-cap" })}
     <div class="mnote"><b>No “Era Energy” found:</b> no evidence of a distinct Era Energy resource exists in any source checked — Coliseum appears to be attempt-based (once-daily high-water-mark), not energy-based. Stated plainly rather than assuming a mechanic into existence.</div>
-    <div class="srcline">Sources: official EA Forums Game Info Hub, "Era of Myths &amp; Legends" post (conversion table, currency sources, Journey Tier 4 EL gate) · swgoh.gg's Era of Myths &amp; Legends page (swgoh.gg/eras/ERA09_MYTHS/, EL 135 cap, checked 28 Sep 2026) · community material-naming reports (MODERATE) · live swgoh.gg player API (per-unit era_level + loaned_unit_era_level, verified 3 Sep 2026).</div>`;
+    ${foldMore("Sources (1)", `<div class="srcline">Sources: official EA Forums Game Info Hub, "Era of Myths &amp; Legends" post (conversion table, currency sources, Journey Tier 4 EL gate) · swgoh.gg's Era of Myths &amp; Legends page (swgoh.gg/eras/ERA09_MYTHS/, EL 135 cap, checked 28 Sep 2026) · community material-naming reports (MODERATE) · live swgoh.gg player API (per-unit era_level + loaned_unit_era_level, verified 3 Sep 2026).</div>`, { key: "era-lv-src" })}`;
 }
 function eraView(v) { state.modesnav.eraView = v; store.write(state); renderEras(); }
 function renderEras() {
@@ -3075,7 +3198,7 @@ function specLiveLabel(reqsMap, spec) {
     const roadmap = GL_ORDER.map(gid => GL_ROADMAP[gid]).flatMap(gl => gl.req).find(r => r[0] === sp.id);
     const squadUnit = META_SQUADS.flatMap(sq => sq.members).find(r => r[0] === sp.id);
     const name = u && u.name ? u.name : (roadmap ? roadmap[1] : (squadUnit ? squadUnit[1] : sp.id));
-    const cur = !u ? "not unlocked" : ((u.r || 0) > 0 ? `R${u.r}` : `G${u.g || 1}${(u.s || 0) < 7 ? ` · ${u.s || 0}★` : ""}`);
+    const cur = !u ? "not unlocked" : (hardNum(u.r) > 0 ? `R${hardNum(u.r)}` : `G${hardNum(u.g) || 1}${hardNum(u.s) < 7 ? ` · ${hardNum(u.s)}★` : ""}`);
     const target = sp.type === "star" ? `${sp.min}★` : sp.type === "gear" ? `G${sp.min}` : `R${sp.min}`;
     return `${name}: ${cur} → ${target}`;
   }).join(" · ");
@@ -3097,7 +3220,7 @@ function farmActionLabel(account, reqsMap, pi, ii, item) {
   return spec ? specLiveLabel(reqsMap, spec) : item[0];
 }
 function tipIsDone(account, reqsMap, tip, index) {
-  return tip.check ? tipProgress(reqsMap, tip.check).done : !!state.ticks[`${account}-t${index}`];
+  return tip.check ? tipProgress(reqsMap, tip.check).done : !!state.ticks[hardTipKey(account, tip)];
 }
 function activeTips(account, reqsMap, severities) {
   return TIPS[account].map((tp, ti) => ({ tp, ti }))
@@ -3278,28 +3401,28 @@ function generatedPlanCards(plan, live) {
    against the real roster and have been replaced or corrected rather than carried forward. */
 const TIPS = {
   ollie: [
-    { sev: "fixnow", t: "Re-enter GAC — three built GLs sitting idle in Carbonite 5", note: "Rey (R8), Supreme Leader Kylo Ren (R9) and Jabba the Hutt (R9) are all fully relic'd and parked on the bench. Setting a defense every round is free crystals with zero new investment — it funds the whole Leia relic push." },
-    { sev: "improve", t: "2 Set 33 datacrons built — one's near-max, one has room", note: "Your Tier 6 Set 33 (Crit Chance/Crit Damage/Defense + First Order faction bonus) is close to the ceiling for a single datacron — nice. The second is only Tier 4; level it further toward T6 to pick up its full alignment/faction payoff before starting a new set." },
-    { sev: "fixnow", t: "C-3PO & Chewie stuck at R0 — Leia needs R7", note: "This is the actual long pole now, not R2-D2: gear is already G13, so it's a straight 7-tier relic climb — the single biggest ask left on the account. Feed it signal data first.", check: relic("C3POCHEWBACCA", 7) },
-    { sev: "fixnow", t: "Lobot is G12 with 0 relic (Leia needs R3)", note: "One gear piece short of G13 before the relic climb even starts — the second real long pole now that the star wall is down. Push him to G13, then start relics.", check: [gear("LOBOT", 13), relic("LOBOT", 3)] },
-    { sev: "keep", t: "Leia's star wall is completely down — all 15 requirements are 7★", note: "Huge shift since August: even Captain Drogan (was 6★) got there, and he's now fully done at R7. From here Leia is a pure relic race — no more shard farms competing with the relic push for currency.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
-    { sev: "improve", t: "Six Leia relic wins are only two tiers away", note: "Lando R3→R5, Commander Luke R5→R7, Scout Trooper R5→R7, R2-D2 R7→R8, Captain Han R3→R5, ROLO R3→R5 — all already G13, no star gates. Clearing these takes Leia from 7/15 to 13/15 done for a few weeks of mid-tier relic mats.", check: [relic("ADMINISTRATORLANDO", 5), relic("COMMANDERLUKESKYWALKER", 7), relic("SCOUTTROOPER_V3", 7), relic("R2D2_LEGENDARY", 8), relic("HOTHHAN", 5), relic("HOTHLEIA", 5)] },
-    { sev: "keep", t: "Ewok trio (Wicket, Chief Chirpa, Kneesaa) is fully done for Leia", note: "All three hit their Leia relic targets already — the TB double-dip gearing paid off. Ewok TB ops are now just TB scoring, not a Leia farm anymore." },
-    { sev: "improve", t: "No General Skywalker despite 8.18M GP", note: "Not urgent — but after Leia, Padmé → GAS (Ahsoka's GL) is the next journey, and his 501st also carries a whole RotE zone." },
-    { sev: "watch", t: "Freeze luxury relics until Leia is done", note: "With only C3PO & Chewie and Lobot left as real long poles, every relic mat should still have a Leia address — a Kelleran or Paz sidegrade now is exactly how GLs slip a year." },
-    { sev: "watch", t: "Only Chief Chirpa carries a TB omicron among the Leia squad", note: "ROLO, Kneesaa and Rex are all fully relic-invested Leia pieces but have zero TB omicrons between them — route the next TB omicron tokens their way." },
-    { sev: "improve", t: "Executor fleet slipped to rank 80 — outside top 50", note: "Was cracking top 50 for free daily crystals; retime the snipe (or push stars/gear) to get back above rank 50." }
+    { sev: "fixnow", id: "re-enter-gac-three-built", t: "Re-enter GAC — three built GLs sitting idle in Carbonite 5", note: "Rey (R8), Supreme Leader Kylo Ren (R9) and Jabba the Hutt (R9) are all fully relic'd and parked on the bench. Setting a defense every round is free crystals with zero new investment — it funds the whole Leia relic push." },
+    { sev: "improve", id: "2-set-33-datacrons-built", t: "2 Set 33 datacrons built — one's near-max, one has room", note: "Your Tier 6 Set 33 (Crit Chance/Crit Damage/Defense + First Order faction bonus) is close to the ceiling for a single datacron — nice. The second is only Tier 4; level it further toward T6 to pick up its full alignment/faction payoff before starting a new set." },
+    { sev: "fixnow", id: "c-3po-chewie-stuck-at", t: "C-3PO & Chewie stuck at R0 — Leia needs R7", note: "This is the actual long pole now, not R2-D2: gear is already G13, so it's a straight 7-tier relic climb — the single biggest ask left on the account. Feed it signal data first.", check: relic("C3POCHEWBACCA", 7) },
+    { sev: "fixnow", id: "lobot-is-g12-with-0", t: "Lobot is G12 with 0 relic (Leia needs R3)", note: "One gear piece short of G13 before the relic climb even starts — the second real long pole now that the star wall is down. Push him to G13, then start relics.", check: [gear("LOBOT", 13), relic("LOBOT", 3)] },
+    { sev: "keep", id: "leia-s-star-wall-is", t: "Leia's star wall is completely down — all 15 requirements are 7★", note: "Huge shift since August: even Captain Drogan (was 6★) got there, and he's now fully done at R7. From here Leia is a pure relic race — no more shard farms competing with the relic push for currency.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
+    { sev: "improve", id: "six-leia-relic-wins-are", t: "Six Leia relic wins are only two tiers away", note: "Lando R3→R5, Commander Luke R5→R7, Scout Trooper R5→R7, R2-D2 R7→R8, Captain Han R3→R5, ROLO R3→R5 — all already G13, no star gates. Clearing these takes Leia from 7/15 to 13/15 done for a few weeks of mid-tier relic mats.", check: [relic("ADMINISTRATORLANDO", 5), relic("COMMANDERLUKESKYWALKER", 7), relic("SCOUTTROOPER_V3", 7), relic("R2D2_LEGENDARY", 8), relic("HOTHHAN", 5), relic("HOTHLEIA", 5)] },
+    { sev: "keep", id: "ewok-trio-wicket-chief-chirpa", t: "Ewok trio (Wicket, Chief Chirpa, Kneesaa) is fully done for Leia", note: "All three hit their Leia relic targets already — the TB double-dip gearing paid off. Ewok TB ops are now just TB scoring, not a Leia farm anymore." },
+    { sev: "improve", id: "no-general-skywalker-despite-8", t: "No General Skywalker despite 8.18M GP", note: "Not urgent — but after Leia, Padmé → GAS (Ahsoka's GL) is the next journey, and his 501st also carries a whole RotE zone." },
+    { sev: "watch", id: "freeze-luxury-relics-until-leia", t: "Freeze luxury relics until Leia is done", note: "With only C3PO & Chewie and Lobot left as real long poles, every relic mat should still have a Leia address — a Kelleran or Paz sidegrade now is exactly how GLs slip a year." },
+    { sev: "watch", id: "only-chief-chirpa-carries-a", t: "Only Chief Chirpa carries a TB omicron among the Leia squad", note: "ROLO, Kneesaa and Rex are all fully relic-invested Leia pieces but have zero TB omicrons between them — route the next TB omicron tokens their way." },
+    { sev: "improve", id: "executor-fleet-slipped-to-rank", t: "Executor fleet slipped to rank 80 — outside top 50", note: "Was cracking top 50 for free daily crystals; retime the snipe (or push stars/gear) to get back above rank 50." }
   ],
   tiny: [
-    { sev: "fixnow", t: "GL Leia Organa is unlocked — the farm is done", note: "She landed at 7★, R0, G9. Every requirement on the checklist you'd been grinding since August is now moot — next up is picking the new target below." },
-    { sev: "fixnow", t: "Re-enter GAC — Rey R8, SLKR R8 and now GL Leia sitting idle in Carbonite 4", note: "All three Legends are complete or nearly so and doing nothing in Carbonite. Add the omicron'd Bo-Katan Mand'alor (R8, both omicrons) and this roster is Aurodium-grade wall material — set a defense every round and climb." },
-    { sev: "improve", t: "2 Set 33 datacrons built — the Tier 6 is great, the Tier 3 needs work", note: "Your Tier 6 Set 33 is close to the ceiling for a single datacron — keep it. The second is still only Tier 3; level it up toward T6 to unlock its full alignment payoff." },
-    { sev: "improve", t: "Jedi Master Luke Skywalker is the clear next target — 6 of 14 requirements already met", note: "Chewbacca is one relic tier from done (R5→R6). C-3PO (R3→R5) and Hermit Yoda (R3→R5) are two tiers out. Note the roadmap itself flags this as an older (2020) GL with thinner documentation — verify current relic numbers in-game before committing hard.", check: [relic("CHEWBACCALEGENDARY", 6), relic("C3POLEGENDARY", 5), relic("HERMITYODA", 5)] },
-    { sev: "watch", t: "Five Jedi Master Luke units need gear before relics even start", note: "Mon Mothma (G12), Obi-Wan Kenobi/Old Ben (G10), Princess Leia (G8), Wedge Antilles (G8) and Biggs Darklighter (G5) are all still R0 — Biggs is the furthest back and the one to start feeding gear first." },
-    { sev: "fixnow", t: "Executor is still only 4★ (63.5K power) — weaker than your active Negotiator", note: "Crew has been done for a while: Boba Fett R8, Piett R8, Razor Crest fully starred (7★). Hull stars are the only reason Negotiator (7★, 66K power) still edges it out — get Executor to 7★ and it becomes the stronger ship immediately." },
-    { sev: "watch", t: "Freeze luxury relics until Jedi Master Luke's near-done units land", note: "Chewbacca, C-3PO and Hermit Yoda are all two tiers or fewer away — finish those before spending relic mats on anything not on this chain." },
-    { sev: "watch", t: "Jedi Knight Revan is a dead end without Darth Revan or Malak", note: "Still G10 with no further Old Republic support on this account — zero further investment until after the next Legend push, if ever." },
-    { sev: "keep", t: "Mandalorian squad (Bo-Katan Mand'alor R8, both omicrons)", note: "Genuinely meta for GAC and TW — keep it modded and together." }
+    { sev: "fixnow", id: "gl-leia-organa-is-unlocked", t: "GL Leia Organa is unlocked — the farm is done", note: "She landed at 7★, R0, G9. Every requirement on the checklist you'd been grinding since August is now moot — next up is picking the new target below." },
+    { sev: "fixnow", id: "re-enter-gac-rey-r8", t: "Re-enter GAC — Rey R8, SLKR R8 and now GL Leia sitting idle in Carbonite 4", note: "All three Legends are complete or nearly so and doing nothing in Carbonite. Add the omicron'd Bo-Katan Mand'alor (R8, both omicrons) and this roster is Aurodium-grade wall material — set a defense every round and climb." },
+    { sev: "improve", id: "2-set-33-datacrons-built", t: "2 Set 33 datacrons built — the Tier 6 is great, the Tier 3 needs work", note: "Your Tier 6 Set 33 is close to the ceiling for a single datacron — keep it. The second is still only Tier 3; level it up toward T6 to unlock its full alignment payoff." },
+    { sev: "improve", id: "jedi-master-luke-skywalker-is", t: "Jedi Master Luke Skywalker is the clear next target — 6 of 14 requirements already met", note: "Chewbacca is one relic tier from done (R5→R6). C-3PO (R3→R5) and Hermit Yoda (R3→R5) are two tiers out. Note the roadmap itself flags this as an older (2020) GL with thinner documentation — verify current relic numbers in-game before committing hard.", check: [relic("CHEWBACCALEGENDARY", 6), relic("C3POLEGENDARY", 5), relic("HERMITYODA", 5)] },
+    { sev: "watch", id: "five-jedi-master-luke-units", t: "Five Jedi Master Luke units need gear before relics even start", note: "Mon Mothma (G12), Obi-Wan Kenobi/Old Ben (G10), Princess Leia (G8), Wedge Antilles (G8) and Biggs Darklighter (G5) are all still R0 — Biggs is the furthest back and the one to start feeding gear first." },
+    { sev: "fixnow", id: "executor-is-still-only-4", t: "Executor is still only 4★ (63.5K power) — weaker than your active Negotiator", note: "Crew has been done for a while: Boba Fett R8, Piett R8, Razor Crest fully starred (7★). Hull stars are the only reason Negotiator (7★, 66K power) still edges it out — get Executor to 7★ and it becomes the stronger ship immediately." },
+    { sev: "watch", id: "freeze-luxury-relics-until-jedi", t: "Freeze luxury relics until Jedi Master Luke's near-done units land", note: "Chewbacca, C-3PO and Hermit Yoda are all two tiers or fewer away — finish those before spending relic mats on anything not on this chain." },
+    { sev: "watch", id: "jedi-knight-revan-is-a", t: "Jedi Knight Revan is a dead end without Darth Revan or Malak", note: "Still G10 with no further Old Republic support on this account — zero further investment until after the next Legend push, if ever." },
+    { sev: "keep", id: "mandalorian-squad-bo-katan-mand", t: "Mandalorian squad (Bo-Katan Mand'alor R8, both omicrons)", note: "Genuinely meta for GAC and TW — keep it modded and together." }
   ]
 };
 /* Daily routine — same habits both accounts; checkboxes auto-reset each day */
@@ -3577,7 +3700,7 @@ const store = {
         }
       }
     }
-    return s;
+    return hardSanitizeState(s);
   },
   write(s, opts) {
     opts = opts || {};
@@ -3748,6 +3871,192 @@ function mergeDefaults(saved, defaults) {
   }
   return saved;
 }
+/* ===================== hardening: shape guard, safe sinks, stable Coach tip keys =====================
+   hardSanitizeState() is the one place that coerces a candidate `state` to the shapes the code reads,
+   whichever door it came through: localStorage (store.read), a remote Cloud Sync copy (syncMergeRemote),
+   or anything adopted wholesale — import, force pull, Undo, a watermark restore (mergeRemoteState).
+   Rules, deliberately narrow so no VALID data can ever change:
+     - a value of the wrong kind where the code expects an object / array / number / string / boolean is
+       DELETED, never guessed at — every caller runs mergeDefaults() next, which backfills the default;
+     - arrays of rows keep every row that is a plain object (lists of names keep every string) and drop
+       only the entries that aren't;
+     - tick values are coerced with !! — exactly how every reader already treats them;
+     - an own "__proto__" key is removed at any depth (JSON.parse makes it a real key, and
+       Object.assign({}, x) — used on whole states — would then re-point the copy's prototype);
+     - keys this table doesn't name are left alone, so a newer build's fields survive an older build.
+   Mutates and returns `s`; idempotent; anything that isn't a plain object is returned untouched; never
+   throws. The byte-identity of real saved states through it is pinned by my-hardening-check. */
+function hardNum(v) {
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+  if (typeof v === "string" && v.trim() !== "") { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+  return 0;
+}
+const HARD_PLAN = { $null: true, "*": "ao" };
+const HARD_GAC_ACCT = { initialized: "b", zones: "ao", offense: "ao" };
+const HARD_SHAPE = {
+  stateVersion: "n", updatedAt: "n", lastPull: "n", dailyDate: "s", tab: "s", currentAccount: "s",
+  eventsSeedVersion: "n", eventsSeeded: "b", tipKeysVersion: "n",
+  ticks: { "*": "tick" },
+  pulls: { "*": "pull" },
+  modsChars: { $null: true, fetchedAt: "n", list: "ao" }, modsRecent: "as", modsData: { "*": "o" },
+  modopt: { content: "s", arch: "s", squad: { "*": "as" } },
+  layout: { order: { "*": "as" }, hidden: { "*": "as" }, size: { "*": { "*": "o" } }, density: "s",
+            sidebarCollapsed: "b", show: { "*": "b" } },
+  cq: { view: "s", sector: "s", enemy: "s", showEnemyIntel: "b", showDiskIntel: "b", day: "n", myPlan: HARD_PLAN,
+        byAccount: { "*": { initialized: "b", day: "n", myPlan: HARD_PLAN, runResetNote: "?o" } } },
+  modesnav: { "*": "s" }, views: { "*": "s" }, lastTabInGroup: { "*": "s" }, glTarget: { "*": "s" },
+  tb: { "*": "o" }, tbRun: "?o", tbRunResetNote: "?o",
+  tw: { zones: "ao" },
+  arena: { log: { "*": "ao" }, opponents: { "*": "ao" } },
+  raidTickets: { "*": { "*": "n" } }, raidProgress: { "*": { "*": { tier: "s", stars: "n" } } },
+  guildCurrency: { "*": "n" },
+  executor: { "*": { shards: "n", star: "n", at: "n" } },
+  history: { "*": { obs: "a", ev: "a" } },
+  /* Named accounts, not "*": a pre-v2 save keeps its flat zones/offense lists here for migrateState(). */
+  gac: { ollie: HARD_GAC_ACCT, tiny: HARD_GAC_ACCT, zones: "ao", offense: "ao" },
+  legacyMigration: { pending: "b", resolved: "s", resolvedAt: "n", shared: { "*": "b" }, legacyGac: "?o", legacyCq: "?o",
+                     legacyUpdates: { "*": "ao" }, assignmentBackups: { "*": { "*": "a" } } },
+  events: { items: "events" }
+};
+/* A roster snapshot is only usable with a reqs map: accountView() reads src.reqs[id] unguarded, so a pull
+   without one would take the whole page down. Dropping it falls back to the built-in BASELINE. */
+const HARD_PULL = { reqs: { "*": "o" }, mods: "ao", datacrons: "ao", gacSeason: "?o" };
+function hardKeepRows(arr, keep) {
+  if (arr.every(keep)) return;                     // the normal case: untouched, same array, same bytes
+  const rows = arr.filter(keep);
+  arr.length = 0;
+  rows.forEach(r => arr.push(r));
+}
+function hardEventRow(e) {
+  for (const k of ["name", "date"]) if (typeof e[k] !== "string") e[k] = typeof e[k] === "number" ? String(e[k]) : "";
+  for (const k of ["id", "cat", "ends", "note"]) {
+    if (e[k] === undefined || typeof e[k] === "string") continue;
+    if (typeof e[k] === "number" && Number.isFinite(e[k])) e[k] = k === "id" ? e[k] : String(e[k]);
+    else delete e[k];
+  }
+}
+/* true = keep (possibly after an in-place fix), false = the caller deletes the key. */
+function hardFitValue(v, t) {
+  if (isPlainObject(t)) {
+    if (v === null) return !!t.$null;
+    if (!isPlainObject(v)) return false;
+    hardFitObject(v, t);
+    return true;
+  }
+  switch (t) {
+    case "n": return typeof v === "number" && Number.isFinite(v);
+    case "s": return typeof v === "string";
+    case "b": return typeof v === "boolean";
+    case "o": return isPlainObject(v);
+    case "?o": return v === null || isPlainObject(v);
+    case "a": return Array.isArray(v);
+    case "as": if (!Array.isArray(v)) return false; hardKeepRows(v, x => typeof x === "string"); return true;
+    case "ao": if (!Array.isArray(v)) return false; hardKeepRows(v, isPlainObject); return true;
+    case "events":
+      if (!Array.isArray(v)) return false;
+      hardKeepRows(v, isPlainObject);
+      v.forEach(hardEventRow);
+      return true;
+    case "pull":
+      if (!isPlainObject(v) || !isPlainObject(v.reqs)) return false;
+      hardFitObject(v, HARD_PULL);
+      return true;
+  }
+  return true;
+}
+function hardFitObject(obj, spec) {
+  for (const k of Object.keys(obj)) {
+    const t = Object.prototype.hasOwnProperty.call(spec, k) && k !== "$null" && k !== "*" ? spec[k] : spec["*"];
+    if (t === undefined) continue;
+    if (t === "tick") { if (typeof obj[k] !== "boolean") obj[k] = !!obj[k]; continue; }
+    if (!hardFitValue(obj[k], t)) delete obj[k];
+  }
+}
+function hardStripProtoKeys(root) {
+  const stack = [root], seen = new Set();
+  while (stack.length) {
+    const o = stack.pop();
+    if (o === null || typeof o !== "object" || seen.has(o)) continue;
+    seen.add(o);
+    if (Array.isArray(o)) { for (const x of o) if (x !== null && typeof x === "object") stack.push(x); continue; }
+    if (Object.prototype.hasOwnProperty.call(o, "__proto__")) delete o["__proto__"];
+    for (const k of Object.keys(o)) { const x = o[k]; if (x !== null && typeof x === "object") stack.push(x); }
+  }
+}
+function hardSanitizeState(s) {
+  if (!isPlainObject(s)) return s;
+  try {
+    hardStripProtoKeys(s);
+    hardFitObject(s, HARD_SHAPE);
+  } catch (e) {
+    console.error("hardSanitizeState: left the rest of this copy as it was —", e);
+  }
+  return s;
+}
+/* Coach's Corner tip ticks are keyed by the tip itself, not by its position in TIPS: `${account}-t:` plus
+   an explicit `id` when a tip carries one, else a slug + FNV-1a hash of its title. Positional keys
+   (`ollie-t3`) meant that adding, removing or reordering a tip silently moved every later tick onto a
+   different tip. Rewording a title starts that tip unticked; give it an `id` to keep a tick across a
+   rewrite. The "-t" prefix is kept so tick() still re-renders on a tip tick. */
+function hardTipKey(account, tip) {
+  if (tip && tip.id) return `${account}-t:${String(tip.id)}`;
+  const txt = String((tip && tip.t) || "");
+  let h = 0x811c9dc5;
+  for (let i = 0; i < txt.length; i++) { h ^= txt.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  const slug = txt.toLowerCase().replace(/<[^>]*>|&[a-z0-9#]+;/g, " ").replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/, "").slice(0, 32).replace(/-+$/, "");
+  return `${account}-t:${slug}-${h.toString(36)}`;
+}
+/* One-time move of positional tip ticks onto stable keys, run from applyBootMaintenance() (so it is
+   timestamp-neutral at boot and replayed on anything adopted from a remote/import). Each `${acct}-t${i}`
+   is read against TODAY's TIPS — the same reading the positional code gave it on screen until now — so
+   nothing displayed changes: its value moves to that tip's stable key and the positional key is removed.
+   Version-gated by state.tipKeysVersion, which is stamped only once something has actually moved: a
+   fresh browser that has nothing to move must stay unstamped, or the positional ticks it pulls down from
+   GitHub a second later would be stranded. After the stamp, a positional key arriving from an older build
+   is ignored rather than read against a TIPS order it was never written for. */
+const HARD_TIP_KEYS_VERSION = 1;
+function hardMigrateTipTicks(target) {
+  if (target.tipKeysVersion === HARD_TIP_KEYS_VERSION || !isPlainObject(target.ticks)) return false;
+  let moved = false;
+  for (const acct of Object.keys(TIPS)) {
+    TIPS[acct].forEach((tip, i) => {
+      const old = `${acct}-t${i}`;
+      if (!Object.prototype.hasOwnProperty.call(target.ticks, old)) return;
+      target.ticks[hardTipKey(acct, tip)] = target.ticks[old];
+      delete target.ticks[old];
+      moved = true;
+    });
+  }
+  if (moved) target.tipKeysVersion = HARD_TIP_KEYS_VERSION;
+  return moved;
+}
+/* Overview "Next up" sink for a hand-written farm item: a roster-derived label (specLiveLabel, which
+   carries swgoh.gg's unit name) is text and is escaped here; a static GUIDANCE label is markup as before. */
+function hardFarmLabelHtml(account, reqsMap, pi, ii, item) {
+  const spec = (FARM_CHECKS[account] || {})[`p${pi}-${ii}`];
+  return spec ? escapeHtml(specLiveLabel(reqsMap, spec)) : item[0];
+}
+/* render()'s chrome (header, data line, nav, account chip, banners) runs inside a try whose catch lands
+   here: log it, keep the active pane visible, and say so in one line instead of leaving a blank app. */
+function hardChromeClear() {
+  const el = document.getElementById("hardChromeNotice");
+  if (el) el.remove();
+}
+function hardChromeFailed(e) {
+  console.error("[render] page chrome failed:", e);
+  try {
+    SUBTABS.forEach(t => { const p = document.getElementById("pane-" + t.key); if (p) p.classList.toggle("active", t.key === curTab); });
+  } catch (e2) { /* the notice below still goes up */ }
+  const main = document.getElementById("main");
+  if (!main || document.getElementById("hardChromeNotice")) return;
+  const el = document.createElement("div");
+  el.id = "hardChromeNotice";
+  el.className = "intelnote";
+  el.setAttribute("role", "alert");
+  el.textContent = "Part of the page failed to draw — reload or open the Data tab";
+  main.insertBefore(el, main.firstChild);
+}
 /* Runs once at load, after mergeDefaults, so every step below can assume the full default shape is
    present. `from` is the version the blob was actually saved at (0 = pre-versioning). Steps run
    oldest first and are one `if` each, e.g.
@@ -3879,6 +4188,7 @@ function applyBootMaintenance(target) {
     target.dailyDate = today;
     changed = true;
   }
+  if (hardMigrateTipTicks(target)) changed = true;
   return changed;
 }
 const savedState = store.read({ pulls: true });
@@ -4027,7 +4337,7 @@ const DEFAULT_SPAN = { overview: 6, leia: 6, gaps: 6, coach: 6, farm: 6, modes: 
 /* ===================== progress math ===================== */
 function unitProgress(u, reqRelic) {
   if (!u) return { pct: 0, cur: "Not unlocked", status: "stargate", done: false, remaining: 7 + 12 + reqRelic * 3 };
-  const stars = u.s || 0, gear = u.g || 1, relic = u.r || 0;
+  const stars = hardNum(u.s), gear = hardNum(u.g) || 1, relic = hardNum(u.r);
   /* relic tiers weighted ×3 vs star/gear steps — they dominate real material cost */
   const total = 7 + 12 + reqRelic * 3;
   const have = Math.min(stars, 7) + Math.min(Math.max(gear - 1, 0), 12) + Math.min(relic, reqRelic) * 3;
@@ -5491,6 +5801,10 @@ function cqEnsurePlan() {
     accountCq.lastSeenRun = runId;
     accountCq.runResetNote = null;
     accountCq.initialized = true;
+    /* This branch marks the current run as already seen, so the new-run branch below never fires for it —
+       land on the inferred day here too, or a fresh install / new conquest mid-run sits on day 1 (or the
+       old conquest's day). Once only: later renders don't reach this branch, so the user's chip click sticks. */
+    if (rs && rs.live && rs.day) accountCq.day = rs.day;
     store.write(state);
   } else if (runId && accountCq.lastSeenRun !== runId) {
     /* Same numbered Conquest, but a NEW live occurrence has begun since the ticks were last synced —
@@ -5832,10 +6146,29 @@ function sectionNav(id, key, items) {
   nav.setAttribute("aria-label", key + " views");
   nav.innerHTML = items.map(([value, label]) => `<button role="tab" aria-selected="${active === String(value)}" class="${active === String(value) ? "active" : ""}" onclick="sectionView('${key}','${value}')">${label}</button>`).join("");
 }
+/* fold-*: Roster Gap Radar definitions. The status chip and the two N/total counts measure DIFFERENT
+   things (see rosterStatus): chip = how many members are NOT OWNED at all (+ whether all are geared);
+   "owned" = on the roster at any level; "battle-ready" = owned AND geared (squads: 7★ + G12+; fleets: ships
+   at their required stars, usually 7★). Wording below mirrors that code exactly. */
+function foldGapsChipTip(bucket, total, fleet) {
+  const n = Number(total) || 0;
+  if (bucket === "ready") return fleet ? `Status: every one of the ${n} ships is at its required star level (usually 7★).` : `Status: all ${n} members are battle-ready (7★ and G12+, or relic).`;
+  if (bucket === "close") return `Status: at most ONE member is not owned at all. This counts missing units only, not gear: owned members can still be under-geared (see the battle-ready count).`;
+  if (bucket === "started") return `Status: 2 or more of the ${n} members are not owned yet, but at least one is.`;
+  return `Status: none of the ${n} members is owned yet.`;
+}
+function foldGapsCountsHtml(st, fleet) {
+  const t = Number(st.total) || 0;
+  return `<span class="fold-tip" title="Owned: ${Number(st.ownedN) || 0} of ${t} are on this roster, at any star or gear level.">${Number(st.ownedN) || 0}/${t} owned</span>, `
+    + `<span class="fold-tip" title="${fleet ? `Battle-ready: ${Number(st.gearedN) || 0} of ${t} ships owned and at their required star level (usually 7★).` : `Battle-ready: ${Number(st.gearedN) || 0} of ${t} members owned AND 7★ with gear 12 or higher (relic units count).`}">${Number(st.gearedN) || 0}/${t} battle-ready</span>`;
+}
+function foldGapsLegendHtml() {
+  return `<div class="fold-legend"><b>Chip vs. N/total:</b> the chip is a <b>status</b> that counts members <i>not owned</i> (✓ all battle-ready · → at most 1 not owned · ⛭ 2+ not owned · · none owned); <b>owned</b> = on your roster; <b>battle-ready</b> = owned and 7★ G12+.</div>`;
+}
 function renderGaps(s) {
   const grid = document.getElementById("gapsGrid");
   if (!grid) return;
-  const bucketLabel = { ready: "✓ Battle-ready", close: "→ 1 unit away", started: "⛭ In progress", notstarted: "· Not started" };
+  const bucketLabel = { ready: "✓ Battle-ready", close: "→ ≤1 unit missing", started: "⛭ In progress", notstarted: "· Not started" };
   const bucketOrder = { ready: 0, close: 1, started: 2, notstarted: 3 };
   const scored = META_SQUADS.map(sq => ({ sq, st: squadStatus(sq, s.reqs || {}), uses: sq.mode.split(/\s*\/\s*|,\s*/).filter(Boolean).length }))
     .sort((a, b) => bucketOrder[a.st.bucket] - bucketOrder[b.st.bucket] || b.st.ownedN - a.st.ownedN);
@@ -5847,17 +6180,19 @@ function renderGaps(s) {
   document.getElementById("gapsSub").innerHTML = `Cross-references ${rosterProvenance} against a curated top-squad reference (Squad Arena, Fleet Arena, GAC, TW, raids — Sith Triumvirate, Rancor, AAT, Order 66, Naboo) to surface teams you're close to fielding and per-unit bottlenecks. Squad strategy reference ${snapNoteHtml("meta-squads")}; roster values use the source identified here.` +
     (state.pulls[current]
       ? (state.pulls[current].charDataLive === false ? ` <b style="color:var(--accent)">swgoh.gg isn't returning per-character roster data right now — gear/relic readiness below is from ${state.pulls[current].charDataAt ? escapeHtml(new Date(state.pulls[current].charDataAt).toLocaleDateString()) : "an earlier pull"}, not this session's pull.</b>` : "")
-      : ` <b style="color:var(--accent)">Showing your last saved snapshot — press "Pull latest data" for a full, live roster picture.</b>`);
+      : ` <b style="color:var(--accent)">Showing your last saved snapshot — press "Pull latest data" for a full, live roster picture.</b>`)
+    + (state.views.gaps === "raids" ? "" : foldGapsLegendHtml());
   const infoCard = { id: "raidinfo", html: `<div class="cardtitle">How raid rewards actually work</div>
-    <div class="mnote">Raid loot isn't a fixed score threshold like TW — it's your <b>rank on your own guild's damage leaderboard</b> for that raid run (top few get the best box, the rest step down by rank band). There's no universal "score X for tier Y" number to chase; pace against your guild's typical clear instead. Rough Heroic-tier total damage pools if useful context: Rancor ≈10.3M, AAT ≈4.06M/19.1M/12.7M/12.5M across its 4 phases, Kyber STR ≈170.8M across all phases — 2% of a phase pool per member is a comfortable pace, up to 10% if carrying a smaller squad.</div>` };
+    <div class="mnote">Raid loot isn't a fixed score threshold like TW — it's your <b>rank on your own guild's damage leaderboard</b> for that raid run (top few get the best box, the rest step down by rank band). There's no universal "score X for tier Y" number to chase; pace against your guild's typical clear instead.</div>
+    ${foldMore("Heroic-tier damage pools & pacing", `<div class="mnote">Rough Heroic-tier total damage pools if useful context: Rancor ≈10.3M, AAT ≈4.06M/19.1M/12.7M/12.5M across its 4 phases, Kyber STR ≈170.8M across all phases — 2% of a phase pool per member is a comfortable pace, up to 10% if carrying a smaller squad.</div>`, { key: "gap-raidpools" })}` };
   const ticketCard = { id: "raidtickets", html: raidTicketsHtml() };
   const squadCards = scored.map((x, i) => ({
     id: "sq" + i,
-    html: `<div class="cardtitle">${escapeHtml(x.sq.name)} <span class="chip ${x.st.bucket === "ready" ? "done" : x.st.bucket === "close" ? "close" : x.st.bucket === "started" ? "grind" : "stargate"}">${bucketLabel[x.st.bucket]}</span>${tierListChipHtml("3v3", x.sq.tl3v3) || tierListChipHtml("5v5", x.sq.tl5v5)}${x.sq.confidence ? `<span class="chip ${ASSAULT_CONF_CHIP[x.sq.confidence] || "watch"}">${escapeHtml(x.sq.confidence)}</span>` : ""}</div>
-      <div class="mnote">${escapeHtml(x.sq.mode)} · ${x.st.ownedN}/${x.st.total} owned, ${x.st.gearedN}/${x.st.total} battle-ready (7★ G12+)</div>
+    html: `<div class="cardtitle">${escapeHtml(x.sq.name)} <span class="chip ${x.st.bucket === "ready" ? "done" : x.st.bucket === "close" ? "close" : x.st.bucket === "started" ? "grind" : "stargate"}" title="${escapeHtml(foldGapsChipTip(x.st.bucket, x.st.total, false))}">${bucketLabel[x.st.bucket]}</span>${tierListChipHtml("3v3", x.sq.tl3v3) || tierListChipHtml("5v5", x.sq.tl5v5)}${x.sq.confidence ? `<span class="chip ${ASSAULT_CONF_CHIP[x.sq.confidence] || "watch"}">${escapeHtml(x.sq.confidence)}</span>` : ""}</div>
+      <div class="mnote">${escapeHtml(x.sq.mode)} · ${foldGapsCountsHtml(x.st, false)} (7★ G12+)</div>
       <div class="cqteams">${x.st.rows.map(r => `<div class="cqteam" style="${r.geared ? "color:var(--ink-1)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span></div>`).join("")}</div>
-      ${x.sq.notes ? `<div class="intelnote">${escapeHtml(x.sq.notes)}</div>` : ""}
-      ${x.sq.sources ? `<div class="srcline">Sources: ${escapeHtml(x.sq.sources.join(" · "))}</div>` : ""}`
+      ${(x.sq.notes || x.sq.sources) ? foldMore(`Why this squad? notes & sources (${(x.sq.notes ? 1 : 0) + (x.sq.sources ? 1 : 0)})`,
+        `${x.sq.notes ? `<div class="intelnote">${escapeHtml(x.sq.notes)}</div>` : ""}${x.sq.sources ? `<div class="srcline">Sources: ${escapeHtml(x.sq.sources.join(" · "))}</div>` : ""}`, { key: "gap-sq-" + x.sq.name }) : ""}`
   }));
   const noteCards = RAID_NOTES.map((n, i) => ({
     id: "raidnote" + i,
@@ -5866,8 +6201,8 @@ function renderGaps(s) {
   }));
   const fleetCards = scoredFleets.map((x, i) => ({
     id: "fl" + i,
-    html: `<div class="cardtitle">${escapeHtml(x.sq.name)} <span class="chip ${x.st.bucket === "ready" ? "done" : x.st.bucket === "close" ? "close" : x.st.bucket === "started" ? "grind" : "stargate"}">${bucketLabel[x.st.bucket]}</span>${tierListChipHtml("fleet", x.sq.tlFleet)}</div>
-      <div class="mnote">${escapeHtml(x.sq.mode)} · ${x.st.ownedN}/${x.st.total} owned, ${x.st.gearedN}/${x.st.total} battle-ready</div>
+    html: `<div class="cardtitle">${escapeHtml(x.sq.name)} <span class="chip ${x.st.bucket === "ready" ? "done" : x.st.bucket === "close" ? "close" : x.st.bucket === "started" ? "grind" : "stargate"}" title="${escapeHtml(foldGapsChipTip(x.st.bucket, x.st.total, true))}">${bucketLabel[x.st.bucket]}</span>${tierListChipHtml("fleet", x.sq.tlFleet)}</div>
+      <div class="mnote">${escapeHtml(x.sq.mode)} · ${foldGapsCountsHtml(x.st, true)}</div>
       <div class="cqteams">${x.st.rows.map(r => `<div class="cqteam" style="${r.geared ? "color:var(--ink-1)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span></div>`).join("")}</div>`
   }));
   const fleetTierCard = { id: "fleettier", html: fleetTierHtml(s.reqs || {}) };
@@ -6431,27 +6766,48 @@ function eventReminderHtml() {
 }
 /* Local calendar date (YYYY-MM-DD). toISOString() is UTC, so in AU evenings it reports yesterday. */
 function localISODate(d) { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+/* Read-only by default: the Events list and the Conquest plan render without add / edit / reorder / delete
+   controls until that tab's "Edit" toggle is pressed, so a stray tap on the phone can't change data.
+   Ticking a Conquest step, picking a day, and the display switches are daily use and stay one tap.
+   Session-only on purpose: a plain module variable (not state, not storage), reset to view mode on reload;
+   it survives re-renders, CRUD and account switches within the visit. Unrelated to the layout `editMode`. */
+const editTabOn = { events: false, cq: false };
+function editIs(tab) { return !!editTabOn[tab]; }
+function editToggle(tab) {
+  if (!(tab in editTabOn)) return;
+  editTabOn[tab] = !editTabOn[tab];
+  if (tab === "events") renderEvents(); else renderConquest();
+  const btn = document.querySelector(`.edit-toggle[data-edit-tab="${tab}"]`);
+  if (btn) btn.focus();   // the re-render replaced the button; keep keyboard focus where it was
+}
+function editToggleHtml(tab, label) {
+  const on = editIs(tab);
+  return `<div class="edit-bar"><button type="button" class="secondary-action edit-toggle" data-edit-tab="${escapeHtml(tab)}" aria-pressed="${on}" onclick="editToggle('${escapeHtml(tab)}')">✎ ${escapeHtml(label)}</button>
+    <span class="edit-hint">${on ? "Editing — changes save as you go. Press Edit again to lock." : "View only — press Edit to add, change or delete."}</span></div>`;
+}
 function eventsListHtml(mode) {
   const allItems = state.events.items.concat(executorDerivedEvents()).sort((a, b) => a.date.localeCompare(b.date));
   const today = localISODate();
   const upcoming = allItems.filter(e => (e.ends || e.date) >= today);
   const items = mode === "next" ? (upcoming.length ? upcoming : allItems).slice(0, 8) : allItems;
+  const editOn = editIs("events");   // view mode renders every row the read-only (derived-row) way
   return `<div class="cardtitle">${mode === "next" ? "Current & next events" : "All events"} <span class="sub">— ${items.length} shown</span></div>
-    ${eventsSeedExhausted() ? `<div class="mnote" style="color:var(--serious);font-weight:650">The built-in calendar was captured ${escapeHtml(EVENTS_SEED_CAPTURED)} and has run out — ask Claude to re-pull swgoh.gg/events/, or add events below.</div>` : ""}
-    <div class="mnote">Second date field is optional — only set for events with a known end date (mainly ones that were already live when this list was last refreshed).</div>
+    ${editToggleHtml("events", "Edit events")}
+    ${eventsSeedExhausted() ? `<div class="mnote" style="color:var(--serious);font-weight:650">The built-in calendar was captured ${escapeHtml(EVENTS_SEED_CAPTURED)} and has run out — ask Claude to re-pull swgoh.gg/events/, or add events ${editOn ? "below" : "with Edit events"}.</div>` : ""}
+    ${editOn ? `<div class="mnote">Second date field is optional — only set for events with a known end date (mainly ones that were already live when this list was last refreshed).</div>` : ""}
     <div class="form-table events-form">
       <div class="form-head"><span>When</span><span>Event</span><span>Category</span><span>Starts</span><span>Ends</span><span>Notes</span><span></span></div>
     ${items.map(e => {
       const st = eventStatus(e);
       /* derived rows carry no crud: no contenteditable, no date inputs, no delete — same 7-cell shape
          so the form grid still lines up */
-      if (e.derived) return `<div class="form-row cqline-event">
+      if (e.derived || !editOn) return `<div class="form-row cqline-event">
         <div style="min-width:76px;font-weight:650;${st.style}">${st.label}</div>
-        <div class="form-field"><span>Event</span><div class="txt" style="color:var(--ink-1)">${escapeHtml(e.name)} <span class="chip keep" style="font-size:10px">${chipGlyph("keep")} auto</span></div></div>
+        <div class="form-field"><span>Event</span><div class="txt" style="color:var(--ink-1)">${escapeHtml(e.name)}${e.derived ? ` <span class="chip keep" style="font-size:10px">${chipGlyph("keep")} auto</span>` : ""}</div></div>
         <span class="chip ${EVENT_CAT_CHIP[e.cat] || "watch"}" style="white-space:nowrap">${chipGlyph(EVENT_CAT_CHIP[e.cat] || "watch")} ${escapeHtml(e.cat)}</span>
         <div class="form-field"><span>Starts</span><div class="txt" style="color:var(--ink-2)">${escapeHtml(cqShortDate(e.date))}</div></div>
-        <div class="form-field"><span>Ends</span><div class="txt" style="color:var(--ink-2)">${escapeHtml(cqShortDate(e.ends))}</div></div>
-        <div class="form-field"><span>Notes</span><div class="txt" style="color:var(--ink-3)">${escapeHtml(e.note)}</div></div>
+        <div class="form-field"><span>Ends</span><div class="txt" style="color:var(--ink-2)">${e.ends ? escapeHtml(cqShortDate(e.ends)) : "—"}</div></div>
+        <div class="form-field"><span>Notes</span><div class="txt" style="color:var(--ink-3)">${escapeHtml(e.note || "")}</div></div>
         <div class="rowtools"></div>
       </div>`;
       return `<div class="form-row cqline-event">
@@ -6463,9 +6819,9 @@ function eventsListHtml(mode) {
         <div class="form-field"><span>Notes</span><div class="txt" contenteditable="true" role="textbox" aria-label="Event notes" onblur="eventSet('${e.id}','note',this.textContent.trim())" style="color:var(--ink-3)">${escapeHtml(e.note || "notes…")}</div></div>
         <div class="rowtools"><button title="Delete" onclick="eventDel('${e.id}')">✕</button></div>
       </div>`;
-    }).join("") || `<div class="form-empty">No events tracked — add one below.</div>`}
+    }).join("") || `<div class="form-empty">No events tracked — ${editOn ? "add one below" : "press Edit events to add one"}.</div>`}
     </div>
-    <div class="cqaddrow"><button onclick="eventAdd()">+ Add event</button></div>`;
+    ${editOn ? `<div class="cqaddrow"><button onclick="eventAdd()">+ Add event</button></div>` : ""}`;
 }
 function renderEvents() {
   const grid = document.getElementById("eventsGrid");
@@ -6651,8 +7007,8 @@ function gacDefenseRowHtml(x, acctKey) {
     <span class="chip ${bucketChip[x.st.bucket]}" style="min-width:82px;justify-content:center">${bucketLabel[x.st.bucket]}</span>
     <span style="flex:1;color:var(--ink-1);font-weight:600">${escapeHtml(x.sq.name)}</span>
     ${x.tl ? `<span class="chip ${TIER_CHIP[x.tl.tier] || "watch"}" style="min-width:26px;justify-content:center" title="${x.tl.wr}% WR · ${x.tl.battles} battles, live Tier List">${x.tl.tier}</span>` : ""}
-    ${isFleet ? "" : `<button class="pullbtn" style="padding:3px 8px;font-size:11px" title="Optimize mods for ${escapeHtml(x.sq.name)} (Mod Optimiser, GAC/TW content)"
-      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "gac", acctKey)}">⚙</button>`}
+    ${isFleet ? "" : `<button type="button" class="chrome-gearbtn" title="Optimize mods for ${escapeHtml(x.sq.name)} (opens the Mod Optimiser with this squad)" aria-label="Optimize mods for ${escapeHtml(x.sq.name)}"
+      onclick="${optLoadTeamAttr(x.sq.members.map(m => m[1]), "gac", acctKey)}"><span aria-hidden="true">⚙</span> Mods</button>`}
   </div>`;
 }
 function gacDefenseBodyHtml() {
@@ -6703,7 +7059,7 @@ function squadArenaCandidates(acctKey) {
 function squadArenaBlockHtml(x, label, v, acctKey) {
   if (!x) return "";
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
-  const bucketLabel = { ready: "✓ battle-ready", close: "→ 1 unit away", started: "⛭ in progress", notstarted: "· not started" };
+  const bucketLabel = { ready: "✓ battle-ready", close: "→ ≤1 unit missing", started: "⛭ in progress", notstarted: "· not started" };
   return `<div style="margin-top:10px">
     <div class="cardtitle" style="font-size:13px">${label}: ${escapeHtml(x.sq.name)}
       <span class="chip ${bucketChip[x.st.bucket]}">${bucketLabel[x.st.bucket]}</span>
@@ -6749,7 +7105,7 @@ function raidCoachForRaid(ri, acctKey) {
    represented by an (L)" request, 23 Aug 2026. */
 function raidCoachRowHtml(x, acctKey) {
   const bucketChip = { ready: "done", close: "close", started: "grind", notstarted: "stargate" };
-  const bucketLabel = { ready: "✓ battle-ready", close: "→ 1 unit away", started: "⛭ in progress", notstarted: "· not started" };
+  const bucketLabel = { ready: "✓ battle-ready", close: "→ ≤1 unit missing", started: "⛭ in progress", notstarted: "· not started" };
   const tierLabel = x.sq.raidTier === "top" ? "work towards" : x.sq.raidTier === "budget" ? "budget option" : "";
   const memberRows = x.st.rows.map((r, i) => `<div class="cqteam" style="${r.geared ? "color:var(--good)" : r.owned ? "" : "color:var(--ink-3);font-style:italic"}">
       ${i === 0 ? '<span style="color:var(--accent);font-weight:700">(L)</span> ' : ""}${r.geared ? "✓ " : r.owned ? "→ " : "✕ "}${escapeHtml(r.name)} <span style="color:var(--ink-3)">— ${escapeHtml(r.cur)}</span>
@@ -6952,6 +7308,7 @@ function renderConquest() {
     const items = plan[d] || [];
     const doneN = items.filter(i => i.done).length;
     const showEn = state.cq.showEnemyIntel, showDk = state.cq.showDiskIntel;
+    const editOn = editIs("cq");   // add / edit / reorder / delete / reset sit behind the Edit toggle; ticking never does
     let sector = null;
     const rows = items.map((it, i) => {
       const secM = /^SECTOR\s+(\d+)/i.exec(it.t);
@@ -6965,14 +7322,14 @@ function renderConquest() {
       }
       return `
           <div class="cqline ${it.done ? "done" : ""} ${intel ? "hasintel" : ""}">
-            <input type="checkbox" ${it.done ? "checked" : ""} onchange="cqToggle('${d}',${i})">
-            <div class="txt">${escapeHtml(it.t)}</div>
+            <label class="edit-cqcheck"><input type="checkbox" id="edit-cqcb-${escapeHtml(d)}-${i}" aria-label="${escapeHtml(it.t)}" ${it.done ? "checked" : ""} onchange="cqToggle('${d}',${i})"></label>
+            ${editOn ? `<div class="txt">${escapeHtml(it.t)}</div>
             <div class="rowtools">
-              <button title="Edit" onclick="cqEdit('${d}',${i},this)">✎</button>
-              <button title="Move up" onclick="cqMove('${d}',${i},-1)">↑</button>
-              <button title="Move down" onclick="cqMove('${d}',${i},1)">↓</button>
-              <button title="Delete" onclick="cqDel('${d}',${i})">✕</button>
-            </div>
+              <button title="Edit" aria-label="Edit step" onclick="cqEdit('${d}',${i},this)">✎</button>
+              <button title="Move up" aria-label="Move step up" onclick="cqMove('${d}',${i},-1)">↑</button>
+              <button title="Move down" aria-label="Move step down" onclick="cqMove('${d}',${i},1)">↓</button>
+              <button title="Delete" aria-label="Delete step" onclick="cqDel('${d}',${i})">✕</button>
+            </div>` : `<label class="txt" for="edit-cqcb-${escapeHtml(d)}-${i}">${escapeHtml(it.t)}</label>`}
             ${intel}
           </div>`;
     });
@@ -6991,12 +7348,13 @@ function renderConquest() {
         <div class="cqprefsnote">Free-data equivalent of swgoh4.life's Patreon-gated toggles — matches squad lines against our 30-leader Enemy intel snapshot by name; unmatched squads say so rather than guessing.</div>
       </div>
       <div class="card">
-        <div class="cardtitle">Day ${d} — your plan <span class="sub">· ${doneN}/${items.length} done · edit, reorder or delete any step</span></div>
-        ${rows.join("") || `<div class="cqteam" style="font-style:italic">No steps for this day — add your own below.</div>`}
-        <div class="cqaddrow">
+        <div class="cardtitle">Day ${d} — your plan <span class="sub">· ${doneN}/${items.length} done · ${editOn ? "edit, reorder or delete any step" : "tick steps as you go"}</span></div>
+        ${editToggleHtml("cq", "Edit plan")}
+        ${rows.join("") || `<div class="cqteam" style="font-style:italic">No steps for this day — ${editOn ? "add your own below" : "press Edit plan to add your own"}.</div>`}
+        ${editOn ? `<div class="cqaddrow">
           <button onclick="cqAdd('${d}')">+ Add a step</button>
           <button onclick="cqResetDay()" style="margin-left:6px;border-color:var(--ink-3);color:var(--ink-3)">↺ Reset day to swgoh4.life plan</button>
-        </div>
+        </div>` : ""}
       </div>`);
   } else if (state.cq.view === "feats") {
     const secs = [["global", "Global"], ["1", "Sector 1"], ["2", "Sector 2"], ["3", "Sector 3"], ["4", "Sector 4"], ["5", "Sector 5"]];
@@ -7267,7 +7625,7 @@ const WM_REFRESH_MS = 10 * 60000;     /* don't rewrite ~170 KB of localStorage o
 
 /* applyBootMaintenance() writes these two and they were never in the defaultState() literal, so they
    would read as novel keys on every single payload without this. */
-const GUARD_EXTRA_KEYS = ["eventsSeedVersion", "eventsSeeded"];
+const GUARD_EXTRA_KEYS = ["eventsSeedVersion", "eventsSeeded", "tipKeysVersion"];
 let guardKnownKeysCache = null;
 function guardKnownKeys() {
   if (!guardKnownKeysCache) guardKnownKeysCache = new Set(Object.keys(defaultState()).concat(GUARD_EXTRA_KEYS));
@@ -7661,6 +8019,7 @@ function threeWayValue(base, local, remote, path, ctx) {
    `why` is only a label for the rollback ring and the amber message. */
 function syncMergeRemote(remote, why) {
   if (!isPlainObject(remote)) return { applied: false, pushNeeded: false, collisions: [] };
+  hardSanitizeState(remote);
   const localPayload = stateWithoutDeviceLocal(state);
   /* Strip the device-local halves off the REMOTE too. An older client's blob still carries its own
      pulls/lastPull/UI context, and merging those in would read another device's tab position as a
@@ -7721,6 +8080,7 @@ function syncMergeRemote(remote, why) {
    contains both sides, force pull, import, and Undo. */
 function mergeRemoteState(remote) {
   if (!remote || typeof remote !== "object") return;
+  hardSanitizeState(remote);
   const remoteVersion = typeof remote.stateVersion === "number" ? remote.stateVersion : 0;
   const remoteUpdatedAt = remote.updatedAt || 0;
   /* The roster snapshot is device-local (PULLS_KEY), and a remote blob is never authoritative for it:
@@ -8906,6 +9266,48 @@ function dataHealthCard(nowMs) {
 function dataHealthLineHtml(nowMs) {
   return dataHealthRows(nowMs).length ? "" : `All ${SNAPSHOTS.length} built-in reference snapshots are inside their refresh window — nothing to re-pull.`;
 }
+/* ===== chrome: data-age banner per tab, offline bar, phone-header disclosure ===== */
+/* Read-only views over the SNAPSHOTS registry above — no new state. The banner is deliberately quieter than
+   the chips: it appears only for 'stale' (2x the half-life, or past a hard expiry), never for 'aging', and
+   it is text-only with no dismiss button, because a banner that can be dismissed is one that stays
+   dismissed after the data got worse. Every string is escaped; the age comes from the same snapState()
+   the chips and the Data health card use, so the three can never disagree. */
+function chromeStaleRows(tabKey, nowMs) {
+  return SNAPSHOTS.filter(e => e.tab === tabKey).map(e => ({ e, st: snapState(e, nowMs) })).filter(x => x.st.state === "stale");
+}
+function chromeBannerHtml(tabKey, nowMs) {
+  const rows = chromeStaleRows(tabKey, nowMs);
+  if (!rows.length) return "";
+  return `<div class="chrome-banner" role="status"><span class="chrome-banner-icon" aria-hidden="true">${chipGlyph("fixnow")}</span><div class="chrome-banner-body">${rows.map(({ e, st }) =>
+    `<div class="chrome-banner-line"><span class="chrome-banner-tag">Stale</span><b>${escapeHtml(e.label)}</b> — ${st.expired ? `its window ended ${escapeHtml(snapLabel(st.expISO))}` : `${escapeHtml(snapAgeText(st.age))} (captured ${escapeHtml(snapLabel(e.asOf))})`} — ${escapeHtml(e.hint)}.</div>`).join("")}</div></div>`;
+}
+function chromePaintOffline() {
+  const el = document.getElementById("chromeOffline");
+  if (!el) return;
+  const off = navigator.onLine === false;
+  el.hidden = !off;
+  el.textContent = off ? "Offline — showing saved data" : "";
+}
+function chromePaintChrome(nowMs) {
+  const el = document.getElementById("chromeBanners");
+  if (el) el.innerHTML = chromeBannerHtml(curTab, nowMs);
+  chromePaintOffline();
+}
+/* The bar needs no re-render to flip, so these touch only the bar. */
+window.addEventListener("online", chromePaintOffline);
+window.addEventListener("offline", chromePaintOffline);
+/* Phone header (<=600px): the tagline, data source and full pull status sit behind the ⓘ button. */
+function chromeToggleInfo(force) {
+  const box = document.getElementById("chromeSticky"), btn = document.getElementById("chromeInfoBtn");
+  if (!box || !btn) return;
+  const open = typeof force === "boolean" ? force : !box.classList.contains("chrome-info-open");
+  box.classList.toggle("chrome-info-open", open);
+  btn.setAttribute("aria-expanded", String(open));
+}
+/* The open panel grows the pinned header, so scrolling the page folds it away again. */
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 48) { const box = document.getElementById("chromeSticky"); if (box && box.classList.contains("chrome-info-open")) chromeToggleInfo(false); }
+}, { passive: true });
 /* ===== "Today" strip — first Overview card ===== */
 /* Read-only, built only from what is already in state: no fetch, no new storage key. Four lines at most
    (data age, events, conquest, daily routine), each hidden when it has nothing that needs the user today,
@@ -9005,7 +9407,7 @@ function todayStripCard(key, nowMs) {
   return { id: "today", w: 12, html: `<div class="cardtitle">Today <span class="sub">— ${escapeHtml(dateLabel)} · ${escapeHtml(acct.label)}</span></div>
     <ul class="today">${lines.map(l => `<li class="${l.cls}"><span class="k">${l.k}</span><span class="v">${l.html}</span></li>`).join("")}</ul>` };
 }
-const fmtM = n => n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n.toLocaleString();
+const fmtM = n => (n = hardNum(n)) >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n.toLocaleString();
 const initialHash = new URLSearchParams(location.hash.replace(/^#/, ""));
 const hashAccount = initialHash.get("account"), hashTab = initialHash.get("tab");
 const savedLocalAccount = accountUiRead();
@@ -9623,6 +10025,7 @@ function render() {
   const v = accountView(current);
   const s = v.src;
 
+  try { hardChromeClear();
   document.body.dataset.tab = curTab;
   document.body.classList.toggle("data-fresh", !!state.lastPull && Date.now() - state.lastPull < 20 * 3600 * 1000);
   document.body.classList.toggle("compact", state.layout.density === "compact");
@@ -9696,7 +10099,7 @@ function render() {
     { lbl: "Galactic power", val: fmtM(s.gp) },
     { lbl: v.gl.name, val: v.owned ? "Owned ✓" : (v.live ? "" : "~") + v.avg + "%" },
     { lbl: "Fleet arena", val: "#" + escapeHtml(s.fleetRank) },
-    { lbl: "GAC", val: s.gac }
+    { lbl: "GAC", val: escapeHtml(s.gac) }
   ].map(q => `<div class="qstat"><span class="qlbl">${escapeHtml(q.lbl)}</span><span class="qval">${q.val}</span></div>`).join("");
 
   /* hidden-card restore pills */
@@ -9714,24 +10117,25 @@ function render() {
      whatever swgoh.gg last scraped, which can be stale for days. This link opens the currently
      selected account's own profile so visiting it forces that resync before you pull. */
   document.getElementById("datasrc").innerHTML = `<span class="datasrc-label">Data: ${escapeHtml(s.fetchedLabel)}</span> <a class="profile-link" href="${escapeHtml(acctProfileUrl(acct))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(acct.label)}'s swgoh.gg profile to refresh it">Refresh on swgoh.gg ↗</a>`;
+  } catch (e) { hardChromeFailed(e); }
 
   /* ---- overview ---- */
   safeRender("Overview", "ovGrid", () => {
     document.getElementById("tiles").innerHTML = [
       { lbl: "Galactic power", val: fmtM(s.gp), note: fmtM(s.gpChar) + " chars · " + fmtM(s.gpShip) + " ships" },
-      { lbl: "GLs owned", val: s.glCount, note: s.glNote },
+      { lbl: "GLs owned", val: hardNum(s.glCount), note: escapeHtml(s.glNote) },
       { lbl: v.gl.name + " readiness", val: v.owned ? "Owned ✓" : (v.live ? "" : "~") + v.avg + "%",
         note: v.owned ? "already unlocked" : v.doneCount + " of " + v.reqRows.length + " reqs done · materials-weighted" },
-      { lbl: "Fleet arena", val: "#" + escapeHtml(s.fleetRank), note: s.fleetNote },
-      { lbl: "GAC", val: s.gac, note: s.gacNote },
-      { lbl: "Abilities", val: s.extraNote, note: "zetas &amp; omicrons unlocked" }
+      { lbl: "Fleet arena", val: "#" + escapeHtml(s.fleetRank), note: escapeHtml(s.fleetNote) },
+      { lbl: "GAC", val: escapeHtml(s.gac), note: escapeHtml(s.gacNote) },
+      { lbl: "Abilities", val: escapeHtml(s.extraNote), note: "zetas &amp; omicrons unlocked" }
     ].map(t => `<div class="tile"><div class="lbl">${t.lbl}</div><div class="val">${t.val}</div><div class="note">${t.note}</div></div>`).join("");
 
     const nextUp = [];
     const plan = farmPlanFor(current, v);
     if (plan.hand) {
       g.phases.forEach((p, pi) => p.items.forEach((it, ii) => {
-        if (!isFarmDone(current, s.reqs, pi, ii)) nextUp.push({ t: farmActionLabel(current, s.reqs, pi, ii, it), ph: p.t });
+        if (!isFarmDone(current, s.reqs, pi, ii)) nextUp.push({ t: hardFarmLabelHtml(current, s.reqs, pi, ii, it), ph: p.t });
       }));
     } else {
       /* A hand-ticked item is off the list too: the user has said it is done, and the roster will agree
@@ -9837,7 +10241,7 @@ function render() {
     };
     const tipHtml = x => {
       if (!x.tp.check) return `
-        <label class="item tip"><input type="checkbox" data-k="${current}-t${x.ti}" onchange="tick(this)">
+        <label class="item tip"><input type="checkbox" data-k="${escapeHtml(hardTipKey(current, x.tp))}" onchange="tick(this)">
           <span><span class="chip ${x.tp.sev}">${sevText[x.tp.sev]}</span>${tipTitle(x.tp)}
             <span class="note">${x.tp.note}</span></span></label>`;
       const p = tipProgress(reqsMap, x.tp.check);
@@ -9932,6 +10336,7 @@ function render() {
      counters, Tier List, the Game modes strapline). Deliberately outside every safeRender: those
      elements are always in the document, so this must not — and does not — wait on a pane. */
   paintSnapChips();
+  chromePaintChrome();
   updateProg(v);
   bindDnD();
 }

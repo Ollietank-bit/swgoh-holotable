@@ -6,3 +6,4 @@ _tmp-state-*.json
 *.bak
 roster-and-tool-review-*.md
 push-holotable.bat
+holotable-roster-snapshot-*.json

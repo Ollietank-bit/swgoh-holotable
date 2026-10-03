@@ -545,7 +545,7 @@
   .glq-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 12px; }
   .glq-row { border: 1px solid var(--grid); border-radius: 10px; padding: 8px 10px; min-width: 0; }
   .glq-row.glq-current { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 7%, transparent); }
-  .glq-row.glq-done, .glq-row.glq-later { opacity: 0.72; }
+  .glq-row.glq-done, .glq-row.glq-later { opacity: 0.8; }   /* rv: was 0.72 — --ink-3 tier text fell to 4.0:1 on --surface-1; 0.8 keeps it ≥4.5:1 (AA) */
   .glq-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13.5px; }
   .glq-n { color: var(--accent); font: 650 12px/1 "Orbitron", system-ui, sans-serif; font-variant-numeric: tabular-nums; margin-right: 4px; }
   .glq-name { color: var(--ink-1); font-weight: 650; overflow-wrap: anywhere; min-width: 0; flex: 0 1 auto; }
@@ -567,7 +567,15 @@
   .glq-prephead .sub { font-weight: 400; color: var(--ink-3); font-size: 12px; }
   .glq-rule { padding: 6px 4px; font-size: 13px; color: var(--ink-2); }
   .glq-rule .note { color: var(--ink-3); font-size: 12px; display: block; }
-  @media (pointer: coarse) { .glq-target { min-height: 44px; min-width: 44px; } }
+  @media (pointer: coarse) { .glq-target { min-height: 44px; min-width: 44px; }
+    .glq-why summary { min-height: 44px; display: flex; align-items: center; gap: 7px; list-style: none; }
+    .glq-why summary::-webkit-details-marker { display: none; }
+    .glq-why summary::before { content: "▸"; flex: none; font-size: 11px; }
+    .glq-why[open] summary::before { content: "▾"; } }
+  /* fx: GL requirement tables at phone width — the uppercase, letter-spaced header words (REQUIREMENT / NEEDED /
+     CURRENT / PROGRESS / STATUS) have a min-content width wider than the row, so the last header stuck out
+     2px past the viewport. Tighter gap + header type below 420px lets the five tracks fit down to 360px. */
+  @media (max-width: 420px) { .req { column-gap: 6px; } .req.headrow { font-size: 10px; letter-spacing: 0; } }
   label.item.tip { align-items: center; }
   label.item.tip .chip { margin-right: 8px; }
   label.item.tip b { font-weight: 650; }
@@ -2610,7 +2618,7 @@ const GL_ROADMAP = {
   JEDIMASTERKENOBI: { name: "Jedi Master Kenobi", note: "Wat Tambor R7 is guild-gated (Geonosis TB ‘Separatist Might’ + Guild Events Store) — the one requirement here you cannot solo-farm.", gated: ["WATTAMBOR"], req: [["GENERALKENOBI","General Kenobi",8], ["MACEWINDU","Mace Windu",3], ["AAYLASECURA","Aayla Secura",3], ["QUIGONJINN","Qui-Gon Jinn",3], ["GRANDMASTERYODA","Grand Master Yoda",8], ["CLONESERGEANTPHASEI","Clone Sergeant (Phase I)",5], ["CC2224","CC-2224 \"Cody\"",5], ["SHAAKTI","Shaak Ti",7], ["GRIEVOUS","General Grievous",7], ["MAGNAGUARD","Magnaguard",5], ["WATTAMBOR","Wat Tambor",7], ["JANGOFETT","Jango Fett",7], ["CADBANE","Cad Bane",5]] },
   LORDVADER: { name: "Lord Vader", note: "Freely farmable; Bad Batch squad (Hunter/Tech/Wrecker/Echo) pulls double duty for TB.", req: [["PADMEAMIDALA","Padmé Amidala",8], ["GENERALSKYWALKER","General Skywalker",8], ["COUNTDOOKU","Count Dooku",8], ["ARCTROOPER501ST","ARC Trooper",8], ["CT210408","CT-210408 \"Echo\"",7], ["ZAMWESELL","Zam Wesell",7], ["GRANDMOFFTARKIN","Grand Moff Tarkin",7], ["NUTEGUNRAY","Nute Gunray",7], ["BADBATCHHUNTER","Hunter",5], ["BADBATCHTECH","Tech",5], ["BADBATCHWRECKER","Wrecker",5], ["TUSKENRAIDER","Tusken Raider",5], ["EMBO","Embo",5], ["BADBATCHECHO","Echo (Bad Batch)",5]] },
   JABBATHEHUTT: { name: "Jabba the Hutt", note: "Freely farmable; Bounty Hunter-heavy roster also strengthens GAC/TW offense.", req: [["KRRSANTAN","Krrsantan",5], ["HANSOLO","Han Solo",8], ["GAMORREANGUARD","Gamorrean Guard",3], ["GREEDO","Greedo",6], ["UNDERCOVERLANDO","Skiff Guard (Lando Calrissian)",5], ["JEDIKNIGHTLUKE","Jedi Knight Luke Skywalker",7], ["JAWA","Jawa",3], ["URORRURRR","URoRRuR'R'R",4], ["C3POLEGENDARY","C-3PO",7], ["BOUSHH","Boushh (Leia Organa)",5], ["AURRA_SING","Aurra Sing",6], ["FENNECSHAND","Fennec Shand",7], ["BOBAFETT","Boba Fett",7], ["HUMANTHUG","Mob Enforcer",3]] },
-  GLLEIA: { name: "GL Leia Organa", note: "Freely farmable — the wall is stars, not relics; most requirements sit below 7★.", req: [["CAPTAINREX","Captain Rex",7], ["PRINCESSKNEESAA","Princess Kneesaa",7], ["WICKET","Wicket",3], ["ADMINISTRATORLANDO","Lando Calrissian",5], ["ADMIRALACKBAR","Admiral Ackbar",3], ["SCOUTTROOPER_V3","Scout Trooper",7], ["R2D2_LEGENDARY","R2-D2",8], ["HOTHHAN","Captain Han Solo",5], ["HOTHLEIA","Rebel Officer Leia Organa",5], ["CHIEFCHIRPA","Chief Chirpa",3], ["CAPTAINDROGAN","Captain Drogan",7], ["COMMANDERLUKESKYWALKER","Commander Luke Skywalker",7], ["BOUSHH","Boushh (Leia Organa)",5], ["C3POCHEWBACCA","Threepio & Chewie",7], ["LOBOT","Lobot",3]] },
+  GLLEIA: { name: "GL Leia Organa", note: "Freely farmable — the wall was shards/stars for most accounts; check your own roster.", req: [["CAPTAINREX","Captain Rex",7], ["PRINCESSKNEESAA","Princess Kneesaa",7], ["WICKET","Wicket",3], ["ADMINISTRATORLANDO","Lando Calrissian",5], ["ADMIRALACKBAR","Admiral Ackbar",3], ["SCOUTTROOPER_V3","Scout Trooper",7], ["R2D2_LEGENDARY","R2-D2",8], ["HOTHHAN","Captain Han Solo",5], ["HOTHLEIA","Rebel Officer Leia Organa",5], ["CHIEFCHIRPA","Chief Chirpa",3], ["CAPTAINDROGAN","Captain Drogan",7], ["COMMANDERLUKESKYWALKER","Commander Luke Skywalker",7], ["BOUSHH","Boushh (Leia Organa)",5], ["C3POCHEWBACCA","Threepio & Chewie",7], ["LOBOT","Lobot",3]] },
   GLAHSOKATANO: { name: "Galactic Legend Ahsoka Tano", note: "Newer GL (2024) — steep relic asks (R9 on 3 units) plus Player Level 85.", req: [["AHSOKATANO","Ahsoka Tano (Snips)",9], ["GENERALSKYWALKER","General Skywalker",8], ["ASAJVENTRESS","Asajj Ventress",5], ["NIGHTTROOPER","Night Trooper",7], ["COMMANDERAHSOKA","Commander Ahsoka Tano",9], ["CAPTAINENOCH","Captain Enoch",7], ["DEATHTROOPERPERIDEA","Death Trooper (Peridea)",7], ["EZRABRIDGERS3","Ezra Bridger",5], ["FULCRUMAHSOKA","Ahsoka Tano (Fulcrum)",9], ["CT7567","CT-7567 \"Rex\"",7], ["BARRISSOFFEE","Barriss Offee",5], ["PADAWANSABINE","Padawan Sabine Wren",7], ["GENERALSYNDULLA","General Syndulla",5], ["PLOKOON","Plo Koon",8], ["HUYANG","Huyang",7]] },
   GLHONDO: { name: "Pirate King Hondo Ohnaka", note: "Newest GL (Sept 2025) — 4-quest structure, several R8-R9 asks; the most recent addition to the roster.", req: [["ITHANO","Captain Ithano",3], ["HONDO","Hondo Ohnaka",9], ["SMUGGLERCHEWBACCA","Veteran Smuggler Chewbacca",7], ["EZRABRIDGERS3","Ezra Bridger",6], ["QUIGGOLD","Quiggold",5], ["KIX","Kix",6], ["GENERALSKYWALKER","General Skywalker",9], ["REY","Rey (Scavenger)",8], ["BRUTUS","Brutus",7], ["VANE","Vane",7], ["GENERALKENOBI","General Kenobi",9], ["CHIRRUTIMWE","Chirrut Îmwe",5], ["CAPTAINSILVO","Captain Silvo",7], ["COUNTDOOKU","Count Dooku",8], ["BOSSK","Bossk",8]] }
 };
@@ -2650,7 +2658,7 @@ const META_SQUADS = [
   { name: "Grand Admiral Thrawn Empire", mode: "GAC def / TW def", confidence: "LOW-MODERATE",
     members: [["GRANDADMIRALTHRAWN","Grand Admiral Thrawn"], ["ADMIRALPIETT","Admiral Piett"], ["MOFFGIDEONS1","Moff Gideon"], ["DEATHTROOPER","Death Trooper"], ["GRANDMOFFTARKIN","Grand Moff Tarkin"]],
     notes: "Standing check, 30 Sep 2026. Correction: Grand Admiral Thrawn is NOT a Galactic Legend — swgoh.gg's live player API returns is_galactic_legend = false for him (checked on both accounts), so the \"(GL)\" label this entry carried was wrong and has been removed. Composition not independently re-verified. Live win rate has fallen hard: only 52.0% at 3v3 (1,455 battles, Season 83), and this leader does not place in either current tier list's top bands (neither tier list shows him in its top rows). Win rate is an offense-side measure (per this app's own Tier List caveat) so a defense-specific hold rate could still be fine — left in rather than dropped, but treat as declining rather than confirmed top-meta." },
-  { name: "Ahsoka Tano Rebels", mode: "Squad Arena / GAC / TW, no GL needed", tl5v5: "Ahsoka Tano", tl3v3: "Ahsoka Tano", confidence: "HIGH",
+  { name: "Ahsoka Tano Rebels", mode: "Squad Arena / GAC / TW, needs GL Ahsoka Tano as leader", tl5v5: "Ahsoka Tano", tl3v3: "Ahsoka Tano", confidence: "HIGH",
     members: [["GLAHSOKATANO","Ahsoka Tano"], ["EZRAEXILE","Ezra Bridger (Exile)"], ["PADAWANSABINE","Padawan Sabine Wren"], ["HUYANG","Huyang"], ["GENERALSYNDULLA","General Syndulla"]],
     notes: "Re-confirmed 27 Sep 2026 — identical 5-unit roster given verbatim by two independent current guides.",
     sources: ["allclash.com \"The Teams in Star Wars Galaxy of Heroes\" (23 Aug 2026)", "ahnaldt101.com Grand Arena team rankings (17 Sep 2026)"] },
@@ -3108,7 +3116,7 @@ const GAC_FORMAT = "3v3";
 const GUIDANCE = {
   ollie: {
     planFor: "GLLEIA",                          // the Legend these phases (and FARM_CHECKS.ollie) were written for — see farmPlanFor()
-    glSub: "Target: GL Leia Organa. The wall is stars, not just relics — most required units are below 7★.",
+    glSub: "Target: GL Leia Organa. The star wall is down — what remains is relics (Threepio and Chewie is the long pole; Lobot still needs G13).",
     phases: [
       { t: "Phase 1 — cheap relic wins (no star gates)", items: [
         ["Admiral Ackbar G9 → R3", "already 7★ — fastest requirement left"],
@@ -3230,7 +3238,8 @@ const FARM_CHECKS = {
      • STATIC (hand-researched, dated, registered in SNAPSHOTS as "gl-queue" so it ages honestly): the
        ORDER, the rationale (`why`), the switch rule (`trigger`), unverified flags, and the prep list.
        Produced 3 Oct 2026 by an agent team from the 1 Oct roster pull + swgoh.gg's GAC tier lists.
-       Figures quoted inside `why` ("~50 relic tiers") are labelled with that date; the card prints the
+       Figures quoted inside `why` ("~50 relic tiers") are labelled with the roster's date ("on the 1 Oct
+       pull" — rv: was "on 3 Oct", the analysis date, not the data date); the card prints the
        live equivalent next to them, so a stale sentence never stands alone.
      • LIVE (recomputed every render from state.pulls / BASELINE through accountView): met/total, the
        materials-weighted %, "≈N relic tiers left", unlocked ✓, every tier chip (read from TIER_LIST, not
@@ -3265,18 +3274,18 @@ const GL_QUEUE = {
         trigger: "Unlock her, then Leia R7 with Raddus and Jyn at G13 — after that the relic stream moves to Sith Eternal Emperor.",
         doneWhen: [relic("GLLEIA", 7), gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)] },
       { glId: "SITHPALPATINE", status: "next",
-        why: "Every requirement is already owned at 7★ and several are one gear step from G13, so it is a pure relic climb (~50 tiers on 3 Oct). S-tier in 3v3 (#2 on 3 Oct), A in 5v5. This app's GAC counter table lists him against Rey, Leia, Ahsoka, The Stranger and the Great Mothers — and your three Legends are defensive walls, so SEE is the offense the account is missing.",
+        why: "Every requirement is already owned at 7★ and several are one gear step from G13, so it is a pure relic climb (~50 tiers on the 1 Oct pull). On swgoh.gg's tier lists he is S-tier in 3v3 (#1 on the 30 Sep pull) and A in 5v5. This app's GAC counter table names him as a counter to Rey, Leia, Ahsoka, The Stranger and the Great Mothers (its own row for an SEE defense says A-tier — that table reads the defense-side boards, 27 Sep) — and your three Legends are defensive walls, so SEE is the offense the account is missing.",
         trigger: "Starts when Leia's build-up above is done. Mandalorian & Grogu only jumps ahead of it if all three of its switch conditions hold.",
         flag: "Darth Maul's relic requirement: this app's roadmap says R4, swgoh.gg's unit page says R7. Confirm on the in-game event screen before relic'ing him." },
       { watchId: "MANDOGROGU", status: "watch",
         why: "Unreleased and only partly announced, so nothing gets relic'd for it yet. But the one announced requirement you don't own (Boba Fett, Scion of Jango) and the 3★ Grogu & Anzellans are shard farms, and shards are the slow part — those are in Prep below. The Mandalorian (Beskar Armor) is R7 here against an announced R10.",
         trigger: "Promote to #2 only if (a) Capital Games officially confirms the requirement list is complete, (b) Scion of Jango is 5★ or better here, and (c) the first tier-list data puts it S or A." },
       { glId: "GRANDMASTERLUKE", status: "then", label: "Fallback",
-        why: "Cheap (~29 relic tiers on 3 Oct) but the weakest rating of the realistic options — B in 5v5, A in 3v3. Shares Lando and Threepio & Chewie with Leia, so Leia's build pays toward it.",
+        why: "Cheap (~29 relic tiers on the 1 Oct pull) but the weakest rating of the realistic options — B in 5v5, A in 3v3. Shares Lando and Threepio & Chewie with Leia, so Leia's build pays toward it.",
         trigger: "Only if SEE stalls (for example Maul's requirement turns out to be R7 and gear runs dry) or the tier lists move Luke up." },
-      { glId: "GLHONDO", status: "later", why: "Several R8–R9 asks, including General Skywalker (not owned on 3 Oct) at R9." },
+      { glId: "GLHONDO", status: "later", why: "Several R8–R9 asks, including General Skywalker (not owned on the 1 Oct pull) at R9." },
       { glId: "JEDIMASTERKENOBI", status: "later", why: "Wat Tambor R7 is guild-gated (Geonosis TB + Guild Events store), so it can't be paced solo." },
-      { glId: "LORDVADER", status: "later", why: "Needs General Skywalker (not owned on 3 Oct) at R8 plus a stack of R7–R8s." },
+      { glId: "LORDVADER", status: "later", why: "Needs General Skywalker (not owned on the 1 Oct pull) at R8 plus a stack of R7–R8s." },
       { glId: "GLAHSOKATANO", status: "later", why: "The furthest Legend from this roster: three R9s, and General Skywalker not owned. He is farmable through the permanent 'Clash on Kamino' journey (50 shards each for the first clears of Tiers I, II and IV — 150 against the 145 needed), but that only matters for Ahsoka, Vader and Hondo, so it is not a priority." }
     ],
     prep: [
@@ -3291,22 +3300,22 @@ const GL_QUEUE = {
     note: "",
     queue: [
       { glId: "GLLEIA", status: "building",
-        why: "Already unlocked (7★ G9 R0 on 3 Oct) — but at G9 R0 her kit is unusable. Leia G9 → G13 → R7 (~7 relic tiers), with Raddus and Jyn to G13 and then R5–R7, is the cheapest value on either account: she leads the top-rated 5v5 squad.",
+        why: "Already unlocked (7★ G9 R0 on the 1 Oct pull) — but at G9 R0 her kit is unusable. Leia G9 → G13 → R7 (~7 relic tiers), with Raddus and Jyn to G13 and then R5–R7, is the cheapest value on either account: she leads the top-rated 5v5 squad.",
         trigger: "Move the relic stream to the next Legend once Leia is R7 and Raddus and Jyn are G13 R5+.",
         doneWhen: [relic("GLLEIA", 7), relic("ADMIRALRADDUS", 5), relic("JYNERSO", 5)],
         flag: "Raddus and Jyn at R5–R7 is an estimate for a working squad, not a published requirement." },
       { glId: "GRANDMASTERLUKE", status: "next",
-        why: "6 of 14 requirements met on 3 Oct, ~24 relic tiers and no star gaps — the real cost is gear (Biggs G5, Wedge G8, Princess Leia G8, Old Ben G10, Mon Mothma G12). The weakest tier rating of the viable Legends (B in 5v5, A in 3v3).",
+        why: "6 of 14 requirements met on the 1 Oct pull, ~24 relic tiers and no star gaps — the real cost is gear (Biggs G5, Wedge G8, Princess Leia G8, Old Ben G10, Mon Mothma G12). The weakest tier rating of the viable Legends (B in 5v5, A in 3v3).",
         trigger: "Starts when Leia's build-up is done — unless Sith Eternal Emperor overtakes it (see below)." },
       { glId: "SITHPALPATINE", status: "then", label: "Then — reconsider",
-        why: "Only ~16 relic tiers more than Luke (~40 on 3 Oct, 5 of 14 met; Grand Admiral Thrawn at G7 is the expensive one), but S-tier in 3v3 and a listed counter to Rey, Leia and Ahsoka.",
+        why: "Only ~16 relic tiers more than Luke (~40 on the 1 Oct pull, 5 of 14 met; Grand Admiral Thrawn at G7 is the expensive one), but S-tier in 3v3 and a listed counter to Rey, Leia and Ahsoka.",
         trigger: "If Luke is still B-tier in 5v5 when Leia reaches R7, swap SEE ahead of Luke — press Set as target on SEE instead." },
       { watchId: "MANDOGROGU", status: "watch",
         why: "Same picture as on Ollietank: unreleased, 4 requirements announced. Grogu & Anzellans is 3★ here, Scion of Jango isn't owned, and Beskar Mando is R7 against an announced R10.",
         trigger: "If Capital Games confirms the list with Scion of Jango in it, start the Scion and Grogu & Anzellans shard farms immediately — shards are the long pole." },
       { glId: "JABBATHEHUTT", status: "later", why: "Not owned, and a long Bounty Hunter build — behind the three above." },
       { glId: "LORDVADER", status: "later", why: "A deep stack of R7–R8 requirements — after the three above." },
-      { glId: "GLAHSOKATANO", status: "later", why: "The furthest: ~87 relic tiers on 3 Oct, three R9s, Commander Ahsoka at G1." },
+      { glId: "GLAHSOKATANO", status: "later", why: "The furthest: ~87 relic tiers on the 1 Oct pull, three R9s, Commander Ahsoka at G1." },
       { glId: "GLHONDO", status: "later", why: "Several R8–R9 asks." },
       { glId: "JEDIMASTERKENOBI", status: "later", why: "Wat Tambor R7 is guild-gated (Geonosis TB + Guild Events store)." }
     ],
@@ -3338,7 +3347,9 @@ function glqRows(acct) {
   const base = accountView(acct);
   const reqs = (base.src && base.src.reqs) || {};
   let rank = 0;
-  return cfg.queue.map(e => {
+  /* rv: an id missing from GL_ROADMAP / GL_QUEUE.watch would render as Leia (accountView's fallback) with a
+     live "Set as target" button — skip it instead. */
+  return cfg.queue.filter(e => e.watchId ? !!GL_QUEUE.watch[e.watchId] : !!GL_ROADMAP[e.glId]).map(e => {
     if (e.watchId) {
       const w = GL_QUEUE.watch[e.watchId];
       const rows = w.req.map(([id, name, rr]) => ({ id, name, need: rr, u: reqs[id], ...unitProgress(reqs[id], rr) }));
@@ -3347,8 +3358,10 @@ function glqRows(acct) {
         avg: Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length), tiers: glqTiersLeft(reqs, w.req) };
     }
     const v = accountView(acct, e.glId);
-    const build = e.doneWhen ? tipProgress(reqs, e.doneWhen) : null;
-    const built = v.owned && (!build || build.done);
+    /* rv: only the first entry per queue carries a hand-written doneWhen; every other Legend counts as
+       built at R7 on itself — "owned" alone would mark a just-unlocked G1 Legend ✓ Built. */
+    const build = tipProgress(reqs, e.doneWhen || [relic(e.glId, 7)]);
+    const built = v.owned && build.done;
     let eff = "done";
     if (!built) { eff = rank === 0 ? "building" : rank === 1 ? "next" : (e.status === "building" || e.status === "next" ? "then" : e.status); rank++; }
     return { e, kind: "gl", eff, v, build, name: v.gl.name, u: reqs[e.glId], tiers: glqTiersLeft(reqs, v.gl.req) };
@@ -3392,13 +3405,13 @@ function glqCardHtml(acct) {
     const chip = `<span class="chip ${st[0]}">${st[0] ? chipGlyph(st[0]) + " " : ""}${escapeHtml(label)}</span>`;
     const btn = r.kind !== "gl" ? ""
       : r.e.glId === target ? `<span class="glq-viewing">Roadmap target</span>`
-      : `<button type="button" class="glq-target" onclick="switchGlTarget('${escapeHtml(r.e.glId)}')">Set as target</button>`;
+      : `<button type="button" class="glq-target" aria-label="Set ${escapeHtml(r.name)} as the GL Roadmap target" onclick="switchGlTarget('${escapeHtml(r.e.glId)}')">Set as target</button>`;
     const watchReqs = r.kind === "watch" ? `<div class="glq-watchreqs">${escapeHtml(r.note)}<ul>${r.rows.map(x =>
         `<li class="${x.done ? "glq-met" : ""}">${x.done ? "✓ " : ""}${escapeHtml((x.u && x.u.name) || x.name)}: ${escapeHtml(glqUnitCur(x.u))} → R${hardNum(x.need)}</li>`).join("")}</ul></div>` : "";
     return `<div class="glq-row glq-${escapeHtml(r.eff)}${r.eff === "building" ? " glq-current" : ""}" data-glq="${escapeHtml(r.e.glId || r.e.watchId)}">
       <div class="glq-head"><b class="glq-name"><span class="glq-n">${String(i + 1).padStart(2, "0")}</span> ${escapeHtml(r.name)}</b>${chip}${r.kind === "gl" ? glqTierHtml(r.e.glId) : ""}${btn}</div>
       <div class="glq-ready">${escapeHtml(glqReadyText(r))}</div>
-      <details class="glq-why"${r.eff === "building" ? " open" : ""}><summary>Why${r.e.trigger ? " · switch rule" : ""}</summary>
+      <details class="glq-why"${r.eff === "building" ? " open" : ""} data-rv-def="${r.eff === "building" ? 1 : 0}"><summary>Why${r.e.trigger ? " · switch rule" : ""}</summary>
         <p>${escapeHtml(r.e.why)}</p>${r.e.trigger ? `<p><b>Switch rule:</b> ${escapeHtml(r.e.trigger)}</p>` : ""}
         ${r.e.flag ? `<p class="glq-flag">⚠ Unverified: ${escapeHtml(r.e.flag)}</p>` : ""}${watchReqs}</details></div>`;
   };
@@ -3406,7 +3419,7 @@ function glqCardHtml(acct) {
   return `<div class="cardtitle">GL order — ${escapeHtml(a.label)} <span class="sub">— build now, next, then</span></div>
     <div class="mnote">${cur ? `Now: <b>${escapeHtml(cur.name)}</b>` : "Every queued Legend is built"}${nxt ? ` · next: <b>${escapeHtml(nxt.name)}</b>` : ""}. Order and reasons are an expert snapshot; readiness, ✓ and the Now/Next labels are live from your ${base.live ? "latest pull" : "saved baseline roster"}.</div>
     ${cfg.note ? `<div class="intelnote glq-note">${escapeHtml(cfg.note)} <a href="#" style="color:var(--accent)" onclick="switchTab('coach');return false;">Coach's corner →</a></div>` : ""}
-    <div class="glq-list">${rows.map(rowHtml).join("")}</div>
+    <div class="glq-list" data-rv-acct="${escapeHtml(acct)}">${rows.map(rowHtml).join("")}</div>
     <div class="glq-prep"><div class="glq-prephead">Prep now <span class="sub">— none of these use the current Legend's relic materials</span></div>
       ${cfg.prep.map(it => glqPrepItemHtml(acct, it, reqs)).join("")}</div>
     <div class="srcline">GL order ${snapNoteHtml("gl-queue")} — ${escapeHtml(GL_QUEUE.basis)}. Tier letters are read live from the Tier List tab's data.</div>`;
@@ -3417,6 +3430,26 @@ function glqNextLineHtml(acct, glId) {
   const r = glqRows(acct).find(x => (x.eff === "building" || x.eff === "next") && x.e.glId && x.e.glId !== glId);
   if (!r) return "";
   return `<div class="mnote glq-farmline">GL order (expert, ${escapeHtml(snapLabel(GL_QUEUE.asOf))}): next Legend to build is <b>${escapeHtml(r.name)}</b> — closest isn't always best. <a href="#" style="color:var(--accent)" onclick="switchTab('leia');return false;">See the GL order →</a></div>`;
+}
+/* rv: the GL Roadmap pane rebuilds the GL order card on every render (a prep tick, a target switch), which
+   reset every "Why" <details> to its default. Remember the panels the user toggled away from their
+   default (per account, in memory only) and re-apply them to the fresh markup. */
+function rvGlqPanels() {
+  const list = document.querySelector('#glTables [data-card="glq"] .glq-list');
+  if (!list) return null;
+  const changed = {};
+  list.querySelectorAll(".glq-row[data-glq] details.glq-why").forEach(d => {
+    if (d.open !== (d.dataset.rvDef === "1")) changed[d.closest(".glq-row").dataset.glq] = d.open;
+  });
+  return { acct: list.dataset.rvAcct, changed };
+}
+function rvGlqRestore(saved) {
+  const list = document.querySelector('#glTables [data-card="glq"] .glq-list');
+  if (!saved || !list || list.dataset.rvAcct !== saved.acct) return;
+  list.querySelectorAll(".glq-row[data-glq]").forEach(row => {
+    const d = row.querySelector("details.glq-why");
+    if (d && Object.prototype.hasOwnProperty.call(saved.changed, row.dataset.glq)) d.open = saved.changed[row.dataset.glq];
+  });
 }
 function specMet(reqsMap, spec) {
   if (Array.isArray(spec)) return spec.every(s => specMet(reqsMap, s));
@@ -3943,7 +3976,10 @@ const store = {
     let ok = true;
     const pulls = isPlainObject(s.pulls) ? s.pulls : {};
     if (opts.pulls || pulls !== pullsLastWritten) {
-      if (pullsWrite(pulls)) pullsLastWritten = pulls; else ok = false;
+      /* rv: on failure forget what was last written — an in-place change (import, pullAll) keeps the same
+         object identity, so without this the next ordinary write would skip PULLS_KEY, report success and
+         clear the "not saved" pill while the roster is still unsaved. */
+      if (pullsWrite(pulls)) pullsLastWritten = pulls; else { pullsLastWritten = null; ok = false; }
     }
     /* No opts flag needed: every field here is a scalar or a small plain object, so a JSON-string
        comparison sees every change — including pullAll()'s in-place `state.lastPull = Date.now()`,
@@ -4627,7 +4663,12 @@ const ROUTES = [
   { name: "proxy: codetabs", url: u => "https://api.codetabs.com/v1/proxy?quest=" + u }
 ];
 /* Per-route timeout. fetchPlayer/fetchViaProxies walk all four ROUTES in series for each account, so the
-   worst case is ROUTES.length × this × accounts with the pull button disabled throughout. Raised back to
+   worst case is ROUTES.length × this × accounts = 4 × 20s × 2 = 160s with the pull button disabled
+   throughout. That includes rpFetchRetry's one web-page retry: it only runs when the first attempt left
+   at least half of this budget, and gets only what is left (ms − elapsed − RP_HTML_RETRY_MS), so a route
+   never exceeds this timeout in total (rv, 3 Oct 2026 — before that the retry got a fresh 20s and the
+   worst case was really 2 × 160s). The one exception is fetchRaw's AbortSignal-clone fallback, which is
+   not interruptible at all. Raised back to
    20s: the free CORS proxies (corsproxy.io, allorigins, codetabs) occasionally just answer slowly rather
    than erroring outright, and 12s was cutting off attempts that would otherwise have succeeded. */
 const FETCH_TIMEOUT = 20000;
@@ -4664,7 +4705,13 @@ async function fetchRaw(url, ms, asText) {
         throw e;
       }
     }
-    if (!r.ok) throw new Error("HTTP " + r.status);
+    if (!r.ok) {
+      /* rv: a Cloudflare "Just a moment…" challenge comes back as a 403/503 with an HTML body. Peek at the
+         start of the body (JSON fetches only, ≤4KB) so it is reported — and retried — as the web page it
+         is rather than as a plain HTTP error. Non-HTML error bodies keep the old "HTTP <status>" error. */
+      if (!asText) { const head = await rvReadHead(r, 4096); if (/^\s*</.test(head)) rpParseJson(head, r); }
+      throw new Error("HTTP " + r.status);
+    }
     /* Not r.json(): an HTML body (bot check / rate-limit page) surfaced as a cryptic "Unexpected token <".
        Read the text, then parse — rpParseJson() names that case clearly so the caller can retry it. */
     return asText ? await r.text() : rpParseJson(await r.text(), r);
@@ -4840,9 +4887,11 @@ async function pullAll() {
   if (rpPullBusy) return;
   rpPullBusy = true;
   const btn = document.getElementById("pullBtn"), st = document.getElementById("pullStatus");
-  btn.disabled = true; st.className = "pullstatus";
   const rpResults = [];
   try {
+    /* rv: inside the try, so a missing #pullBtn/#pullStatus can't leave rpPullBusy stuck at true. */
+    if (btn) btn.disabled = true;
+    st.className = "pullstatus";
     for (const a of ACCOUNTS) {
       st.textContent = `Pulling ${a.label} — `;
       /* One account failing no longer aborts the batch: record why and move on to the next account. */
@@ -4867,9 +4916,16 @@ async function pullAll() {
          stamping, push-scheduling write, exactly as before this split. Do not collapse these back into
          one write: skipStamp/skipSync on a single write would silently stop arena history syncing. */
       store.write(state, { pulls: true, skipStamp: true, skipSync: true });
-      arenaAutoLog(a.key, state.pulls[a.key]);
-      store.write(state);
-      rpResults.push({ a });
+      /* rv: the roster is saved by now, so a failure in the follow-up steps (arena log, the stamping write)
+         must not be reported as a failed pull, nor stop the next account: this account counts as updated
+         and the report names what went wrong. It still blocks state.lastPull, like any partial pull. */
+      try {
+        arenaAutoLog(a.key, state.pulls[a.key]);
+        store.write(state);
+        rpResults.push({ a });
+      } catch (e) {
+        rpResults.push({ a, rvSaved: true, err: new Error("roster saved, but the follow-up step failed (" + String((e && e.message) || e) + ")") });
+      }
     }
     /* Any account failed → per-account report, and state.lastPull is NOT set (partial = still stale). */
     if (rpResults.some(x => x.err)) { rpPullReport(st, rpResults); return; }
@@ -4886,7 +4942,7 @@ async function pullAll() {
     rpPullReport(st, [{ a: null, err: e }]);
   } finally {
     rpPullBusy = false;
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
     render();
     rpRefresh();
   }
@@ -4920,13 +4976,30 @@ function rpParseJson(text, r) {
    HTML responses were transient. Any other failure (network, HTTP status, timeout) moves straight on to
    the next route exactly as before. */
 async function rpFetchRetry(rt, url, ms, asText, onStatus) {
+  const t0 = Date.now();
   try { return await fetchRaw(rt.url(url), ms, asText); }
   catch (e) {
     if (!e || !e.rpWebPage) throw e;
+    /* rv: the retry shares the route's budget (see FETCH_TIMEOUT) — skip it when less than half is left. */
+    const left = ms - (Date.now() - t0) - RP_HTML_RETRY_MS;
+    if (left < ms / 2) throw e;
     if (typeof onStatus === "function") onStatus(rt.name + " sent a web page — retrying once…");
     await new Promise(res => setTimeout(res, RP_HTML_RETRY_MS));
-    return await fetchRaw(rt.url(url), ms, asText);
+    return await fetchRaw(rt.url(url), left, asText);
   }
+}
+/* rv: the first `max` characters of a response body, without reading a large
+   error page to the end. Any read failure just yields "". */
+async function rvReadHead(r, max) {
+  let out = "";
+  try {
+    if (r.body && r.body.getReader) {
+      const rd = r.body.getReader(), dec = new TextDecoder();
+      while (out.length < max) { const c = await rd.read(); if (c.done) break; out += dec.decode(c.value, { stream: true }); }
+      try { Promise.resolve(rd.cancel()).catch(() => {}); } catch (e) {}
+    } else out = String(await r.text());
+  } catch (e) {}
+  return out.slice(0, max);
 }
 /* Folds each route's failure into one error, so a web-page answer from swgoh.gg direct isn't hidden behind
    whatever the last proxy said. Identical messages collapse to the bare message (the old wording). */
@@ -4940,12 +5013,13 @@ function rpRouteErr(prev, rt, e) {
   return err;
 }
 function rpPullReport(st, results) {
-  const failed = results.filter(x => x.err);
+  /* rv: x.rvSaved = the account's roster WAS saved and only a follow-up step threw — counts as updated. */
+  const failed = results.filter(x => x.err && !x.rvSaved), rvSoft = results.filter(x => x.rvSaved);
   const msgOf = x => String((x.err && x.err.message) || x.err || "failed");
   const web = failed.some(x => x.err && x.err.rpWebPage);
   const allFailed = failed.length === results.length && results.length > 0;
   const sameMsg = failed.every(x => msgOf(x) === msgOf(failed[0]));
-  const perAcct = results.map(x => x.err ? "✗ " + (x.a ? x.a.label : "pull") + ": " + msgOf(x) : "✓ " + x.a.label).join(", ");
+  const perAcct = results.map(x => x.rvSaved ? "⚠ " + x.a.label + " updated: " + msgOf(x) : x.err ? "✗ " + (x.a ? x.a.label : "pull") + ": " + msgOf(x) : "✓ " + x.a.label).join(", ");
   const head = allFailed
     ? "Pull failed (" + (sameMsg ? msgOf(failed[0]) : perAcct) + ")"
     : "⚠ Partial pull " + new Date().toLocaleString() + " — " + perAcct + " (the updated account is saved; this still counts as an old pull until every account comes in)";
@@ -4953,6 +5027,10 @@ function rpPullReport(st, results) {
     ? " — swgoh.gg sent back a web page instead of roster data, usually its bot check or a rate limit. That passes on its own: wait a minute and press Pull again."
     : " — the free CORS proxies this app relies on are unreliable and go down often. This usually isn't something a retry fixes.";
   st.className = "pullstatus err";
+  if (!failed.length && rvSoft.length) {   // rv: every roster came in; only a post-save step failed
+    st.textContent = head + " — every roster was fetched and saved; the step after saving failed, which is a bug in this app, not swgoh.gg or the proxies. Pressing Pull again retries it.";
+    return;
+  }
   st.textContent = head + why + " Showing last saved data" + (allFailed ? "" : " for " + failed.map(x => x.a ? x.a.label : "the rest").join(" & ")) +
     ". Ask Claude to pull fresh data for you directly instead — it can fetch swgoh.gg without needing a proxy — or hand it this device's saved roster with ☁ Sync → ⬇ Export roster snapshot.";
 }
@@ -5010,7 +5088,9 @@ const rpStrArr = v => Array.isArray(v) && v.every(x => typeof x === "string");
 function rpPullProblem(p) {
   if (!isPlainObject(p)) return "isn't an object";
   if (!rpNum(p.fetchedAt) || p.fetchedAt <= 0) return "has no valid fetchedAt (pull time)";
-  if (p.fetchedAt > Date.now() + 86400000) return "has a pull time in the future";
+  /* rv: was a 24h allowance — a snapshot stamped hours ahead then out-ranked every genuine later one
+     ("not newer than this device's"). 10 minutes covers ordinary clock skew between two machines. */
+  if (p.fetchedAt > Date.now() + RV_SNAP_SKEW_MS) return `has a pull time in the future (${rpWhen(p.fetchedAt)} — more than 10 minutes ahead of this device's clock; check the clock here or where the snapshot came from)`;
   if (!rpNum(p.gp) || p.gp < 0) return "has no valid gp";
   if (!isPlainObject(p.reqs)) return "has no reqs (unit list)";
   if (!Array.isArray(p.mods)) return "has no mods list";
@@ -5025,6 +5105,8 @@ function rpPullProblem(p) {
     if (!isPlainObject(u) || !rpNum(u.s) || !rpNum(u.g) || !rpNum(u.r) || (u.t !== "char" && u.t !== "ship") ||
         ("name" in u && typeof u.name !== "string") || ("z" in u && !rpStrArr(u.z)) || ("o" in u && !rpStrArr(u.o)) || ("el" in u && !rpNum(u.el)))
       return `has a malformed unit (${String(id).slice(0, 40)})`;
+    if (!rvIntIn(u.s, 0, 7) || !rvIntIn(u.g, 1, 13) || !rvIntIn(u.r, 0, 10))
+      return `has a unit with out-of-range stars/gear/relic (${String(id).slice(0, 40)}: ${String(u.s).slice(0, 8)}★ G${String(u.g).slice(0, 8)} R${String(u.r).slice(0, 8)})`;
   }
   const stat = s => isPlainObject(s) && typeof s.n === "string" && rpNum(s.v) && typeof s.pct === "boolean";
   for (const m of p.mods) {
@@ -5058,6 +5140,43 @@ function rpValidateSnapshot(text) {
   } catch (e) {
     return { ok: false, msg: "That file couldn't be checked (" + String((e && e.message) || e) + ") — nothing was changed." };
   }
+}
+/* ---- rv: import hardening (3 Oct 2026 review) ----
+   rpPullProblem() checks types but kept every unknown field, so a file could carry a multi-MB "pad" (or
+   any other junk) straight into PULLS_KEY. rvSnapClean() rebuilds each imported account from the known
+   parsePlayer() keys only — unknown fields are dropped at every level (account, unit, mod, stat,
+   datacron, gacSeason). Runs only on a snapshot rpPullProblem() already passed. fetchedAt is clamped to
+   "now" so the ≤10-minute skew allowance can't leave a future-dated pull that out-ranks the next real one. */
+const RV_SNAP_SKEW_MS = 10 * 60 * 1000;
+const rvIntIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+const RV_PULL_KEYS = ["fetchedLabel", "charDataLive", "charDataAt", "gpChar", "gpShip", "loanedEraLevel", "glCount", "glNote",
+  "squadRank", "squadLeader", "fleetRank", "fleetLeader", "fleetNote", "gac", "gacNote", "extraNote"];
+const RV_GAC_KEYS = ["banners", "fullClears", "leagueScore", "offensiveWins", "promotions", "successfulDefends", "territoriesDefeated", "undersizedWins"];
+function rvSnapClean(p, nowMs) {
+  const out = { fetchedAt: Math.min(p.fetchedAt, +nowMs || Date.now()), gp: p.gp };
+  for (const k of RV_PULL_KEYS) if (k in p) out[k] = p[k];
+  out.reqs = {};
+  for (const [id, u] of Object.entries(p.reqs)) {
+    if (id === "__proto__") continue;   // never a swgoh.gg base_id; assigning it would replace the prototype
+    const c = { s: u.s, g: u.g, r: u.r, t: u.t };
+    for (const k of ["name", "z", "o", "el"]) if (k in u) c[k] = Array.isArray(u[k]) ? u[k].slice() : u[k];
+    out.reqs[id] = c;
+  }
+  const stat = st => ({ n: st.n, v: st.v, pct: st.pct });
+  out.mods = p.mods.map(m => {
+    const c = { set: m.set, slot: m.slot, rarity: m.rarity, tier: m.tier, level: m.level, char: m.char, pri: stat(m.pri),
+      sec: m.sec.map(st => Object.assign(stat(st), "rolls" in st ? { rolls: st.rolls } : {})) };
+    if ("id" in m) c.id = m.id;
+    return c;
+  });
+  if ("datacrons" in p) out.datacrons = p.datacrons.map(d => {
+    const c = { stats: d.stats.slice(), abilities: d.abilities.slice() };
+    if ("tier" in d) c.tier = d.tier;
+    if ("set" in d) c.set = d.set;
+    return c;
+  });
+  if ("gacSeason" in p) { out.gacSeason = {}; for (const k of RV_GAC_KEYS) if (k in p.gacSeason) out.gacSeason[k] = p.gacSeason[k]; }
+  return out;
 }
 /* Newer strictly by the pull's own fetchedAt — the field parsePlayer() stamps at parse time. */
 function rpSnapNewer(snap, cur) { return !isPlainObject(cur) || !rpNum(cur.fetchedAt) || snap.fetchedAt > cur.fetchedAt; }
@@ -5095,10 +5214,17 @@ function rpImportChosen(input) {
         /* Re-checked at confirm time: a pull may have landed while the panel was open. */
         const done = toTake.filter(x => rpSnapNewer(x.snap, state.pulls[x.a.key]));
         if (!done.length) { recoverySay("Nothing imported — a newer pull arrived on this device in the meantime.", ""); return; }
-        done.forEach(x => { state.pulls[x.a.key] = x.snap; });
+        const rvNow = Date.now();
+        done.forEach(x => { state.pulls[x.a.key] = rvSnapClean(x.snap, rvNow); });
         store.write(state, { pulls: true, skipStamp: true, skipSync: true });
         render();
         rpRefresh();
+        /* rv: the header line still said "First run: press Pull…" (or an old pull's result) over a roster
+           that is now the imported one. Say so — state.lastPull stays untouched on purpose, so a stale or
+           missing pull still auto-refreshes and still reads as stale everywhere else. */
+        const rvSt = document.getElementById("pullStatus");
+        if (rvSt && !rpPullBusy) { rvSt.className = "pullstatus";
+          rvSt.textContent = `Showing an imported roster snapshot (${done.map(x => `${x.a.label} pulled ${rpWhen(state.pulls[x.a.key].fetchedAt)}`).join(", ")}) — press “Pull latest data” for a live pull.`; }
         recoverySay(localWriteFail
           ? `Imported ${done.map(x => x.a.label).join(" & ")} for now, but this browser couldn't save it (storage full or blocked) — it will be gone after a reload.`
           : `Imported the roster snapshot for ${done.map(x => x.a.label).join(" & ")} from ${f.name}. Saved on this device only — nothing was synced.`,
@@ -10702,12 +10828,14 @@ function render() {
     const paceCard = { id: "pace", html: paceCardHtml(current, v) };
     const moved = historyView(current, v.glId).moved;
     const glqCard = { id: "glq", w: 12, html: glqCardHtml(current) };
+    const rvPanels = rvGlqPanels();
     document.getElementById("glTables").innerHTML = v.owned
       ? wrapCards("leia", [glqCard, noteCard, jointCard])
       : wrapCards("leia", [glqCard, noteCard, paceCard, jointCard,
           { id: "reqs-1", html: reqRowsHtml(v.reqRows.slice(0, half), `Requirements 1–${half} of ${v.reqRows.length}`, moved) },
           { id: "reqs-2", html: reqRowsHtml(v.reqRows.slice(half), `Requirements ${half + 1}–${v.reqRows.length} of ${v.reqRows.length}`, moved) }
         ]);
+    rvGlqRestore(rvPanels);
   });
 
   /* ---- coach tab ---- */

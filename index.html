@@ -541,6 +541,33 @@
   .pickrow button { flex: none; font: 700 11.5px/1 system-ui, sans-serif; padding: 7px 8px; cursor: pointer; color: var(--ink-2);
                     background: rgba(255,255,255,0.04); border: 1px solid var(--grid); border-radius: 8px; }
   .pickrow .note { color: var(--ink-3); font-size: 12px; display: block; }
+  /* GL order card (GL Roadmap tab) — the expert build queue, see GL_QUEUE. */
+  .glq-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 12px; }
+  .glq-row { border: 1px solid var(--grid); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+  .glq-row.glq-current { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 7%, transparent); }
+  .glq-row.glq-done, .glq-row.glq-later { opacity: 0.72; }
+  .glq-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13.5px; }
+  .glq-n { color: var(--accent); font: 650 12px/1 "Orbitron", system-ui, sans-serif; font-variant-numeric: tabular-nums; margin-right: 4px; }
+  .glq-name { color: var(--ink-1); font-weight: 650; overflow-wrap: anywhere; min-width: 0; flex: 0 1 auto; }
+  .glq-tier { color: var(--ink-3); font-size: 11.5px; white-space: nowrap; }
+  .glq-tier b { color: var(--ink-2); }
+  .glq-target { margin-left: auto; font: 700 11.5px/1 system-ui, sans-serif; padding: 7px 9px; cursor: pointer; color: var(--ink-2);
+                background: rgba(255,255,255,0.04); border: 1px solid var(--grid); border-radius: 8px; }
+  .glq-viewing { margin-left: auto; color: var(--ink-3); font-size: 11px; font-weight: 650; }
+  .glq-ready { color: var(--ink-2); font-size: 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .glq-why { margin-top: 4px; font-size: 12.5px; color: var(--ink-2); }
+  .glq-why summary { cursor: pointer; color: var(--accent); font-size: 12px; font-weight: 650; }
+  .glq-why p { margin: 5px 0 0; line-height: 1.45; overflow-wrap: anywhere; }
+  .glq-flag { color: var(--warning); }
+  .glq-watchreqs { margin-top: 5px; color: var(--ink-3); font-size: 12px; }
+  .glq-watchreqs ul { margin: 4px 0 0 18px; }
+  .glq-watchreqs li.glq-met { color: var(--good); }
+  .glq-note { margin-bottom: 4px; }
+  .glq-prephead { font-weight: 650; font-size: 13.5px; color: var(--ink-1); margin-bottom: 4px; }
+  .glq-prephead .sub { font-weight: 400; color: var(--ink-3); font-size: 12px; }
+  .glq-rule { padding: 6px 4px; font-size: 13px; color: var(--ink-2); }
+  .glq-rule .note { color: var(--ink-3); font-size: 12px; display: block; }
+  @media (pointer: coarse) { .glq-target { min-height: 44px; min-width: 44px; } }
   label.item.tip { align-items: center; }
   label.item.tip .chip { margin-right: 8px; }
   label.item.tip b { font-weight: 650; }
@@ -2820,7 +2847,10 @@ const TIER_LIST = {
         { leader: "Supreme Leader Kylo Ren", tier: "S", wr: 89.7, battles: "82.5K" },
         { leader: "Darth Bane", tier: "S", wr: 89.9, battles: "68K" },
         { leader: "Leia Organa", tier: "S", wr: 80.1, battles: "127K" },
-        { leader: "Ahsoka Tano", tier: "A", wr: 91.2, battles: "7,989" },
+        /* Corrected 3 Oct 2026 from swgoh.gg's 3v3 tier list (Season 83, still in progress): GL Ahsoka
+           promoted A → S (~91.5% over ~12K battles; was 91.2% / 7,989 at the 30 Sep pull). Only this row
+           was re-read, so TIER_LIST.updated stays 30 Sep. Already sits directly after the last S row. */
+        { leader: "Ahsoka Tano", tier: "S", wr: 91.5, battles: "~12K" },
         { leader: "Queen Amidala", tier: "A", wr: 82.7, battles: "68.3K" },
         { leader: "Rey", tier: "A", wr: 81.1, battles: "2,524" },
         { leader: "Ugnaught", tier: "A", wr: 93.1, battles: "29.6K" },
@@ -3116,8 +3146,8 @@ const GUIDANCE = {
     ]
   },
   tiny: {
-    planFor: "GLLEIA",
-    glSub: "Recommended target: GL Leia Organa — closest high-value GL; every requirement owned and farmable, no guild-currency gates. Runner-up: Jabba.",
+    planFor: "GLLEIA",                          // phases below are Leia's REQUIREMENT plan; Tiny unlocked her (1 Oct pull), so farmPlanFor() serves the generated build-up plan instead. Order from here: GL_QUEUE.tiny
+    glSub: "GL Leia Organa is unlocked (G9 R0) — build her up to G13 R7 with Raddus and Jyn. Next Legend: Jedi Master Luke Skywalker, with Sith Eternal Emperor as the reconsider-swap (see GL_QUEUE.tiny).",
     phases: [
       { t: "Phase 1 — fast finishes", items: [
         ["Princess Kneesaa R6 → R7", "one relic tier from done"],
@@ -3191,6 +3221,203 @@ const FARM_CHECKS = {
     "p3-0": relic("HOTHLEIA", 6)
   }
 };
+/* ===================== GL build order — the expert queue (glq) =====================
+   The owner asked for "the tier GL order in the accounts, and prep for the next GLs in order". GL_ORDER
+   above is RELEASE order (display only) and state.glTarget is whichever Legend the Roadmap is showing —
+   neither says which Legend to build now, next and then, or why. This block is that order, per account.
+
+   What is static and what is live, on purpose:
+     • STATIC (hand-researched, dated, registered in SNAPSHOTS as "gl-queue" so it ages honestly): the
+       ORDER, the rationale (`why`), the switch rule (`trigger`), unverified flags, and the prep list.
+       Produced 3 Oct 2026 by an agent team from the 1 Oct roster pull + swgoh.gg's GAC tier lists.
+       Figures quoted inside `why` ("~50 relic tiers") are labelled with that date; the card prints the
+       live equivalent next to them, so a stale sentence never stands alone.
+     • LIVE (recomputed every render from state.pulls / BASELINE through accountView): met/total, the
+       materials-weighted %, "≈N relic tiers left", unlocked ✓, every tier chip (read from TIER_LIST, not
+       retyped), every prep tick, and the NOW / NEXT labels themselves — an owned Legend whose `doneWhen`
+       build-up is met drops out as ✓ built and the next unbuilt entry is promoted, so the queue advances
+       on a pull without anyone editing this block. `watch` entries (unreleased Legends) never take part
+       in that promotion: their switch rule needs a human to read an announcement.
+   `watchId` entries are NOT in GL_ROADMAP and must never become selectable targets (no button) — their
+   requirement list is partial by definition. Prep ticks live in state.ticks under derived keys
+   (glqPrepKey: `${acct}-p:glq:${id}`), never positional, so reordering this list cannot move a tick; the
+   "-p" makes tick() do a full render, like the generated plan's keys. No new state field. */
+const GL_QUEUE = {
+  asOf: "2026-10-03",
+  basis: "agent-team analysis of the 1 Oct 2026 roster pull for both accounts and swgoh.gg's GAC tier lists (5v5 Season 82, 3v3 Season 83)",
+  /* GL_ROADMAP id → the leader name swgoh.gg's tier lists use, so each row's tier chip is read from TIER_LIST */
+  tl: { GLLEIA: "Leia Organa", SITHPALPATINE: "Sith Eternal Emperor", GRANDMASTERLUKE: "Jedi Master Luke Skywalker",
+        JEDIMASTERKENOBI: "Jedi Master Kenobi", LORDVADER: "Lord Vader", JABBATHEHUTT: "Jabba the Hutt",
+        GLAHSOKATANO: "Ahsoka Tano", GLHONDO: "Pirate King Hondo Ohnaka" },
+  watch: {
+    MANDOGROGU: { name: "Mandalorian & Grogu (Galactic Legend)",
+      note: "Not released — EA targets November 2026, details subject to change. Only 4 requirements have been announced (confirmed by secondary sources, not a complete official list), so this is a watch-only entry, not a roadmap target.",
+      /* BOBAFETTSCION is the expected swgoh.gg base_id — unverified (neither account owns him, so no pull
+         has ever shown it). A wrong id only means the row reads "not unlocked" until it is fixed. */
+      req: [["BOBAFETTSCION", "Boba Fett, Scion of Jango", 9], ["JEDIKNIGHTLUKE", "Jedi Knight Luke Skywalker", 8],
+            ["GOPHERANTS", "Grogu & Anzellans", 7], ["THEMANDALORIANBESKARARMOR", "The Mandalorian (Beskar Armor)", 10]] }
+  },
+  ollie: {
+    note: "Do both, GAC first: your three built Legends (Rey, Supreme Leader Kylo Ren, Jabba) sit idle in Carbonite. Setting a GAC defense every round costs no relic materials and its crystals fund this whole queue — it is already the top flag in Coach's corner.",
+    queue: [
+      { glId: "GLLEIA", status: "building",
+        why: "The cheapest Legend left on the account — no shard or guild-currency gates — and S-tier in both GAC formats (#1 on the 5v5 board). The long pole is Threepio & Chewie R0 → R7; Lobot still needs G13 before his relic climb can start. Once she unlocks, her squad also needs Raddus and Jyn geared, and Leia herself relic'd — her kit does little at R0.",
+        trigger: "Unlock her, then Leia R7 with Raddus and Jyn at G13 — after that the relic stream moves to Sith Eternal Emperor.",
+        doneWhen: [relic("GLLEIA", 7), gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)] },
+      { glId: "SITHPALPATINE", status: "next",
+        why: "Every requirement is already owned at 7★ and several are one gear step from G13, so it is a pure relic climb (~50 tiers on 3 Oct). S-tier in 3v3 (#2 on 3 Oct), A in 5v5. This app's GAC counter table lists him against Rey, Leia, Ahsoka, The Stranger and the Great Mothers — and your three Legends are defensive walls, so SEE is the offense the account is missing.",
+        trigger: "Starts when Leia's build-up above is done. Mandalorian & Grogu only jumps ahead of it if all three of its switch conditions hold.",
+        flag: "Darth Maul's relic requirement: this app's roadmap says R4, swgoh.gg's unit page says R7. Confirm on the in-game event screen before relic'ing him." },
+      { watchId: "MANDOGROGU", status: "watch",
+        why: "Unreleased and only partly announced, so nothing gets relic'd for it yet. But the one announced requirement you don't own (Boba Fett, Scion of Jango) and the 3★ Grogu & Anzellans are shard farms, and shards are the slow part — those are in Prep below. The Mandalorian (Beskar Armor) is R7 here against an announced R10.",
+        trigger: "Promote to #2 only if (a) Capital Games officially confirms the requirement list is complete, (b) Scion of Jango is 5★ or better here, and (c) the first tier-list data puts it S or A." },
+      { glId: "GRANDMASTERLUKE", status: "then", label: "Fallback",
+        why: "Cheap (~29 relic tiers on 3 Oct) but the weakest rating of the realistic options — B in 5v5, A in 3v3. Shares Lando and Threepio & Chewie with Leia, so Leia's build pays toward it.",
+        trigger: "Only if SEE stalls (for example Maul's requirement turns out to be R7 and gear runs dry) or the tier lists move Luke up." },
+      { glId: "GLHONDO", status: "later", why: "Several R8–R9 asks, including General Skywalker (not owned on 3 Oct) at R9." },
+      { glId: "JEDIMASTERKENOBI", status: "later", why: "Wat Tambor R7 is guild-gated (Geonosis TB + Guild Events store), so it can't be paced solo." },
+      { glId: "LORDVADER", status: "later", why: "Needs General Skywalker (not owned on 3 Oct) at R8 plus a stack of R7–R8s." },
+      { glId: "GLAHSOKATANO", status: "later", why: "The furthest Legend from this roster: three R9s, and General Skywalker not owned. He is farmable through the permanent 'Clash on Kamino' journey (50 shards each for the first clears of Tiers I, II and IV — 150 against the 145 needed), but that only matters for Ahsoka, Vader and Hondo, so it is not a priority." }
+    ],
+    prep: [
+      { id: "lobot-g13", text: "Lobot G12 → G13 (gear only)", note: "also a Leia requirement — gear, not relic materials", check: gear("LOBOT", 13) },
+      { id: "maul-g13", text: "Darth Maul G12 → G13 — spare pieces only, no relics yet", note: "SEE requirement; on 3 Oct he was 3 pieces short (1 to find, 2 to craft)", check: gear("MAUL", 13) },
+      { id: "groguants-7", text: "Farm Grogu & Anzellans to 7★", note: "Light Side Battles Hard 8-E with spare energy — farmable there since the 30 Sep patch", check: star("GOPHERANTS", 7) },
+      { id: "scion-unlock", text: "Start Boba Fett, Scion of Jango", note: "Guild Events Mk III store — 5 shards per 1,750 tokens — or Legend Tokens; 330 shards to activate", check: star("BOBAFETTSCION", 1) },
+      { id: "skip-peridea", rule: true, text: "Peridea/Ahsoka units and Rotta stay at gear-only or skipped", note: "your decision — no relic materials for them" }
+    ]
+  },
+  tiny: {
+    note: "",
+    queue: [
+      { glId: "GLLEIA", status: "building",
+        why: "Already unlocked (7★ G9 R0 on 3 Oct) — but at G9 R0 her kit is unusable. Leia G9 → G13 → R7 (~7 relic tiers), with Raddus and Jyn to G13 and then R5–R7, is the cheapest value on either account: she leads the top-rated 5v5 squad.",
+        trigger: "Move the relic stream to the next Legend once Leia is R7 and Raddus and Jyn are G13 R5+.",
+        doneWhen: [relic("GLLEIA", 7), relic("ADMIRALRADDUS", 5), relic("JYNERSO", 5)],
+        flag: "Raddus and Jyn at R5–R7 is an estimate for a working squad, not a published requirement." },
+      { glId: "GRANDMASTERLUKE", status: "next",
+        why: "6 of 14 requirements met on 3 Oct, ~24 relic tiers and no star gaps — the real cost is gear (Biggs G5, Wedge G8, Princess Leia G8, Old Ben G10, Mon Mothma G12). The weakest tier rating of the viable Legends (B in 5v5, A in 3v3).",
+        trigger: "Starts when Leia's build-up is done — unless Sith Eternal Emperor overtakes it (see below)." },
+      { glId: "SITHPALPATINE", status: "then", label: "Then — reconsider",
+        why: "Only ~16 relic tiers more than Luke (~40 on 3 Oct, 5 of 14 met; Grand Admiral Thrawn at G7 is the expensive one), but S-tier in 3v3 and a listed counter to Rey, Leia and Ahsoka.",
+        trigger: "If Luke is still B-tier in 5v5 when Leia reaches R7, swap SEE ahead of Luke — press Set as target on SEE instead." },
+      { watchId: "MANDOGROGU", status: "watch",
+        why: "Same picture as on Ollietank: unreleased, 4 requirements announced. Grogu & Anzellans is 3★ here, Scion of Jango isn't owned, and Beskar Mando is R7 against an announced R10.",
+        trigger: "If Capital Games confirms the list with Scion of Jango in it, start the Scion and Grogu & Anzellans shard farms immediately — shards are the long pole." },
+      { glId: "JABBATHEHUTT", status: "later", why: "Not owned, and a long Bounty Hunter build — behind the three above." },
+      { glId: "LORDVADER", status: "later", why: "A deep stack of R7–R8 requirements — after the three above." },
+      { glId: "GLAHSOKATANO", status: "later", why: "The furthest: ~87 relic tiers on 3 Oct, three R9s, Commander Ahsoka at G1." },
+      { glId: "GLHONDO", status: "later", why: "Several R8–R9 asks." },
+      { glId: "JEDIMASTERKENOBI", status: "later", why: "Wat Tambor R7 is guild-gated (Geonosis TB + Guild Events store)." }
+    ],
+    prep: [
+      { id: "luke-gear", text: "Spare gear (no relic materials) into Biggs, Wedge and Princess Leia → G13", note: "Jedi Master Luke's real cost is gear", check: [gear("BIGGSDARKLIGHTER", 13), gear("WEDGEANTILLES", 13), gear("PRINCESSLEIA", 13)] },
+      { id: "raddus-jyn-g13", text: "Spare gear into Raddus and Jyn → G13", note: "Leia's squad — their relics come later, from the Leia stream", check: [gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)] },
+      { id: "groguants-7", text: "Farm Grogu & Anzellans to 7★", note: "Light Side Battles Hard 8-E with spare energy — farmable there since the 30 Sep patch", check: star("GOPHERANTS", 7) },
+      { id: "thrawn-rule", rule: true, text: "Grand Admiral Thrawn only once SEE is the active target", note: "G7 → G13 → R6 is SEE's most expensive requirement — don't start it early" }
+    ]
+  }
+};
+const GLQ_STATUS = { building: ["improve", "Build now"], next: ["close", "Next"], then: ["", "Then"], later: ["", "Later"],
+                     watch: ["watch", "Watch — unreleased"], done: ["done", "Built"] };
+function glqPrepKey(acct, item) { return `${acct}-p:glq:${item.id}`; }
+/* Relic tiers still to climb across a requirement list — the live twin of the "~50 tiers" in `why`. */
+function glqTiersLeft(reqs, req) {
+  return req.reduce((n, [id, , rr]) => n + Math.max(0, hardNum(rr) - Math.min(hardNum(rr), hardNum((reqs[id] || {}).r))), 0);
+}
+function glqUnitCur(u) {
+  if (!u) return "not unlocked";
+  return (hardNum(u.s) < 7 ? `${hardNum(u.s)}★ ` : "") + (hardNum(u.r) > 0 ? `R${hardNum(u.r)}` : `G${hardNum(u.g) || 1}`);
+}
+/* The queue with effective statuses resolved against the roster. `rank` counts unbuilt, non-watch rows:
+   the first is NOW, the second NEXT, the rest keep their static status (a static building/next pushed
+   down by an earlier unbuilt row reads "then"). */
+function glqRows(acct) {
+  const cfg = GL_QUEUE[acct];
+  if (!cfg) return [];
+  const base = accountView(acct);
+  const reqs = (base.src && base.src.reqs) || {};
+  let rank = 0;
+  return cfg.queue.map(e => {
+    if (e.watchId) {
+      const w = GL_QUEUE.watch[e.watchId];
+      const rows = w.req.map(([id, name, rr]) => ({ id, name, need: rr, u: reqs[id], ...unitProgress(reqs[id], rr) }));
+      return { e, kind: "watch", eff: "watch", name: w.name, note: w.note, rows, live: base.live,
+        doneCount: rows.filter(r => r.done).length, total: rows.length,
+        avg: Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length), tiers: glqTiersLeft(reqs, w.req) };
+    }
+    const v = accountView(acct, e.glId);
+    const build = e.doneWhen ? tipProgress(reqs, e.doneWhen) : null;
+    const built = v.owned && (!build || build.done);
+    let eff = "done";
+    if (!built) { eff = rank === 0 ? "building" : rank === 1 ? "next" : (e.status === "building" || e.status === "next" ? "then" : e.status); rank++; }
+    return { e, kind: "gl", eff, v, build, name: v.gl.name, u: reqs[e.glId], tiers: glqTiersLeft(reqs, v.gl.req) };
+  });
+}
+function glqTierHtml(glId) {
+  const name = GL_QUEUE.tl[glId];
+  if (!name) return "";
+  const parts = ["5v5", "3v3"].map(k => { const t = tierListEntry(k, name); return t ? `${k} <b>${escapeHtml(t.tier)}</b>` : ""; }).filter(Boolean);
+  return parts.length ? `<span class="glq-tier" title="swgoh.gg GAC tier lists, pulled ${escapeHtml(TIER_LIST.updated)}">${parts.join(" · ")}</span>` : "";
+}
+function glqReadyText(r) {
+  if (r.kind === "watch") return `${r.doneCount}/${r.total} announced requirements met · ${(r.live ? "" : "~") + r.avg}% · ≈${r.tiers} relic tiers left`;
+  const v = r.v;
+  if (v.owned) return `unlocked ✓ · ${glqUnitCur(r.u)}${r.build ? ` · build-up ${r.build.doneCount}/${r.build.total}` : ""}`;
+  return `${v.doneCount}/${v.reqRows.length} met · ${(v.live ? "" : "~") + v.avg}% · ≈${r.tiers} relic tiers left`;
+}
+function glqPrepItemHtml(acct, it, reqs) {
+  if (it.rule) return `<div class="glq-rule"><b>Standing rule:</b> ${escapeHtml(it.text)}${it.note ? `<span class="note">${escapeHtml(it.note)}</span>` : ""}</div>`;
+  const k = glqPrepKey(acct, it);
+  const specs = it.check ? (Array.isArray(it.check) ? it.check : [it.check]) : [];
+  const live = specs.filter(sp => reqs[sp.id]).map(sp => specLiveLabel(reqs, sp)).join(" · ");
+  const prog = specs.length > 1 ? ` — ${tipProgress(reqs, it.check).doneCount}/${specs.length}` : "";
+  const note = [it.note, live].filter(Boolean).map(escapeHtml).join("<br>");
+  if (it.check && specMet(reqs, it.check)) return tickboxAuto(escapeHtml(k), escapeHtml(it.text) + prog, note, true);
+  return tickbox(escapeHtml(k), escapeHtml(it.text) + prog,
+    note + (state.ticks[k] ? `<br>ticked by hand — the roster hasn't confirmed it yet` : ""));
+}
+function glqCardHtml(acct) {
+  const cfg = GL_QUEUE[acct];
+  if (!cfg) return "";
+  const a = ACCOUNTS.find(x => x.key === acct) || { label: acct };
+  const rows = glqRows(acct);
+  const base = accountView(acct);
+  const reqs = (base.src && base.src.reqs) || {};
+  const target = glTargetFor(acct);
+  const rowHtml = (r, i) => {
+    const st = GLQ_STATUS[r.eff] || GLQ_STATUS.later;
+    const label = r.eff === "done" ? "Built" : r.eff === "building" && r.kind === "gl" && r.v.owned ? "Building up"
+      : (r.eff === r.e.status && r.e.label) ? r.e.label : st[1];
+    const chip = `<span class="chip ${st[0]}">${st[0] ? chipGlyph(st[0]) + " " : ""}${escapeHtml(label)}</span>`;
+    const btn = r.kind !== "gl" ? ""
+      : r.e.glId === target ? `<span class="glq-viewing">Roadmap target</span>`
+      : `<button type="button" class="glq-target" onclick="switchGlTarget('${escapeHtml(r.e.glId)}')">Set as target</button>`;
+    const watchReqs = r.kind === "watch" ? `<div class="glq-watchreqs">${escapeHtml(r.note)}<ul>${r.rows.map(x =>
+        `<li class="${x.done ? "glq-met" : ""}">${x.done ? "✓ " : ""}${escapeHtml((x.u && x.u.name) || x.name)}: ${escapeHtml(glqUnitCur(x.u))} → R${hardNum(x.need)}</li>`).join("")}</ul></div>` : "";
+    return `<div class="glq-row glq-${escapeHtml(r.eff)}${r.eff === "building" ? " glq-current" : ""}" data-glq="${escapeHtml(r.e.glId || r.e.watchId)}">
+      <div class="glq-head"><b class="glq-name"><span class="glq-n">${String(i + 1).padStart(2, "0")}</span> ${escapeHtml(r.name)}</b>${chip}${r.kind === "gl" ? glqTierHtml(r.e.glId) : ""}${btn}</div>
+      <div class="glq-ready">${escapeHtml(glqReadyText(r))}</div>
+      <details class="glq-why"${r.eff === "building" ? " open" : ""}><summary>Why${r.e.trigger ? " · switch rule" : ""}</summary>
+        <p>${escapeHtml(r.e.why)}</p>${r.e.trigger ? `<p><b>Switch rule:</b> ${escapeHtml(r.e.trigger)}</p>` : ""}
+        ${r.e.flag ? `<p class="glq-flag">⚠ Unverified: ${escapeHtml(r.e.flag)}</p>` : ""}${watchReqs}</details></div>`;
+  };
+  const cur = rows.find(r => r.eff === "building"), nxt = rows.find(r => r.eff === "next");
+  return `<div class="cardtitle">GL order — ${escapeHtml(a.label)} <span class="sub">— build now, next, then</span></div>
+    <div class="mnote">${cur ? `Now: <b>${escapeHtml(cur.name)}</b>` : "Every queued Legend is built"}${nxt ? ` · next: <b>${escapeHtml(nxt.name)}</b>` : ""}. Order and reasons are an expert snapshot; readiness, ✓ and the Now/Next labels are live from your ${base.live ? "latest pull" : "saved baseline roster"}.</div>
+    ${cfg.note ? `<div class="intelnote glq-note">${escapeHtml(cfg.note)} <a href="#" style="color:var(--accent)" onclick="switchTab('coach');return false;">Coach's corner →</a></div>` : ""}
+    <div class="glq-list">${rows.map(rowHtml).join("")}</div>
+    <div class="glq-prep"><div class="glq-prephead">Prep now <span class="sub">— none of these use the current Legend's relic materials</span></div>
+      ${cfg.prep.map(it => glqPrepItemHtml(acct, it, reqs)).join("")}</div>
+    <div class="srcline">GL order ${snapNoteHtml("gl-queue")} — ${escapeHtml(GL_QUEUE.basis)}. Tier letters are read live from the Tier List tab's data.</div>`;
+}
+/* One line for the generated Farm plan's "Pick the next Legend" phase, so its closest-first list doesn't
+   read as the recommendation when the expert order says otherwise. */
+function glqNextLineHtml(acct, glId) {
+  const r = glqRows(acct).find(x => (x.eff === "building" || x.eff === "next") && x.e.glId && x.e.glId !== glId);
+  if (!r) return "";
+  return `<div class="mnote glq-farmline">GL order (expert, ${escapeHtml(snapLabel(GL_QUEUE.asOf))}): next Legend to build is <b>${escapeHtml(r.name)}</b> — closest isn't always best. <a href="#" style="color:var(--accent)" onclick="switchTab('leia');return false;">See the GL order →</a></div>`;
+}
 function specMet(reqsMap, spec) {
   if (Array.isArray(spec)) return spec.every(s => specMet(reqsMap, s));
   const u = reqsMap[spec.id];
@@ -3393,7 +3620,7 @@ function generatedPlanCards(plan, live) {
       <div class="mnote">${escapeHtml(plan.head.note)}</div>${chips}
       <div class="prog-summary">${srcNote} — rebuilt on every pull and target change. Tick a line by hand when it's done in-game before swgoh.gg catches up. Shard and material sources aren't tracked, so none are claimed.</div>` }];
   plan.phases.forEach(p => cards.push({ id: p.id, html: `<div class="phase"><div class="cardtitle">${escapeHtml(p.t)}</div>
-      ${p.n ? `<div class="mnote">${escapeHtml(p.n)}</div>` : ""}
+      ${p.n ? `<div class="mnote">${escapeHtml(p.n)}</div>` : ""}${p.pick ? glqNextLineHtml(current, plan.glId) : ""}
       ${(p.pick || []).map(c => `<div class="pickrow"><button type="button" onclick="switchGlTarget('${c.gid}')">Target →</button>
           <span><b>${escapeHtml(c.vv.gl.name)}</b> — ${c.vv.avg}% · ${c.vv.doneCount}/${c.vv.reqRows.length} reqs met<span class="note">${escapeHtml(c.vv.gl.note)}</span></span></div>`).join("")}
       ${(p.pick && !p.pick.length) ? `<div class="mnote">Every Legend in the roadmap is already on this account.</div>` : ""}
@@ -9408,7 +9635,15 @@ const SNAPSHOTS = [
     hint: "ask Claude to re-read both rosters and rewrite the Coach's Corner flags" },
   { key: "gl-roadmap", label: "Galactic Legend unlock requirements", tab: "leia",
     asOf: "2026-08-08", halfLife: 180,
-    hint: "ask Claude whether a new Galactic Legend has been released and to re-check relic targets" }
+    hint: "ask Claude whether a new Galactic Legend has been released and to re-check relic targets" },
+  /* Half-life 21 AND a hard end: the GL order (GL_QUEUE) is a recommendation about BOTH the meta and
+     these two rosters, the fastest-moving pair in the file (cf. coach-tips at 30). The hard end is the
+     known invalidator: Mandalorian & Grogu is slated for November 2026, and once it ships with a full
+     requirement list and tier data the watch entry and possibly the whole order need re-deciding —
+     14 Nov is ~6 weeks out, the latest that release is likely to have landed. */
+  { key: "gl-queue", label: "GL build order (expert queue, both accounts)", tab: "leia",
+    asOf: snapISO(GL_QUEUE.asOf), expires: "2026-11-14", halfLife: 21,
+    hint: "ask Claude to re-run the GL-order analysis (Mandalorian & Grogu status, tier lists, both rosters)" }
 ];
 const SNAP_BY_KEY = Object.fromEntries(SNAPSHOTS.map(s => [s.key, s]));
 /* Reuses the existing chip vocabulary rather than inventing a third colour language: green/done for
@@ -10466,9 +10701,10 @@ function render() {
     const jointCard = { id: "joint", html: glJointHtml() };
     const paceCard = { id: "pace", html: paceCardHtml(current, v) };
     const moved = historyView(current, v.glId).moved;
+    const glqCard = { id: "glq", w: 12, html: glqCardHtml(current) };
     document.getElementById("glTables").innerHTML = v.owned
-      ? wrapCards("leia", [noteCard, jointCard])
-      : wrapCards("leia", [noteCard, paceCard, jointCard,
+      ? wrapCards("leia", [glqCard, noteCard, jointCard])
+      : wrapCards("leia", [glqCard, noteCard, paceCard, jointCard,
           { id: "reqs-1", html: reqRowsHtml(v.reqRows.slice(0, half), `Requirements 1–${half} of ${v.reqRows.length}`, moved) },
           { id: "reqs-2", html: reqRowsHtml(v.reqRows.slice(half), `Requirements ${half + 1}–${v.reqRows.length} of ${v.reqRows.length}`, moved) }
         ]);

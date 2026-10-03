@@ -572,6 +572,34 @@
     .glq-why summary::-webkit-details-marker { display: none; }
     .glq-why summary::before { content: "▸"; flex: none; font-size: 11px; }
     .glq-why[open] summary::before { content: "▾"; } }
+  /* Shipment buying guide (Farm tab) — see SHIP_DATA. */
+  .shp-sum { font-size: 12.5px; color: var(--ink-2); margin: 2px 0 4px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .shp-sec { font-weight: 650; font-size: 13.5px; color: var(--ink-1); margin: 10px 0 2px; }
+  .shp-list { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 8px; }
+  .shp-row { border: 1px solid var(--grid); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+  .shp-row.shp-p1 { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 6%, transparent); }
+  .shp-row.shp-done { opacity: 0.8; border-color: var(--grid); background: none; }
+  .shp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13.5px; }
+  .shp-name { color: var(--ink-1); font-weight: 650; overflow-wrap: anywhere; min-width: 0; }
+  .shp-have { color: var(--ink-3); font-size: 11.5px; white-space: nowrap; }
+  .shp-need, .shp-alt { color: var(--ink-2); font-size: 12px; margin-top: 4px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .shp-alt b { color: var(--ink-1); font-weight: 650; }
+  .shp-conf { display: inline-block; font: 700 9.5px/1.4 system-ui, sans-serif; letter-spacing: 0.04em; padding: 0 5px; border-radius: 5px; border: 1px solid currentColor; vertical-align: 1px; white-space: nowrap; }
+  .shp-conf.ok { color: var(--good); }
+  .shp-conf.unv { color: var(--warning); }
+  .shp-row .fold-more { margin: 4px 0 0; font-size: 12.5px; color: var(--ink-2); }
+  .shp-row .fold-body p { margin: 5px 0 0; line-height: 1.45; overflow-wrap: anywhere; }
+  .shp-src, .shp-gear, .shp-journey, .shp-ol { margin: 4px 0 0 18px; font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere; }
+  .shp-src li, .shp-gear li, .shp-journey li, .shp-ol li { margin: 3px 0; }
+  .shp-gear .note { color: var(--ink-3); display: block; font-size: 11.5px; }
+  .shp-gear li.glq-met { color: var(--good); }
+  .shp-row label.item { padding: 6px 0 0; }
+  .shp-store { border-top: 1px solid var(--grid); padding: 8px 0; min-width: 0; }
+  .shp-sname { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 13px; color: var(--ink-1); }
+  .shp-cur { color: var(--ink-3); font-size: 11.5px; overflow-wrap: anywhere; }
+  .shp-snote { color: var(--ink-3); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+  .shp-tierlbl { color: var(--accent); font-size: 11px; font-weight: 650; }
+  .shp-ticknote { color: var(--ink-3); font-size: 12px; }
   /* fx: GL requirement tables at phone width — the uppercase, letter-spaced header words (REQUIREMENT / NEEDED /
      CURRENT / PROGRESS / STATUS) have a min-content width wider than the row, so the last header stuck out
      2px past the viewport. Tighter gap + header type below 420px lets the five tracks fit down to 360px. */
@@ -3450,6 +3478,338 @@ function rvGlqRestore(saved) {
     const d = row.querySelector("details.glq-why");
     if (d && Object.prototype.hasOwnProperty.call(saved.changed, row.dataset.glq)) d.open = saved.changed[row.dataset.glq];
   });
+}
+/* ===================== Shipment buying guide (shp) =====================
+   The owner asked for "a purchase priority from the Shipment store, all tabs, based on characters not
+   collected and pieces". The app cannot see the in-game stores — offers rotate every few hours and may
+   differ per account — so this is a WANT-LIST: what to buy, in what order and where, WHEN it shows up.
+   It never says an item is on sale now.
+
+   What is static and what is live, on purpose (same split as GL_QUEUE above):
+     • STATIC (hand-researched 3 Oct 2026, second-hand via swgoh.wiki + swgoh.gg — several wiki store pages
+       carry 'outdated' banners and swgoh.gg calls its offers "player-reported recently, not a guarantee";
+       registered in SNAPSHOTS as "ship-guide" so it ages honestly): the 14 stores and their refresh rules,
+       each unit's shard sources with a per-shard price in that store's currency (computed from the
+       per-purchase bundles, e.g. Featured 4 for 320 crystals = 80 a shard), CONFIRMED/UNCONFIRMED flags,
+       and the per-account ranking (tier, why, when, unverified flags).
+     • LIVE (recomputed every render from state.pulls / BASELINE through accountView): owned or not, stars,
+       shards still needed to the target star (STAR_SHARDS_CUM), the cost estimate (remaining × per-shard
+       price of the first priced shipment source), which Legends in GL_ROADMAP still ask for the unit, the
+       gear level of the pieces section, the loaned Era Level, and ✓ done when the roster satisfies it.
+   `src` order is preference order: the first priced store source is the one the estimate uses (guild
+   currencies are listed before crystals on purpose, even when crystals are cheaper per shard). Nodes are
+   not stores and never feed the estimate: a node drop is not guaranteed, so energy is quoted per attempt.
+   Hand ticks ("done in-game, swgoh.gg hasn't caught up") live in state.ticks under derived keys
+   (shpKey: `${acct}-p:shp:${id}`), never positional; "-p" makes tick() do a full render. No new state. */
+const SHIP_DATA = {
+  asOf: "2026-10-03",
+  basis: "store rules and shard sources from swgoh.wiki and swgoh.gg (second-hand; offers are player-reported and rotate), ranked against the 1 Oct 2026 roster pull and the GL order",
+  stores: [
+    { id: "featured", name: "Featured Shipment", cur: "Crystals", conf: "CONFIRMED", refresh: "every 6 h (swgoh.gg); random on reset, free + paid refreshes, level-dependent (wiki)" },
+    { id: "weekly", name: "Weekly Shipment", cur: "Crystals", conf: "CONFIRMED", refresh: "resets Fridays (7 days); mostly random, some offers persist" },
+    { id: "episode", name: "Episode Shipment", cur: "not researched", conf: "UNCONFIRMED", refresh: "not fetched in the 3 Oct pass", note: "Not researched — check it in-game against the Buy-first list." },
+    { id: "guildEvents", name: "Guild Events Store", cur: "Mk I / II / III Guild Event Tokens (Raids, TB, TW)", conf: "CONFIRMED", refresh: "every 6 h, rotating", gear: true },
+    { id: "guildActivity", name: "Guild Activity Store", cur: "Guild Tokens + Mk I / II / III Raid Tokens", conf: "CONFIRMED", refresh: "every 6 h, 23 slots with appearance-rate tiers (the wiki's 'Guild Store')", gear: true },
+    { id: "legend", name: "Legend Tokens Store", cur: "Legend Tokens (Ultimate journey, after Conquest)", conf: "CONFIRMED", refresh: "weekly, no paid refresh; shard offers of 2 / 8 / 20 (one source: up to 30 shards a week)" },
+    { id: "conquest", name: "Conquest Store", cur: "Conquest Credits (+ crystals)", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00, escalating paid (swgoh.gg shows 6 h)", note: "Optional sink: Satele Shan, 5 shards for 475 credits — a 330-shard luxury, see Not now." },
+    { id: "cantina", name: "Cantina Battles Store", cur: "Cantina Tokens", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00; shards 10 for 400", gear: true },
+    { id: "squadArena", name: "Squad Arena Store", cur: "Squad Arena Tokens", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00; static inventory, 18 heroes at 10 shards for 400", gear: true },
+    { id: "fleetArena", name: "Fleet Arena Store", cur: "Fleet Arena Tokens", conf: "CONFIRMED", refresh: "free refresh 12 / 18 / 21; shards 10 for 400 (Vader 5)", gear: true },
+    { id: "gw", name: "Galactic War Store", cur: "Galactic War Tokens", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00; shards 10 for 400; ship blueprint slots rotate", gear: true },
+    { id: "shard", name: "Shard Store", cur: "Shard Store Tokens (from shards of max-star units)", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00; fixed items plus random gear in slots 10–15", gear: true },
+    { id: "championship", name: "Championship Store", cur: "Championship Tokens (GAC)", conf: "CONFIRMED", refresh: "gear and mod slicing only", gear: true },
+    { id: "mod", name: "Mod Store", cur: "Credits + Ship Building Materials", conf: "CONFIRMED", refresh: "several resets a day", note: "Mods and ship materials — nothing on this want-list." }
+  ],
+  /* unit id → { name, act (activation shards, from the catalogue), src: [preference order] }.
+     A src is a store offer { store, text, perShard[, perShardMax], cur, conf }, a node
+     { node, energy, drop, conf } or anything else { other, conf }. perShard is null when the price is unknown. */
+  units: {
+    GOPHERANTS: { name: "Grogu & Anzellans", act: 25, src: [
+      { node: "Light Side Battles (Hard) 8-E", energy: "20 energy", drop: 1, conf: "CONFIRMED" },
+      { store: "featured", text: "4 for 320 · 8 for 640 · 16 for 1,280", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "weekly", text: "10 for 800 · 25 for 2,000 · 50 for 4,000", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { other: "Chromium packs (random)", conf: "CONFIRMED" }] },
+    BOBAFETTSCION: { name: "Boba Fett, Scion of Jango", act: 330, src: [
+      { store: "legend", text: "2 for 300 · 8 for 1,200 · 20 for 3,000 (weekly)", perShard: 150, cur: "Legend Tokens", conf: "CONFIRMED", weekCap: 30 },
+      { store: "guildEvents", text: "5 for 1,750 Mk III tokens", perShard: 350, cur: "Mk III Guild Event tokens", conf: "CONFIRMED" }] },
+    R5D4: { name: "R5-D4", act: null, src: [
+      { other: "Shard source not verified in the 3 Oct pass — check Find Shards on the unit in-game", conf: "UNCONFIRMED" }] },
+    CARSONTEVA: { name: "Captain Carson Teva", act: null, src: [
+      { node: "Dark Side Battles (Hard) 8-F", energy: "20 energy", drop: 1, conf: "CONFIRMED" },
+      { store: "featured", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
+    REMNANTSNOWCOMMANDER: { name: "Snowtrooper Commander", act: null, src: [
+      { store: "featured", text: "same bundles as Grogu & Anzellans (no farming node)", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
+    BISHOP: { name: "Colonel Ward", act: 25, src: [
+      { node: "Dark Side Battles 7-H / 7-E (farmable since Aug 2026)", energy: "20 energy", drop: 1, conf: "CONFIRMED" },
+      { store: "featured", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
+    RANGERZEB: { name: "Zeb Orrelios (New Republic Pilot)", act: null, src: [
+      { node: "Cantina Battles 9-F", energy: "20 cantina energy", drop: 1, conf: "CONFIRMED" },
+      { store: "featured", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
+    CAPTAINSILVO: { name: "Captain Silvo", act: 25, src: [
+      { node: "Cantina Battles 6-A", energy: "12 cantina energy", drop: 2, conf: "CONFIRMED" },
+      { store: "featured", text: "4 / 8 / 16 / 32 shards for 320–1,280 crystals (which size costs what is unclear in the source)", perShard: 40, perShardMax: 80, cur: "crystals", conf: "UNCONFIRMED" },
+      { other: "packs", conf: "CONFIRMED" }] },
+    VANE: { name: "Vane", act: 25, src: [
+      { node: "Cantina Battles 3-B", energy: "10 cantina energy", drop: 2, conf: "CONFIRMED" },
+      { store: "featured", text: "8 for 320 (and larger bundles)", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
+    TUSKENHUNTRESS: { name: "Tusken Warrior", act: 25, src: [
+      { node: "Cantina Battles 2-D", energy: "8 cantina energy", drop: 2, conf: "CONFIRMED" },
+      { store: "featured", text: "8 for 320 (and larger bundles)", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
+    HUYANG: { name: "Huyang", act: null, src: [
+      { other: "Shard source not researched in the 3 Oct pass — check Find Shards on the unit in-game", conf: "UNCONFIRMED" }] },
+    GENERALSYNDULLA: { name: "General Syndulla", act: null, src: [
+      { other: "Shard source not researched in the 3 Oct pass — check Find Shards on the unit in-game", conf: "UNCONFIRMED" }] },
+    DARTHMALAK: { name: "Darth Malak", act: 145, src: [
+      { store: "guildActivity", text: "5 for 1,750 Mk II Raid Tokens", perShard: 350, cur: "Mk II Raid Tokens", conf: "CONFIRMED" },
+      { store: "guildEvents", text: "5 for 1,900 · 10 for 3,800 · 15 for 5,700 Mk I tokens", perShard: 380, cur: "Mk I Guild Event tokens", conf: "CONFIRMED" },
+      { store: "weekly", text: "5 for 900 · 10 for 1,800 · 15 for 2,700 crystals", perShard: 180, cur: "crystals", conf: "CONFIRMED" }] },
+    GENERALSKYWALKER: { name: "General Skywalker", act: 145, src: [
+      { other: "Clash on Kamino journey (permanent): 50 shards each for the first clears of Tiers I, II and IV = 150", conf: "CONFIRMED" },
+      { store: "guildActivity", text: "5 for 1,750 Mk II Raid Tokens", perShard: 350, cur: "Mk II Raid Tokens", conf: "CONFIRMED" },
+      { store: "guildEvents", text: "5 for 1,900 · 10 for 3,800 · 15 for 5,700 Mk I tokens", perShard: 380, cur: "Mk I Guild Event tokens", conf: "CONFIRMED" },
+      { store: "weekly", text: "5 for 900 · 10 for 1,800 · 15 for 2,700 crystals", perShard: 180, cur: "crystals", conf: "CONFIRMED" },
+      { other: "Geonosis TB missions and platoons", conf: "CONFIRMED" }] },
+    KIADIMUNDI: { name: "Ki-Adi-Mundi", act: 80, src: [
+      { store: "guildEvents", text: "5 for 2,125 Mk III tokens", perShard: 425, cur: "Mk III Guild Event tokens", conf: "CONFIRMED" },
+      { other: "Rise of the Empire TB platoons", conf: "CONFIRMED" }] },
+    THERONIN: { name: "The Ronin", act: 25, src: [{ other: "crystal / cash packs only — no shipment", conf: "CONFIRMED" }] },
+    BENSOLO: { name: "Ben Solo", act: 330, src: [
+      { store: "legend", text: "2 for 300 · 8 for 1,200 · 20 for 3,000 (weekly)", perShard: 150, cur: "Legend Tokens", conf: "CONFIRMED" }] },
+    SATELESHAN: { name: "Satele Shan", act: 330, src: [
+      { store: "conquest", text: "5 for 475 Conquest Credits", perShard: 95, cur: "Conquest Credits", conf: "CONFIRMED" }] },
+    MAULHATEFUELED: { name: "Maul (Hate-Fueled)", act: 80, src: [
+      { other: "Shard source not researched in the 3 Oct pass", conf: "UNCONFIRMED" }] }
+  },
+  /* Not owned and not sold in any shipment per the sources (UNCONFIRMED: "no shipment seen", not "proven
+     absent"). Listed only while the account doesn't own them. */
+  journeyOnly: [["RACCOON", "Rotta the Hutt", "the Rotta journey (rerun ~27 Oct)"], ["CASSIANUNDERCOVER", "Cassian Andor (Undercover)", "its journey / event"],
+    ["DARTHJARJAR", "Darth Jar Jar", "its journey / event"], ["JEDIMASTERMACEWINDU", "Jedi Master Mace Windu", "its journey / event"],
+    ["GRANDINQUISITOR", "Grand Inquisitor", "its journey / event"], ["STARKILLER", "Starkiller", "its journey / event"],
+    ["DOCTORAPHRA", "Doctor Aphra", "its journey / event"], ["THIRDSISTER", "Third Sister", "its journey / event"],
+    ["JABBATHEHUTT", "Jabba the Hutt (GL)", "its Galactic Legend event"], ["JEDIMASTERKENOBI", "Jedi Master Kenobi (GL)", "its Galactic Legend event"],
+    ["EMBOANDKEIBU", "Embo & Keibu", "Conquest (a Conquest reward unit)"]]
+};
+const SHP_WHY = {
+  ga: "Announced requirement (R7) for the Mandalorian & Grogu Galactic Legend, and a Rotta-journey unit. Shards are the slow part, and the cheapest route is free: spare energy on Light Side Hard 8-E (farmable there since the 30 Sep patch). Featured and Weekly bundles at 80 crystals a shard are the paid top-up.",
+  gaWhen: "Buy whenever a Featured or Weekly bundle shows — but it's prep for an unreleased Legend (EA targets November 2026), so don't spend crystals you need elsewhere.",
+  scion: "Announced requirement (R9) for the Mandalorian & Grogu Galactic Legend, and not on this account. 330 shards is the longest farm in this guide. Legend Tokens (150 a shard) are the cheapest currency for him; Guild Events Mk III (350 a shard) second.",
+  scionWhen: "Each week, Legend Tokens go to his shards first (before Ben Solo). Mk III tokens only once nothing your guild plan needs is on offer — prep, not a crystal spend.",
+  mgFlag: "Mandalorian & Grogu is unreleased and only 4 requirements are public (secondary sources). BOBAFETTSCION as Scion's swgoh.gg id is unverified — neither account owns him.",
+  rottaWhen: "Only if you'll run Rotta Tier I at the ~27 Oct rerun — 4★ before ~26 Oct. Your GL order calls Rotta prep-only, so skipping it is fine.",
+  rottaFlag: "Rotta tier gates conflict between sources: swgoh.gg's event page says Tier I needs R5-D4 4★, Tier II Carson Teva 5★, Tier III Snowtrooper Commander 6★, Tier IV all 7★, which disagrees with the journey guide. Each tier also has an Era Level gate.",
+  tinyRotta: "Rotta is a skip for this account this run, so no shards for its journey units now.",
+  hondo: "Pirate King Hondo asks for it at R7 — Hondo is a 'later' Legend in your GL order. The Cantina node is the cheap route; no crystals until Hondo is the target.",
+  ahsoka: "A GL Ahsoka requirement — the furthest Legend in your GL order, so not yet.",
+  p3When: "Only when that Legend becomes the active target in the GL order.",
+  srcUnknown: "Its shard sources weren't researched in the 3 Oct pass — check Find Shards on the unit in-game before spending anything."
+};
+/* Per-account ranking (expert, 3 Oct 2026). star = the star the plan needs (✓ when the roster reaches it). */
+const SHIP_PLAN = {
+  ollie: [
+    { id: "GOPHERANTS", tier: "P1", star: 7, prep: true, why: SHP_WHY.ga, when: SHP_WHY.gaWhen, flag: SHP_WHY.mgFlag },
+    { id: "BOBAFETTSCION", tier: "P1", star: 7, prep: true, why: SHP_WHY.scion, when: SHP_WHY.scionWhen, flag: SHP_WHY.mgFlag },
+    { id: "R5D4", tier: "P2", star: 4, rotta: true, why: "Rotta journey Tier I gate (R5-D4 4★ per swgoh.gg's event page). 30 shards from 3★.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
+    { id: "CARSONTEVA", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit (Tier II gate is 5★ per swgoh.gg). 30 shards from 3★ to 4★; Dark Side Hard 8-F is the free route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
+    { id: "REMNANTSNOWCOMMANDER", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit (Tier III gate is 6★ per swgoh.gg). No farming node, so Featured / Weekly bundles are the only route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
+    { id: "BISHOP", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit. 30 shards from 3★ to 4★; Dark Side 7-H / 7-E is the free route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
+    { id: "CAPTAINSILVO", tier: "P3", star: 7, why: SHP_WHY.hondo, when: SHP_WHY.p3When },
+    { id: "VANE", tier: "P3", star: 7, why: SHP_WHY.hondo, when: SHP_WHY.p3When },
+    { id: "HUYANG", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
+    { id: "GENERALSYNDULLA", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
+    { id: "TUSKENHUNTRESS", tier: "P3", star: 7, why: "Not a requirement for any Legend in this app's roadmap. Cheap on its Cantina node (2 shards a drop) if you want the Tusken squad — not a crystal buy.", when: "Whenever spare cantina energy is free.", flag: "Ranked P3 in the 3 Oct brief without a stated reason." },
+    { id: "RANGERZEB", tier: "P3", star: 7, why: "5★ today; worth 7★ if the Rotta or Hondo squads end up needing him. Cantina 9-F is the free route.", when: SHP_WHY.p3When, flag: "Whether Rotta or Hondo content needs him at 7★ is unverified." },
+    { id: "GENERALSKYWALKER", tier: "SKIP", star: 7, route: "Clash on Kamino journey",
+      why: "Don't spend shipment currency: the permanent Clash on Kamino journey gives 150 shards (50 each for the first clears of Tiers I, II and IV) against the 145 he needs. He only matters for GL Ahsoka, Lord Vader and Hondo, and none of those is near." },
+    { id: "KIADIMUNDI", tier: "SKIP", star: 7, cost: true, why: "Not in any plan here, and his Mk III Guild Event tokens (425 a shard) compete with Scion of Jango. Only a cheap completionist add." },
+    { id: "BENSOLO", tier: "SKIP", star: 7, cost: true, why: "A 330-shard luxury that competes with Scion of Jango for Legend Tokens." },
+    { id: "SATELESHAN", tier: "SKIP", star: 7, cost: true, why: "A 330-shard luxury. Only if you want somewhere to sink spare Conquest Credits." },
+    { id: "MAULHATEFUELED", tier: "SKIP", star: 7, why: "Not in any plan here." },
+    { id: "THERONIN", tier: "SKIP", star: 7, why: "Crystal / cash packs only — no shipment sells him." }
+  ],
+  tiny: [
+    { id: "GOPHERANTS", tier: "P1", star: 7, prep: true, why: SHP_WHY.ga, when: SHP_WHY.gaWhen, flag: SHP_WHY.mgFlag },
+    { id: "BOBAFETTSCION", tier: "P1", star: 7, prep: true, why: SHP_WHY.scion, when: SHP_WHY.scionWhen, flag: SHP_WHY.mgFlag },
+    { id: "CAPTAINSILVO", tier: "P3", star: 7, why: SHP_WHY.hondo, when: SHP_WHY.p3When },
+    { id: "VANE", tier: "P3", star: 7, why: SHP_WHY.hondo, when: SHP_WHY.p3When },
+    { id: "HUYANG", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
+    { id: "GENERALSYNDULLA", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
+    { id: "TUSKENHUNTRESS", tier: "P3", star: 7, why: "Not a requirement for any Legend in this app's roadmap. Cheap on its Cantina node (2 shards a drop) if you want the Tusken squad — not a crystal buy.", when: "Whenever spare cantina energy is free.", flag: "Ranked P3 in the 3 Oct brief without a stated reason." },
+    { id: "RANGERZEB", tier: "P3", star: 7, why: "5★ today; worth 7★ if the Rotta or Hondo squads end up needing him. Cantina 9-F is the free route.", when: SHP_WHY.p3When, flag: "Whether Rotta or Hondo content needs him at 7★ is unverified." },
+    { id: "DARTHMALAK", tier: "P3", star: 7, why: "Not on this account. Only if a Sith Empire squad starts to matter — guild currencies first, crystals last.", when: "Only once a Sith Empire squad is a goal." },
+    { id: "R5D4", tier: "SKIP", star: 4, why: SHP_WHY.tinyRotta },
+    { id: "CARSONTEVA", tier: "SKIP", star: 4, why: SHP_WHY.tinyRotta },
+    { id: "REMNANTSNOWCOMMANDER", tier: "SKIP", star: 4, why: SHP_WHY.tinyRotta },
+    { id: "BISHOP", tier: "SKIP", star: 4, why: SHP_WHY.tinyRotta },
+    { id: "KIADIMUNDI", tier: "SKIP", star: 7, cost: true, why: "Not in any plan here, and his Mk III Guild Event tokens (425 a shard) compete with Scion of Jango. Only a cheap completionist add." },
+    { id: "BENSOLO", tier: "SKIP", star: 7, cost: true, why: "A 330-shard luxury that competes with Scion of Jango for Legend Tokens." },
+    { id: "SATELESHAN", tier: "SKIP", star: 7, cost: true, why: "A 330-shard luxury. Only if you want somewhere to sink spare Conquest Credits." },
+    { id: "MAULHATEFUELED", tier: "SKIP", star: 7, why: "Not in any plan here." },
+    { id: "THERONIN", tier: "SKIP", star: 7, why: "Crystal / cash packs only — no shipment sells him." }
+  ]
+};
+/* "Pieces": the GL-order gear prep, so the store tabs that sell gear have an address. Live gear level;
+   no piece names or prices — the app can't see which piece any store is offering. */
+const SHIP_GEAR = {
+  ollie: [["LOBOT", "Lobot", 13, "Leia requirement"], ["MAUL", "Darth Maul", 13, "SEE requirement; on 3 Oct he was 3 pieces short (1 to find, 2 to craft)"]],
+  tiny: [["BIGGSDARKLIGHTER", "Biggs Darklighter", 13, "Jedi Master Luke's real cost is gear"], ["WEDGEANTILLES", "Wedge Antilles", 13, "Jedi Master Luke"],
+         ["PRINCESSLEIA", "Princess Leia", 13, "Jedi Master Luke"], ["ADMIRALRADDUS", "Admiral Raddus", 13, "Leia's squad"], ["JYNERSO", "Jyn Erso", 13, "Leia's squad"]]
+};
+const SHP_TIER = { P1: ["improve", "Buy first"], P2: ["close", "If running Rotta"], P3: ["", "Later"], SKIP: ["", "Skip"] };
+function shpKey(acct, id) { return `${acct}-p:shp:${id}`; }
+function shpNum(n) { return String(Math.round(hardNum(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function shpStore(id) { return SHIP_DATA.stores.find(s => s.id === id) || null; }
+function shpConfHtml(conf) {
+  const ok = conf === "CONFIRMED";
+  return `<span class="shp-conf ${ok ? "ok" : "unv"}" title="${ok ? "Seen in two sources or recently reported" : "Not verified — check in-game"}">${ok ? "CONFIRMED" : "UNCONFIRMED"}</span>`;
+}
+/* One plan entry resolved against the roster: owned/stars, shards left to `star`, the estimate. */
+function shpRow(acct, e, reqs) {
+  const unit = SHIP_DATA.units[e.id] || { name: e.id, act: null, src: [] };
+  const u = reqs[e.id];
+  const stars = u ? Math.max(0, Math.min(7, hardNum(u.s))) : 0;
+  const owned = !!u && stars > 0;
+  const star = Math.max(1, Math.min(7, hardNum(e.star) || 7));
+  const done = owned && stars >= star;
+  /* An unowned unit's unlock costs its activation shards; only a 330-shard unit is known to unlock at 7★,
+     so for the rest the climb after unlocking isn't counted (the unlock star isn't in the data). */
+  let left = 0, partial = false;
+  if (owned) left = Math.max(0, STAR_SHARDS_CUM[star] - STAR_SHARDS_CUM[stars]);
+  else if (unit.act) { left = unit.act; partial = unit.act < STAR_SHARDS_CUM[7]; }
+  else partial = true;
+  const shop = unit.src.find(s => s.store && hardNum(s.perShard) > 0) || null;
+  const cost = shop && left ? { lo: left * hardNum(shop.perShard), hi: shop.perShardMax ? left * hardNum(shop.perShardMax) : 0, cur: shop.cur } : null;
+  const hand = !done && !!state.ticks[shpKey(acct, e.id)];
+  return { e, unit, u, name: (u && u.name) || unit.name, stars, owned, star, done, hand, left, partial, shop, cost };
+}
+function shpRows(acct) {
+  const plan = SHIP_PLAN[acct];
+  if (!plan) return [];
+  const base = accountView(acct);
+  const reqs = (base.src && base.src.reqs) || {};
+  return plan.map(e => shpRow(acct, e, reqs));
+}
+function shpCostText(c) {
+  if (!c) return "";
+  return `≈ ${shpNum(c.lo)}${c.hi ? `–${shpNum(c.hi)}` : ""} ${c.cur}`;
+}
+function shpHaveText(r) {
+  if (!r.u) return "not owned";
+  return r.done ? `${r.stars}★ ✓` : `${r.stars}★ owned`;
+}
+function shpNeedText(r) {
+  if (r.done) return `done — ${r.star}★ reached`;
+  if (!r.owned) return r.left ? `${shpNum(r.left)} shards to unlock${r.partial ? `, then more to ${r.star}★ (the unlock star isn't in the data)` : ` (unlocks at 7★)`}` : `not owned — shard count to unlock isn't in the data`;
+  return `${shpNum(r.left)} shards to ${r.star}★`;
+}
+/* Other Legends that still ask for the unit — live from GL_ROADMAP + the GL order's watch list. */
+function shpNeededBy(reqs, id) {
+  const out = planAlsoNeeded(reqs, null, id);
+  Object.values(GL_QUEUE.watch).forEach(w => { const r = w.req.find(x => x[0] === id); if (r) out.unshift(`${w.name.replace(/ \(Galactic Legend\)$/, "")} (R${r[2]}, announced)`); });
+  return out;
+}
+function shpSrcLine(s) {
+  if (s.node) return `${escapeHtml(s.node)} — ${escapeHtml(s.energy)} a try, ${hardNum(s.drop)} shard${hardNum(s.drop) === 1 ? "" : "s"} per drop (drops aren't guaranteed) ${shpConfHtml(s.conf)}`;
+  if (s.store) { const st = shpStore(s.store);
+    return `${escapeHtml(st ? st.name : s.store)}: ${escapeHtml(s.text)}${hardNum(s.perShard) > 0 ? ` = ${shpNum(s.perShard)}${s.perShardMax ? `–${shpNum(s.perShardMax)}` : ""} ${escapeHtml(s.cur)} a shard` : ""} ${shpConfHtml(s.conf)}`; }
+  return `${escapeHtml(s.other)} ${shpConfHtml(s.conf)}`;
+}
+function shpRowHtml(acct, r, i, reqs, eraTxt) {
+  const t = SHP_TIER[r.e.tier] || SHP_TIER.P3;
+  const skip = r.e.tier === "SKIP";
+  const cls = r.done && !skip ? "done" : t[0];
+  const label = r.done && !skip ? "Done" : skip ? "Skip" : r.e.prep ? `${r.e.tier} · prep` : r.e.tier;
+  const chip = `<span class="chip ${cls}" title="${escapeHtml(t[1])}">${cls ? chipGlyph(cls) + " " : ""}${escapeHtml(label)}</span>`;
+  const conf = r.shop ? r.shop.conf : (r.unit.src[0] ? r.unit.src[0].conf : "UNCONFIRMED");
+  let main;
+  if (r.e.route) main = `Route: <b>${escapeHtml(r.e.route)}</b> — not a shipment buy ${shpConfHtml(r.unit.src[0] ? r.unit.src[0].conf : "UNCONFIRMED")}`;
+  else if (r.shop) {
+    const st = shpStore(r.shop.store);
+    main = `Cheapest shipment: <b>${escapeHtml(st ? st.name : r.shop.store)}</b>, ${shpNum(r.shop.perShard)}${r.shop.perShardMax ? `–${shpNum(r.shop.perShardMax)}` : ""} ${escapeHtml(r.shop.cur)} a shard`
+      + ((!skip || r.e.cost) && r.cost && !r.done ? ` · <b>${escapeHtml(shpCostText(r.cost))}</b>${r.partial ? " to unlock" : ""}` : "")
+      + (r.shop.weekCap && !r.done && r.left ? ` · at most ${hardNum(r.shop.weekCap)} a week → ≥ ${Math.ceil(r.left / hardNum(r.shop.weekCap))} weeks (cap unverified)` : "")
+      + ` ${shpConfHtml(conf)}`;
+  } else main = `No priced shipment source known — ${r.unit.src[0] ? escapeHtml(r.unit.src[0].other || r.unit.src[0].node || "") : "not researched"} ${shpConfHtml(conf)}`;
+  /* the source already named on the main line (the priced shop, the journey route, or the unpriced fallback) isn't repeated */
+  const others = r.unit.src.filter(s => s !== r.shop && !((r.e.route || !r.shop) && s === r.unit.src[0]));
+  const needBy = shpNeededBy(reqs, r.e.id);
+  const flag = [r.e.flag, r.e.rotta ? eraTxt : ""].filter(Boolean).join(" ");
+  const body = `<p>${escapeHtml(r.e.why)}</p>${r.e.when ? `<p><b>When:</b> ${escapeHtml(r.e.when)}</p>` : ""}
+      ${needBy.length ? `<p><b>Still needed by:</b> ${escapeHtml(needBy.join(", "))}</p>` : ""}
+      ${others.length ? `<p><b>Other sources:</b></p><ul class="shp-src">${others.map(s => `<li>${shpSrcLine(s)}</li>`).join("")}</ul>` : ""}
+      ${flag ? `<p class="glq-flag">⚠ Unverified: ${escapeHtml(flag)}</p>` : ""}`;
+  const k = shpKey(acct, r.e.id);
+  const tickHtml = skip ? "" : r.done
+    ? tickboxAuto(escapeHtml(k), `${escapeHtml(r.name)} at ${r.star}★`, "confirmed by the roster", true)
+    : tickbox(escapeHtml(k), `Done in-game (${r.star}★) <span class="shp-ticknote">— tick if swgoh.gg hasn't caught up</span>`, r.hand ? "ticked by hand — the roster hasn't confirmed it yet; drops off the store lists until it does" : "");
+  return `<div class="shp-row shp-${escapeHtml(r.e.tier.toLowerCase())}${r.done || r.hand ? " shp-done" : ""}" data-shp="${escapeHtml(r.e.id)}">
+    <div class="shp-head">${i !== null ? `<span class="glq-n">${String(i + 1).padStart(2, "0")}</span>` : ""}<b class="shp-name">${escapeHtml(r.name)}</b>${chip}<span class="shp-have">${escapeHtml(shpHaveText(r))}</span></div>
+    <div class="shp-need">${escapeHtml(shpNeedText(r))}</div>
+    <div class="shp-alt">${main}</div>
+    ${foldMore(skip ? "Why skip" : "Why · when · other sources", body, { key: `shp-why-${acct}-${r.e.id}`, cls: "shp-why" })}
+    ${tickHtml}</div>`;
+}
+function shpStoresHtml(acct, rows) {
+  const want = rows.filter(r => r.e.tier !== "SKIP" && !r.done && !r.hand);
+  return SHIP_DATA.stores.map(st => {
+    const items = want.map(r => ({ r, s: r.unit.src.find(s => s.store === st.id) })).filter(x => x.s);
+    const list = items.length ? `<ol class="shp-ol">${items.slice(0, 5).map(({ r, s }) =>
+        `<li><b>${escapeHtml(r.name)}</b> <span class="shp-tierlbl">${escapeHtml(r.e.tier)}</span> — ${hardNum(s.perShard) > 0 ? `${shpNum(s.perShard)}${s.perShardMax ? `–${shpNum(s.perShardMax)}` : ""} ${escapeHtml(s.cur)} a shard` : "price unknown"} · ${escapeHtml(r.owned ? `${shpNum(r.left)} shards to ${r.star}★` : r.left ? `${shpNum(r.left)} to unlock` : "not owned")} ${shpConfHtml(s.conf)}</li>`).join("")}</ol>`
+      : `<div class="shp-snote">${escapeHtml(st.note || (st.gear ? "No shard on your want-list is known to sell here — spend these tokens on the gear pieces below." : "Nothing on your want-list is known to sell here."))}</div>`;
+    return `<div class="shp-store" data-shp-store="${escapeHtml(st.id)}"><div class="shp-sname"><b>${escapeHtml(st.name)}</b> <span class="shp-cur">${escapeHtml(st.cur)}</span> ${shpConfHtml(st.conf)}</div>
+      <div class="shp-snote">Refresh: ${escapeHtml(st.refresh)}</div>${items.length && st.note ? `<div class="shp-snote">${escapeHtml(st.note)}</div>` : ""}${list}</div>`;
+  }).join("");
+}
+function shpGearHtml(acct, reqs) {
+  const gl = SHIP_GEAR[acct] || [];
+  const stores = SHIP_DATA.stores.filter(s => s.gear).map(s => s.name);
+  const where = stores.length > 1 ? `${stores.slice(0, -1).join(", ")} and ${stores[stores.length - 1]}` : stores.join("");
+  return `<div class="mnote">These are the GL order's gear prep items. Gear pieces rotate through the ${escapeHtml(where)} — look there, and use each piece's Find screen in-game to see which store carries it. The app can't see which piece is on offer, so no piece names or prices are claimed.</div>
+    <ul class="shp-gear">${gl.map(([id, name, g, note]) => {
+      const u = reqs[id];
+      const cur = u ? hardNum(u.g) || 1 : 0;
+      const ok = !!u && cur >= g;
+      return `<li class="${ok ? "glq-met" : ""}" data-shp-gear="${escapeHtml(id)}">${ok ? "✓ " : ""}<b>${escapeHtml((u && u.name) || name)}</b>: ${u ? `G${cur}` : "not unlocked"} → G${hardNum(g)}<span class="note">${escapeHtml(note)}</span></li>`;
+    }).join("")}</ul>`;
+}
+function shpCardHtml(acct) {
+  if (!SHIP_PLAN[acct]) return "";
+  const a = ACCOUNTS.find(x => x.key === acct) || { label: acct };
+  const base = accountView(acct);
+  const reqs = (base.src && base.src.reqs) || {};
+  const eraTxt = `Your loaned Era Level reads ${hardNum(base.src && base.src.loanedEraLevel)} on the ${base.live ? "latest pull" : "saved baseline roster"}.`;
+  const rows = shpRows(acct);
+  const first = rows.filter(r => r.e.tier === "P1" || r.e.tier === "P2");
+  const later = rows.filter(r => r.e.tier === "P3");
+  const skip = rows.filter(r => r.e.tier === "SKIP");
+  const open = first.filter(r => !r.done && !r.hand);
+  const sums = {};
+  open.filter(r => r.e.tier === "P1" && r.cost).forEach(r => { sums[r.cost.cur] = (sums[r.cost.cur] || 0) + r.cost.lo; });
+  const sumTxt = Object.keys(sums).map(c => `${shpNum(sums[c])} ${c}`).join(" + ");
+  const journey = SHIP_DATA.journeyOnly.filter(([id]) => !reqs[id]);
+  return `<div class="cardtitle">Shipment buying guide — ${escapeHtml(a.label)} <span class="sub">— what to buy, in what order, where</span></div>
+    <div class="mnote">A want-list, not a shop feed: offers rotate every few hours and can differ per account, and the app can't see your stores — this is <b>what to buy when you see it</b>. Owned, stars, shards left and ✓ are live from your ${base.live ? "latest pull" : "saved baseline roster"}; sources and prices are a dated snapshot.</div>
+    <div class="shp-sum">${open.length ? `${open.length} open in Buy first${sumTxt ? ` · P1 at the cheapest shipment price: ≈ ${escapeHtml(sumTxt)}` : ""}` : "Everything in Buy first is done ✓"}</div>
+    <div class="shp-sec">Buy first</div>
+    <div class="shp-list" data-shp-list="first">${first.map((r, i) => shpRowHtml(acct, r, i, reqs, eraTxt)).join("")}</div>
+    ${foldMore(`By store tab — all ${SHIP_DATA.stores.length} stores`, `<div class="mnote">Each store's top wanted items, in priority order. Offers rotate — an item listed here may not be on offer today.</div>${shpStoresHtml(acct, rows)}`, { key: `shp-stores-${acct}` })}
+    ${foldMore(`Later — only when that Legend is the target (${later.length})`, `<div class="shp-list" data-shp-list="later">${later.map(r => shpRowHtml(acct, r, null, reqs, eraTxt)).join("")}</div>`, { key: `shp-later-${acct}` })}
+    ${foldMore(`Not now / skip (${skip.length + journey.length})`, `<div class="shp-list" data-shp-list="skip">${skip.map(r => shpRowHtml(acct, r, null, reqs, eraTxt)).join("")}</div>
+      ${journey.length ? `<div class="shp-sec">Not sold in shipments — unlock via its journey / event</div><ul class="shp-journey">${journey.map(([id, name, how]) =>
+        `<li data-shp-journey="${escapeHtml(id)}"><b>${escapeHtml(name)}</b> — unlock via ${escapeHtml(how)}; no shipment offer was found ${shpConfHtml("UNCONFIRMED")}</li>`).join("")}</ul>` : ""}`, { key: `shp-skip-${acct}` })}
+    ${foldMore("Gear & relic pieces", shpGearHtml(acct, reqs), { key: `shp-gear-${acct}` })}
+    <div class="srcline">Shipment data ${snapNoteHtml("ship-guide")} — ${escapeHtml(SHIP_DATA.basis)}.</div>`;
+}
+/* One card for the Farm tab. Guarded so a data problem here can never take the farm plan down with it. */
+function shpCards(acct) {
+  if (!SHIP_PLAN[acct]) return [];
+  let html;
+  try { html = shpCardHtml(acct); }
+  catch (e) { console.error("[shp] shipment guide failed:", e); html = `<div class="cardtitle">Shipment buying guide</div><div class="mnote">This card hit an error — the rest of the Farm tab is unaffected.</div>`; }
+  return [{ id: "shp", w: 12, html }];
 }
 function specMet(reqsMap, spec) {
   if (Array.isArray(spec)) return spec.every(s => specMet(reqsMap, s));
@@ -9769,7 +10129,13 @@ const SNAPSHOTS = [
      14 Nov is ~6 weeks out, the latest that release is likely to have landed. */
   { key: "gl-queue", label: "GL build order (expert queue, both accounts)", tab: "leia",
     asOf: snapISO(GL_QUEUE.asOf), expires: "2026-11-14", halfLife: 21,
-    hint: "ask Claude to re-run the GL-order analysis (Mandalorian & Grogu status, tier lists, both rosters)" }
+    hint: "ask Claude to re-run the GL-order analysis (Mandalorian & Grogu status, tier lists, both rosters)" },
+  /* Half-life 14 AND a hard end: shipment offers rotate every few hours and the shard sources/prices are
+     second-hand (SHIP_DATA), so two weeks is as long as "cheapest known source" survives; the hard end is
+     the same invalidator as gl-queue — Mandalorian & Grogu lands ~November and reshuffles the P1 list. */
+  { key: "ship-guide", label: "Shipment buying guide (store sources, prices & ranking)", tab: "farm",
+    asOf: snapISO(SHIP_DATA.asOf), expires: "2026-11-14", halfLife: 14,
+    hint: "ask Claude to re-check the shipment stores and shard sources (swgoh.wiki / swgoh.gg) against both rosters" }
 ];
 const SNAP_BY_KEY = Object.fromEntries(SNAPSHOTS.map(s => [s.key, s]));
 /* Reuses the existing chip vocabulary rather than inventing a third colour language: green/done for
@@ -10897,7 +11263,7 @@ function render() {
   /* ---- farm tab ---- */
   safeRender("Farm plan", "farmPlan", () => {
     const plan = farmPlanFor(current, v);
-    if (!plan.hand) { document.getElementById("farmPlan").innerHTML = wrapCards("farm", generatedPlanCards(plan, v.live)); return; }
+    if (!plan.hand) { document.getElementById("farmPlan").innerHTML = wrapCards("farm", generatedPlanCards(plan, v.live).concat(shpCards(current))); return; }
     document.getElementById("farmPlan").innerHTML = wrapCards("farm",
       g.phases.map((p, pi) => ({
         id: "phase-" + (pi + 1),
@@ -10908,7 +11274,7 @@ function render() {
               ? tickboxAuto(`${current}-${key}`, escapeHtml(farmActionLabel(current, s.reqs, pi, ii, it)), `${it[1]}<br>${v.live ? "Current roster from the latest pull" : "Current roster from the saved baseline snapshot"} · strategy reference reviewed 9 Aug 2026`, specMet(s.reqs, FARM_CHECKS[current][key]))
               : tickbox(`${current}-${key}`, it[0], it[1]);
           }).join("")}</div>`
-      })));
+      })).concat(shpCards(current)));
   });
 
   /* ---- modes tab ---- */

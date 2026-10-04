@@ -572,6 +572,21 @@
     .glq-why summary::-webkit-details-marker { display: none; }
     .glq-why summary::before { content: "▸"; flex: none; font-size: 11px; }
     .glq-why[open] summary::before { content: "▾"; } }
+  /* Next characters (non-GL) card (GL Roadmap tab) — see NXT_QUEUE. Rows reuse the .glq-row look. */
+  .nxt-opt { color: var(--ink-2); }
+  .nxt-week { margin: 2px 0 6px; overflow-wrap: anywhere; }
+  .nxt-tier { color: var(--ink-2); font: 700 10.5px/1.4 system-ui, sans-serif; padding: 0 6px; border: 1px solid var(--grid); border-radius: 5px; white-space: nowrap; }
+  .nxt-lines { margin: 4px 0 0 18px; padding: 0; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .nxt-lines li { margin: 2px 0; overflow-wrap: anywhere; }
+  .nxt-lines li.glq-met { color: var(--good); }
+  .nxt-row.nxt-done, .nxt-row.nxt-notowned { opacity: 0.8; }
+  .nxt-row .nxt-why { margin: 4px 0 0; font-size: 12.5px; color: var(--ink-2); }
+  .nxt-row .nxt-why > summary { color: var(--accent); font-size: 12px; font-weight: 650; border-color: transparent; background: none; padding: 2px 0; min-height: 26px; }
+  @media (pointer: coarse) { .nxt-row .nxt-why > summary { min-height: 44px; } }
+  .nxt-row .fold-body p { margin: 5px 0 0; line-height: 1.45; overflow-wrap: anywhere; }
+  .nxt-more { margin: 6px 0 4px; }
+  .nxt-traps { margin: 4px 0 0 18px; font-size: 12.5px; color: var(--ink-2); }
+  .nxt-traps li { margin: 4px 0; line-height: 1.45; overflow-wrap: anywhere; }
   /* Shipment buying guide (Farm tab) — see SHIP_DATA. */
   .shp-sum { font-size: 12.5px; color: var(--ink-2); margin: 2px 0 4px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   .shp-sec { font-weight: 650; font-size: 13.5px; color: var(--ink-1); margin: 10px 0 2px; }
@@ -2670,7 +2685,7 @@ const GL_IDS = GL_ORDER;
 const META_SQUADS = [
   { name: "Leia Organa (GL) Rebels", mode: "Squad Arena / GAC / TW def", tl5v5: "Leia Organa", tl3v3: "Leia Organa", confidence: "HIGH",
     members: [["GLLEIA","Leia Organa (GL)"], ["ADMIRALRADDUS","Admiral Raddus"], ["CAPTAINDROGAN","Captain Drogan"], ["JYNERSO","Jyn Erso"], ["R2D2_LEGENDARY","R2-D2"]],
-    notes: "Re-confirmed 27 Sep 2026 — a current (17 Sep 2026) team-ranking guide gives this exact 5-unit roster. A second, slightly older (23 Aug 2026) guide instead lists Baze Malbus + Mon Mothma in place of Raddus + Jyn Erso — a real, named alternate build, outweighed here by the more recent and more detailed match.",
+    notes: "Re-confirmed 27 Sep 2026 — a current (17 Sep 2026) team-ranking guide gives this exact 5-unit roster. A second, slightly older (23 Aug 2026) guide instead lists Baze Malbus + Mon Mothma in place of Raddus + Jyn Erso — a real, named alternate build, outweighed here by the more recent and more detailed match. This is the 5-unit (5v5 / Territory War) build; in 3v3 the trio is Leia + Captain Drogan + R2-D2.",
     sources: ["ahnaldt101.com Grand Arena team rankings (17 Sep 2026)", "allclash.com \"The Teams in Star Wars Galaxy of Heroes\" (23 Aug 2026, alternate build)"] },
   { name: "Supreme Leader Kylo Ren (GL)", mode: "Squad Arena / GAC / TW def / GW", tl5v5: "Supreme Leader Kylo Ren", tl3v3: "Supreme Leader Kylo Ren", confidence: "HIGH",
     members: [["SUPREMELEADERKYLOREN","Supreme Leader Kylo Ren (GL)"], [null,"Rey (Dark Side Vision)"], ["KYLORENUNMASKED","Kylo Ren (Unmasked)"], ["GENERALHUX","General Hux"], ["FOSITHTROOPER","Sith Trooper"]],
@@ -2701,7 +2716,7 @@ const META_SQUADS = [
     sources: ["swgoh.gg GAC leader-teammate usage data (Season 83, 3v3, 4,508 battles)"] },
   { name: "Dark Trooper Moff Gideon Empire", mode: "Squad Arena / GAC / TW def", tl5v5: "Dark Trooper Moff Gideon", tl3v3: "Dark Trooper Moff Gideon", confidence: "MODERATE",
     members: [[null,"Dark Trooper Moff Gideon"], ["MOFFGIDEONS1","Moff Gideon"], ["SCOUTTROOPER_V3","Scout Trooper"]],
-    notes: "Verified in part, 30 Sep 2026: Dark Trooper Moff Gideon IS on the live 5v5 tier list — B-tier (#38, 90.0% WR, 4,347 battles, Season 82), a high win rate on a small sample. He was not among the 3v3 rows checked (ranks 1-38 plus the hidden A-tier rows), so the earlier \"87.8% 3v3\" figure is still unconfirmed. Distinct unit/leader from the plain \"Moff Gideon\" tracked as a teammate inside the Grand Admiral Thrawn Empire squad above (base_id MOFFGIDEONS1 there). This 3-unit core (Moff Gideon + Scout Trooper) is the single most common pairing in swgoh.gg's own Season 83 teammate-usage data (~41% of 13.3K sampled battles). Leader's own base_id not independently confirmed; falls back to name-matching.",
+    notes: "Verified in part, 30 Sep 2026: Dark Trooper Moff Gideon IS on the live 5v5 tier list — B-tier (#38, 90.0% WR, 4,347 battles, Season 82), a high win rate on a small sample. He was not among the 3v3 rows checked (ranks 1-38 plus the hidden A-tier rows), so the earlier \"87.8% 3v3\" figure is still unconfirmed. Re-checked 4 Oct 2026 (swgoh.gg Season 83, 3v3): he is NO LONGER a top defence — leader rank 33 by use, only an 8% hold rate and 51 average banners, B-tier overall (#57 of 143 leaders). The most-used 3v3 defences are Jabba, Lord Vader (about 29% hold) and Tarkin (only about 7% hold); treat this squad as filler, not a wall. Distinct unit/leader from the plain \"Moff Gideon\" tracked as a teammate inside the Grand Admiral Thrawn Empire squad above (base_id MOFFGIDEONS1 there). This 3-unit core (Moff Gideon + Scout Trooper) is the single most common pairing in swgoh.gg's own Season 83 teammate-usage data (~41% of 13.3K sampled battles). Leader's own base_id not independently confirmed; falls back to name-matching.",
     sources: ["swgoh.gg GAC leader-teammate usage data (Season 83, 3v3, 13.3K battles)"] },
   { name: "Rotta the Hutt Bounty Hunters", mode: "Squad Arena / GAC / TW def", tl5v5: "Rotta the Hutt", tl3v3: "Rotta the Hutt", confidence: "MODERATE",
     members: [[null,"Rotta the Hutt"], ["GAMORREANGUARD","Gamorrean Guard"], ["CADBANE","Cad Bane"]],
@@ -3183,7 +3198,7 @@ const GUIDANCE = {
   },
   tiny: {
     planFor: "GLLEIA",                          // phases below are Leia's REQUIREMENT plan; Tiny unlocked her (1 Oct pull), so farmPlanFor() serves the generated build-up plan instead. Order from here: GL_QUEUE.tiny
-    glSub: "GL Leia Organa is unlocked (G9 R0) — build her up to G13 R7 with Raddus and Jyn. Next Legend: Jedi Master Luke Skywalker, with Sith Eternal Emperor as the reconsider-swap (see GL_QUEUE.tiny).",
+    glSub: "GL Leia Organa is unlocked (G9 R0) — build her up to G13 R7; her 3v3 squad is Leia + Captain Drogan + R2-D2 (Raddus and Jyn only matter for the older 5-unit build). Next Legend: Jedi Master Luke Skywalker, with Sith Eternal Emperor as the reconsider-swap (see GL_QUEUE.tiny).",
     phases: [
       { t: "Phase 1 — fast finishes", items: [
         ["Princess Kneesaa R6 → R7", "one relic tier from done"],
@@ -3288,9 +3303,9 @@ const GL_QUEUE = {
         GLAHSOKATANO: "Ahsoka Tano", GLHONDO: "Pirate King Hondo Ohnaka" },
   watch: {
     MANDOGROGU: { name: "Mandalorian & Grogu (Galactic Legend)",
-      note: "Not released — EA targets November 2026, details subject to change. Only 4 requirements have been announced (confirmed by secondary sources, not a complete official list), so this is a watch-only entry, not a roadmap target.",
-      /* BOBAFETTSCION is the expected swgoh.gg base_id — unverified (neither account owns him, so no pull
-         has ever shown it). A wrong id only means the row reads "not unlocked" until it is fixed. */
+      note: "Not released — no exact date announced (EA ties its November Droid Destruction raid to \"closely following\" the release). The 4 requirements below are from EA's Update 9-16 post and swgoh.gg shows them as \"3 of 4\", so more may follow — a watch-only entry, not a roadmap target.",
+      /* BOBAFETTSCION confirmed as the swgoh.gg base_id on 4 Oct 2026 (unit page). Jedi Knight Luke R8 is from
+         the EA post only; swgoh.gg's Luke page does not list it. */
       req: [["BOBAFETTSCION", "Boba Fett, Scion of Jango", 9], ["JEDIKNIGHTLUKE", "Jedi Knight Luke Skywalker", 8],
             ["GOPHERANTS", "Grogu & Anzellans", 7], ["THEMANDALORIANBESKARARMOR", "The Mandalorian (Beskar Armor)", 10]] }
   },
@@ -3298,19 +3313,21 @@ const GL_QUEUE = {
     note: "Do both, GAC first: your three built Legends (Rey, Supreme Leader Kylo Ren, Jabba) sit idle in Carbonite. Setting a GAC defense every round costs no relic materials and its crystals fund this whole queue — it is already the top flag in Coach's corner.",
     queue: [
       { glId: "GLLEIA", status: "building",
-        why: "The cheapest Legend left on the account — no shard or guild-currency gates — and S-tier in both GAC formats (#1 on the 5v5 board). The long pole is Threepio & Chewie R0 → R7; Lobot still needs G13 before his relic climb can start. Once she unlocks, her squad also needs Raddus and Jyn geared, and Leia herself relic'd — her kit does little at R0.",
-        trigger: "Unlock her, then Leia R7 with Raddus and Jyn at G13 — after that the relic stream moves to Sith Eternal Emperor.",
-        doneWhen: [relic("GLLEIA", 7), gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)] },
+        why: "The cheapest Legend left on the account — no shard or guild-currency gates — and S-tier in both GAC formats (#1 on the 5v5 board). The long pole is Threepio & Chewie R0 → R7; Lobot still needs G13 before his relic climb can start. Once she unlocks, Leia herself needs relics — her kit does little at R0. Her 3v3 squad is Leia + Captain Drogan + R2-D2, and both of those are already unlock requirements (R7 / R8).",
+        trigger: "Unlock her, then Leia R7 (with Captain Drogan R7 and R2-D2 R8, her 3v3 trio) — after that the relic stream moves to Sith Eternal Emperor.",
+        /* nxt (4 Oct): "built" = the 3v3 trio at the GL_ROADMAP numbers (Drogan R7, R2-D2 R8); Raddus/Jyn moved to `optional`. */
+        doneWhen: [relic("GLLEIA", 7), relic("CAPTAINDROGAN", 7), relic("R2D2_LEGENDARY", 8)],
+        optional: "Raddus and Jyn Erso to G13 — swgoh.gg's current Season 83 3v3 squad is Leia + Captain Drogan + R2-D2, so these two are only for the older 5-unit build." },
       { glId: "SITHPALPATINE", status: "next",
-        why: "Every requirement is already owned at 7★ and several are one gear step from G13, so it is a pure relic climb (~50 tiers on the 1 Oct pull). On swgoh.gg's tier lists he is S-tier in 3v3 (#1 on the 30 Sep pull) and A in 5v5. This app's GAC counter table names him as a counter to Rey, Leia, Ahsoka, The Stranger and the Great Mothers (its own row for an SEE defense says A-tier — that table reads the defense-side boards, 27 Sep) — and your three Legends are defensive walls, so SEE is the offense the account is missing.",
+        why: "Every requirement is already owned at 7★ and several are one gear step from G13, so it is a pure relic climb (~50 tiers on the 1 Oct pull). On swgoh.gg's tier lists he is S-tier in 3v3 (#1 on the 30 Sep pull) and A in 5v5. This app's GAC counter table names him as a counter to Rey, Leia, Ahsoka, The Stranger and the Great Mothers (its own row for an SEE defense says A-tier — that table reads the defense-side boards, 27 Sep) — and your three Legends are defensive walls, so SEE is the offense the account is missing. Darth Maul's requirement is R4 — confirmed against swgoh.gg's Sith Eternal Emperor journey guide on 4 Oct 2026. The R7 on his own unit page belongs to a different journey (Leviathan).",
         trigger: "Starts when Leia's build-up above is done. Mandalorian & Grogu only jumps ahead of it if all three of its switch conditions hold.",
-        flag: "Darth Maul's relic requirement: this app's roadmap says R4, swgoh.gg's unit page says R7. Confirm on the in-game event screen before relic'ing him." },
+      },
       { watchId: "MANDOGROGU", status: "watch",
         why: "Unreleased and only partly announced, so nothing gets relic'd for it yet. But the one announced requirement you don't own (Boba Fett, Scion of Jango) and the 3★ Grogu & Anzellans are shard farms, and shards are the slow part — those are in Prep below. The Mandalorian (Beskar Armor) is R7 here against an announced R10.",
         trigger: "Promote to #2 only if (a) Capital Games officially confirms the requirement list is complete, (b) Scion of Jango is 5★ or better here, and (c) the first tier-list data puts it S or A." },
       { glId: "GRANDMASTERLUKE", status: "then", label: "Fallback",
         why: "Cheap (~29 relic tiers on the 1 Oct pull) but the weakest rating of the realistic options — B in 5v5, A in 3v3. Shares Lando and Threepio & Chewie with Leia, so Leia's build pays toward it.",
-        trigger: "Only if SEE stalls (for example Maul's requirement turns out to be R7 and gear runs dry) or the tier lists move Luke up." },
+        trigger: "Only if SEE stalls (for example gear runs dry) or the tier lists move Luke up." },
       { glId: "GLHONDO", status: "later", why: "Several R8–R9 asks, including General Skywalker (not owned on the 1 Oct pull) at R9." },
       { glId: "JEDIMASTERKENOBI", status: "later", why: "Wat Tambor R7 is guild-gated (Geonosis TB + Guild Events store), so it can't be paced solo." },
       { glId: "LORDVADER", status: "later", why: "Needs General Skywalker (not owned on the 1 Oct pull) at R8 plus a stack of R7–R8s." },
@@ -3328,10 +3345,11 @@ const GL_QUEUE = {
     note: "",
     queue: [
       { glId: "GLLEIA", status: "building",
-        why: "Already unlocked (7★ G9 R0 on the 1 Oct pull) — but at G9 R0 her kit is unusable. Leia G9 → G13 → R7 (~7 relic tiers), with Raddus and Jyn to G13 and then R5–R7, is the cheapest value on either account: she leads the top-rated 5v5 squad.",
-        trigger: "Move the relic stream to the next Legend once Leia is R7 and Raddus and Jyn are G13 R5+.",
-        doneWhen: [relic("GLLEIA", 7), relic("ADMIRALRADDUS", 5), relic("JYNERSO", 5)],
-        flag: "Raddus and Jyn at R5–R7 is an estimate for a working squad, not a published requirement." },
+        why: "Already unlocked (7★ G9 R0 on the 1 Oct pull) — but at G9 R0 her kit is unusable. Leia G9 → G13 → R7 (~7 relic tiers) is the cheapest value on either account. Her 3v3 squad is Leia + Captain Drogan + R2-D2 — both already at their Leia-requirement relics — and she also leads the top-rated 5v5 squad.",
+        trigger: "Move the relic stream to the next Legend once Leia is R7 (with Captain Drogan R7 and R2-D2 R8, her 3v3 trio).",
+        doneWhen: [relic("GLLEIA", 7), relic("CAPTAINDROGAN", 7), relic("R2D2_LEGENDARY", 8)],
+        optional: "Raddus and Jyn Erso to G13, then R5–R7 — the extra two for the older 5-unit build (swgoh.gg's Season 83 3v3 trio is Leia + Drogan + R2-D2). Lower priority than it sounds.",
+        flag: "Raddus and Jyn at R5–R7 is an estimate for a working 5-unit squad, not a published requirement." },
       { glId: "GRANDMASTERLUKE", status: "next",
         why: "6 of 14 requirements met on the 1 Oct pull, ~24 relic tiers and no star gaps — the real cost is gear (Biggs G5, Wedge G8, Princess Leia G8, Old Ben G10, Mon Mothma G12). The weakest tier rating of the viable Legends (B in 5v5, A in 3v3).",
         trigger: "Starts when Leia's build-up is done — unless Sith Eternal Emperor overtakes it (see below)." },
@@ -3349,7 +3367,7 @@ const GL_QUEUE = {
     ],
     prep: [
       { id: "luke-gear", text: "Spare gear (no relic materials) into Biggs, Wedge and Princess Leia → G13", note: "Jedi Master Luke's real cost is gear", check: [gear("BIGGSDARKLIGHTER", 13), gear("WEDGEANTILLES", 13), gear("PRINCESSLEIA", 13)] },
-      { id: "raddus-jyn-g13", text: "Spare gear into Raddus and Jyn → G13", note: "Leia's squad — their relics come later, from the Leia stream", check: [gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)] },
+      { id: "raddus-jyn-g13", text: "Spare gear into Raddus and Jyn → G13", note: "Older 5-unit build only — Leia's 3v3 trio is Leia + Captain Drogan + R2-D2", check: [gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)] },
       { id: "groguants-7", text: "Farm Grogu & Anzellans to 7★", note: "Light Side Battles Hard 8-E with spare energy — farmable there since the 30 Sep patch", check: star("GOPHERANTS", 7) },
       { id: "thrawn-rule", rule: true, text: "Grand Admiral Thrawn only once SEE is the active target", note: "G7 → G13 → R6 is SEE's most expensive requirement — don't start it early" }
     ]
@@ -3440,7 +3458,7 @@ function glqCardHtml(acct) {
       <div class="glq-head"><b class="glq-name"><span class="glq-n">${String(i + 1).padStart(2, "0")}</span> ${escapeHtml(r.name)}</b>${chip}${r.kind === "gl" ? glqTierHtml(r.e.glId) : ""}${btn}</div>
       <div class="glq-ready">${escapeHtml(glqReadyText(r))}</div>
       <details class="glq-why"${r.eff === "building" ? " open" : ""} data-rv-def="${r.eff === "building" ? 1 : 0}"><summary>Why${r.e.trigger ? " · switch rule" : ""}</summary>
-        <p>${escapeHtml(r.e.why)}</p>${r.e.trigger ? `<p><b>Switch rule:</b> ${escapeHtml(r.e.trigger)}</p>` : ""}
+        <p>${escapeHtml(r.e.why)}</p>${r.e.trigger ? `<p><b>Switch rule:</b> ${escapeHtml(r.e.trigger)}</p>` : ""}${r.e.optional ? `<p class="nxt-opt"><b>Optional — older 5-unit build only:</b> ${escapeHtml(r.e.optional)}</p>` : ""}
         ${r.e.flag ? `<p class="glq-flag">⚠ Unverified: ${escapeHtml(r.e.flag)}</p>` : ""}${watchReqs}</details></div>`;
   };
   const cur = rows.find(r => r.eff === "building"), nxt = rows.find(r => r.eff === "next");
@@ -3479,6 +3497,226 @@ function rvGlqRestore(saved) {
     if (d && Object.prototype.hasOwnProperty.call(saved.changed, row.dataset.glq)) d.open = saved.changed[row.dataset.glq];
   });
 }
+/* ===================== Next characters (non-GL), in order (nxt) =====================
+   The GL order card above answers "which Legend next"; this answers "which ordinary characters next", per
+   account, in the order an expert agent pass ranked them on 4 Oct 2026. Same static/live split as GL_QUEUE:
+     • STATIC (hand-researched, dated, registered in SNAPSHOTS as "nxt-queue" so it ages honestly): the ORDER,
+       `why`, `cost`, tier letters, flags and the traps list.
+     • LIVE (every render, from state.pulls / BASELINE via accountView): each row's status chip (Done / In
+       progress x/y / Not started / Not owned) and the per-unit "current → target" line, through the same
+       specMet / tipProgress / specLiveLabel machinery the GL order and Coach's corner use. Two spec types are
+       new here and handled only inside this block (specMet itself is untouched): nxtZeta / nxtOmi count the
+       live pull's `z` / `o` ability-name arrays. The built-in BASELINE has no z/o detail and only a handful of
+       units, so without a pull those rows read "Needs a live pull" instead of guessing.
+   base_ids: every id below appears elsewhere in this file (GL_ROADMAP / META_SQUADS / SHIP / BESTMODS-adjacent
+   data) EXCEPT the ones marked "unverified id" — for those each spec also carries the unit's display name and
+   nxtReqMap() falls back to findUnitByName, so a wrong guess still resolves on a live pull (or reads Not owned).
+   No ticks, no new state, no storage: folds use foldMore (in-memory foldState). */
+const nxtZeta = (id, min, name) => ({ id, type: "zeta", min, name });
+const nxtOmi = (id, min, name) => ({ id, type: "omi", min, name });
+const nxtNm = (spec, name) => Object.assign({}, spec, { name });
+/* A requirement's relic number straight from GL_ROADMAP, so a row can't drift from the roadmap card. */
+function nxtGlReq(glId, id, dflt) { const r = ((GL_ROADMAP[glId] || {}).req || []).find(x => x[0] === id); return r ? r[2] : dflt; }
+const NXT_TRAPS = [
+  { t: "Ugnaught / Ezra / Hondo datacron set", why: "Set 32 (Necessary Means, the one holding Ugnaught) expired on 1 Oct 2026 and the Ezra and Hondo sets are years old — nothing to chase. Current sets are 33 (to 29 Oct), 34 (to 26 Nov) and 35 (to 24 Dec), per swgoh.gg." },
+  { t: "Cere Junda", why: "No Legend requirement or tracked squad in this app uses her — leave her where she is." },
+  { t: "Old Republic / Satele Shan", why: "A dead end on these rosters without Darth Revan / Darth Malak; don't put relic materials into the line." },
+  { t: "Tarkin clone-wars-era defence squads", why: "swgoh.gg Season 83 (4 Oct): Grand Moff Tarkin is a B-tier leader (#45 of 143) and his 3v3 defence holds only about 7% of the time, despite heavy use — skip it as a wall." }
+];
+const NXT_QUEUE = {
+  asOf: "2026-10-04",
+  basis: "expert-agent ranking of both accounts' 1 Oct 2026 roster pull, after the GL order (GL_QUEUE) and swgoh.gg's GAC tier lists",
+  ollie: {
+    doThisWeek: "Put Krrsantan's zeta in, start Darth Bane's shard farm, then buy Bo-Katan's three GAC omicrons one at a time.",
+    queue: [
+      { id: "krrsantan-zeta", name: "Krrsantan — first zeta", tier: "S",
+        why: "Krrsantan has no zeta on either account. He already runs in Jabba's Hutt Cartel teams and Jabba is R9 here, so one zeta is the cheapest real upgrade on the list.",
+        cost: "1 zeta's worth of materials — no relics.",
+        reqs: [nxtZeta("KRRSANTAN", 1, "Krrsantan")], doneWhen: "Krrsantan shows at least one zeta on a live pull." },
+      { id: "darth-bane", name: "Darth Bane — start the shard farm", tier: "A",
+        why: "swgoh.gg ranks him an S-tier GAC leader (#7 of 143 on 4 Oct) and he is a Sith Eternal Emperor-friendly pick in 3v3 — the highest-value ordinary character Ollie does not own. Shards are time-gated (330 to activate), so the farm should start now, in parallel with the omicron buys rather than after them.",
+        cost: "330 shards to activate, then gear and relics. He is a Conquest reward unit, and the swgoh.wiki lists him in the Proving Grounds rotation (20 shards a tier, relic-3+ tiers) — that wiki's schedule is out of date, so check the in-game Proving Grounds / Conquest store screens for the live offer. His GAC omicrons (Malevolent Whirlwind, Rule of Two) come later.",
+        flag: "Where and when his shards are on offer right now is not confirmed — only that Conquest and Proving Grounds are his routes.",
+        /* id DARTHBANE confirmed on swgoh.gg (4 Oct 2026) */
+        reqs: [nxtNm(star("DARTHBANE", 7), "Darth Bane")], doneWhen: "Owned at 7★." },
+      { id: "bkm-omicrons", name: "Bo-Katan Kryze (Mand'alor) — three GAC omicrons", tier: "S",
+        why: "She is already R8; her three GAC omicrons (Way of the Mandalore, Reinforcements Have Arrived, For Mandalore! — all Grand Arena only, confirmed on swgoh.gg 4 Oct) make the Mandalorian squad a real 3v3 wall in Carbonite 5. Ollie already owns one — the line below counts what your latest pull shows and what is left to buy. Buy in that order.",
+        cost: "Up to 3 omicrons (omicron materials) — the biggest omicron bill in this queue, so it competes with Darth Bane's two GAC omicrons later; GAC-only value.",
+        /* id MANDALORBOKATAN confirmed on swgoh.gg (4 Oct 2026) */
+        reqs: [nxtOmi("MANDALORBOKATAN", 3, "Bo-Katan (Mand'alor)")], doneWhen: "Three omicrons on Bo-Katan (Mand'alor) on a live pull." },
+      { id: "rey-dsv", name: "Rey (Dark Side Vision) — check",
+        why: "She has replaced First Order Officer as Supreme Leader Kylo Ren's standard partner (this app's squad data, 27 Sep). swgoh.gg's 3v3 counter data lists Supreme Leader Kylo Ren + Rey (Dark Side Vision) + Kylo Ren (Unmasked) as an S-tier squad. Check whether she is unlocked and how far off she is before spending anything.",
+        cost: "Her shards are a Conquest reward and the swgoh.wiki lists her in the Proving Grounds rotation (schedule out of date) — check the in-game offer; no cost is researched here.",
+        /* id DARKREY confirmed on swgoh.gg (4 Oct 2026); the name fallback below stays as a safety net */
+        reqs: [nxtNm(star("DARKREY", 7), "Rey (Dark Side Vision)")], doneWhen: "Owned at 7★." },
+      { id: "see-gear", name: "Sith Eternal Emperor requirements — gear steps to G13", tier: "A",
+        why: "Sith Eternal Emperor is next on Ollie's GL order and every requirement is owned; gear is the part that doesn't compete with Leia's relic materials, and relics can't start below G13. Darth Maul is G12 R0 — one gear step.",
+        cost: "Gear only, no relic materials. After G13, this app's roadmap targets: Royal Guard R3, Veers R3, Sidious R7, Jedi Knight Anakin R7, Thrawn R6, Maul R4 (swgoh.gg's Sith Eternal Emperor journey guide confirms R4 on 4 Oct — the R7 on Maul's own page is a different journey).",
+        reqs: [gear("ROYALGUARD", 13), gear("VEERS", 13), gear("DARTHSIDIOUS", 13), gear("ANAKINKNIGHT", 13), gear("GRANDADMIRALTHRAWN", 13), gear("MAUL", 13)],
+        doneWhen: "All six at G13." },
+      { id: "count-dooku", name: "Count Dooku", tier: "B",
+        why: "Another Sith Eternal Emperor requirement, after the six gear steps above.",
+        cost: `Gear to G13, then relics to R${nxtGlReq("SITHPALPATINE", "COUNTDOOKU", 6)} (this app's roadmap).`,
+        reqs: [relic("COUNTDOOKU", nxtGlReq("SITHPALPATINE", "COUNTDOOKU", 6))], doneWhen: `R${nxtGlReq("SITHPALPATINE", "COUNTDOOKU", 6)}.` },
+      { id: "leia-squad-zetas", name: "Leia squad zetas — Drogan and R2-D2", tier: "B",
+        why: "When Leia is unlocked her 3v3 trio is Leia + Captain Drogan + R2-D2, and neither unit has its zetas on either account. Do them after the Leia relic climb, not before — they are only worth it once she can take the field.",
+        cost: "Drogan: 2 zetas (Coordinated Shot, Second in Command) plus a GAC omicron on Second in Command. R2-D2: 2 zetas (Combat Analysis, Number Crunch). Sources: swgoh.gg unit pages, 4 Oct.",
+        reqs: [nxtZeta("CAPTAINDROGAN", 2, "Captain Drogan"), nxtZeta("R2D2_LEGENDARY", 2, "R2-D2")], doneWhen: "Drogan 2 zetas and R2-D2 2 zetas on a live pull." },
+      { id: "raddus-jyn", name: "Admiral Raddus + Jyn Erso — gear", tier: "B",
+        why: "Older 5-unit build only: they fill out Leia's 5-unit squad, not her 3v3 trio (Leia + Captain Drogan + R2-D2). Worth it once Leia is unlocked and you want the 5-unit build.",
+        cost: "Gear only — G13 each.",
+        reqs: [gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)], doneWhen: "Both at G13." },
+      { id: "jedi-temple", name: "Kelleran Beq / Temple Guard / Jocasta Nu",
+        why: "Last in the expert ranking. Only worth gear if an event or journey you want asks for them — what, if anything, they unlock is unverified here.",
+        cost: "Gear only; G13 is a generic 'usable' bar, not a published requirement.",
+        /* ids KELLERANBEQ and JOCASTANU confirmed on swgoh.gg (4 Oct 2026). VANGUARDTEMPLEGUARD appears elsewhere in this file. */
+        reqs: [nxtNm(gear("KELLERANBEQ", 13), "Kelleran Beq"), nxtNm(gear("VANGUARDTEMPLEGUARD", 13), "Temple Guard"), nxtNm(gear("JOCASTANU", 13), "Jocasta Nu")],
+        doneWhen: "All three at G13." }
+    ],
+    traps: NXT_TRAPS
+  },
+  tiny: {
+    doThisWeek: "Put Captain Drogan's two zetas in (then R2-D2's second zeta); he is the missing piece of Leia's 3v3 squad.",
+    queue: [
+      { id: "drogan-zetas", name: "Captain Drogan — two zetas + GAC omicron", tier: "S",
+        why: "Leia's 3v3 squad is Leia + Captain Drogan + R2-D2 (swgoh.gg Season 83, S-tier #6). Drogan has no zeta on either account, so he is the missing piece; he is already at the R7 Leia needs.",
+        cost: "2 zetas (Coordinated Shot, Second in Command) plus 1 GAC omicron on Second in Command — confirmed on swgoh.gg 4 Oct. Buy the zetas first; the omicron is the polish.",
+        reqs: [nxtZeta("CAPTAINDROGAN", 2, "Captain Drogan"), nxtOmi("CAPTAINDROGAN", 1, "Captain Drogan")],
+        doneWhen: "Two zetas and the omicron on a live pull." },
+      { id: "r2d2-zeta", name: "R2-D2 — second zeta (Number Crunch)", tier: "A",
+        why: "R2-D2 has two zetas (Combat Analysis and Number Crunch); Tiny's has only Combat Analysis. Number Crunch is the survivability one in the Leia trio.",
+        cost: "1 zeta's worth of materials; R2-D2 is already R8 for Leia.",
+        reqs: [nxtZeta("R2D2_LEGENDARY", 2, "R2-D2")], doneWhen: "R2-D2 shows two zetas on a live pull." },
+      { id: "rebel-gear", name: "Mon Mothma / Biggs / Wedge / Princess Leia — gear", tier: "A",
+        why: "Rebel / New Republic synergy pieces — and all four are Jedi Master Luke requirements, Tiny's next Legend, so the gear pays twice.",
+        cost: "Gear only — G13 each (Biggs is the furthest back).",
+        reqs: [gear("MONMOTHMA", 13), gear("BIGGSDARKLIGHTER", 13), gear("WEDGEANTILLES", 13), gear("PRINCESSLEIA", 13)], doneWhen: "All four at G13." },
+      { id: "raddus-jyn", name: "Admiral Raddus + Jyn Erso — gear", tier: "B",
+        why: "Older 5-unit build only — they are not part of Leia's 3v3 trio, so this is lower priority than it sounds.",
+        cost: "Gear only — G13 each (the GL order's prep list carries the same item).",
+        reqs: [gear("ADMIRALRADDUS", 13), gear("JYNERSO", 13)], doneWhen: "Both at G13." },
+      { id: "cassian", name: "Cassian Andor — gear", tier: "B",
+        why: "A Rebel piece that turns up in the budget Rogue One squad and the Kashyyyk Rebel Trooper zone in this app's data.",
+        cost: "Gear only — G13.",
+        reqs: [gear("CASSIANANDOR", 13)], doneWhen: "G13." },
+      { id: "grogu-ants", name: "Grogu & Anzellans — stars",
+        why: "Owned at 3★ and needs shards to go up. An announced Mandalorian & Grogu requirement, so it ties to the Rotta / Mando Legend watch on the GL order card.",
+        cost: "Shards — Light Side Battles Hard 8-E with spare energy (farmable there since the 30 Sep patch).",
+        reqs: [star("GOPHERANTS", 7)], doneWhen: "7★." },
+      { id: "rey-dsv", name: "Rey (Dark Side Vision) — check",
+        why: "Tiny's Supreme Leader Kylo Ren is R8, and swgoh.gg's 3v3 counter data lists SLKR + Rey (Dark Side Vision) + Kylo Ren (Unmasked) as an S-tier squad. Check whether she is unlocked before spending anything.",
+        cost: "Her shards are a Conquest reward and the swgoh.wiki lists her in the Proving Grounds rotation (schedule out of date) — check the in-game offer; no cost is researched here.",
+        reqs: [nxtNm(star("DARKREY", 7), "Rey (Dark Side Vision)")], doneWhen: "Owned at 7★." },
+      { id: "jml-core", name: "Chewbacca / C-3PO / Hermit Yoda",
+        why: "Three more Jedi Master Luke requirements — after the gear-only items above, because these need relics.",
+        cost: `Relics to this app's roadmap targets: Chewbacca R${nxtGlReq("GRANDMASTERLUKE", "CHEWBACCALEGENDARY", 6)}, C-3PO R${nxtGlReq("GRANDMASTERLUKE", "C3POLEGENDARY", 5)}, Hermit Yoda R${nxtGlReq("GRANDMASTERLUKE", "HERMITYODA", 5)}.`,
+        reqs: [relic("CHEWBACCALEGENDARY", nxtGlReq("GRANDMASTERLUKE", "CHEWBACCALEGENDARY", 6)), relic("C3POLEGENDARY", nxtGlReq("GRANDMASTERLUKE", "C3POLEGENDARY", 5)), relic("HERMITYODA", nxtGlReq("GRANDMASTERLUKE", "HERMITYODA", 5))],
+        doneWhen: "All three at their Jedi Master Luke relic." },
+      { id: "rex-fives", name: "Rex / Fives — gear",
+        why: "501st clone pieces, last in the ranking — only once everything above is moving.",
+        cost: "Gear only; G13 is a generic 'usable' bar, not a published requirement.",
+        /* CT7567 appears elsewhere in this file; unverified id: CT5555 — name fallback below */
+        reqs: [nxtNm(gear("CT7567", 13), "CT-7567 \"Rex\""), nxtNm(gear("CT5555", 13), "CT-5555 \"Fives\"")], doneWhen: "Both at G13." }
+    ],
+    traps: NXT_TRAPS
+  }
+};
+const NXT_SHOW = 6;   /* undone rows shown before the "show N more" fold */
+/* The roster map with unverified ids aliased by display name (only for ids the pull doesn't carry). */
+function nxtReqMap(reqs, queue) {
+  const m = Object.assign({}, reqs);
+  queue.forEach(e => (e.reqs || []).forEach(sp => {
+    if (!m[sp.id] && sp.name) { const u = findUnitByName(reqs, sp.name); if (u) m[sp.id] = u; }
+  }));
+  return m;
+}
+function nxtIsAbil(sp) { return sp.type === "zeta" || sp.type === "omi"; }
+function nxtAbilArr(u, sp) { return u ? (sp.type === "zeta" ? u.z : u.o) : undefined; }
+/* specMet for the two ability-count types; everything else is the shared specMet. */
+function nxtSpecMet(m, sp) {
+  if (!nxtIsAbil(sp)) return specMet(m, sp);
+  const a = nxtAbilArr(m[sp.id], sp);
+  return Array.isArray(a) && a.length >= hardNum(sp.min);
+}
+/* false when the roster can't answer: unit absent from a baseline (not a pull), or no z/o detail. */
+function nxtSpecKnown(m, sp, live) {
+  const u = m[sp.id];
+  if (!u) return !!live;
+  return !nxtIsAbil(sp) || Array.isArray(nxtAbilArr(u, sp));
+}
+function nxtSpecLabel(m, sp, live) {
+  const u = m[sp.id];
+  const name = (u && u.name) || sp.name || specLiveLabel({}, sp).split(":")[0];
+  if (!u) return `${name}: ${live ? "not owned" : "not in the saved baseline — needs a live pull"}`;
+  if (!nxtIsAbil(sp)) return specLiveLabel(m, sp);
+  const a = nxtAbilArr(u, sp), word = sp.type === "zeta" ? "zeta" : "omicron";
+  if (!Array.isArray(a)) return `${name}: ${live ? `re-pull to see ${word} detail` : `${word} count needs a live pull`}`;
+  const need = hardNum(sp.min), left = Math.max(0, need - a.length);
+  return `${name}: ${a.length} of ${need} ${word}${need === 1 ? "" : "s"}${left ? ` — ${left} to buy` : " ✓"}`;
+}
+/* Rows with live status — the GL order's tipProgress shape ({doneCount,total,done}) plus a chip. */
+function nxtRows(acct) {
+  const cfg = NXT_QUEUE[acct];
+  if (!cfg) return [];
+  const base = accountView(acct);
+  const live = base.live;
+  const m = nxtReqMap((base.src && base.src.reqs) || {}, cfg.queue);
+  return cfg.queue.map((e, i) => {
+    const specs = e.reqs || [];
+    const doneCount = specs.filter(sp => nxtSpecMet(m, sp)).length, total = specs.length;
+    const owned = specs.filter(sp => m[sp.id]).length;
+    /* a zeta/omicron spec with some but not all abilities bought is progress, not "Not started" */
+    let partial = null;
+    specs.forEach(sp => { if (!partial && nxtIsAbil(sp)) { const a = nxtAbilArr(m[sp.id], sp); if (Array.isArray(a) && a.length > 0 && a.length < hardNum(sp.min)) partial = { n: a.length, min: hardNum(sp.min) }; } });
+    const unknown = specs.some(sp => !nxtSpecMet(m, sp) && !nxtSpecKnown(m, sp, live));
+    let st;
+    if (total && doneCount === total) st = ["done", "done", "Done"];
+    else if (unknown) st = ["unknown", "watch", live ? "Re-pull for detail" : "Needs a live pull"];
+    else if (!owned) st = ["notowned", "", "Not owned"];
+    else if (doneCount > 0) st = ["progress", "improve", `In progress ${doneCount}/${total}`];
+    else if (partial) st = ["progress", "improve", total === 1 ? `In progress ${partial.n}/${partial.min}` : `In progress ${doneCount}/${total}`];
+    else st = ["notstarted", "", "Not started"];
+    return { e, n: i + 1, eff: st[0], chipCls: st[1], chip: st[2], doneCount, total,
+      lines: specs.map(sp => ({ met: nxtSpecMet(m, sp), t: nxtSpecLabel(m, sp, live) })) };
+  });
+}
+function nxtRowHtml(acct, r, first) {
+  const e = r.e;
+  const chip = `<span class="chip ${r.chipCls}">${r.chipCls ? chipGlyph(r.chipCls) + " " : ""}${escapeHtml(r.chip)}</span>`;
+  const tier = e.tier ? `<span class="nxt-tier" title="effort / payoff, expert pass">${escapeHtml(e.tier)}</span>` : "";
+  const why = `<p>${escapeHtml(e.why)}</p>${e.cost ? `<p><b>Cost:</b> ${escapeHtml(e.cost)}</p>` : ""}${e.doneWhen ? `<p><b>Done when:</b> ${escapeHtml(e.doneWhen)}</p>` : ""}${e.flag ? `<p class="glq-flag">⚠ Unverified: ${escapeHtml(e.flag)}</p>` : ""}`;
+  return `<div class="glq-row nxt-row nxt-${escapeHtml(r.eff)}${first ? " glq-current" : ""}" data-nxt="${escapeHtml(e.id)}">
+    <div class="glq-head"><b class="glq-name"><span class="glq-n">${String(r.n).padStart(2, "0")}</span> ${escapeHtml(e.name)}</b>${tier}${chip}</div>
+    <ul class="nxt-lines">${r.lines.map(l => `<li class="${l.met ? "glq-met" : ""}">${l.met ? "✓ " : ""}${escapeHtml(l.t)}</li>`).join("")}</ul>
+    ${foldMore("Why", why, { key: `nxt-why-${acct}-${e.id}${first ? "-first" : ""}`, open: first, cls: "nxt-why" })}</div>`;
+}
+function nxtCardHtml(acct) {
+  const cfg = NXT_QUEUE[acct];
+  if (!cfg) return "";
+  const a = ACCOUNTS.find(x => x.key === acct) || { label: acct };
+  const live = accountView(acct).live;
+  const rows = nxtRows(acct);
+  const undone = rows.filter(r => r.eff !== "done");
+  const shown = undone.slice(0, NXT_SHOW);
+  const rest = rows.filter(r => !shown.includes(r));
+  const firstId = shown.length ? shown[0].e.id : null;
+  const nDone = rows.length - undone.length;
+  const traps = cfg.traps || [];
+  return `<div class="cardtitle">Next characters (non-GL), in order — ${escapeHtml(a.label)} <span class="sub">— ${nDone}/${rows.length} done</span></div>
+    <div class="intelnote nxt-week"><b>Do this week:</b> ${escapeHtml(cfg.doThisWeek)}</div>
+    <div class="mnote">Order and reasons are an expert snapshot; each status is live from your ${live ? "latest pull" : "saved baseline roster (zeta/omicron and most units need a live pull)"}.</div>
+    <div class="glq-list nxt-list" data-nxt-acct="${escapeHtml(acct)}">${shown.map(r => nxtRowHtml(acct, r, r.e.id === firstId)).join("") || `<div class="mnote">Everything in this queue is done ✓</div>`}</div>
+    ${rest.length ? foldMore(`Show ${rest.length} more${nDone ? ` (${nDone} done)` : ""}`, `<div class="glq-list nxt-list">${rest.map(r => nxtRowHtml(acct, r, false)).join("")}</div>`, { key: `nxt-more-${acct}`, cls: "nxt-more" }) : ""}
+    ${traps.length ? foldMore(`Skip / don't overspend (${traps.length})`, `<ul class="nxt-traps">${traps.map(x => `<li><b>${escapeHtml(x.t)}</b> — ${escapeHtml(x.why)}</li>`).join("")}</ul>`, { key: `nxt-traps-${acct}`, cls: "nxt-more" }) : ""}
+    <div class="srcline">Next characters ${snapNoteHtml("nxt-queue")} — ${escapeHtml(NXT_QUEUE.basis)}.</div>`;
+}
+/* The GL Roadmap card. Guarded like shpCards: a data problem here never takes the GL order card down. */
+function nxtCard(acct) {
+  let html;
+  try { html = nxtCardHtml(acct); }
+  catch (e) { console.error("[nxt] next-characters card failed:", e); html = `<div class="cardtitle">Next characters (non-GL)</div><div class="mnote">This card hit an error — the rest of the GL Roadmap tab is unaffected.</div>`; }
+  return { id: "nxt", w: 12, html };
+}
 /* ===================== Shipment buying guide (shp) =====================
    The owner asked for "a purchase priority from the Shipment store, all tabs, based on characters not
    collected and pieces". The app cannot see the in-game stores — offers rotate every few hours and may
@@ -3510,7 +3748,7 @@ const SHIP_DATA = {
     { id: "episode", name: "Episode Shipment", cur: "not researched", conf: "UNCONFIRMED", refresh: "not fetched in the 3 Oct pass", note: "Not researched — check it in-game against the Buy-first list." },
     { id: "guildEvents", name: "Guild Events Store", cur: "Mk I / II / III Guild Event Tokens (Raids, TB, TW)", conf: "CONFIRMED", refresh: "every 6 h, rotating", gear: true },
     { id: "guildActivity", name: "Guild Activity Store", cur: "Guild Tokens + Mk I / II / III Raid Tokens", conf: "CONFIRMED", refresh: "every 6 h, 23 slots with appearance-rate tiers (the wiki's 'Guild Store')", gear: true },
-    { id: "legend", name: "Legend Tokens Store", cur: "Legend Tokens (Ultimate journey, after Conquest)", conf: "CONFIRMED", refresh: "weekly, no paid refresh; shard offers of 2 / 8 / 20 (one source: up to 30 shards a week)" },
+    { id: "legend", name: "Legend Tokens Store", cur: "Legend Tokens (Ultimate journey, after Conquest)", conf: "CONFIRMED", refresh: "weekly, no paid refresh; shard offers of 2 / 8 / 20 — 30 shards a week only if each offer can be bought once (inferred; the wiki states no cap)" },
     { id: "conquest", name: "Conquest Store", cur: "Conquest Credits (+ crystals)", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00, escalating paid (swgoh.gg shows 6 h)", note: "Optional sink: Satele Shan, 5 shards for 475 credits — a 330-shard luxury, see Not now." },
     { id: "cantina", name: "Cantina Battles Store", cur: "Cantina Tokens", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00; shards 10 for 400", gear: true },
     { id: "squadArena", name: "Squad Arena Store", cur: "Squad Arena Tokens", conf: "CONFIRMED", refresh: "free refresh 06 / 12 / 18 / 00; static inventory, 18 heroes at 10 shards for 400", gear: true },
@@ -3595,10 +3833,10 @@ const SHIP_DATA = {
 };
 const SHP_WHY = {
   ga: "Announced requirement (R7) for the Mandalorian & Grogu Galactic Legend, and a Rotta-journey unit. Shards are the slow part, and the cheapest route is free: spare energy on Light Side Hard 8-E (farmable there since the 30 Sep patch). Featured and Weekly bundles at 80 crystals a shard are the paid top-up.",
-  gaWhen: "Buy whenever a Featured or Weekly bundle shows — but it's prep for an unreleased Legend (EA targets November 2026), so don't spend crystals you need elsewhere.",
+  gaWhen: "Buy whenever a Featured or Weekly bundle shows — but it's prep for an unreleased Legend (no release date announced yet), so don't spend crystals you need elsewhere.",
   scion: "Announced requirement (R9) for the Mandalorian & Grogu Galactic Legend, and not on this account. 330 shards is the longest farm in this guide. Legend Tokens (150 a shard) are the cheapest currency for him; Guild Events Mk III (350 a shard) second.",
   scionWhen: "Each week, Legend Tokens go to his shards first (before Ben Solo). Mk III tokens only once nothing your guild plan needs is on offer — prep, not a crystal spend.",
-  mgFlag: "Mandalorian & Grogu is unreleased and only 4 requirements are public (secondary sources). BOBAFETTSCION as Scion's swgoh.gg id is unverified — neither account owns him.",
+  mgFlag: "Mandalorian & Grogu is unreleased with no exact date, and only 4 requirements are public (EA Update 9-16; more may follow). The Scion id (BOBAFETTSCION) is confirmed on swgoh.gg.",
   rottaWhen: "Only if you'll run Rotta Tier I at the ~27 Oct rerun — 4★ before ~26 Oct. Your GL order calls Rotta prep-only, so skipping it is fine.",
   rottaFlag: "Rotta tier gates conflict between sources: swgoh.gg's event page says Tier I needs R5-D4 4★, Tier II Carson Teva 5★, Tier III Snowtrooper Commander 6★, Tier IV all 7★, which disagrees with the journey guide. Each tier also has an Era Level gate.",
   tinyRotta: "Rotta is a skip for this account this run, so no shards for its journey units now.",
@@ -3656,7 +3894,7 @@ const SHIP_PLAN = {
 const SHIP_GEAR = {
   ollie: [["LOBOT", "Lobot", 13, "Leia requirement"], ["MAUL", "Darth Maul", 13, "SEE requirement; on 3 Oct he was 3 pieces short (1 to find, 2 to craft)"]],
   tiny: [["BIGGSDARKLIGHTER", "Biggs Darklighter", 13, "Jedi Master Luke's real cost is gear"], ["WEDGEANTILLES", "Wedge Antilles", 13, "Jedi Master Luke"],
-         ["PRINCESSLEIA", "Princess Leia", 13, "Jedi Master Luke"], ["ADMIRALRADDUS", "Admiral Raddus", 13, "Leia's squad"], ["JYNERSO", "Jyn Erso", 13, "Leia's squad"]]
+         ["PRINCESSLEIA", "Princess Leia", 13, "Jedi Master Luke"], ["ADMIRALRADDUS", "Admiral Raddus", 13, "Leia's older 5-unit squad (not her 3v3 trio)"], ["JYNERSO", "Jyn Erso", 13, "Leia's older 5-unit squad (not her 3v3 trio)"]]
 };
 const SHP_TIER = { P1: ["improve", "Buy first"], P2: ["close", "If running Rotta"], P3: ["", "Later"], SKIP: ["", "Skip"] };
 function shpKey(acct, id) { return `${acct}-p:shp:${id}`; }
@@ -4030,7 +4268,7 @@ function generatedPlanCards(plan, live) {
 const TIPS = {
   ollie: [
     { sev: "fixnow", id: "re-enter-gac-three-built", t: "Re-enter GAC — three built GLs sitting idle in Carbonite 5", note: "Rey (R8), Supreme Leader Kylo Ren (R9) and Jabba the Hutt (R9) are all fully relic'd and parked on the bench. Setting a defense every round is free crystals with zero new investment — it funds the whole Leia relic push." },
-    { sev: "improve", id: "2-set-33-datacrons-built", t: "2 Set 33 datacrons built — one's near-max, one has room", note: "Your Tier 6 Set 33 (Crit Chance/Crit Damage/Defense + First Order faction bonus) is close to the ceiling for a single datacron — nice. The second is only Tier 4; level it further toward T6 to pick up its full alignment/faction payoff before starting a new set." },
+    { sev: "improve", id: "2-set-33-datacrons-built", t: "2 Set 33 datacrons built — one's near-max, one has room", note: "Your Tier 6 Set 33 (Crit Chance/Crit Damage/Defense + First Order faction bonus) is close to the ceiling for a single datacron — nice. The second is only Tier 4; level it further toward T6 to pick up its full alignment/faction payoff before starting a new set. Note: Set 33 stops being available on 29 Oct (swgoh.gg) — new datacron spend belongs in Set 34 (to 26 Nov) or Set 35 (to 24 Dec)." },
     { sev: "fixnow", id: "c-3po-chewie-stuck-at", t: "C-3PO & Chewie stuck at R0 — Leia needs R7", note: "This is the actual long pole now, not R2-D2: gear is already G13, so it's a straight 7-tier relic climb — the single biggest ask left on the account. Feed it signal data first.", check: relic("C3POCHEWBACCA", 7) },
     { sev: "fixnow", id: "lobot-is-g12-with-0", t: "Lobot is G12 with 0 relic (Leia needs R3)", note: "One gear piece short of G13 before the relic climb even starts — the second real long pole now that the star wall is down. Push him to G13, then start relics.", check: [gear("LOBOT", 13), relic("LOBOT", 3)] },
     { sev: "keep", id: "leia-s-star-wall-is", t: "Leia's star wall is completely down — all 15 requirements are 7★", note: "Huge shift since August: even Captain Drogan (was 6★) got there, and he's now fully done at R7. From here Leia is a pure relic race — no more shard farms competing with the relic push for currency.", check: GL_ROADMAP.GLLEIA.req.map(r => star(r[0], 7)) },
@@ -4043,14 +4281,14 @@ const TIPS = {
   ],
   tiny: [
     { sev: "fixnow", id: "gl-leia-organa-is-unlocked", t: "GL Leia Organa is unlocked — the farm is done", note: "She landed at 7★, R0, G9. Every requirement on the checklist you'd been grinding since August is now moot — next up is picking the new target below." },
-    { sev: "fixnow", id: "re-enter-gac-rey-r8", t: "Re-enter GAC — Rey R8, SLKR R8 and now GL Leia sitting idle in Carbonite 4", note: "All three Legends are complete or nearly so and doing nothing in Carbonite. Add the omicron'd Bo-Katan Mand'alor (R8, both omicrons) and this roster is Aurodium-grade wall material — set a defense every round and climb." },
-    { sev: "improve", id: "2-set-33-datacrons-built", t: "2 Set 33 datacrons built — the Tier 6 is great, the Tier 3 needs work", note: "Your Tier 6 Set 33 is close to the ceiling for a single datacron — keep it. The second is still only Tier 3; level it up toward T6 to unlock its full alignment payoff." },
+    { sev: "fixnow", id: "re-enter-gac-rey-r8", t: "Re-enter GAC — Rey R8, SLKR R8 and now GL Leia sitting idle in Carbonite 4", note: "All three Legends are complete or nearly so and doing nothing in Carbonite. Add the omicron'd Bo-Katan Mand'alor (R8, 2 of her 3 GAC omicrons) and this roster is Aurodium-grade wall material — set a defense every round and climb." },
+    { sev: "improve", id: "2-set-33-datacrons-built", t: "2 Set 33 datacrons built — the Tier 6 is great, the Tier 3 needs work", note: "Your Tier 6 Set 33 is close to the ceiling for a single datacron — keep it. The second is still only Tier 3; level it up toward T6 to unlock its full alignment payoff. Note: Set 33 stops being available on 29 Oct (swgoh.gg) — new datacron spend belongs in Set 34 (to 26 Nov) or Set 35 (to 24 Dec)." },
     { sev: "improve", id: "jedi-master-luke-skywalker-is", t: "Jedi Master Luke Skywalker is the clear next target — 6 of 14 requirements already met", note: "Chewbacca is one relic tier from done (R5→R6). C-3PO (R3→R5) and Hermit Yoda (R3→R5) are two tiers out. Note the roadmap itself flags this as an older (2020) GL with thinner documentation — verify current relic numbers in-game before committing hard.", check: [relic("CHEWBACCALEGENDARY", 6), relic("C3POLEGENDARY", 5), relic("HERMITYODA", 5)] },
     { sev: "watch", id: "five-jedi-master-luke-units", t: "Five Jedi Master Luke units need gear before relics even start", note: "Mon Mothma (G12), Obi-Wan Kenobi/Old Ben (G10), Princess Leia (G8), Wedge Antilles (G8) and Biggs Darklighter (G5) are all still R0 — Biggs is the furthest back and the one to start feeding gear first." },
     { sev: "fixnow", id: "executor-is-still-only-4", t: "Executor is still only 4★ (63.5K power) — weaker than your active Negotiator", note: "Crew has been done for a while: Boba Fett R8, Piett R8, Razor Crest fully starred (7★). Hull stars are the only reason Negotiator (7★, 66K power) still edges it out — get Executor to 7★ and it becomes the stronger ship immediately." },
     { sev: "watch", id: "freeze-luxury-relics-until-jedi", t: "Freeze luxury relics until Jedi Master Luke's near-done units land", note: "Chewbacca, C-3PO and Hermit Yoda are all two tiers or fewer away — finish those before spending relic mats on anything not on this chain." },
     { sev: "watch", id: "jedi-knight-revan-is-a", t: "Jedi Knight Revan is a dead end without Darth Revan or Malak", note: "Still G10 with no further Old Republic support on this account — zero further investment until after the next Legend push, if ever." },
-    { sev: "keep", id: "mandalorian-squad-bo-katan-mand", t: "Mandalorian squad (Bo-Katan Mand'alor R8, both omicrons)", note: "Genuinely meta for GAC and TW — keep it modded and together." }
+    { sev: "keep", id: "mandalorian-squad-bo-katan-mand", t: "Mandalorian squad (Bo-Katan Mand'alor R8, 2 of 3 omicrons)", note: "Genuinely meta for GAC and TW — keep it modded and together." }
   ]
 };
 /* Daily routine — same habits both accounts; checkboxes auto-reset each day */
@@ -4810,6 +5048,14 @@ function applyBootMaintenance(target) {
      saved order has never heard of it. Dragged elsewhere or hidden afterwards, it stays put. */
   if (Array.isArray(ovOrder) && !ovOrder.includes("today")) {
     ovOrder.unshift("today");
+    changed = true;
+  }
+  /* The "Next characters" card is new on the GL Roadmap tab: a saved order that has never heard of it would
+     put it below both requirement tables. Slot it once, right after the GL order card; dragged or hidden
+     afterwards, it stays put. */
+  const leOrder = target.layout && target.layout.order && target.layout.order.leia;
+  if (Array.isArray(leOrder) && !leOrder.includes("nxt") && leOrder.includes("glq")) {
+    leOrder.splice(leOrder.indexOf("glq") + 1, 0, "nxt");
     changed = true;
   }
   const today = new Date().toDateString();
@@ -6555,6 +6801,9 @@ function optSeeBest(name) {
        occurrence, not the 70-day window end (Conquest 24 is listed as the full Jul 06 → Sep 14). Whether
        swgoh.gg will extend that end date, or the later occurrences really run, is not yet confirmed, so
        knownThrough is deliberately left at the derived 2026-12-07 rather than guessed in either direction.
+       RE-CHECKED 4 Oct 2026: swgoh.gg still lists Conquest 25 as 28 Sep – 12 Oct, which matches the in-game countdown
+       logic above (12 Oct = end of the first live occurrence), so there is no conflict; the two later occurrences
+       still follow the 14-on / 14-off cadence and are not directly confirmed.
      • redCrate (664 keycards) and skippable (34) matched the 7 Aug snapshot's values exactly and were
        re-confirmed live rather than assumed unchanged.
      • One raw-data oddity kept as-is rather than guessed away: Sector 2's "Mini Boss — Palpatine" second
@@ -10135,7 +10384,12 @@ const SNAPSHOTS = [
      the same invalidator as gl-queue — Mandalorian & Grogu lands ~November and reshuffles the P1 list. */
   { key: "ship-guide", label: "Shipment buying guide (store sources, prices & ranking)", tab: "farm",
     asOf: snapISO(SHIP_DATA.asOf), expires: "2026-11-14", halfLife: 14,
-    hint: "ask Claude to re-check the shipment stores and shard sources (swgoh.wiki / swgoh.gg) against both rosters" }
+    hint: "ask Claude to re-check the shipment stores and shard sources (swgoh.wiki / swgoh.gg) against both rosters" },
+  /* nxt: same reasoning and numbers as gl-queue — a ranking about the meta AND these two rosters (half-life 21),
+     with the same hard end: Mandalorian & Grogu (~November) reshuffles what is worth building. */
+  { key: "nxt-queue", label: "Next characters order (non-GL)", tab: "leia",
+    asOf: snapISO(NXT_QUEUE.asOf), expires: "2026-11-14", halfLife: 21,
+    hint: "ask Claude to re-rank the next characters for both rosters" }
 ];
 const SNAP_BY_KEY = Object.fromEntries(SNAPSHOTS.map(s => [s.key, s]));
 /* Reuses the existing chip vocabulary rather than inventing a third colour language: green/done for
@@ -11194,10 +11448,11 @@ function render() {
     const paceCard = { id: "pace", html: paceCardHtml(current, v) };
     const moved = historyView(current, v.glId).moved;
     const glqCard = { id: "glq", w: 12, html: glqCardHtml(current) };
+    const nxtC = nxtCard(current);
     const rvPanels = rvGlqPanels();
     document.getElementById("glTables").innerHTML = v.owned
-      ? wrapCards("leia", [glqCard, noteCard, jointCard])
-      : wrapCards("leia", [glqCard, noteCard, paceCard, jointCard,
+      ? wrapCards("leia", [glqCard, nxtC, noteCard, jointCard])
+      : wrapCards("leia", [glqCard, nxtC, noteCard, paceCard, jointCard,
           { id: "reqs-1", html: reqRowsHtml(v.reqRows.slice(0, half), `Requirements 1–${half} of ${v.reqRows.length}`, moved) },
           { id: "reqs-2", html: reqRowsHtml(v.reqRows.slice(half), `Requirements ${half + 1}–${v.reqRows.length} of ${v.reqRows.length}`, moved) }
         ]);

@@ -1380,6 +1380,30 @@
   .chrome-sticky .pullstatus.gcf-othertab { white-space: normal; overflow: visible; }
   .pullstatus.gcf-othertab { font-weight: 650; }
   @media (pointer: coarse) { .gcf-chip { min-height: 44px; } .pbm-gac-btn, .pbm-help-btn { min-height: 44px; padding: 8px 12px; } }
+  /* ===== gof: GAC Optimise card — 'Offence plan' section (7 Oct 2026). Reuses the gco-* slot/why/fine classes. ===== */
+  .gof-sec { margin-top: 14px; padding-top: 10px; border-top: 2px solid var(--border-strong); }
+  .gof-title { font-size: 14px; font-weight: 700; color: var(--ink-1); margin: 0 0 2px; overflow-wrap: anywhere; }
+  .gof-title .sub { font-weight: 500; color: var(--ink-3); font-size: 12px; }
+  .gof-rule { font-size: 12px; color: var(--ink-2); margin: 4px 0 2px; overflow-wrap: anywhere; }
+  .gof-num { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px;
+             font: 700 12px 'Orbitron', system-ui, sans-serif; color: #06131a; background: var(--accent); }
+  .gof-slot .gco-zone { flex-basis: auto; }
+  .gof-into { font-size: 12px; color: var(--ink-2); margin-top: 3px; overflow-wrap: anywhere; }
+  .gof-into b { color: var(--good); }
+  .gof-into.none { color: var(--ink-3); font-style: italic; }
+  .gof-fleet { padding: 8px 0 2px; border-top: 1px dashed var(--grid); font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere; }
+  .gof-fleet b { color: var(--ink-1); }
+  .gof-look { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: 6px; }
+  .gof-look-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px 10px; padding: 6px 0; border-top: 1px solid var(--grid); font-size: 12px; }
+  .gof-look-def { color: var(--ink-1); font-weight: 650; overflow-wrap: anywhere; }
+  .gof-look-def::before { content: "If you see "; color: var(--ink-3); font-weight: 500; }
+  .gof-look-opt { color: var(--ink-2); overflow-wrap: anywhere; }
+  .gof-look-opt::before { content: "→ use "; color: var(--accent); font-weight: 700; }
+  .gof-look-opt .st { color: var(--ink-3); }
+  .gof-look-opt.off .st { color: var(--good); }
+  .gof-look-opt.def .st { color: var(--warning); }
+  @media (min-width: 700px) { .gof-look-row { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } .gof-look-opt + .gof-look-opt { grid-column: 2; } }
+  .gof-empty { font-size: 12.5px; color: var(--ink-3); font-style: italic; padding: 8px 0; }
   @media (max-width: 600px) {
     html { scroll-padding-top: 112px; }
     /* Row 1: title · Sync · (save-failed) · ⓘ.  Row 2: account switch · Pull.  Rows 3-6 are the tagline,
@@ -2892,6 +2916,52 @@ const META_SQUADS = [
   { name: "Fennec Shand Mercs (GL-killer)", mode: "GAC counter-offense vs GL defenses", members: [["FENNECSHAND","Fennec Shand"], ["BOSSK","Bossk"], ["GREEFKARGA","Greef Karga"], ["THEMANDALORIAN","The Mandalorian"], ["THEMANDALORIANBESKARARMOR","The Mandalorian (Beskar Armor)"]] },
   { name: "Bossk Bounty Hunters", mode: "Squad Arena / TW / GW, low relic req", members: [["BOSSK","Bossk"], ["BOBAFETT","Boba Fett"], ["DENGAR","Dengar"], ["IG88","IG-88"], ["ZAMWESELL","Zam Wesell"]] },
   { name: "Nightsisters", mode: "Squad Arena / TW, cheap and durable", members: [["MOTHERTALZIN","Mother Talzin"], ["ASAJVENTRESS","Asajj Ventress"], ["DAKA","Old Daka"], ["MERRIN","Merrin"], ["NIGHTSISTERZOMBIE","Nightsister Zombie"]] },
+  /* gos: GAC OFFENCE lineups added 7 Oct 2026 so 'Optimise defence + offence' has a real bench to choose from. Every lineup
+     below is copied as published on swgoh.gg's GAC squads / leader pages in the ATTACK perspective (leader first, then
+     members as listed): 5v5 = Season 82 (the last completed 5v5 season — Season 84 is 5v5 but not on those pages yet),
+     3v3 = Season 83. They are offence-only by tag ("do not use on defense"): attack data says nothing about holding, so
+     the defence planner, Recommended defense and Squad Arena never take them. gosTrio = the 3v3 trio (the most-seen
+     published 3v3 attack trio that is a subset of the 5-unit lineup); gosOnly = offered in that format only (a 3v3
+     trio with no matching published 5v5 lineup). Base_ids and names checked against both pulled rosters on 7 Oct;
+     "Mara Jade (The Emperor's Hand)" drops the in-game comma because planner notes are comma-separated (resolves by base_id).
+     Ownership was the filter: researched squads that neither account can field are listed in the gos block note. */
+  { name: "Bo-Katan (Mand'alor) Mandalorians (offence)", mode: "GAC offense (5v5 + 3v3) — swgoh.gg attack lineup; do not use on defense (offence-only entry — not assessed for defence)", tl5v5: "Bo-Katan (Mand'alor)", tl3v3: "Bo-Katan (Mand'alor)", confidence: "HIGH", asOf: "7 Oct 2026",
+    members: [["MANDALORBOKATAN","Bo-Katan (Mand'alor)"], ["BOKATAN","Bo-Katan Kryze"], ["IG12","IG-12 & Grogu"], ["PAZVIZSLA","Paz Vizsla"], ["THEMANDALORIANBESKARARMOR","The Mandalorian (Beskar Armor)"]],
+    gosTrio: ["MANDALORBOKATAN","IG12","THEMANDALORIANBESKARARMOR"],
+    notes: "Read 7 Oct 2026. 5v5 (S82, attack): this exact 5 is the most-used Bo-Katan (Mand'alor) attack — 49.5K seen, 79% win. Alternates on the same page: The Armorer in place of Bo-Katan Kryze (11.1K, 75%). 3v3 (S83, attack): Bo-Katan (Mand'alor) + IG-12 & Grogu + The Mandalorian (Beskar Armor), 66.2K seen, 85%; Paz Vizsla in place of Beskar Mando is the other big trio (32K, 91%).",
+    sources: ["swgoh.gg GAC squads, attack, S82 5v5 — https://swgoh.gg/gac/squads/?perspective=attack&season_id=CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_82 (read 7 Oct 2026)", "swgoh.gg leader page — https://swgoh.gg/gac/leaders/MANDALORBOKATAN/?perspective=attack&season_id=CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_82 (64.2K battles, read 7 Oct 2026)", "swgoh.gg GAC squads, attack, S83 3v3 — https://swgoh.gg/gac/squads/?perspective=attack (read 7 Oct 2026)"] },
+  { name: "Commander Luke Skywalker Rebels (offence)", mode: "GAC offense (5v5 + 3v3) — swgoh.gg attack lineup; do not use on defense (offence-only entry — not assessed for defence)", tl5v5: "Commander Luke Skywalker", confidence: "HIGH", asOf: "7 Oct 2026",
+    members: [["COMMANDERLUKESKYWALKER","Commander Luke Skywalker"], ["C3POCHEWBACCA","Threepio & Chewie"], ["C3POLEGENDARY","C-3PO"], ["CHEWBACCALEGENDARY","Chewbacca"], ["HANSOLO","Han Solo"]],
+    gosTrio: ["COMMANDERLUKESKYWALKER","CHEWBACCALEGENDARY","HANSOLO"],
+    notes: "Read 7 Oct 2026. 5v5 (S82, attack): the dominant CLS lineup — 12.6K of 13.6K CLS-led attacks, 73% win. 3v3 (S83, attack): CLS + Chewbacca + Han Solo, 10K seen, 67% win; CLS + Threepio & Chewie + C-3PO is the other common trio (5,246 seen, 74%). No 3v3 tier-list row was found for CLS in the part of the live page that was read, so 3v3 scores neutral.",
+    sources: ["swgoh.gg leader page — https://swgoh.gg/gac/leaders/COMMANDERLUKESKYWALKER/?perspective=attack&season_id=CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_82 (13.6K battles, read 7 Oct 2026)", "swgoh.gg leader page — https://swgoh.gg/gac/leaders/COMMANDERLUKESKYWALKER/?perspective=attack (S83 3v3, 16.6K battles, read 7 Oct 2026)"] },
+  { name: "General Skywalker 501st (offence)", mode: "GAC offense (5v5 + 3v3) — swgoh.gg attack lineup; do not use on defense (offence-only entry — not assessed for defence)", tl5v5: "General Skywalker", tl3v3: "General Skywalker", confidence: "HIGH", asOf: "7 Oct 2026",
+    members: [["GENERALSKYWALKER","General Skywalker"], ["ARCTROOPER501ST","ARC Trooper"], ["CT210408","CT-21-0408 \"Echo\""], ["CT5555","CT-5555 \"Fives\""], ["CT7567","CT-7567 \"Rex\""]],
+    gosTrio: ["GENERALSKYWALKER","CT5555","CT7567"],
+    notes: "Read 7 Oct 2026. 5v5 (S82, attack): 37.7K seen, 83% win — the most-used General Skywalker attack by a wide margin. 3v3 (S83, attack): General Skywalker + Fives + Rex, 37.7K seen, 83%; ARC Trooper + Echo is the second trio (15.8K, 80%).",
+    sources: ["swgoh.gg leader page — https://swgoh.gg/gac/leaders/GENERALSKYWALKER/?perspective=attack&season_id=CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_82 (41.2K battles, read 7 Oct 2026)", "swgoh.gg leader page — https://swgoh.gg/gac/leaders/GENERALSKYWALKER/?perspective=attack (S83 3v3, 64.4K battles, read 7 Oct 2026)"] },
+  { name: "Hera Syndulla Phoenix (offence)", mode: "GAC offense (5v5 + 3v3) — swgoh.gg attack lineup; do not use on defense (offence-only entry — not assessed for defence)", tl5v5: "Hera Syndulla", confidence: "MODERATE", asOf: "7 Oct 2026",
+    members: [["HERASYNDULLAS3","Hera Syndulla"], ["CAPTAINREX","Captain Rex"], ["CHOPPERS3","Chopper"], ["KANANJARRUSS3","Kanan Jarrus"], ["SABINEWRENS3","Sabine Wren"]],
+    gosTrio: ["HERASYNDULLAS3","CAPTAINREX","SABINEWRENS3"],
+    notes: "Read 7 Oct 2026. 5v5 (S82, attack): 3,688 of 7,557 Hera-led attacks, 75% win. 3v3 (S83, attack): Hera + Captain Rex + Sabine Wren is the most-seen trio (1,468, 68%); Chopper in Sabine's place wins more (956, 87%). Smaller samples than the other additions, hence MODERATE. Hera's 3v3 tier letter read differently on two passes of the live page (B vs C), so no 3v3 tier row was added — 3v3 scores neutral.",
+    sources: ["swgoh.gg leader page — https://swgoh.gg/gac/leaders/HERASYNDULLAS3/?perspective=attack&season_id=CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_82 (7,557 battles, read 7 Oct 2026)", "swgoh.gg leader page — https://swgoh.gg/gac/leaders/HERASYNDULLAS3/?perspective=attack (S83 3v3, 3,840 battles, read 7 Oct 2026)"] },
+  { name: "Emperor Palpatine Empire (offence)", mode: "GAC offense (5v5 + 3v3) — swgoh.gg attack lineup; do not use on defense (offence-only entry — not assessed for defence)", tl5v5: "Emperor Palpatine", tl3v3: "Emperor Palpatine", confidence: "MODERATE-HIGH", asOf: "7 Oct 2026",
+    members: [["EMPERORPALPATINE","Emperor Palpatine"], ["GRANDMOFFTARKIN","Grand Moff Tarkin"], ["MARAJADE","Mara Jade (The Emperor's Hand)"], ["ROYALGUARD","Royal Guard"], ["VADERDUELSEND","Darth Vader (Duel's End)"]],
+    gosTrio: ["EMPERORPALPATINE","MARAJADE","VADERDUELSEND"],
+    notes: "Read 7 Oct 2026. 5v5 (S82, attack): 5,760 seen, 71% win — most-used Emperor Palpatine attack (Grand Admiral Thrawn in Tarkin's place: 2,300, 75%). 3v3 (S83, attack): Palpatine + Mara Jade + Darth Vader (Duel's End), 21.4K seen, 81%. Darth Vader (Duel's End) is the piece most rosters are missing — without him at 7★ the 3v3 trio is not legal here.",
+    sources: ["swgoh.gg leader page — https://swgoh.gg/gac/leaders/EMPERORPALPATINE/?perspective=attack&season_id=CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_82 (14.9K battles, read 7 Oct 2026)", "swgoh.gg leader page — https://swgoh.gg/gac/leaders/EMPERORPALPATINE/?perspective=attack (S83 3v3, 27.2K battles, read 7 Oct 2026)"] },
+  { name: "Padmé Amidala trio (offence, 3v3 only)", mode: "GAC offense (3v3 only) — swgoh.gg attack trio; do not use on defense (offence-only entry — not assessed for defence)", tl3v3: "Padmé Amidala", confidence: "MODERATE", asOf: "7 Oct 2026", gosOnly: "3v3",
+    members: [["PADMEAMIDALA","Padmé Amidala"], ["AHSOKATANO","Ahsoka Tano (Snips)"], ["GRANDMASTERYODA","Grand Master Yoda"]],
+    notes: "Read 7 Oct 2026. 3v3 (S83, attack): most-seen Padmé trio, 1,516 of 5,336 Padmé-led attacks, 80% win (General Kenobi in Yoda's place: 1,022, 84%). 3v3 only: the S82 5v5 Padmé data is 225 battles with a top lineup seen 14 times — too thin to publish as a 5v5 build. This is a Galactic Republic/Jedi Padmé trio, NOT the 'Padmé Amidala (Naboo/Separatist)' counter named in the counters reference — that lineup was not found published.",
+    sources: ["swgoh.gg leader page — https://swgoh.gg/gac/leaders/PADMEAMIDALA/?perspective=attack (S83 3v3, 5,336 battles, read 7 Oct 2026)"] },
+  { name: "Darth Revan trio (offence, 3v3 only)", mode: "GAC offense (3v3 only) — swgoh.gg attack trio; do not use on defense (offence-only entry — not assessed for defence)", tl3v3: "Darth Revan", confidence: "HIGH", asOf: "7 Oct 2026", gosOnly: "3v3",
+    members: [["DARTHREVAN","Darth Revan"], ["MISSIONVAO","Mission Vao"], ["ZAALBAR","Zaalbar"]],
+    notes: "Read 7 Oct 2026. 3v3 (S83, attack): Darth Revan + Mission Vao + Zaalbar, 16.5K seen, 85% win; Darth Revan + Bastila Shan (Fallen) + Darth Malak is the other published trio (5,243, 85%). 3v3 only: every published 5v5 Darth Revan attack is built on Bastila Shan (Fallen) + Darth Malak, mostly with Darth Malgus.",
+    sources: ["swgoh.gg GAC squads, attack, S83 3v3 — https://swgoh.gg/gac/squads/?perspective=attack&cutoff=0.1 (read 7 Oct 2026)", "swgoh.gg leader page — https://swgoh.gg/gac/leaders/DARTHREVAN/?perspective=attack&season_id=CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_82 (5v5 lineups, read 7 Oct 2026)"] },
+  { name: "Stormtrooper Luke trio (offence, 3v3 only)", mode: "GAC offense (3v3 only) — swgoh.gg attack trio; do not use on defense (offence-only entry — not assessed for defence)", tl3v3: "Stormtrooper Luke", confidence: "MODERATE", asOf: "7 Oct 2026", gosOnly: "3v3",
+    members: [["STORMTROOPERLUKE","Stormtrooper Luke"], ["PRINCESSLEIA","Princess Leia"], ["STORMTROOPERHAN","Stormtrooper Han"]],
+    notes: "Read 7 Oct 2026. 3v3 (S83, attack): the only Stormtrooper Luke trio above swgoh.gg's 0.5% cutoff — 3,023 of 3,074 attacks, 78% win. No 5v5 lineup was checked, so 3v3 only.",
+    sources: ["swgoh.gg leader page — https://swgoh.gg/gac/leaders/STORMTROOPERLUKE/?perspective=attack (S83 3v3, 3,074 battles, read 7 Oct 2026)"] },
   { name: "Jedi Purge Squad (Order 66 raid, top-score)", mode: "Order 66 raid — max ~3.6M score, Relic 9", raidTier: "top", confidence: "MODERATE-HIGH",
     members: [["JEDIMASTERMACEWINDU","Jedi Master Mace Windu"], ["DEPABILLABA","Depa Billaba"], ["VANGUARDTEMPLEGUARD","Temple Guard"]],
     notes: "Correction: this looks like a COMPLETE 3-member team, not a 5-slot squad with 2 unconfirmed members. Two independent sources explicitly label it a \"3 MAN\" team at Relic 9 (matching modding/strategy chapter titles in 2 separate full raid-guide videos). The raid appears to score per-unit (consistent with documented solo runs like Tarkin Solo/Hondo Solo), so fielding fewer, stronger units can beat diluting with 5. A swgoh-cantina.com \"Advanced Squad\" listing (adds Jocasta Nu, Jedi Temple Guard, Aayla Secura) reads as a generic squad-builder suggestion on Jocasta's profile page, not raid-specific — not added here.",
@@ -3056,7 +3126,14 @@ const TIER_LIST = {
         { leader: "Jabba the Hutt", tier: "B", wr: 80.4, battles: "21.3K" },
         { leader: "Jedi Master Luke Skywalker", tier: "B", wr: 81.5, battles: "34.7K" },
         { leader: "Rotta the Hutt", tier: "B", wr: 76.0, battles: "22.6K" },
-        { leader: "Dark Trooper Moff Gideon", tier: "B", wr: 90.0, battles: "4,347" }
+        { leader: "Dark Trooper Moff Gideon", tier: "B", wr: 90.0, battles: "4,347" },
+        /* gos: appended 7 Oct 2026 for the offence lineups added to META_SQUADS — read on the live 5v5 page, which still shows
+           the same completed Season 82 board (3.53M battles; ranks #21/#34/#39/#43/#52, below the rows captured above). */
+        { leader: "Bo-Katan (Mand'alor)", tier: "B", wr: 80.3, battles: "90.5K" },
+        { leader: "General Skywalker", tier: "B", wr: 84.5, battles: "82.7K" },
+        { leader: "Emperor Palpatine", tier: "B", wr: 72.1, battles: "10K" },
+        { leader: "Hera Syndulla", tier: "B", wr: 76.4, battles: "7,771" },
+        { leader: "Commander Luke Skywalker", tier: "C", wr: 77.3, battles: "36.8K" }
       ] },
     { key: "3v3", label: "3v3 Squads (GAC)", url: "https://swgoh.gg/tier-list/3v3/", season: 83, battles: "2.65M first-attempt battles",
       squads: [
@@ -3088,7 +3165,15 @@ const TIER_LIST = {
         { leader: "Jabba the Hutt", tier: "A", wr: 86.7, battles: "30K" },
         { leader: "Baylan Skoll", tier: "A", wr: 86.8, battles: "65.6K" },
         { leader: "Pirate King Hondo Ohnaka", tier: "A", wr: 76.3, battles: "4,327" },
-        { leader: "Great Mothers", tier: "A", wr: 79.2, battles: "57.8K" }
+        { leader: "Great Mothers", tier: "A", wr: 79.2, battles: "57.8K" },
+        /* gos: appended 7 Oct 2026 for the offence lineups added to META_SQUADS — read on the live 3v3 page, which by then said
+           Season 83 at 3.98M battles (NEWER than the 2.65M capture above, so these five are a later read than their neighbours;
+           ranks #27/#30/#38/#46/#56). Hera Syndulla is deliberately absent: two reads of the page disagreed on her letter (B/C). */
+        { leader: "Darth Revan", tier: "A", wr: 84.5, battles: "21.8K" },
+        { leader: "Emperor Palpatine", tier: "B", wr: 79.4, battles: "36.3K" },
+        { leader: "General Skywalker", tier: "B", wr: 83.8, battles: "64.8K" },
+        { leader: "Stormtrooper Luke", tier: "B", wr: 77.1, battles: "4,330" },
+        { leader: "Padmé Amidala", tier: "B", wr: 80.3, battles: "3,524" }
       ] },
     /* dta: fleet category re-read in full from swgoh.gg/tier-list/fleet/ on 7 Oct 2026 (header: "Rated from 3.98M first-attempt,
        full-squad GAC battles, banded S–D. Season 83."). No tier changed (S/A/B/B/B/C/C/C/C/D/D, same order); only win rates
@@ -9413,7 +9498,8 @@ function gcoRun(acct) { gcoUi.open[acct] = true; delete gcoUi.pending[acct]; ren
 function gcoApply(acct) {
   if (acct !== current) return;
   const lg = gcoLeague(acct);
-  gcoUi.pending[acct] = { acct, fmt: gcoFormat(acct), league: lg.league.key, keep: gcfViewOf(acct).keep.join(","), rows: gcoPlannerRows(gcoPlanFor(acct)) };
+  gcoUi.pending[acct] = { acct, fmt: gcoFormat(acct), league: lg.league.key, keep: gcfViewOf(acct).keep.join(","), rows: gcoPlannerRows(gcoPlanFor(acct)),
+    off: gofUi.open[acct] ? gofPlannerRows(gofPlanFor(acct)) : null };   /* gof: offence rows ride along when the offence half is open */
   renderGac();
 }
 function gcoCancel(acct) { if (acct) delete gcoUi.pending[acct]; else gcoUi.pending = {}; renderGac(); }
@@ -9424,17 +9510,20 @@ function gcoConfirm(acct) {
   const zones = gacZoneCrud.list();
   const kept = zones.filter(z => !gcoIsPristine(z));
   zones.length = 0; kept.forEach(z => zones.push(z)); p.rows.forEach(r => zones.push(cloneData(r)));
+  if (p.off) { const off = gacOffCrud.list(), keptOff = off.filter(o => !gofIsPristine(o)); off.length = 0; keptOff.forEach(o => off.push(o)); p.off.forEach(r => off.push(cloneData(r))); }   /* gof */
   delete gcoUi.pending[acct];
   store.write(state); render();
 }
 function gcoReset(acct) {
   if (acct !== current) return;
-  const zones = gacData().zones || [];
-  if (!zones.some(gcoIsPristine)) { gcoUi.open[acct] = false; delete gcoUi.pending[acct]; renderGac(); return; }
+  const zones = gacData().zones || [], offense = gacData().offense || [];   /* gof: offence optimiser rows reset too */
+  if (!zones.some(gcoIsPristine) && !offense.some(gofIsPristine)) { gcoUi.open[acct] = false; delete gofUi.open[acct]; delete gcoUi.pending[acct]; renderGac(); return; }
   if (!preparePlannerWrite("gac")) return;
   const live = gacZoneCrud.list();
   const kept = live.filter(z => !gcoIsPristine(z));
   live.length = 0; kept.forEach(z => live.push(z));
+  const liveOff = gacOffCrud.list(), keptOff = liveOff.filter(o => !gofIsPristine(o));   /* gof */
+  liveOff.length = 0; keptOff.forEach(o => liveOff.push(o));
   delete gcoUi.pending[acct];
   store.write(state); render();
 }
@@ -9467,15 +9556,16 @@ function gcoSlotHtml(x, acct) {
 function gcoConfirmHtml(acct) {
   const p = gcfPendingFresh(acct);
   if (!p || p.acct !== acct) return "";
-  const zones = gacData().zones || [], offense = gacData().offense || [];
+  const zones = gacData().zones || [], offense = (gacData().offense || []).filter(o => !gofIsPristine(o));   /* gof: untouched offence optimiser rows are ours, not the user's */
   const mine = zones.filter(gcoIsPristine).length, theirs = zones.length - mine;
   const edited = zones.filter(z => gcoIsRow(z) && !gcoIsPristine(z)).length;   /* gcf: optimiser rows the user scouted/edited — theirs now */
   const userContent = theirs > 0 || offense.length > 0;
   return `<div class="gco-confirm" role="region" aria-label="Confirm apply to planner">
-    <div><b style="color:var(--ink-1)">Apply this ${escapeHtml(p.fmt)} plan to the GAC planner?</b> Writes ${p.rows.length} zone row${p.rows.length === 1 ? "" : "s"} into “Opponent zone intel” (Scout &amp; plan view), one per defence slot, tagged “${escapeHtml(GCO_MARK)}” so you can tell them apart. Pick the opponent's squad in each row once you can scout.</div>
+    <div><b style="color:var(--ink-1)">Apply this ${escapeHtml(p.fmt)} ${p.off ? "defence + offence " : ""}plan to the GAC planner?</b> Writes ${p.rows.length} zone row${p.rows.length === 1 ? "" : "s"} into “Opponent zone intel” (Scout &amp; plan view), one per defence slot, tagged “${escapeHtml(GCO_MARK)}” so you can tell them apart. Pick the opponent's squad in each row once you can scout.</div>
     <ul>${p.rows.map(r => `<li><b>${escapeHtml(r.zone)}</b> — ${escapeHtml(r.note.replace(GCO_MARK + " ", ""))}</li>`).join("")}</ul>
     ${mine ? `<div>Replaces the ${mine} optimiser row${mine === 1 ? "" : "s"} already in the planner that you haven't touched.</div>` : ""}
     ${edited ? `<div>Keeps the ${edited} optimiser row${edited === 1 ? "" : "s"} you have scouted or edited — ${edited === 1 ? "it is" : "they are"} yours now and stay${edited === 1 ? "s" : ""} exactly as ${edited === 1 ? "it is" : "they are"}.</div>` : ""}
+    ${p.off ? gofConfirmHtml(acct, p) : ""}
     ${userContent ? `<div class="gco-warn">⚠ The planner already has your own content — ${theirs} zone row${theirs === 1 ? "" : "s"}${edited ? ` (${edited} of them edited optimiser row${edited === 1 ? "" : "s"})` : ""} and ${offense.length} offense row${offense.length === 1 ? "" : "s"}. All ${theirs + offense.length} are kept exactly as they are; nothing of yours is overwritten.</div>` : `<div>The planner has no content of yours yet — nothing will be overwritten.</div>`}
     <div class="gco-actions"><button type="button" class="gco-btn primary" onclick="gcoConfirm('${acct}')">${userContent ? "Yes, add alongside my rows" : "Yes, write to planner"}</button><button type="button" class="gco-btn" onclick="gcoCancel('${acct}')">Cancel</button></div>
   </div>`;
@@ -9491,14 +9581,16 @@ function gcoCardHtml(acct) {
         ${GCO_FORMATS.leagues.map(l => `<option value="${l.key}" ${!lg.auto && lg.league.key === l.key ? "selected" : ""}>${escapeHtml(l.label)}</option>`).join("")}
       </select></label>
       <button type="button" class="gco-btn primary" onclick="gcoRun('${acct}')">${gcoUi.open[acct] ? "Re-optimise" : "Optimise defence"}</button>
+      <button type="button" class="gco-btn primary gof-run" onclick="gofRun('${acct}')">${gofUi.open[acct] ? "Re-optimise defence + offence" : "Optimise defence + offence"}</button>
     </div>`;
   const intro = `<div class="mnote">Picks one non-overlapping set of your tracked meta squads for every ${escapeHtml(fmt)} defence slot in your league — strongest holds on the front zones, no unit used twice, offense-only and raid builds excluded. It is a heuristic over public all-league data (swgoh.gg Tier List, this app's squad reference) plus your last roster pull — not a prediction of what holds against a given opponent. Recomputed live from your roster; nothing is saved until you press “Apply to planner”.</div>`;
   if (!gcoUi.open[acct]) return `<div class="cardtitle">Optimise defence <span class="sub">— ${escapeHtml(a.label)} · one plan, no overlapping units</span></div>${intro}${controls}`;
   const plan = gcoPlanFor(acct);
   const planned = gacData().zones.filter(gcoIsPristine).length, editedN = gacData().zones.filter(z => gcoIsRow(z) && !gcoIsPristine(z)).length;
+  const plannedOff = (gacData().offense || []).filter(gofIsPristine).length, gofOn = !!gofUi.open[acct];   /* gof */
   const s = plan.summary, pend = gcfPendingFresh(acct);
   const srcLinks = GCO_FORMATS.sources.map(x => `<a href="${escapeHtml(x.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${escapeHtml(x.label)}</a>`).join(" · ");
-  return `<div class="cardtitle">Optimise defence <span class="sub">— ${escapeHtml(a.label)} · one plan, no overlapping units</span></div>${intro}${controls}
+  return `<div class="cardtitle">Optimise defence${gofOn ? " + offence" : ""} <span class="sub">— ${escapeHtml(a.label)} · one plan, no overlapping units</span></div>${intro}${controls}
     <div class="gco-plan-title">${escapeHtml(gcfPlanTitle(plan, a.label))}</div>
     ${gcfAssumeHtml(plan)}
     <div class="gco-fine">League ${escapeHtml(plan.league.label)}${plan.leagueAuto ? (plan.leaguePulled ? " (from your last pull)" : " (default — no league in the pull)") : " (chosen above)"}: ${s.squadsNeeded} squad slot${s.squadsNeeded === 1 ? "" : "s"} + ${s.fleetsNeeded} fleet slot${s.fleetsNeeded === 1 ? "" : "s"} across ${GCO_FORMATS.zones.length} territories. ${escapeHtml(plan.league.note)}${plan.league.verified ? "" : " Zone-to-territory mapping unverified for this league."} Layout as of ${escapeHtml(GCO_FORMATS.asOf)}.${gcfEventNote()}</div>
@@ -9506,13 +9598,14 @@ function gcoCardHtml(acct) {
     ${plan.squadSlots.map(x => gcoSlotHtml(x, acct)).join("")}
     ${plan.fleetSlots.map(x => gcoSlotHtml(x, acct)).join("")}
     <div class="gco-summary">Plan readiness <b>${s.pct}%</b> — ${s.readyN}/${s.totalN} placed units battle-ready (7★ + G12, ships at required stars) · ${s.squadsFilled}/${s.squadsNeeded} squad slots and ${s.fleetsFilled}/${s.fleetsNeeded} fleet slots filled. Heuristic over public data — not a hold-rate guarantee.</div>
+    ${gofSectionHtml(acct)}
     <div class="gco-actions">
-      <button type="button" class="gco-btn primary" onclick="gcoApply('${acct}')" ${pend ? "disabled" : ""}>Apply to planner</button>
-      <button type="button" class="gco-btn" onclick="gcoReset('${acct}')" title="${planned ? `Removes the ${planned} untouched optimiser row(s) from the planner; your own rows${editedN ? ` and the ${editedN} you edited` : ""} stay` : "Hides this plan (nothing of yours in the planner is touched)"}">Reset${planned ? ` (${planned} in planner)` : ""}</button>
+      <button type="button" class="gco-btn primary" onclick="gcoApply('${acct}')" ${pend ? "disabled" : ""}>${gofOn ? "Apply defence + offence to planner" : "Apply to planner"}</button>
+      <button type="button" class="gco-btn" onclick="gcoReset('${acct}')" title="${planned || plannedOff ? `Removes the ${planned} untouched optimiser zone row(s)${plannedOff ? ` and ${plannedOff} untouched offence row(s)` : ""} from the planner; your own rows${editedN ? ` and the ${editedN} you edited` : ""} stay` : "Hides this plan (nothing of yours in the planner is touched)"}">Reset${gofResetLabel(planned, plannedOff)}</button>
       <button type="button" class="gco-btn gcf-copy-btn" onclick="gcfCopyPlan('${acct}')">📋 Copy plan</button>
       <span class="gcf-copy-msg" id="gcfCopyMsg-${acct}" role="status" aria-live="polite"></span>
     </div>
-    ${foldMore("Plan as plain text", `<textarea class="gcf-copy-text" id="gcfCopyText-${acct}" readonly aria-label="Plan as plain text" rows="${plan.squadSlots.length + plan.fleetSlots.length + 1}">${escapeHtml(gcfPlanText(plan, acct))}</textarea>`, { key: "gcf-copy-" + acct })}
+    ${foldMore("Plan as plain text", `<textarea class="gcf-copy-text" id="gcfCopyText-${acct}" readonly aria-label="Plan as plain text" rows="${plan.squadSlots.length + plan.fleetSlots.length + 1 + gofTextLines(acct).length}">${escapeHtml(gcfPlanText(plan, acct))}</textarea>`, { key: "gcf-copy-" + acct })}
     ${gcoConfirmHtml(acct)}
     <details class="refdetails" style="margin-top:8px"><summary>Skipped strong squads and why (${plan.skipped.length} skipped · ${plan.excluded.length} excluded${plan.kept.length ? ` · ${plan.kept.length} kept for offence` : ""})</summary>
       ${plan.kept.map(k => `<div class="gco-skip"><b>${escapeHtml(k.name)}</b> — ${escapeHtml(k.reason)}</div>`).join("")}
@@ -9673,7 +9766,7 @@ function gcfPlanText(plan, acct) {
     const c = x.cand;
     return `${lab}: ${c.kind === "fleet" && !c.lineup ? `${c.rows[0].name} (flagship only — pick supporting ships in game)` : gcfOwnedList(c, ", ") + gcfFillText(c)}`;
   });
-  return [`GAC ${ev ? `S${ev.season} E${ev.event} ` : ""}(${plan.fmt}) — ${a.label}, ${league}`, ...lines].join("\n");
+  return [`GAC ${ev ? `S${ev.season} E${ev.event} ` : ""}(${plan.fmt}) — ${a.label}, ${league}`, ...lines, ...gofTextLines(acct)].join("\n");   /* gof: offence order appended while that half is open */
 }
 function gcfCopyPlan(acct) {
   const text = gcfPlanText(gcoPlanFor(acct), acct);
@@ -9691,6 +9784,267 @@ function gcfCopyPlan(acct) {
   return Promise.resolve(fallback());
 }
 /* ===================== /gcf ===================== */
+/* ===================== gof: GAC 'Optimise offence' (7 Oct 2026) =====================
+   Owner's ask: "when pressing Optimise it auto-populates the 3v3 and 5v5 GAC teams, defensive AND offensive".
+   The defence half is the gco / gcf code above; this builds an ORDERED offence bench from what the defence plan did
+   not use. Same candidate scoring (gcoSquadCandidate: swgoh.gg tier list — those win rates are OFFENSE win
+   rates, so they are used directly — research confidence, roster readiness, relic, GL anchor), same
+   eligibility (leader owned 7★ ≥ G10, ≥ 3 members owned and 7★, one Galactic Legend per squad), same unit
+   keys. Extra offence signals: a unit held back with a "Keep for offence" chip makes its squad a priority
+   pick; a squad that the counters reference (GAC_COUNTERS) names as the answer to a common defence gets a
+   small bonus per listed match and a "good into:" line. Counter squads that are not in META_SQUADS but ARE
+   described (as a defence) in GAC_COUNTERS — Sith Eternal Emperor, Great Mothers, Bo-Katan (Mand'alor) —
+   are built from that row's listed characters and flagged as reference lineups, not researched builds.
+   ASSUMPTIONS stated in the UI: units placed on defence are treated as unavailable to attack with in the
+   same round (how GAC is understood to work — not verified by this app), and the bench size (GOF_MAX) is
+   this heuristic's cap, NOT the number of attacks the game allows per round (unverified here). Nothing is
+   persisted except through the planner's own offense rows (gcoConfirm), tagged GOF_MARK, with the same
+   pristine-row protection as the defence rows (gofIsPristine): a row the user edited is theirs for good. */
+const GOF_MARK = "⚔ Optimiser";
+const GOF_MAX = { "3v3": 6, "5v5": 6 };   /* ordered bench per format — a planning cap, not a game rule */
+const GOF_KEEP_BONUS = 30, GOF_COUNTER_BONUS = 4, GOF_COUNTER_CAP = 12, GOF_DEF_TAG_PENALTY = 5, GOF_REF_PENALTY = 4;
+const GOF_NO_MATCH = "no counter match in this app's reference — use where it fits";
+const GOF_FLEET_ZONE = "fleet attack";
+/* Counter text (GAC_COUNTERS[].counter, split on " or ") → tracked squad (meta) or roster unit (lead). Conservative:
+   an option naming none of these ("Empire burst", "a Jedi burst squad") maps to nothing and is never shown. */
+const GOF_COUNTER_MAP = [
+  { re: /\bGL Rey\b/, lead: "Rey", meta: "Rey (GL) Jedi" },
+  { re: /Supreme Leader Kylo Ren/, lead: "Supreme Leader Kylo Ren", meta: "Supreme Leader Kylo Ren (GL)" },
+  { re: /Leia Organa \(GL\)/, lead: "Leia Organa", meta: "Leia Organa (GL) Rebels" },
+  { re: /Ahsoka Tano \(GL\)/, lead: "Ahsoka Tano", meta: "Ahsoka Tano Rebels" },
+  { re: /Grand Admiral Thrawn/, lead: "Grand Admiral Thrawn", meta: "Grand Admiral Thrawn Empire" },
+  { re: /Darth Traya/, lead: "Darth Traya", meta: "Darth Traya Sith" },
+  { re: /Sith Eternal Emperor/, lead: "Sith Eternal Emperor" },
+  { re: /Great Mothers/, lead: "Great Mothers" },
+  { re: /Bo-Katan \(Mand'alor\)/, lead: "Bo-Katan (Mand'alor)" },
+  { re: /Queen Amidala/, lead: "Queen Amidala" },
+  { re: /Padme Amidala/, lead: "Padmé Amidala" },
+  { re: /Darth Revan/, lead: "Darth Revan" }
+];
+const gofUi = { open: {}, ms: {} };   /* session-only: which accounts asked for the offence half, timings */
+const gofPlanMemo = new Map();        /* "<acct>#<plan key>" → { def, plan } — invalidated with the defence plan */
+let gofRefCache = null;
+function gofRefName(lead) { return `${lead} (counter squad)`; }
+/* "SLKR, Rey (Dark Side Vision), …" → names; "A/B" alternates keep A; prose after " — " or " plus " is dropped. */
+function gofDefChars(c) { return String(c.defChars || "").split(/ — | plus /)[0].split(", ").map(x => x.split("/")[0].trim()).filter(Boolean).slice(0, 5); }
+function gofRefSquads() {
+  if (!gofRefCache) gofRefCache = GOF_COUNTER_MAP.filter(m => !m.meta).map(m => {
+    const row = GAC_COUNTERS.find(c => gofDefChars(c)[0] === m.lead);
+    return row ? { name: gofRefName(m.lead), mode: "GAC counter — lineup read from this app's counters reference", tl5v5: m.lead, tl3v3: m.lead, members: gofDefChars(row).map(n => [null, n]), gofRef: true } : null;
+  }).filter(Boolean);
+  return gofRefCache;
+}
+function gofOptions(c) { return String(c.counter || "").split(/\s+or\s+/).map(t => t.trim()).filter(Boolean); }
+function gofMapOptions(t) { return GOF_COUNTER_MAP.filter(m => m.re.test(t)); }
+function gofSquadNameOf(m) { return m.meta || gofRefName(m.lead); }
+function gofGoodInto(sqName) { return GAC_COUNTERS.filter(c => gofOptions(c).some(t => gofMapOptions(t).some(m => gofSquadNameOf(m) === sqName))).map(c => c.def); }
+function gofKnownCands() { return gcfKnownCands().concat(gofRefSquads().map(sq => [sq.name, new Set(sq.members.map(m => m[1]))])); }
+function gofCandidate(sq, fmt, reqs, keep, onDef) {
+  /* reference lineups carry no base_ids: resolve them from the roster so GL detection and unit keys match the defence plan */
+  const src = sq.gofRef ? Object.assign({}, sq, { members: sq.members.map(([bid, n]) => [bid || gcfBaseIdOf(reqs, findUnitByName(reqs, n)) || null, n]) }) : sq;
+  const c = gcoSquadCandidate(src, fmt, reqs);
+  const into = gofGoodInto(sq.name);
+  const held = c.rows.filter(r => keep.includes(r.key)).map(r => r.name);
+  const clash = c.rows.filter(r => onDef.has(r.key)).map(r => ({ name: r.name, with: onDef.get(r.key).name, zone: onDef.get(r.key).zone }));
+  const m = String(sq.mode || "");
+  /* only the entries whose whole purpose is holding (Jabba "TW/GAC defense holder", Thrawn "GAC def / TW def") — "Squad Arena / GAC / TW def" is a general PvP tag */
+  const defTag = /defen[cs]e holder|^GAC def \//i.test(m);
+  const noGac = !/\bGAC\b/i.test(m) && !sq.gofRef;
+  const score = c.score + Math.min(GOF_COUNTER_CAP, into.length * GOF_COUNTER_BONUS) + (held.length ? GOF_KEEP_BONUS : 0) - (defTag ? GOF_DEF_TAG_PENALTY : 0) - (sq.gofRef ? GOF_REF_PENALTY : 0);
+  const blocked = c.blocked.replace(/ — sub-7★ units give away banners on defence$/, " — three 7★ units needed to attack with").replace(/ — too low to hold$/, " — too low to carry an attack");
+  const why = [c.why,
+    into.length ? `listed counter to ${into.length} common defence${into.length === 1 ? "" : "s"}` : "",
+    held.length ? `held back for offence (${held.join(", ")})` : "",
+    defTag ? "entry is tagged as a defence holder — fine to attack with, ranked a little lower" : "",
+    noGac ? `entry is tagged “${m}”, not GAC — a filler attack, not a counter` : "",
+    sq.gofRef ? "lineup read from the counters reference, not a researched build" : ""].filter(Boolean).join(" · ");
+  return Object.assign({}, c, { name: sq.name, score: Math.round(score * 100) / 100, baseScore: c.score, into, held, clash, defTag, ref: !!sq.gofRef, blocked, why });
+}
+function gofPlanFor(acct) {
+  const def = gcoPlanFor(acct);
+  const reqs = (accountView(acct).src || {}).reqs || {};
+  const memoKey = acct + "#" + gcfPlanKey(acct, reqs, def.fmt, { league: def.league, auto: def.leagueAuto }, def.keep), hit = gofPlanMemo.get(memoKey);
+  if (hit && hit.def === def) return hit.plan;
+  const t0 = performance.now();
+  const fmt = def.fmt, keep = def.keep || [], max = GOF_MAX[fmt] || 6;
+  const onDef = new Map();
+  def.squadSlots.forEach(x => { if (x.cand) x.cand.keys.forEach(k => { if (!onDef.has(k)) onDef.set(k, { name: x.cand.name, zone: x.slot.zone.label }); }); });
+  const srcs = META_SQUADS.filter(sq => !(sq.raidTier || /raid/i.test(sq.mode || "")) && gosFmtOk(sq, fmt)).concat(gofRefSquads());   /* gos: 3v3-only trios stay out of 5v5 */
+  const cands = srcs.map(sq => gofCandidate(sq, fmt, reqs, keep, onDef));
+  const byScore = (a, b) => b.score - a.score || a.name.localeCompare(b.name);
+  const pool = cands.filter(c => !c.blocked && !c.clash.length).sort(byScore);
+  /* Greedy in score order: best first, a squad only joins the bench when none of its units is already on it. */
+  const used = new Map(), picked = [];
+  pool.forEach(c => { if (picked.length < max && !c.keys.some(k => used.has(k))) { picked.push(c); c.keys.forEach(k => used.set(k, c.name)); } });
+  const skipped = cands.filter(c => !picked.includes(c)).sort(byScore).map(c => {
+    let reason = c.blocked;
+    if (!reason && c.clash.length) reason = c.clash.every(x => x.with === c.name) ? `placed on your defence plan (${c.clash[0].zone})` : `shares ${c.clash.slice(0, 2).map(x => x.name).join(", ")} with ${c.clash[0].with} on your defence plan`;
+    if (!reason) {
+      const sh = c.rows.filter(r => used.has(r.key));
+      reason = sh.length ? `shares ${sh.slice(0, 2).map(r => r.name).join(", ")} with ${used.get(sh[0].key)}` : picked.length >= max ? "bench is full — scored below the chosen squads" : "scored below the chosen squads";
+    }
+    return { name: c.name, reason, score: c.score, blocked: !!c.blocked, clash: !!c.clash.length };
+  });
+  /* Fleet attack: the best eligible fleet the defence plan did not place (fleets are a separate pool from squads). */
+  const pull = state.pulls && state.pulls[acct], faFlag = pull && typeof pull.fleetLeader === "string" ? pull.fleetLeader : "";
+  const defFleet = new Set(def.fleetSlots.flatMap(x => x.cand ? x.cand.keys : []));
+  const fleet = META_FLEETS.map(fl => gcoFleetCandidate(fl, reqs, faFlag))
+    .concat(META_FLEET_TIER.filter(f => !META_FLEETS.some(fl => fl.tlFleet === f.name)).map(f => gcoFleetCandidate({ name: f.name, tlFleet: f.name }, reqs, faFlag)))
+    .filter(c => !c.blocked && !c.keys.some(k => defFleet.has(k))).sort(byScore)[0] || null;
+  const lookup = gofLookup(cands, def, picked, reqs);
+  const rows = picked.flatMap(c => c.rows);
+  gofUi.ms[acct] = Math.round((performance.now() - t0) * 10) / 10;
+  const plan = { acct, fmt, def, picked, skipped, fleet, lookup, max, keep,
+    summary: { n: picked.length, readyN: rows.filter(r => r.ready).length, totalN: rows.length, unownedN: rows.filter(r => !r.owned).length, heldN: picked.filter(c => c.held.length).length, intoN: picked.filter(c => c.into.length).length },
+    ms: gofUi.ms[acct] };
+  gofPlanMemo.delete(memoKey); gofPlanMemo.set(memoKey, { def, plan });
+  while (gofPlanMemo.size > 8) gofPlanMemo.delete(gofPlanMemo.keys().next().value);
+  return plan;
+}
+/* "If you see X on defence → use Y": only defences for which this roster has a READY answer — a tracked counter
+   squad that passes the eligibility rules (saying where it sits: offence bench, defence plan, or neither), or,
+   where the counters reference names a leader this app has no tracked squad for, that leader owned at 7★ G12+. */
+function gofLookup(cands, def, picked, reqs) {
+  const byName = new Map(cands.map(c => [c.name, c]));
+  const onDef = new Map(); def.squadSlots.forEach(x => { if (x.cand) onDef.set(x.cand.name, x.slot.zone.label); });
+  return GAC_COUNTERS.map(c => {
+    const opts = [], seen = new Set();
+    gofOptions(c).forEach(t => gofMapOptions(t).forEach(m => {
+      const sqName = gofSquadNameOf(m), cand = byName.get(sqName);
+      if (seen.has(sqName)) return;
+      if (cand) {
+        if (cand.blocked) return;
+        const i = picked.indexOf(cand);
+        seen.add(sqName);
+        opts.push(i >= 0 ? { label: cand.name, kind: "off", status: `offence #${i + 1}` }
+          : onDef.has(cand.name) ? { label: cand.name, kind: "def", status: `on your defence plan (${onDef.get(cand.name)}) — not available to attack with` }
+          : cand.clash.length ? { label: cand.name, kind: "def", status: `shares ${cand.clash[0].name} with your defence plan` }
+          : { label: cand.name, kind: "other", status: "eligible, below the bench cut" });
+      } else {
+        const u = findUnitByName(reqs, m.lead);
+        if (!u || +(u.s || 0) < 7 || +(u.g || 1) < 12) return;
+        seen.add(sqName);
+        opts.push({ label: m.lead, kind: "unit", status: `leader owned (${u.r ? "R" + u.r : "G" + u.g}) — squad not tracked here, build it in game` });
+      }
+    }));
+    return opts.length ? { def: c.def, opts } : null;
+  }).filter(Boolean);
+}
+/* Planner rows this feature writes into gacData().offense ({squad, zone}): "#n" keeps every row distinct for the
+   row-identity merge (uniqueRows/threeWayRows treat an identical row as the same row), the zone column carries
+   the counters-reference matches so the user sees them in the Scout & plan view. */
+function gofZoneText(c) { return c.into.length ? `good into: ${c.into.join(", ")}` : GOF_NO_MATCH; }
+function gofPlannerRows(plan) {
+  const rows = plan.picked.map((c, i) => ({ squad: `${GOF_MARK} (${plan.fmt}) #${i + 1}: ${c.name} — ${gcfOwnedList(c, ", ")}${gcfFillText(c)}`, zone: gofZoneText(c) }));
+  if (plan.fleet) rows.push({ squad: `${GOF_MARK} (${plan.fmt}) fleet: ${plan.fleet.name} — ${gcfOwnedList(plan.fleet, ", ")}${gcfFillText(plan.fleet)}`, zone: GOF_FLEET_ZONE });
+  return rows;
+}
+function gofIsRow(o) { return !!o && typeof o.squad === "string" && o.squad.startsWith(GOF_MARK); }
+/* Pristine = still exactly as written: squad text in gofPlannerRows' grammar over known squads/units, zone text
+   one of ours. Any edit (a renamed squad, a target typed into the zone column) makes the row the user's. */
+function gofIsPristine(o) {
+  if (!gofIsRow(o)) return false;
+  const m = /^\((5v5|3v3)\) (#\d+|fleet): ([\s\S]*)$/.exec(o.squad.slice(GOF_MARK.length + 1));
+  if (!m) return false;
+  const core = m[3].replace(/ \+ fill \d+ slots? yourself$/, "");
+  const known = gofKnownCands().some(([name, set]) => {
+    if (!core.startsWith(name + " — ")) return false;
+    const items = core.slice(name.length + 3).split(", ");
+    return items.length > 0 && items.every(it => set.has(it.replace(/ \((L|flagship)\)$/, "")));
+  });
+  if (!known) return false;
+  const z = String(o.zone == null ? "" : o.zone);
+  if (m[2] === "fleet") return z === GOF_FLEET_ZONE;
+  if (z === GOF_NO_MATCH) return true;
+  if (!z.startsWith("good into: ")) return false;
+  const defs = new Set(GAC_COUNTERS.map(c => c.def));
+  return z.slice(11).split(", ").every(d => defs.has(d));
+}
+function gofRun(acct) { gcoUi.open[acct] = true; gofUi.open[acct] = true; delete gcoUi.pending[acct]; renderGac(); }
+function gofResetLabel(planned, plannedOff) {
+  if (!planned && !plannedOff) return "";
+  return ` (${planned ? `${planned}${plannedOff ? ` + ${plannedOff} offence` : ""}` : `${plannedOff} offence`} in planner)`;
+}
+/* Plain-text lines appended to "Copy plan" while the offence half is open. */
+function gofTextLines(acct) {
+  if (!gofUi.open[acct]) return [];
+  const plan = gofPlanFor(acct);
+  const lines = plan.picked.map((c, i) => `${i + 1}. ${gcfOwnedList(c, ", ")}${gcfFillText(c)}${c.into.length ? ` — good into: ${c.into.join(", ")}` : ""}`);
+  if (plan.fleet) lines.push(`Fleet attack: ${plan.fleet.lineup ? gcfOwnedList(plan.fleet, ", ") + gcfFillText(plan.fleet) : `${plan.fleet.rows[0].name} (flagship only — pick supporting ships in game)`}`);
+  return [`Offence order (${plan.fmt} bench, best first — not an attack count):`, ...(lines.length ? lines : ["no eligible tracked squad left after the defence plan — attack from your roster in game"])];
+}
+function gofConfirmHtml(acct, p) {
+  const offense = gacData().offense || [];
+  const mine = offense.filter(gofIsPristine).length, edited = offense.filter(o => gofIsRow(o) && !gofIsPristine(o)).length;
+  return `<div style="margin-top:8px"><b style="color:var(--ink-1)">Offence:</b> writes ${p.off.length} row${p.off.length === 1 ? "" : "s"} into “Offense / banner order” (attack order, best first), tagged “${escapeHtml(GOF_MARK)}”.</div>
+    <ul>${p.off.map(r => `<li><b>${escapeHtml(r.squad.replace(GOF_MARK + " ", ""))}</b> — ${escapeHtml(r.zone)}</li>`).join("")}</ul>
+    ${mine ? `<div>Replaces the ${mine} offence optimiser row${mine === 1 ? "" : "s"} already in the planner that you haven't touched.</div>` : ""}
+    ${edited ? `<div>Keeps the ${edited} offence optimiser row${edited === 1 ? "" : "s"} you have edited — ${edited === 1 ? "it is" : "they are"} yours now.</div>` : ""}`;
+}
+function gofSlotHtml(c, i, acct) {
+  const readyChip = c.readyN === c.rows.length ? `<span class="chip done">✓ ${c.readyN}/${c.rows.length} ready</span>` : c.ownedN === c.rows.length ? `<span class="chip grind">⚠ ${c.readyN}/${c.rows.length} ready</span>` : `<span class="chip stargate">⚠ ${c.ownedN}/${c.rows.length} owned</span>`;
+  const tier = c.tl ? `<span class="chip ${TIER_CHIP[c.tl.tier] || "watch"}" title="${escapeHtml(`swgoh.gg tier list — ${c.tl.wr}% offense win rate, ${c.tl.battles} battles, all leagues`)}">${escapeHtml(c.tl.tier)}-tier</span>` : (c.tlOther ? `<span class="chip watch" title="Other-format tier list row, discounted">${escapeHtml(c.tlOther.tier)} (other fmt)</span>` : "");
+  const conf = c.sq.confidence ? `<span class="chip ${ASSAULT_CONF_CHIP[c.sq.confidence] || "watch"}" title="META_SQUADS research confidence for this exact roster">${escapeHtml(c.sq.confidence)}</span>` : (c.ref ? `<span class="chip watch" title="Lineup read from the counters reference — not a researched build">reference lineup</span>` : `<span class="chip watch" title="No research confidence recorded for this roster">unrated</span>`);
+  const held = c.held.length ? `<span class="chip keep" title="You held ${escapeHtml(c.held.join(", "))} back with a Keep-for-offence chip">✓ kept for offence</span>` : "";
+  const modsBtn = `<button type="button" class="chrome-gearbtn" title="Optimize mods for ${escapeHtml(c.name)}" aria-label="Optimize mods for ${escapeHtml(c.name)}" onclick="${optLoadTeamAttr(c.members.map(m => m[1]), "gac", acct)}"><span aria-hidden="true">⚙</span> Mods</button>`;
+  const into = c.into.length ? `<div class="gof-into">Good into: <b>${escapeHtml(c.into.join(" · "))}</b> <span style="color:var(--ink-3)">— this app's counters reference names this squad as the answer; no win rate claimed.</span></div>` : `<div class="gof-into none">No listed counter match in this app's reference — use it where it fits.</div>`;
+  return `<div class="gco-slot gof-slot">
+    <div class="gco-slot-head"><span class="gof-num" aria-label="Attack ${i + 1}">${i + 1}</span><span class="gco-name">${escapeHtml(c.name)}</span>${tier}${conf}${held}${readyChip}${modsBtn}</div>
+    <div class="gco-members">${c.rows.map((r, j) => gcoMemberLine(r, j, "squad")).join("")}</div>
+    <div class="gco-why">Why: ${escapeHtml(c.why)}.</div>
+    ${into}
+    <div class="gco-set">Attack with: ${escapeHtml(gcfOwnedList(c, " · ") + gcfFillText(c))}.${c.tailPenalty ? " <span class=\"gco-gap\">Only 3 units tracked — add 2 more in game.</span>" : ""}${c.trioAssumed ? " <span class=\"gco-gap\">3v3 trio assumed — unverified.</span>" : ""}</div>
+  </div>`;
+}
+function gofLookupHtml(plan) {
+  if (!plan.lookup.length) return `<div class="gof-empty">None of the counters this app's reference lists for the common defences is ready on this roster yet.</div>`;
+  return `<div class="gco-fine">Only defences with an answer this roster can actually field are listed; “offence #n” is its place on the bench above, amber means the answer is tied up on your defence plan. Matchups come from this app's counters reference (mid-core meta, verify on scout) — no win rates are claimed.</div>
+    <div class="gof-look">${plan.lookup.map(r => `<div class="gof-look-row"><div class="gof-look-def">${escapeHtml(r.def)}</div>${r.opts.map(o => `<div class="gof-look-opt ${o.kind}">${escapeHtml(o.label)} <span class="st">— ${escapeHtml(o.status)}</span></div>`).join("")}</div>`).join("")}</div>`;
+}
+function gofSectionHtml(acct) {
+  if (!gofUi.open[acct]) return "";
+  const plan = gofPlanFor(acct), s = plan.summary;
+  const fleet = plan.fleet ? `<div class="gof-fleet">Fleet attack: <b>${escapeHtml(plan.fleet.name)}</b>${plan.fleet.tl ? ` <span class="chip ${TIER_CHIP[plan.fleet.tl.tier] || "watch"}">${escapeHtml(plan.fleet.tl.tier)}-tier</span>` : ""} — ${escapeHtml(gcfOwnedList(plan.fleet, " · ") + gcfFillText(plan.fleet))}. Best eligible fleet not placed on defence (fleets are a separate pool).${plan.fleet.lineup ? "" : " <span class=\"gco-gap\">Flagship only — pick supporting ships in game.</span>"}</div>`
+    : `<div class="gof-fleet">Fleet attack: no eligible tracked fleet left after the defence plan — fly your best remaining fleet in game.</div>`;
+  const body = plan.picked.length ? plan.picked.map((c, i) => gofSlotHtml(c, i, acct)).join("")
+    : `<div class="gof-empty">No eligible tracked squad is left once the defence plan has taken its units — attack from your roster in game, or hold a leader back with a “Keep for offence” chip above.</div>`;
+  const isGl = c => !!c && GL_IDS.includes((c.members[0] || [])[0]);
+  const glDef = plan.def.squadSlots.filter(x => isGl(x.cand)).map(x => x.cand.rows[0].name), glOff = plan.picked.filter(isGl).length;
+  const glHint = glDef.length && !glOff ? `<div class="gcf-assume">⚠ The defence plan took every eligible Galactic Legend (${escapeHtml(glDef.join(", "))}), so no GL leads this bench. If you would rather lead your attacks with one, tap its “Keep for offence” chip above — it then moves to the top of this bench.</div>` : "";
+  return `<div class="gof-sec" id="gof-${escapeHtml(acct)}" role="region" aria-label="Offence plan">
+    <div class="gof-title">Offence plan <span class="sub">— ${escapeHtml(plan.fmt)} attack order, best first · ${s.n} of up to ${plan.max}</span></div>
+    <div class="gof-rule">Built from the units the defence plan above did <b>not</b> use. Assumes units set on defence can't also attack that round (how GAC is understood to work — not verified by this app). One Galactic Legend per squad, no unit on two attack squads (a winning squad is spent). This is an ordered bench — not the number of attacks the game allows per round, which this app does not know.</div>
+    ${glHint}
+    ${body}
+    ${fleet}
+    <div class="gco-summary">Offence bench <b>${s.n}</b>${s.totalN ? ` — ${s.readyN}/${s.totalN} units battle-ready` : ""}${s.unownedN ? ` · ${s.unownedN} unowned slot${s.unownedN === 1 ? "" : "s"} to fill in game` : ""}${s.heldN ? ` · ${s.heldN} priority pick${s.heldN === 1 ? "" : "s"} from your Keep-for-offence chips` : ""}${s.intoN ? ` · ${s.intoN} with a listed counter match` : ""}. Heuristic over public all-league offense data — the opponent's actual defence is unknown until you scout.</div>
+    ${foldMore("If you see X on defence → use Y (ready counters only)", gofLookupHtml(plan), { key: "gof-look-" + acct })}
+    ${foldMore(`Offence candidates skipped and why (${plan.skipped.length})`, plan.skipped.map(k => `<div class="gco-skip"><b>${escapeHtml(k.name)}</b> — ${escapeHtml(k.reason)}${k.blocked || k.clash ? "" : ` · score ${escapeHtml(String(k.score))}`}</div>`).join("") || `<div class="gco-skip">Nothing skipped.</div>`, { key: "gof-skip-" + acct })}
+    ${foldMore("How offence is scored", `<div class="gco-fine">Same squad score as the defence plan (tier points from swgoh.gg's ${escapeHtml(plan.fmt)} tier list — those are offense win rates, so they apply directly — scaled by research confidence, × readiness, + relic, + ${20} for a built Galactic Legend leader, − 6 for a 3-unit squad in 5v5, − 3 for an assumed 3v3 trio), + ${GOF_COUNTER_BONUS} per common defence the counters reference says it answers (max + ${GOF_COUNTER_CAP}), + ${GOF_KEEP_BONUS} when it uses a unit you held back with a Keep-for-offence chip, − ${GOF_DEF_TAG_PENALTY} when the entry is tagged as a defence holder, − ${GOF_REF_PENALTY} for a lineup read from the counters reference rather than a researched build. Same eligibility as defence (leader owned 7★ and ≥ G10, ≥ 3 members owned and 7★, one Galactic Legend per squad); raid builds excluded; anything sharing a unit with the defence plan is excluded. The bench fills greedily in score order, up to ${plan.max} squads for ${escapeHtml(plan.fmt)} (this heuristic's cap, not a game rule), and no unit appears twice. Counters reference matches are by leader name only, parsed conservatively — generic advice like “Empire burst” is ignored. Computed in ${escapeHtml(String(plan.ms || 0))} ms.</div>`, { key: "gof-how-" + acct })}
+  </div>`;
+}
+/* ===================== /gof ===================== */
+/* ===================== gos: GAC offence squad pool (7 Oct 2026) =====================
+   The offence bench was 2 squads per account because the tracked PvP pool was thin. The fix is data, not scoring: eight
+   swgoh.gg attack-perspective lineups were added to META_SQUADS (see the "gos:" comment there, each with source URL,
+   as-of date, seen/win figures and confidence), tagged offence-only so defence planning is unchanged. Two small hooks:
+   gosOnly keeps a 3v3-only trio out of the 5v5 bench, and each entry's gosTrio (the most-seen published 3v3 trio) is
+   registered in GCO_TRIOS so 3v3 uses the published trio instead of an "assumed" first-three.
+   Researched 7 Oct 2026 and NOT added (owner-facing record, also in the hand-off report):
+     • Queen Amidala (QA + Master Qui-Gon + Padawan Obi-Wan; 5v5 adds Echo + Shaak Ti) — published, but neither account owns QA.
+     • Sith Eternal Emperor — published attacks are 2-unit (SEE + Darth Bane / + Wat Tambor); neither account owns SEE; the
+       counters reference already supplies a SEE reference lineup.
+     • Darth Revan 5v5 — every published lineup is Bastila Shan (Fallen) + Darth Malak (+ Malgus); Ollie's Fallen Bastila is on
+       his Rey defence and Tiny has no Darth Revan.
+     • Ugnaught + Ezra Bridger + Hondo Ohnaka (3v3 A-tier) — Ugnaught is G6 on both accounts (leader must be ≥ G10).
+     • Maul + Gar Saxon + Imperial Super Commando — "Maul" is the Mandalorian Maul (MAULS7): Ollie G5, Tiny does not own him.
+     • Thin or weak swgoh.gg attack data: Princess Kneesaa Ewoks (2 battles), Geonosians (136 battles), Rey (Jedi Training)
+       Resistance (326 battles, top trio 58%), General Grievous B1/B2/Droideka/MagnaGuard 5v5 (365 seen, 63%; the top Grievous
+       lineup needs Admiral Trench). Finn + Zorii Bliss: only defence-side data came back, so not checked as an attack.
+     • Padmé 5v5 — 225 battles, top lineup seen 14 times. Wampa / Rotta solo — 1-unit attacks don't fit the ≥ 3-unit rule. */
+function gosFmtOk(sq, fmt) { return !sq.gosOnly || sq.gosOnly === fmt; }
+META_SQUADS.forEach(sq => { if (Array.isArray(sq.gosTrio) && sq.gosTrio.length === 3 && !GCO_TRIOS[sq.name]) GCO_TRIOS[sq.name] = sq.gosTrio.slice(); });
+/* ===================== /gos ===================== */
 /* ===================== Squad Arena recommendation (Coach's Corner) ===================== */
 /* Squad Arena has no dedicated swgoh.gg Tier List category of its own (only 5v5/3v3 GAC and Fleet do),
    but the same top-meta comps that hold GAC defense generally hold Squad Arena defense too, so the 5v5

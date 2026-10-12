@@ -7,7 +7,9 @@ const ROOT = path.resolve(__dirname, "..");
 const FILE = process.env.FILE || path.join(ROOT, "index.html");
 const PORT = +(process.env.PORT || 9100);
 const REAL = fs.readFileSync(path.join(ROOT, "state-2026-09-20.json"), "utf8");
-const snapName = fs.readdirSync(ROOT).filter(f => /^holotable-roster-snapshot-.*\.json$/.test(f)).sort().pop();
+const _snaps = fs.readdirSync(ROOT).filter(f => /^holotable-roster-snapshot-.*\.json$/.test(f)).sort();
+/* Pinned fixture: the suites' expectations were written against the 7 Oct pulls. Override with SNAP_DATE=2026-10-12 (rvf/upd suites). */
+const snapName = _snaps.includes(`holotable-roster-snapshot-${process.env.SNAP_DATE || "2026-10-07"}.json`) ? `holotable-roster-snapshot-${process.env.SNAP_DATE || "2026-10-07"}.json` : _snaps.pop();
 const SNAP = JSON.parse(fs.readFileSync(path.join(ROOT, snapName), "utf8"));
 const PULLS = JSON.stringify(SNAP.accounts);
 const R = []; const ck = (n, p, d) => R.push({ check: n, pass: !!p, detail: d });

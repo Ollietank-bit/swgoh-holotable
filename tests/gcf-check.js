@@ -253,7 +253,9 @@ const openPlan = async (p, acct) => { await L.go(p, acct, "gac"); await p.evalua
     await p.evaluate(() => gcfSetFmt("ollie", "5v5")); await p.waitForTimeout(200);
     const text = await p.evaluate(() => gcfPlanText(gcoPlanFor("ollie"), "ollie"));
     const lines = text.split("\n");
-    ck("copy text header 'GAC S84 E1 (5v5) — Ollietank, Carbonite 5'", lines[0] === "GAC S84 E1 (5v5) — Ollietank, Carbonite 5", lines[0]);
+    /* rvf (12 Oct): the division comes from the pull — Carb 5 on 7 Oct, Carb 4 on 12 Oct — so read it from the fixture, never hard-code it */
+    const rvfDiv = (/(\d+)\s*$/.exec(String(L.SNAP.accounts.ollie.gac || "")) || [])[1];
+    ck(`copy text header 'GAC S84 E1 (5v5) — Ollietank, Carbonite ${rvfDiv}' (division from the pull)`, !!rvfDiv && lines[0] === `GAC S84 E1 (5v5) — Ollietank, Carbonite ${rvfDiv}`, lines[0]);
     ck("copy text: one line per slot, 'Front top: … (L), …' and a 'Fleet:' line", lines.length === 5 && /^Front top: .+ \(L\)/.test(lines[1]) && /^Front bottom: /.test(lines[2]) && /^Back: /.test(lines[3]) && /^Fleet: /.test(lines[4]), text);
     await p.evaluate(() => { window.__copied = null; Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: t => { window.__copied = t; return Promise.resolve(); } } }); });
     await p.click('[data-card="gco"] .gcf-copy-btn'); await p.waitForTimeout(200);

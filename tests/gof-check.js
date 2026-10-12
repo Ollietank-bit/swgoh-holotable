@@ -64,7 +64,8 @@ const PLAN = ([a, f]) => { switchAcct(a); state.views["gco-" + a] = f; const def
     });
     ck("generic counter advice maps to nothing; named leaders map once", JSON.stringify(m.generic.slice(0, 3)) === "[[],[],[]]" && JSON.stringify(m.generic[3]) === '["Padmé Amidala"]' && JSON.stringify(m.rey) === '["Rey (GL) Jedi"]', JSON.stringify(m.generic));
     ck("'A or B' counter text splits into two options; 'Darth Revan/Darth Traya' maps to both", m.both.every(n => n >= 1 && n <= 2) && JSON.stringify(m.traya) === '[["Sith Eternal Emperor"],["Darth Traya Sith","Darth Revan"]]', JSON.stringify(m.traya));
-    ck("reference counter squads built from GAC_COUNTERS: Sith Eternal Emperor, Great Mothers, Bo-Katan (≥ 3 members, on a tier list)", m.refs.length === 3 && m.refs.every(r => r.n >= 3 && r.tl && r.name === `${r.lead} (counter squad)`) && m.refs.map(r => r.lead).sort().join("|") === "Bo-Katan (Mand'alor)|Great Mothers|Sith Eternal Emperor", JSON.stringify(m.refs));
+    /* rvf (deliberate change, 12 Oct): Bo-Katan (Mand'alor) now maps to the researched gos lineup, so only two reference squads remain */
+    ck("reference counter squads built from GAC_COUNTERS: Sith Eternal Emperor, Great Mothers (≥ 3 members, on a tier list)", m.refs.length === 2 && m.refs.every(r => r.n >= 3 && r.tl && r.name === `${r.lead} (counter squad)`) && m.refs.map(r => r.lead).sort().join("|") === "Great Mothers|Sith Eternal Emperor", JSON.stringify(m.refs));
     ck("gofGoodInto: Thrawn → Great Mothers; Rey → SLKR + SEE; SEE counter squad → 6 defences; Bossk → none", JSON.stringify(m.into.thrawn) === '["Great Mothers (Nightsisters)"]' && m.into.rey.includes("Supreme Leader Kylo Ren (GL)") && m.into.rey.includes("Sith Eternal Emperor (GL)") && m.into.see.length >= 5 && m.into.bossk.length === 0, JSON.stringify(m.into));
     ck("no page errors (plan)", errs.length === 0, JSON.stringify(errs.slice(0, 3)));
     await ctx.close();

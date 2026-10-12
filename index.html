@@ -1513,6 +1513,8 @@
   /* the "Data is stale" tile scrolls the Data health card into view; keep it clear of the phone's pinned header */
   .card[data-card="datahealth"] { scroll-margin-top: 12px; }
   @media (max-width: 600px) { .card[data-card="datahealth"] { scroll-margin-top: 150px; } }
+  /* rvf: GAC strip — a rating move the pull can't attribute to play (league change / move below GAC_MIN_SR_PLAYED) */
+  .rvf-amb { font-weight: 500; color: var(--ink-2); }
 </style>
 </head>
 <body data-tab="overview">
@@ -1808,7 +1810,7 @@
   <div class="tabpane" id="pane-events">
     <h2>Events &amp; Calendar</h2>
     <div class="h2sub">Upcoming game-wide events plus your own entries — guild-specific TW/TB timing and GAC seasons aren't on a public feed, so log those yourself. The Executor card tracks blueprint progress to 7&#9733; (and the unlock gate, for an account that hasn't unlocked it yet).</div>
-    <div class="mnote">Seed list read directly off swgoh.gg/events/ <span data-snap="events"></span> (live DOM read, not the swgohevents.com feed); the Conquest 25, Proving Grounds and datacron-expiry rows were added 7 Oct from swgoh.gg's conquest and datacrons pages, each named in its note — ask Claude to re-pull it if this list looks stale.</div>
+    <div class="mnote">Seed list read directly off swgoh.gg/events/ <span data-snap="events"></span> (live DOM read, not the swgohevents.com feed); the Conquest 25 row (swgoh.gg/conquest/, re-read 12 Oct) and the datacron-expiry rows (swgoh.gg/datacrons/, 7 Oct) come from the pages named in their notes — ask Claude to re-pull it if this list looks stale.</div>
     <div class="cqnav section-nav" id="eventsNav"></div>
     <div class="sortable" id="eventsGrid" data-pane="events"></div>
   </div>
@@ -1948,40 +1950,50 @@ const EPIGRAPHS = {
    countdown is 14d 8h), so its absence here is expected, not a miss. Guild-specific TW/TB timing and your
    GAC season still aren't on any public feed — log those yourself with "+ Add event" below. Ask Claude to
    re-browse swgoh.gg/events/ if this list is looking stale. */
+/* upd 12 Oct 2026 (seed version 7): the whole list below was RE-READ from swgoh.gg/events/ "Current & Upcoming" (17 events) by
+   the owner's own browser at 18:57 AEDT Mon 12 Oct 2026 (07:57 UTC). Each relative countdown was converted to an absolute AEDT
+   time and then to the row's date fields with the SAME convention the 1 Oct rows used (checked against them: Terrible Tings
+   was "Ends Tue 20 Oct" for a 21 Oct 05:00 AEDT close): `date` = the LOCAL (Australia/Sydney) calendar date the event starts
+   on, `ends` = the LOCAL calendar date of its LAST LIVE DAY, inclusive (eventStatus/todayEventRows treat ends >= today as still
+   running). A 05:00 AEDT close is therefore the day BEFORE (the game's daily reset is 05:00 AEDT, so 21 Oct 05:00 = last live day
+   20 Oct), an 18:00 AEDT close is the same day. Events already live at capture carry their known start where an earlier read had
+   it (Terrible Tings, The Wanderer's Blade) and otherwise the capture date, as the 1 Oct rows did; every note quotes the AEDT
+   time swgoh.gg's countdown gave. Discarded Doctrine (starts 15 Oct 18:00 AEDT on swgoh.gg, which CONFIRMS the app's 15 Oct) is
+   deliberately NOT a seed row: executorDerivedEvents() already puts it on this list as the "auto" row, and a seed copy would
+   show it twice. The Dark Sovereign page is swgoh.gg/events/EVENT_FLEET_MASTERY_LEVIATHAN_BONUS/ (kept out of the row's note: an
+   unbreakable 50-character token widens the Events table past a 390px screen). The Conquest and datacron-expiry rows are not event-list rows on that page and keep their own named sources
+   (swgoh.gg/conquest/ read 12 Oct; swgoh.gg/datacrons/ read 7 Oct). Dates not read on 12 Oct: the Terrible Tings and
+   Wanderer's Blade starts (kept from the 1 Oct read), the Conquest start and the datacron rows. */
 const EVENTS_SEED = [
-  { name: "Terrible Tings", cat: "Legendary", date: "2026-10-01", ends: "2026-10-20", note: "Earn Darth Jar Jar Shards! — live now." },
-  { name: "Jaxxon", cat: "Era Challenge", date: "2026-10-01", ends: "2026-10-06", note: "Earn Era Currency! — live now." },
-  { name: "Shattered Empire", cat: "Era Battle", date: "2026-10-01", ends: "2026-10-01", note: "Secure the Galaxy! — live now, ends within the day." },
-  { name: "Stardust Transmission", cat: "Fleet Mastery", date: "2026-10-01", ends: "2026-10-01", note: "Earn Profundity Blueprints! — live now, ends within hours." },
-  { name: "Duel of the Fates", cat: "Assault Battle", date: "2026-10-01", ends: "2026-10-01", note: "Battle Darth Maul! — live now, ends within hours." },
-  { name: "Contraband Cargo", cat: "Resource Event", date: "2026-10-01", note: "Earn Rare Rewards!" },
-  { name: "Training Droid Smuggling", cat: "Resource Event", date: "2026-10-01", note: "Earn Training Droids!" },
-  { name: "Jakku", cat: "Omega Battle", date: "2026-10-02", note: "Now with Zetas!" },
-  { name: "Peridea Patrol", cat: "Assault Battle", date: "2026-10-03", note: "Battle Ezra Bridger (Exile)!" },
-  { name: "Credit Heist", cat: "Resource Event", date: "2026-10-04", note: "Earn Credits!" },
-  { name: "Bespin", cat: "Omega Battle", date: "2026-10-05", note: "Now with Zetas!" },
-  { name: "Call Answered", cat: "Era Battle", date: "2026-10-05", note: "Guardians of Tomorrow" },
-  { name: "Endor Escalation", cat: "Other", date: "2026-10-06", note: "Face off against an AT-ST!" },
-  { name: "The Wanderer's Blade", cat: "Marquee", date: "2026-10-06", note: "Earn Rewards Daily!" },
-  { name: "Fanatical Devotion", cat: "Assault Battle", date: "2026-10-07", note: "Battle Force Users!" },
-  { name: "Imperial Fleet", cat: "Omega Battle", date: "2026-10-09", note: "Now with Zetas!" },
-  /* dta 7 Oct 2026 (seed version 6): rows below are NOT from swgoh.gg/events/ (that page is JavaScript-rendered and could
-     not be re-read this pass, so the rows above are still the 1 Oct read) — each is from the page named in its note, read
-     on 7 Oct. Appended at the end so the positional seed ids (seed0..seed15) of the rows above do not move. */
-  { name: "Conquest 25 (Embo & Keibu) — run 1", cat: "Other", date: "2026-09-28", ends: "2026-10-12", note: "swgoh.gg/conquest/ lists 28 Sep – 12 Oct (the end is the day after the last live day, 11 Oct). Runs 2–3 follow the 14-on / 14-off cadence — inferred, unconfirmed; no Conquest 26 announced." },
-  { name: "Proving Grounds (estimated)", cat: "Other", date: "2026-10-12", ends: "2026-10-13", note: "ESTIMATE, unconfirmed: swgoh.wiki says Proving Grounds is a 24-hour event that runs monthly immediately after Conquest. No date announced." },
+  { name: "Ultimate Journey Event", cat: "Journey", date: "2026-10-12", ends: "2026-10-12", note: "Earn rewards playing your powerful Galactic Legends — live at capture, ends 13 Oct 05:00 AEDT (start date not shown by swgoh.gg)." },
+  { name: "Terrible Tings", cat: "Legendary", date: "2026-10-01", ends: "2026-10-20", note: "Earn Darth Jar Jar Shards! — live; ends 21 Oct 05:00 AEDT (last live day 20 Oct)." },
+  { name: "The Wanderer's Blade", cat: "Marquee", date: "2026-10-06", ends: "2026-10-13", note: "Earn Rewards Daily! — live; ends 14 Oct 05:00 AEDT (last live day 13 Oct)." },
+  { name: "Bonus Proving Grounds", cat: "Other", date: "2026-10-12", ends: "2026-10-12", note: "Conquest unit shards — live at capture, ends 13 Oct 05:00 AEDT, when the regular Proving Grounds starts (start date not shown by swgoh.gg)." },
+  { name: "Coruscant", cat: "Omega Battle", date: "2026-10-12", ends: "2026-10-13", note: "Now with Zetas! — live at capture, ends 13 Oct 18:00 AEDT (start date not shown by swgoh.gg)." },
+  { name: "Smuggler's Run", cat: "Resource Event", date: "2026-10-12", note: "Starts 12 Oct 21:00 AEDT." },
+  { name: "Proving Grounds", cat: "Other", date: "2026-10-13", ends: "2026-10-13", note: "Conquest unit shards — start CONFIRMED on swgoh.gg/events/ (13 Oct 05:00 AEDT). The end is not shown there; 13 Oct is swgoh.wiki's 24-hour length, unconfirmed." },
+  { name: "Defense of Dathomir", cat: "Special", date: "2026-10-13", note: "Mother Talzin shards — starts 13 Oct 18:00 AEDT." },
+  { name: "The Ronin", cat: "Era Challenge", date: "2026-10-14", note: "Earn Era Currency! — starts 14 Oct 05:00 AEDT." },
+  { name: "Secrets and Shadows", cat: "Assault Battle", date: "2026-10-14", note: "Dark Side followers — starts 14 Oct 18:00 AEDT." },
+  { name: "Shattered Empire", cat: "Era Battle", date: "2026-10-15", note: "Starts 15 Oct 05:00 AEDT." },
+  { name: "Hoth", cat: "Omega Battle", date: "2026-10-16", note: "Now with Zetas! — starts 16 Oct 18:00 AEDT." },
+  { name: "Daring Droid", cat: "Mythic", date: "2026-10-17", note: "Starts 17 Oct 18:00 AEDT." },
+  { name: "Military Might", cat: "Assault Battle", date: "2026-10-17", note: "Empire — starts 17 Oct 18:00 AEDT." },
+  { name: "Dathomir", cat: "Omega Battle", date: "2026-10-19", note: "Now with Zetas! — starts 19 Oct 18:00 AEDT." },
+  { name: "Dark Sovereign", cat: "Fleet Mastery", date: "2026-10-20", note: "Leviathan blueprints — starts 20 Oct 18:00 AEDT. A BONUS star-up event (its swgoh.gg event page, read 12 Oct): it REQUIRES completing the Leviathan Fleet Mastery tier 4 and OWNING Leviathan at 4★ or more; 10 blueprints per completion, 999 crystals per refresh x19, returns about every 31 days. Neither Ollie nor Tiny owns Leviathan (12 Oct pulls), so it does not apply to either account yet — and it is not part of the Executor crystal advice." },
+  { name: "Conquest 25 (Embo & Keibu) — run 1", cat: "Other", date: "2026-09-28", ends: "2026-10-11", note: "swgoh.gg/conquest/ (read 12 Oct) lists Conquest 25 as 28 Sep – 12 Oct; 12 Oct is the day it closes (at the reset), so the last live day is 11 Oct and the run is over from 12 Oct. Runs 2–3 follow the 14-on / 14-off cadence — inferred, unconfirmed; no Conquest 26 is listed." },
   { name: "Datacron Set 33 expires", cat: "Other", date: "2026-10-29", ends: "2026-10-29", note: "Supremacy Directive (First Order · Resistance) — swgoh.gg/datacrons/, 7 Oct. Level Set 33 datacrons before it expires." },
   { name: "Datacron Set 34 expires", cat: "Other", date: "2026-11-26", ends: "2026-11-26", note: "The Art of Command (Empire · Jedi Vanguard) — swgoh.gg/datacrons/, 7 Oct." },
   { name: "Datacron Set 35 expires", cat: "Other", date: "2026-12-24", ends: "2026-12-24", note: "Duty and Defiance (Clone Trooper · Unaligned Force User) — swgoh.gg/datacrons/, 7 Oct." }
 ];
-/* RE-READ 1 Oct 2026 01:05 UTC from swgoh.gg/events/ (Claude in Chrome, live DOM read, "Showing 16 events"),
-   countdowns converted to absolute dates against that timestamp — supersedes the 22 Sep capture described
-   above (same method, same caveats: a day's drift either way is rounding on swgoh.gg's own countdown). */
-const EVENTS_SEED_VERSION = 6;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
+/* RE-READ 12 Oct 2026 18:57 AEDT from swgoh.gg/events/ (the owner's own browser, "Current & Upcoming", 17 events) — see the
+   upd paragraph above the list; it supersedes the 1 Oct read (Claude in Chrome, 01:05 UTC, "Showing 16 events") and the 22 Sep
+   capture before it (same method, same caveats: a day's drift either way is rounding on swgoh.gg's own countdown). */
+const EVENTS_SEED_VERSION = 7;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
 /* The day the seed list above was read off swgoh.gg — a calendar snapshot has a shelf life, and once
    its rows are all in the past the tab would otherwise sit there looking like a live feed with nothing
    on it. Named here so the "run out" notice and the tab's provenance line can't drift apart. */
-const EVENTS_SEED_CAPTURED = "1 Oct 2026";   // dta 7 Oct: deliberately NOT bumped — the swgoh.gg/events/ read above is still the 1 Oct one; the 5 rows appended on 7 Oct carry their own source in their notes
+const EVENTS_SEED_CAPTURED = "12 Oct 2026";   // upd 12 Oct: swgoh.gg/events/ itself was re-read this day (dta had left it at 1 Oct on 7 Oct, when that page could not be read)
 /* Discarded Doctrine requirements, per swgoh.wiki (captured 9 Aug 2026) — verify in-game before spending
    relic/gear materials, CG occasionally adjusts event gates. Matched against pulled roster data by unit
    name (ships aren't tracked by base_id elsewhere in this file, so name-matching is the robust option). */
@@ -2008,7 +2020,10 @@ const EXECUTOR_EVENT = { name: "Discarded Doctrine", anchorISO: "2026-09-15", da
    days)", refresh 999 crystals for 10 shards, up to 19 refreshes, packs 1,250 crystals for 10; every figure above matched
    (so asOf moved from 17 Sep). The 15th-of-the-month rule is this file's own simplification of that ~30-31 day cadence:
    15 Sep -> 15 Oct is exactly 30 days, 15 Oct -> 15 Nov would be 31, so a given occurrence can land a day either side of the
-   15th — treat the date as approximate and check the in-game event list. Next: 15 Oct 2026, then ~15 Nov (unconfirmed). */
+   15th — treat the date as approximate and check the in-game event list. Next: 15 Oct 2026, then ~15 Nov (unconfirmed).
+   upd 12 Oct 2026: swgoh.gg/events/ (read 12 Oct) lists Discarded Doctrine starting 15 Oct 18:00 AEDT, which confirms the 15 Oct date only —
+   the crystal/refresh/pack figures were NOT re-read, so asOf stays 2026-10-07. The new Leviathan "Dark Sovereign" bonus event
+   (20 Oct, needs Leviathan owned at 4★+; neither account owns it) is a different ship and plays no part in these numbers. */
 const SHIP_STAR_COST = { 5: 65, 6: 85, 7: 100 };   // blueprints to REACH that star (cumulative from 4*: 65 / 150 / 250)
 /* Ground War (Assault Battle) — researched 22 Aug 2026 via live web search (swgoh.gg's event page,
    swgoh.wiki, EA forums, community walkthroughs) while this event is live on the calendar. Faction-
@@ -6394,19 +6409,28 @@ function pbmKeepGacHist(next, cur) {
 
 /* ---- GAC: schedule + "did you play this event" ----
    Hand-researched, dated, registered in SNAPSHOTS as "gac-schedule" so it ages honestly. Confirmed dates
-   come from the owner's swgoh.gg GAC history page; `est: true` rows are this file's +7-day extrapolation
+   come from the owner's swgoh.gg GAC history page; `est: true` rows are this file's own extrapolation
    and are labelled "estimated" wherever they show. Each event is treated as a 7-day window from its start
-   date (local midnight) — an approximation of the join/defence/battle phases, which this file doesn't know. */
+   date (local midnight) — an approximation of the join/defence/battle phases, which this file doesn't know.
+   upd 12 Oct 2026: swgoh.gg/p/229917529/gac-history/ re-read — Season 84 (5v5) lists Event 1 Oct 7 and Event 2 Oct 14 (so
+   Event 2 is now VERIFIED, est dropped), Season 83 (3v3) Sep 9/16/23, Season 82 (5v5) Aug 12/19/26, Season 81 (3v3) Jul 22/29
+   visible. The pattern those four seasons show: formats alternate 3v3 / 5v5, each season has three weekly events, a season starts
+   every 28 days (Aug 12, Sep 9, Oct 7), and there is NO event in the week between a season's Event 3 and the next season's
+   Event 1. Still estimates (est: true): Season 84 Event 3 (21 Oct, +7 days) and Season 85 (3v3) Events 1-3 on 4 / 11 / 18 Nov —
+   the Season 85 dates are an INFERENCE from that 28-day cadence, not a published schedule. */
 const GAC_SCHEDULE = {
-  asOf: "2026-10-07",
+  asOf: "2026-10-12",
   source: "swgoh.gg/p/<code>/gac-history/",
   events: [
     { id: "s83e1", season: 83, event: 1, format: "3v3", start: "2026-09-09" },
     { id: "s83e2", season: 83, event: 2, format: "3v3", start: "2026-09-16" },
     { id: "s83e3", season: 83, event: 3, format: "3v3", start: "2026-09-23" },
     { id: "s84e1", season: 84, event: 1, format: "5v5", start: "2026-10-07" },
-    { id: "s84e2", season: 84, event: 2, format: "5v5", start: "2026-10-14", est: true },
-    { id: "s84e3", season: 84, event: 3, format: "5v5", start: "2026-10-21", est: true }
+    { id: "s84e2", season: 84, event: 2, format: "5v5", start: "2026-10-14" },
+    { id: "s84e3", season: 84, event: 3, format: "5v5", start: "2026-10-21", est: true },
+    { id: "s85e1", season: 85, event: 1, format: "3v3", start: "2026-11-04", est: true },
+    { id: "s85e2", season: 85, event: 2, format: "3v3", start: "2026-11-11", est: true },
+    { id: "s85e3", season: 85, event: 3, format: "3v3", start: "2026-11-18", est: true }
   ]
 };
 const PBM_DAY = 24 * 3600 * 1000, PBM_GAC_RECENT_DAYS = 21;
@@ -6502,6 +6526,8 @@ function pbmGacEvidence(hist, ev, nowMs, evs) {
     const e = hist[i], p = hist[i - 1];
     if (e.sr === p.sr || e.at < ev.startMs || e.at > nowMs) continue;
     const from = rpNum(e.prevAt) ? e.prevAt : p.at;
+    const why = rvfSrAmbiguity(p, e);   /* rvf: a league change or a tiny move is never evidence of play */
+    if (why) { amb = { from, at: e.at, delta: e.sr - p.sr, why, leagues: [p.league, e.league] }; continue; }
     if (from >= ev.startMs || gapOnly(from)) { if (first < 0) first = i; last = i; }
     else amb = { from, at: e.at, delta: e.sr - p.sr };
   }
@@ -6521,7 +6547,7 @@ function gacActivity(acct, nowMs) {
   const hist = pbmGacHistOf(acct);
   const ticks = isPlainObject(state.ticks) ? state.ticks : {};
   const floor = now - PBM_GAC_RECENT_DAYS * PBM_DAY;
-  const recent = hist.some((h, i) => i > 0 && h.sr !== hist[i - 1].sr && h.at >= floor && h.at <= now) ||
+  const recent = hist.some((h, i) => i > 0 && h.sr !== hist[i - 1].sr && !rvfSrAmbiguity(hist[i - 1], h) && h.at >= floor && h.at <= now) ||   /* rvf */
     evs.some(e => e.startMs <= now && e.startMs >= floor - 7 * PBM_DAY && !!ticks[pbmGacTickKey(acct, e.id)]);
   if (!cur) {
     return { state: "unknown", roundId: null, since: null, recent, event: null,
@@ -6536,10 +6562,11 @@ function gacActivity(acct, nowMs) {
     return Object.assign(base, { state: "played", how: "sr", recent: true, since: ev.at, delta: ev.delta,
       evidence: `skill rating ${pbmSigned(ev.delta)} since your ${pbmFmtDay(ev.from)} pull` });
   const pull = state.pulls && state.pulls[acct];
-  const evidence = ev.amb
+  const evidence = ev.amb && ev.amb.why ? rvfAmbEvidence(ev.amb)   /* rvf: league change / move below GAC_MIN_SR_PLAYED */
+    : ev.amb
     ? `skill rating moved ${pbmSigned(ev.amb.delta)} between your ${pbmFmtDay(ev.amb.from)} and ${pbmFmtDay(ev.amb.at)} pulls — that spans the start of this event, so it may be the previous one`
     : (pull && rpNum(pull.fetchedAt) && pull.fetchedAt >= cur.startMs ? "no skill-rating change seen since this event started" : "no pull since this event started");
-  return Object.assign(base, { state: "pending", recent, since: cur.startMs, evidence });
+  return Object.assign(base, { state: "pending", recent, since: cur.startMs, evidence, ambiguous: ev.amb && ev.amb.why ? ev.amb.why : "" });
 }
 /* The two hand-written "Re-enter GAC" Coach flags (stable ids, keys unchanged). tipIsDone() treats them as
    done while gacActivity() shows play this event or in the last 21 days — the flag says "sitting idle". */
@@ -6567,12 +6594,36 @@ function pbmGacStripHtml(acct) {
     return `<div class="pbm-gac pbm-gac-played" data-pbm-gac="played">${k}<span class="pbm-gac-v">✓ Defences set for ${name} · ${escapeHtml(g.evidence)}</span>${undo}<span class="pbm-gac-note">${honest}</span></div>`;
   }
   if (g.state === "pending") {
-    return `<div class="pbm-gac pbm-gac-pending" data-pbm-gac="pending">${k}<span class="pbm-gac-v">Set your defences for ${name}</span>
+    return `<div class="pbm-gac pbm-gac-pending" data-pbm-gac="pending"${g.ambiguous ? ` data-rvf-amb="${escapeHtml(g.ambiguous)}"` : ""}>${k}<span class="pbm-gac-v">Set your defences for ${name}${g.ambiguous ? ` <span class="rvf-amb">· your pull can't confirm it</span>` : ""}</span>
       <button type="button" class="pbm-gac-btn pbm-gac-set" onclick="pbmGacMark('${a}','${r}',true)">I've set them</button>
-      <span class="pbm-gac-note">${escapeHtml(g.evidence[0].toUpperCase() + g.evidence.slice(1))}. Turns green by itself once a pull shows your skill rating moved this event — that detects play, not which squads; the GAC planner checks your squads.</span></div>`;
+      <span class="pbm-gac-note">${escapeHtml(g.evidence[0].toUpperCase() + g.evidence.slice(1))}. Turns green by itself once a pull shows your skill rating moved this event (by ${GAC_MIN_SR_PLAYED}+ points, same league) — that detects play, not which squads; the GAC planner checks your squads.</span></div>`;
   }
   return `<div class="pbm-gac pbm-gac-unknown" data-pbm-gac="unknown">${k}<span class="pbm-gac-v">${escapeHtml(g.evidence)}</span></div>`;
 }
+/* ===================== rvf: GAC 'played' evidence — ambiguous rating moves (12 Oct 2026 review) =====================
+   Ollie's 7 Oct → 12 Oct pulls: 1467 → 1468 SR while his league went Carb 5 → Carb 4 (a season re-placement). The
+   strip used to read that +1 as "✓ Defences set". Two rules now keep an SR move from counting as play:
+   (a) the league changed between the two pulls — a re-placement can move the rating without a battle;
+   (b) |ΔSR| < GAC_MIN_SR_PLAYED — too small to be a battle result.
+   Either one leaves the event "pending" with the reason spelled out and the manual "I've set them" tick, and the move
+   does not count as "recent" play for the Re-enter-GAC flags. An empty league on either side (an old pull seeded
+   before leagues were recorded) is unknown, not a change. */
+const GAC_MIN_SR_PLAYED = 5;   /* UNVERIFIED: this app's threshold, not a game rule — a GAC battle normally moves skill rating by tens of points */
+function rvfSrAmbiguity(p, e) {
+  const a = String((p && p.league) || "").trim(), b = String((e && e.league) || "").trim();
+  if (a && b && a !== b) return "league";
+  if (Math.abs((+e.sr || 0) - (+p.sr || 0)) < GAC_MIN_SR_PLAYED) return "small";
+  return "";
+}
+function rvfAmbEvidence(amb) {
+  const since = `skill rating ${pbmSigned(amb.delta)} since your ${pbmFmtDay(amb.from)} pull`;
+  if (amb.why === "league") {
+    const lg = (amb.leagues || []).map(x => String(x || "").trim());
+    return `${since}, but your league also changed (${lg[0]} → ${lg[1]}) — a season re-placement can move the rating without a battle, so this doesn't show you set defences`;
+  }
+  return `${since} — under ${GAC_MIN_SR_PLAYED} points, too small to show you played (a battle normally moves it by tens; this threshold is unverified), so this doesn't show you set defences`;
+}
+/* ===================== /rvf (GAC evidence) ===================== */
 
 /* ===================== Best Mods (embedded swgoh.gg snapshot + best-effort live refresh) ===================== */
 /* swgoh.gg's /best-mods/ HTML pages sit behind Cloudflare bot protection, which blocks the CORS
@@ -7544,6 +7595,13 @@ function optSeeBest(name) {
        (from 26 Oct, 23 Nov) and the 7 Dec window end remain the cadence's inference, unconfirmed — knownThrough therefore stays
        2026-12-07 on purpose. Proving Grounds: swgoh.wiki says it is "a 24 hour event that runs monthly immediately after
        Conquest", so the next one is ESTIMATED at ~12–13 Oct 2026; no date has been announced (unconfirmed).
+       RE-CHECKED 12 Oct 2026 (upd): swgoh.gg/conquest/ still lists Conquest 25 as Sep 28 – Oct 12, 2026 and no Conquest 26. Same
+       reading: 12 Oct is the day run 1 closed (the reset), the last live day is 11 Oct, so from 12 Oct the Today strip, the tab's
+       status line and the Events row all say run 1 has ENDED (the Events row used to carry ends 12 Oct, which said "Ends today" a day
+       late). Runs 2-3 (26 Oct, 23 Nov) stay the cadence's inference, labelled unconfirmed. Proving Grounds is now CONFIRMED on
+       swgoh.gg/events/ (starts 13 Oct 05:00 AEDT; Bonus Proving Grounds, live at capture, ends then). ONLY these window dates were
+       re-read: the plan, feats, disks and enemy intel were NOT re-captured, so CQDATA.captured (and the "conquest" SNAPSHOTS age)
+       is deliberately left at 27 Sep.
      • redCrate (664 keycards) and skippable (34) matched the 7 Aug snapshot's values exactly and were
        re-confirmed live rather than assumed unchanged.
      • One raw-data oddity kept as-is rather than guessed away: Sector 2's "Mini Boss — Palpatine" second
@@ -7794,8 +7852,12 @@ function cqRunStatusHtml(rs) {
     head = "Not started yet";
     span = `Conquest ${CQDATA.conquest}'s first run inferred to start ${cqShortDate(rs.nextStart)}`;
   } else {
-    head = "Off fortnight — between runs";
-    span = `run ${rs.occurrence} of 3, last live day ${cqShortDate(rs.runEnd)} · next run inferred from ${cqShortDate(rs.nextStart)}`;
+    /* upd 12 Oct: swgoh.gg lists a run's END as the day after its last live day (Conquest 25: 28 Sep – 12 Oct, last live day 11 Oct), and
+       that listed day is when it has closed — so from that day on this says "ended", the same day the Events row stops saying "Ends today". */
+    head = `Run ${rs.occurrence} ended — off fortnight`;
+    span = rs.occurrence < 3
+      ? `run ${rs.occurrence} of 3, last live day ${cqShortDate(rs.runEnd)} · run ${rs.occurrence + 1} expected from ${cqShortDate(rs.nextStart)} (inferred from the cadence, unconfirmed)`
+      : `run 3 of 3, last live day ${cqShortDate(rs.runEnd)} · that was Conquest ${CQDATA.conquest}'s last run by the cadence; the next conquest is not announced`;
   }
   const jump = (rs.live && rs.day && !rs.stale && +cqData().day !== rs.day)
     ? ` · <a href="#" onclick="event.preventDefault();cqDay(${rs.day})">go to day ${rs.day}</a>` : "";
@@ -9498,7 +9560,7 @@ function gcoRun(acct) { gcoUi.open[acct] = true; delete gcoUi.pending[acct]; ren
 function gcoApply(acct) {
   if (acct !== current) return;
   const lg = gcoLeague(acct);
-  gcoUi.pending[acct] = { acct, fmt: gcoFormat(acct), league: lg.league.key, keep: gcfViewOf(acct).keep.join(","), rows: gcoPlannerRows(gcoPlanFor(acct)),
+  gcoUi.pending[acct] = { acct, fmt: gcoFormat(acct), league: lg.league.key, keep: gcfViewOf(acct).keep.join(","), rvfKey: rvfPendKey(acct), rows: gcoPlannerRows(gcoPlanFor(acct)),
     off: gofUi.open[acct] ? gofPlannerRows(gofPlanFor(acct)) : null };   /* gof: offence rows ride along when the offence half is open */
   renderGac();
 }
@@ -9690,7 +9752,7 @@ function gcfPlanKey(acct, reqs, fmt, lg, keep) {
 function gcfPendingFresh(acct) {
   const p = gcoUi.pending[acct];
   if (!p) return null;
-  if (p.fmt !== gcoFormat(acct) || p.league !== gcoLeague(acct).league.key || p.keep !== gcfViewOf(acct).keep.join(",")) { delete gcoUi.pending[acct]; return null; }
+  if (p.fmt !== gcoFormat(acct) || p.league !== gcoLeague(acct).league.key || p.keep !== gcfViewOf(acct).keep.join(",") || (p.rvfKey && p.rvfKey !== rvfPendKey(acct))) { delete gcoUi.pending[acct]; return null; }   /* rvf: + roster pull / offence half */
   return p;
 }
 function gcfZoneIsOurs(zone) {
@@ -9816,7 +9878,7 @@ const GOF_COUNTER_MAP = [
   { re: /Darth Traya/, lead: "Darth Traya", meta: "Darth Traya Sith" },
   { re: /Sith Eternal Emperor/, lead: "Sith Eternal Emperor" },
   { re: /Great Mothers/, lead: "Great Mothers" },
-  { re: /Bo-Katan \(Mand'alor\)/, lead: "Bo-Katan (Mand'alor)" },
+  { re: /Bo-Katan \(Mand'alor\)/, lead: "Bo-Katan (Mand'alor)", meta: "Bo-Katan (Mand'alor) Mandalorians (offence)" },   /* rvf: tracked since gos — was a "(counter squad)" read from GAC_COUNTERS */
   { re: /Queen Amidala/, lead: "Queen Amidala" },
   { re: /Padme Amidala/, lead: "Padmé Amidala" },
   { re: /Darth Revan/, lead: "Darth Revan" }
@@ -9946,19 +10008,11 @@ function gofIsPristine(o) {
   if (!gofIsRow(o)) return false;
   const m = /^\((5v5|3v3)\) (#\d+|fleet): ([\s\S]*)$/.exec(o.squad.slice(GOF_MARK.length + 1));
   if (!m) return false;
-  const core = m[3].replace(/ \+ fill \d+ slots? yourself$/, "");
-  const known = gofKnownCands().some(([name, set]) => {
-    if (!core.startsWith(name + " — ")) return false;
-    const items = core.slice(name.length + 3).split(", ");
-    return items.length > 0 && items.every(it => set.has(it.replace(/ \((L|flagship)\)$/, "")));
-  });
-  if (!known) return false;
+  const name = rvfOffRowName(m[1], m[3], m[2] === "fleet");   /* rvf: exact shape — leader first, no unit dropped or moved */
+  if (!name) return false;
   const z = String(o.zone == null ? "" : o.zone);
   if (m[2] === "fleet") return z === GOF_FLEET_ZONE;
-  if (z === GOF_NO_MATCH) return true;
-  if (!z.startsWith("good into: ")) return false;
-  const defs = new Set(GAC_COUNTERS.map(c => c.def));
-  return z.slice(11).split(", ").every(d => defs.has(d));
+  return z === GOF_NO_MATCH || z === gofZoneText({ into: rvfIntoFor(name) });   /* rvf: the full list, not any subset */
 }
 function gofRun(acct) { gcoUi.open[acct] = true; gofUi.open[acct] = true; delete gcoUi.pending[acct]; renderGac(); }
 function gofResetLabel(planned, plannedOff) {
@@ -10045,6 +10099,58 @@ function gofSectionHtml(acct) {
 function gosFmtOk(sq, fmt) { return !sq.gosOnly || sq.gosOnly === fmt; }
 META_SQUADS.forEach(sq => { if (Array.isArray(sq.gosTrio) && sq.gosTrio.length === 3 && !GCO_TRIOS[sq.name]) GCO_TRIOS[sq.name] = sq.gosTrio.slice(); });
 /* ===================== /gos ===================== */
+/* ===================== rvf: offence-plan review fixes (12 Oct 2026) =====================
+   1. Pristine offence rows (gofIsPristine) must be EXACTLY what gofPlannerRows writes: the old check accepted any subset
+      of a squad's units and any subset of its "good into" list, so a row the user trimmed ("drop Paz, he's on TW") or
+      re-led was still "ours" and Reset / re-Apply deleted it. Now: the leader is the first item with its mark, every
+      other item is a distinct non-leader member, owned items + "fill N" add up to the lineup size for that format, the
+      fill suffix is spelled exactly, and the zone is the full counter list (or the no-match / fleet text).
+   2. Bo-Katan (Mand'alor): the counters reference names her as an answer, which built a "(counter squad)" from the
+      GAC_COUNTERS defence row (Din Djarin / Axe Woves — blocked on both rosters) while the researched gos lineup sat on
+      the bench as #1 with no "good into" and the If-you-see lookup missing those defences. GOF_COUNTER_MAP now points at
+      the gos entry; the old "(counter squad)" name stays recognised so rows an older build wrote stay replaceable.
+   3. A pending Apply is also dropped when the roster pull (fetchedAt / charDataAt / unit count / fleet flagship) or the
+      offence half changed since it was built — it no longer writes rows from the previous roster. */
+const RVF_LEGACY_REF_LEADS = ["Bo-Katan (Mand'alor)"];
+function rvfPendKey(acct) {
+  const reqs = (accountView(acct).src || {}).reqs || {}, lg = gcoLeague(acct);
+  return gcfPlanKey(acct, reqs, gcoFormat(acct), lg, gcfViewOf(acct).keep) + "|off:" + (gofUi.open[acct] ? 1 : 0);
+}
+function rvfLegacyRefs() {
+  return RVF_LEGACY_REF_LEADS.map(lead => {
+    const row = GAC_COUNTERS.find(c => gofDefChars(c)[0] === lead), m = GOF_COUNTER_MAP.find(x => x.lead === lead);
+    return row && m ? { name: gofRefName(lead), names: gofDefChars(row), into: GAC_COUNTERS.filter(c => gofOptions(c).some(t => m.re.test(t))).map(c => c.def) } : null;
+  }).filter(Boolean);
+}
+function rvfIntoFor(name) { const l = rvfLegacyRefs().find(x => x.name === name); return l ? l.into : gofGoodInto(name); }
+/* Every squad / fleet a gof row can name, with the exact shape gcfOwnedList + gcfFillText give it in this format. */
+const rvfShapeCache = new Map();   /* the inputs are constants, so one list per format × kind */
+function rvfOffShapes(fmt, fleet) {
+  const ck = fmt + (fleet ? "|fleet" : "|squad");
+  if (!rvfShapeCache.has(ck)) rvfShapeCache.set(ck, rvfOffShapesBuild(fmt, fleet));
+  return rvfShapeCache.get(ck);
+}
+function rvfOffShapesBuild(fmt, fleet) {
+  const sq = (name, names) => ({ name, lead: names[0], mark: " (L)", set: new Set(names), n: fmt === "3v3" ? Math.min(3, names.length) : names.length });
+  if (!fleet) return META_SQUADS.filter(s => (s.members || []).length).map(s => sq(s.name, s.members.map(m => m[1])))
+    .concat(gofRefSquads().map(s => sq(s.name, s.members.map(m => m[1]))), rvfLegacyRefs().map(l => sq(l.name, l.names)));
+  return META_FLEETS.filter(f => (f.members || []).length).map(f => ({ name: f.name, lead: f.members[0][0], mark: " (flagship)", set: new Set(f.members.map(m => m[0])), n: f.members.length }))
+    .concat(META_FLEET_TIER.map(f => ({ name: `${f.name} (flagship only)`, lead: f.name, mark: "", set: new Set([f.name]), n: 1 })));
+}
+/* "<name> — Lead (L), B, C + fill 2 slots yourself" → name when it is exactly a row gofPlannerRows could have written. */
+function rvfOffRowName(fmt, body, fleet) {
+  const fm = / \+ fill (\d+) slots? yourself$/.exec(body), fill = fm ? +fm[1] : 0;
+  const core = fm ? body.slice(0, fm.index) : body;
+  if (fm && body !== core + gcfFillText({ unownedN: fill })) return "";
+  const hit = rvfOffShapes(fmt, fleet).find(s => {
+    if (!core.startsWith(s.name + " — ")) return false;
+    const items = core.slice(s.name.length + 3).split(", "), rest = items.slice(1);
+    return items[0] === s.lead + s.mark && items.length + fill === s.n && new Set(rest).size === rest.length &&
+      rest.every(it => it !== s.lead && s.set.has(it));
+  });
+  return hit ? hit.name : "";
+}
+/* ===================== /rvf (offence plan) ===================== */
 /* ===================== Squad Arena recommendation (Coach's Corner) ===================== */
 /* Squad Arena has no dedicated swgoh.gg Tier List category of its own (only 5v5/3v3 GAC and Fleet do),
    but the same top-meta comps that hold GAC defense generally hold Squad Arena defense too, so the 5v5
@@ -12090,7 +12196,7 @@ const SNAPSHOTS = [
     /* 7 Oct 2026: flipped to 5v5 for Season 84 (Event 1 on 7 Oct). Season 85 (3v3) is ESTIMATED to start ~4 Nov 2026 — an
        inference from the ~4-week alternating cadence (S83 3v3: 9/16/23 Sep; S84 5v5: 7/14/21 Oct), not an announcement, so
        the chip is deliberately left to age on the normal 30-day half-life rather than given a hard `expires`. */
-    asOf: "2026-10-07", halfLife: 30,
+    asOf: "2026-10-12", halfLife: 30,   /* upd 12 Oct: gac-history re-read — Season 84 Event 2 (14 Oct) is verified; Season 85 (3v3) from 4 Nov remains an inference from the 28-day season cadence (Aug 12 / Sep 9 / Oct 7) */
     hint: "ask Claude to confirm whether GAC is currently 3v3 or 5v5" },
   /* Half-life 30: this feeds Roster Gap Radar, which is what talks people into relic spend, and relic
      spend is irreversible. The five names inside a squad are stable for months; the question of which
@@ -12138,9 +12244,9 @@ const SNAPSHOTS = [
   { key: "raid-notes", label: "Raid phases with no sourced squad", tab: "gaps",
     asOf: "2026-08-09", halfLife: 90,
     hint: "ask Claude to re-check HSTR P3 / AAT for a sourced squad" },
-  /* pbm: half-life 14 — the "GAC this round" strip reads which event is live from this list, and only
-     Season 84 Event 1 onwards is in it; events after that are +7-day estimates. Two weeks is when the
-     estimates start being what the strip runs on. */
+  /* pbm: half-life 14 — the "GAC this round" strip reads which event is live from this list. upd 12 Oct:
+     verified through Season 84 Event 2 (14 Oct); Season 84 Event 3 (+7 days) and Season 85's three events (4 / 11 / 18 Nov,
+     from the 28-day season cadence) are estimates. Two weeks is when the estimates start being what the strip runs on. */
   { key: "gac-schedule", label: "GAC season/event dates (“GAC this round”)", tab: "coach",
     asOf: GAC_SCHEDULE.asOf, halfLife: 14,
     hint: "ask Claude to re-read swgoh.gg/p/<ally code>/gac-history/ for the current season's event dates" },
@@ -12423,7 +12529,10 @@ function todayConquestLine() {
       : `<b>Conquest ${num}</b> — day ${+rs.day} of ${live}, run ${+rs.occurrence} of 3, last live day ${escapeHtml(cqShortDate(rs.runEnd))}`;
   }
   if (beyond || !rs.nextStart) return null;
-  return `<b>Conquest ${num}</b> — ${rs.runStart ? "off fortnight, " : ""}next run from ${escapeHtml(cqShortDate(rs.nextStart))}`;
+  /* upd 12 Oct: an ended run says so (matching the Conquest tab and the Events row), with the next run labelled unconfirmed. */
+  if (rs.runStart && +rs.occurrence >= 3) return `<b>Conquest ${num}</b> run 3 ended — the last run by the cadence; the next conquest is not announced`;
+  if (rs.runStart) return `<b>Conquest ${num}</b> run ${+rs.occurrence} ended — run ${+rs.occurrence + 1} expected from ${escapeHtml(cqShortDate(rs.nextStart))}, unconfirmed`;
+  return `<b>Conquest ${num}</b> — next run from ${escapeHtml(cqShortDate(rs.nextStart))}`;
 }
 /* Same tally as #dailyProg, for the current account. Quiet once everything is ticked. */
 function todayDailyLine(key) {

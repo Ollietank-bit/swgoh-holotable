@@ -50,16 +50,17 @@ const OCT7 = [2026, 9, 7, 12];
     L.ck("clock pinned to Wed 7 Oct 2026 12:00 AEDT (UTC+11, DST on)", /Wed Oct 07 2026 12:00/.test(tz.now) && tz.off === -660, JSON.stringify(tz));
     await L.go(p, "ollie", "overview");
     let t = await tiles(p);
-    const ollieIds = ["ev-seed15", "cq-25-2026-09-28-end", "gac-s84e1-def-ollie", "exec-2026-10-15-ollie", "ev-seed0", "rotta-2026-10-27", "dc-33"];
-    L.ck("ollie: 7 tiles in due-date order (event, conquest, GAC defence, Executor, event, Rotta est, datacron)", JSON.stringify(t.map(x => x.id)) === JSON.stringify(ollieIds), t.map(x => x.id).join());
-    L.ck("ollie: countdowns are local calendar days (2,4,6,8,13,20,22)", t.map(x => x.cd.replace(/\D/g, "")).join() === "2,4,6,8,13,20,22", t.map(x => x.cd).join("|"));
-    L.ck("ollie: urgency colours — 2–6d warning, ≥7d good", t.map(x => x.urg).join() === "warning,warning,warning,good,good,good,good", t.map(x => x.urg).join());
+    /* upd 12 Oct: EVENTS_SEED was re-read (version 7), so the 7 Oct clock now meets the new rows: seed0 Ultimate Journey (Journey, 12 Oct) and seed4 Coruscant (Omega Battle, 12 Oct) instead of the old Imperial Fleet / Jakku rows. */
+    const ollieIds = ["cq-25-2026-09-28-end", "ev-seed0", "ev-seed4", "gac-s84e1-def-ollie", "exec-2026-10-15-ollie", "rotta-2026-10-27", "dc-33"];
+    L.ck("ollie: 7 tiles in due-date order (conquest, 2 events, GAC defence, Executor, Rotta est, datacron)", JSON.stringify(t.map(x => x.id)) === JSON.stringify(ollieIds), t.map(x => x.id).join());
+    L.ck("ollie: countdowns are local calendar days (4,5,5,6,8,20,22)", t.map(x => x.cd.replace(/\D/g, "")).join() === "4,5,5,6,8,20,22", t.map(x => x.cd).join("|"));
+    L.ck("ollie: urgency colours — 2–6d warning, ≥7d good", t.map(x => x.urg).join() === "warning,warning,warning,warning,good,good,good", t.map(x => x.urg).join());
     L.ck("ollie: Rotta tile is tagged est., datacron tile is tagged unverified; dated tiles are untagged", t[5].tag === "est." && t[6].tag === "unverified" && t.slice(0, 5).every(x => !x.tag), t.map(x => x.tag).join("|"));
-    L.ck("ollie: Executor tile says 30 blueprints to 6★", t[3].title === "Discarded Doctrine" && /30 blueprints to 6★/.test(t[3].action), t[3].action);
-    L.ck("ollie: GAC tile reads 'GAC S84 E1 · Set defence' to Tue 13 Oct", t[2].title === "GAC S84 E1" && /Set defence/.test(t[2].action) && /13 Oct/.test(t[2].action), t[2].action);
-    L.ck("ollie: Conquest tile shows the app's 11 Oct end with a local-time note", /Conquest 25/.test(t[1].title) && /11 Oct/.test(t[1].action) && /local time/.test(t[1].action), t[1].action);
+    L.ck("ollie: Executor tile says 30 blueprints to 6★", t[4].title === "Discarded Doctrine" && /30 blueprints to 6★/.test(t[4].action), t[4].action);
+    L.ck("ollie: GAC tile reads 'GAC S84 E1 · Set defence' to Tue 13 Oct", t[3].title === "GAC S84 E1" && /Set defence/.test(t[3].action) && /13 Oct/.test(t[3].action), t[3].action);
+    L.ck("ollie: Conquest tile shows the app's 11 Oct end with a local-time note", /Conquest 25/.test(t[0].title) && /11 Oct/.test(t[0].action) && /local time/.test(t[0].action), t[0].action);
     L.ck("ollie: datacron tile counts the pulled Set 33 datacrons (3) and names 29 Oct", /29 Oct/.test(t[6].action) && /3 Set 33 datacrons/.test(t[6].action), t[6].action);
-    L.ck("aria-label spells the countdown in words and the destination", /due in 2 days/.test(t[0].aria) && /Opens Events/.test(t[0].aria) && /due in 6 days/.test(t[2].aria) && /Opens GAC Planner/.test(t[2].aria), t[0].aria);
+    L.ck("aria-label spells the countdown in words and the destination", /due in 4 days/.test(t[0].aria) && /Opens Conquest/.test(t[0].aria) && /due in 5 days/.test(t[1].aria) && /Opens Events/.test(t[1].aria) && /due in 6 days/.test(t[3].aria) && /Opens GAC Planner/.test(t[3].aria), t[0].aria);
     L.ck("every tile is a ≥44px-tall button target", t.every(x => x.goH >= 44 && x.h >= 44), JSON.stringify(t.map(x => Math.round(x.goH))));
     const a11y = await p.evaluate(() => ({
       btn: [...document.querySelectorAll("#nxtStrip .nxt-go, #nxtStrip .nxt-x")].every(el => el.tagName === "BUTTON" && el.type === "button"),
@@ -73,9 +74,9 @@ const OCT7 = [2026, 9, 7, 12];
 
     await L.go(p, "tiny", "overview");
     t = await tiles(p);
-    const tinyIds = ["ev-seed15", "cq-25-2026-09-28-end", "gac-s84e1-def-tiny", "exec-2026-10-15-tiny", "ev-seed0", "dc-33"];
+    const tinyIds = ["cq-25-2026-09-28-end", "ev-seed0", "ev-seed4", "gac-s84e1-def-tiny", "exec-2026-10-15-tiny", "dc-33"];
     L.ck("tiny: 6 tiles in order — no Rotta tile (SHIP_PLAN marks Rotta a skip for Tiny)", JSON.stringify(t.map(x => x.id)) === JSON.stringify(tinyIds), t.map(x => x.id).join());
-    L.ck("tiny: Executor tile says Tiny reaches 5★ free (10 blueprints short, one free run)", /Tiny reaches 5★ free/.test(t[3].action), t[3].action);
+    L.ck("tiny: Executor tile says Tiny reaches 5★ free (10 blueprints short, one free run)", /Tiny reaches 5★ free/.test(t[4].action), t[4].action);
 
     /* ---------- 2. tap navigation (deep links through jumpToView / switchTab) ---------- */
     await L.go(p, "ollie", "overview");
@@ -134,8 +135,8 @@ const OCT7 = [2026, 9, 7, 12];
     await p.evaluate(() => pbmGacMark("ollie", "s84e1", true)); await p.waitForTimeout(200);
     t = await tiles(p);
     const gacNext = t.find(x => /^gac-/.test(x.id));
-    L.ck("after 'I've set them': defence tile gone, next event 'GAC S84 E2' shown as est. (starts Wed 14 Oct, 7d, good)",
-      !t.some(x => x.id === "gac-s84e1-def-ollie") && gacNext && gacNext.id === "gac-s84e2-start" && gacNext.tag === "est." && gacNext.urg === "good" && /14 Oct/.test(gacNext.action), JSON.stringify(gacNext));
+    L.ck("after 'I've set them': defence tile gone, next event 'GAC S84 E2' shown WITHOUT an est. tag — verified 12 Oct (starts Wed 14 Oct, 7d, good)",
+      !t.some(x => x.id === "gac-s84e1-def-ollie") && gacNext && gacNext.id === "gac-s84e2-start" && gacNext.tag === "" && gacNext.urg === "good" && /14 Oct/.test(gacNext.action), JSON.stringify(gacNext));
     await p.evaluate(() => pbmGacMark("ollie", "s84e1", false)); await p.waitForTimeout(200);
     L.ck("undo brings the defence tile back", (await tiles(p)).some(x => x.id === "gac-s84e1-def-ollie"), "");
 
@@ -171,7 +172,7 @@ const OCT7 = [2026, 9, 7, 12];
     await L.go(p, "ollie", "overview");
     const t = await tiles(p);
     L.ck("30 Oct: Set 33 tile gone; Set 34 (26 Nov, 27d, good, unverified) shown", !t.some(x => x.id === "dc-33") && t.some(x => x.id === "dc-34" && x.urg === "good" && x.tag === "unverified" && /26 Nov/.test(x.action)), t.map(x => x.id + ":" + x.urg).join());
-    L.ck("30 Oct: Rotta, GAC (schedule run out) and 7-Oct events are gone", !t.some(x => /^(rotta-|gac-|ev-)/.test(x.id)), t.map(x => x.id).join());
+    L.ck("30 Oct: Rotta and the 7-Oct events are gone; GAC now shows Season 85 Event 1 (4 Nov, est.) instead of running out", !t.some(x => /^(rotta-|ev-)/.test(x.id)) && t.some(x => x.id === "gac-s85e1-start" && x.tag === "est." && /4 Nov/.test(x.action)), t.map(x => x.id).join());
     L.ck("30 Oct: Conquest run 2 ends 8 Nov (9d, good) and Executor 15 Nov (16d, good)", t.some(x => x.id === "cq-25-2026-10-26-end" && x.urg === "good" && /8 Nov/.test(x.action)) && t.some(x => x.id === "exec-2026-11-15-ollie" && x.urg === "good"), JSON.stringify(t.map(x => [x.id, x.cd])));
     const stale = t.find(x => /^stale-/.test(x.id));
     L.ck("30 Oct: one 'Data is stale' tile, last, info-coloured, count matches dataHealthRows", stale && t[t.length - 1] === stale && stale.urg === "stale" && +stale.cd.replace(/\D/g, "") === (await p.evaluate(() => dataHealthRows(nxtNow()).filter(r => r.st.state === "stale").length)), JSON.stringify(stale));
@@ -189,7 +190,7 @@ const OCT7 = [2026, 9, 7, 12];
     let t = await tiles(p);
     const cq = t.find(x => /^cq-/.test(x.id));
     L.ck("11 Oct: Conquest tile reads 'Today', critical, first in the strip; aria says 'due today'", cq && t[0] === cq && cq.cd === "Today" && cq.urg === "critical" && /due today/.test(cq.aria), JSON.stringify(cq));
-    L.ck("11 Oct: Imperial Fleet (9 Oct, no end date) has vanished", !t.some(x => x.id === "ev-seed15"), t.map(x => x.id).join());
+    L.ck("11 Oct: Imperial Fleet (old 9 Oct row, no end date, gone from the 12 Oct seed) has vanished", !t.some(x => x.title === "Imperial Fleet"), t.map(x => x.id).join());
     await ctx.close();
     const o2 = await openAt(b, { tag: "oct10", pin: [2026, 9, 10, 23] });
     await L.go(o2.p, "ollie", "overview");

@@ -314,8 +314,8 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     ck("gacActivity: per-event tick → played; next event pending again; other account unaffected", r.tick.state === "played" && r.tick.how === "tick" && r.tickNextEvent.state === "pending" && r.tickNextEvent.roundId === "s84e2" && r.tinyUnaffected === "pending", JSON.stringify([r.tick.state, r.tickNextEvent.state, r.tinyUnaffected]));
     ck("gacActivity: schedule run out → unknown with honest text", r.ranOut.state === "unknown" && /run out/.test(r.ranOut.evidence), r.ranOut.evidence);
     const reg = await p.evaluate(() => ({ n: SNAPSHOTS.length, e: SNAP_BY_KEY["gac-schedule"], st: snapState(SNAP_BY_KEY["gac-schedule"], Date.now()).state, fmt: GAC_FORMAT, src: GAC_SCHEDULE.source, est: GAC_SCHEDULE.events.filter(e => e.est).map(e => e.id) }));
-    ck("GAC_SCHEDULE registered in SNAPSHOTS (22 entries), dated 2026-10-07", reg.n === 22 && reg.e && reg.e.asOf === "2026-10-07" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
-    ck("GAC_SCHEDULE: source recorded; later events flagged as estimates; GAC_FORMAT is 5v5 (dta refresh: Season 84)", reg.src === "swgoh.gg/p/<code>/gac-history/" && JSON.stringify(reg.est) === '["s84e2","s84e3"]' && reg.fmt === "5v5", JSON.stringify(reg));
+    ck("GAC_SCHEDULE registered in SNAPSHOTS (22 entries), dated 2026-10-12 (upd: gac-history re-read)", reg.n === 22 && reg.e && reg.e.asOf === "2026-10-12" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
+    ck("GAC_SCHEDULE: source recorded; estimates are S84E3 + Season 85 (S84E2 verified 12 Oct); GAC_FORMAT is 5v5 (dta refresh: Season 84)", reg.src === "swgoh.gg/p/<code>/gac-history/" && JSON.stringify(reg.est) === '["s84e3","s85e1","s85e2","s85e3"]' && reg.fmt === "5v5", JSON.stringify(reg));
     allErrs.push(...errs); await ctx.close();
   });
 

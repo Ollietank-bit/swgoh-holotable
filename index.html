@@ -1515,6 +1515,52 @@
   @media (max-width: 600px) { .card[data-card="datahealth"] { scroll-margin-top: 150px; } }
   /* rvf: GAC strip — a rating move the pull can't attribute to play (league change / move below GAC_MIN_SR_PLAYED) */
   .rvf-amb { font-weight: 500; color: var(--ink-2); }
+  /* lay: layout editing — per-card ▲ ▼ / ✕ hide ↔ ⊕ show toolbar, the hidden-card placeholder, Align / Undo align,
+     friendly hidden pills and touch sizes. The toolbar sits in the card's flow in edit mode (it used to float over the title). */
+  body.editing .cardtools.lay-tools { position: relative; z-index: 1; float: right; display: flex; gap: 6px; margin: -9px -8px -6px 12px; }
+  .lay-tools button { font: 650 11.5px/1 system-ui, sans-serif; min-height: 28px; padding: 5px 10px; border-radius: 8px;
+    border: 1px solid var(--border-strong); background: var(--page); color: var(--ink-2); cursor: pointer; }
+  .lay-tools .lay-mv { min-width: 32px; padding: 5px 8px; }
+  .lay-tools button:hover:not([disabled]) { color: var(--ink-1); border-color: var(--swyellow); }
+  .lay-tools button[disabled] { opacity: .35; cursor: default; }
+  .lay-tools .lay-toggle[aria-pressed="true"] { color: var(--swyellow); border-color: var(--swyellow); background: rgba(255,232,31,.08); }
+  .lay-tools button:focus-visible, .editbar .pill:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+  .card.lay-hidcard { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 8px 12px 8px 14px; min-height: 0;
+    background: rgba(255,232,31,.025); border: 1px dashed var(--border-strong); box-shadow: none; }
+  body.editing .card.lay-hidcard { outline: none; cursor: default; }
+  body.editing .card.lay-hidcard .cardtools.lay-tools { margin: 0 0 0 auto; }
+  .lay-hidbody { flex: 1 1 200px; min-width: 0; opacity: .6; font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
+  .lay-hidtag { display: inline-block; margin-right: 8px; padding: 1px 6px; border: 1px solid var(--border-strong); border-radius: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); vertical-align: 1px; }
+  .lay-hidname { color: var(--ink-1); }
+  .lay-hidnote { color: var(--ink-3); }
+  .editbar .lay-bar, .editbar #hiddenPills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .editbar .lay-bar:empty, .editbar #hiddenPills:empty { display: none; }
+  .editbar #hiddenPills { flex-basis: 100%; }
+  .editbar .pill[disabled] { opacity: .45; cursor: default; }
+  .editbar .lay-align { border-color: var(--swyellow); color: var(--swyellow); }
+  .lay-muted { color: var(--ink-3); }
+  .lay-status { color: var(--ink-3); font-size: 12px; }
+  .lay-status:empty { display: none; }
+  .sortable.lay-mas { grid-auto-rows: 2px; row-gap: 0; align-items: start; }   /* lay: masonry pack — spans set by layMasonry() */
+  .sortable.lay-match { align-items: stretch; }
+  .lay-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px 10px; }
+  .lay-stat { padding: 6px 10px 6px 11px; border-left: 2px solid var(--border-strong); min-width: 0; }
+  .lay-stat .lbl { font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.07em; overflow-wrap: anywhere; }
+  .lay-stat .val { font-size: 20px; font-weight: 600; margin-top: 2px; font-family: "Orbitron", system-ui, sans-serif; overflow-wrap: anywhere; }
+  .lay-stat .note { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+  .lay-stat-hero { border-left-color: var(--accent); }
+  .lay-stat-hero .val { color: var(--accent); }
+  .lay-hint-touch { display: none; }
+  .editbar .lay-end { margin-left: auto; display: flex; gap: 6px; }
+  @media (pointer: coarse), (max-width: 600px) {   /* phones: the toolbar gets its own row above the title */
+    body.editing .cardtools.lay-tools { float: none; justify-content: flex-end; flex-wrap: wrap; margin: -6px -4px 8px 0; }
+  }
+  @media (pointer: coarse) {
+    .lay-hint-fine { display: none; }
+    .lay-hint-touch { display: inline; }
+    .lay-tools button, .editbar .pill { min-height: 44px; min-width: 44px; }
+  }
 </style>
 </head>
 <body data-tab="overview">
@@ -1643,7 +1689,8 @@
 
   <div class="editbar" id="editToolbar">
     <b style="color:var(--swyellow)">Edit mode:</b>
-    <span>drag cards to move · drag the yellow corner to resize · ✕ hides · 🔒 locks it in</span>
+    <span class="lay-hint-fine">drag cards (or use ▲ ▼) to move · drag the yellow corner to resize · ✕ hide / ⊕ show · 🔒 locks it in</span>
+    <span class="lay-hint-touch">▲ ▼ move a card · ✕ hide / ⊕ show · resizing needs a mouse — Align cards tidies the widths</span>
     <span style="margin-left:6px">Density:</span>
     <button class="pill" id="denCozy" onclick="setDensity('cozy')">Cozy</button>
     <button class="pill" id="denCompact" onclick="setDensity('compact')">Compact</button>
@@ -1651,8 +1698,9 @@
     <button class="pill" id="shTiles" onclick="toggleShow('tiles')">Stat tiles</button>
     <button class="pill" id="shEpigraph" onclick="toggleShow('epigraph')">Quote</button>
     <button class="pill" id="shBanner" onclick="toggleShow('banner')">Alert banner</button>
-    <span id="hiddenPills" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></span>
-    <button class="pill" onclick="resetLayout()" style="margin-left:auto">Reset layout</button>
+    <span id="layTools" class="lay-bar"></span>
+    <span class="lay-end"><button class="pill" onclick="resetLayout()">Reset layout</button><button class="pill lay-done" type="button" onclick="toggleEdit()">🔒 Done</button></span>
+    <span id="hiddenPills"></span>
   </div>
 
   <nav class="mobile-workspaces" id="mobileWorkspaces" aria-label="Workspaces"></nav>
@@ -4330,7 +4378,7 @@ function shpCards(acct) {
   let html;
   try { html = shpCardHtml(acct); }
   catch (e) { console.error("[shp] shipment guide failed:", e); html = `<div class="cardtitle">Shipment buying guide</div><div class="mnote">This card hit an error — the rest of the Farm tab is unaffected.</div>`; }
-  return [{ id: "shp", w: 12, html }];
+  return [{ id: "shp", w: 6, html }];   /* lay: half width, so it packs into the farm columns with no hole above it */
 }
 function specMet(reqsMap, spec) {
   if (Array.isArray(spec)) return spec.every(s => specMet(reqsMap, s));
@@ -4950,7 +4998,7 @@ function defaultState() {
       squad: { ollie: [], tiny: [] }            // per-account selected characters (base_ids, first = primary)
     },
     layout: {
-      order: { overview: ["nextup", "daily", "flags", "readiness", "momentum", "eventflags", "datahealth"] }, hidden: {},
+      order: { overview: ["keystats", "flags", "readiness", "today", "nextup", "daily", "eventflags", "momentum", "datahealth"] }, hidden: {},   // lay: = LAY_PRIORITY.overview
       size: {},                                 // { pane: { cardId: { w: gridSpan(3-12), h: minHeightPx|0 } } }
       density: "cozy",
       /* First-ever load only (mergeDefaults only fills a key that's truly absent, so this never
@@ -11981,7 +12029,7 @@ function toggleShow(key) { state.layout.show[key] = !state.layout.show[key]; sto
 function toggleSidebar() { state.layout.sidebarCollapsed = !state.layout.sidebarCollapsed; store.write(state); render(); }
 function setDensity(d) { state.layout.density = d; store.write(state); render(); }
 function resetLayout() {
-  state.layout = { order: { overview: ["nextup", "daily", "flags", "readiness", "momentum", "eventflags", "datahealth"] }, hidden: {}, size: {}, density: "cozy", sidebarCollapsed: true,
+  state.layout = { order: { overview: LAY_PRIORITY.overview.slice() }, hidden: {}, size: {}, density: "cozy", sidebarCollapsed: true,   /* lay: importance order */
                    show: { tiles: true, epigraph: true, banner: true } };
   store.write(state); render();
 }
@@ -11990,12 +12038,14 @@ function hideCard(ev, pane, id) {
   state.layout.hidden[pane] = state.layout.hidden[pane] || [];
   if (!state.layout.hidden[pane].includes(id)) state.layout.hidden[pane].push(id);
   store.write(state); render();
+  layFocusCard(pane, id, ".lay-toggle");   // lay: keyboard focus follows the card to its ⊕ show
 }
 function showCard(pane, id) {
   state.layout.hidden[pane] = (state.layout.hidden[pane] || []).filter(x => x !== id);
   store.write(state); render();
 }
 function orderCards(pane, cards) {
+  if (LAY_PRIORITY[pane]) return layOrderCards(pane, cards);   // lay: importance order + new cards at their priority place
   const saved = state.layout.order[pane];
   if (!saved) return cards;
   const byId = Object.fromEntries(cards.map(c => [c.id, c]));
@@ -12006,19 +12056,22 @@ function orderCards(pane, cards) {
 function wrapCards(pane, cards, extraClass) {
   const hidden = state.layout.hidden[pane] || [];
   const sizes = state.layout.size[pane] || {};
-  return orderCards(pane, cards)
-    .filter(c => editMode || !hidden.includes(c.id))
-    .map(c => {
+  const ordered = orderCards(pane, cards);
+  layPaneIds[pane] = ordered.map(c => c.id);   // lay: full order incl. hidden cards, for layMergeOrder
+  const shown = ordered.filter(c => !hidden.includes(c.id));
+  /* lay: in edit mode a hidden card is drawn as a slim full-width "Hidden — ⊕ show" strip at the END of
+     the grid, so it never breaks the visible rows; its saved order/size are untouched, so ⊕ show puts it back. */
+  return shown
+    .map((c, i) => {
       const sz = sizes[c.id] || {};
       const span = Math.min(12, Math.max(3, sz.w || c.w || DEFAULT_SPAN[pane] || 6));
       const style = `grid-column: span ${span};` +
-        (sz.h ? `min-height:${sz.h}px;` : "") +
-        (editMode && hidden.includes(c.id) ? "opacity:0.35;" : "");
-      return `<div class="card ${extraClass || ""}" data-card="${c.id}" ${editMode ? 'draggable="true"' : ""} style="${style}">
-        <div class="cardtools"><button title="Hide this card" onclick="hideCard(event,'${pane}','${c.id}')">✕ hide</button></div>
+        (sz.h ? `min-height:${sz.h}px;` : "");
+      return `<div class="card ${extraClass || ""}" data-card="${c.id}" data-lay-pane="${pane}" ${editMode ? 'draggable="true"' : ""} style="${style}">
+        ${editMode ? layToolsHtml(pane, c, i, shown.length) : ""}
         ${c.html}
         <div class="rz" title="Drag to resize"></div></div>`;
-    }).join("");
+    }).join("") + (editMode ? ordered.filter(c => hidden.includes(c.id)).map(c => layHiddenCardHtml(pane, c)).join("") : "");
 }
 let dragEl = null, rzState = null;
 function bindDnD() {
@@ -12030,7 +12083,7 @@ function bindDnD() {
         dragEl = card; e.dataTransfer.effectAllowed = "move";
       });
       card.addEventListener("dragover", e => {
-        if (!dragEl || dragEl === card || dragEl.parentElement !== card.parentElement) return;
+        if (!dragEl || dragEl === card || dragEl.parentElement !== card.parentElement || card.classList.contains("lay-hidcard")) return;
         e.preventDefault();
         const r = card.getBoundingClientRect();
         const before = (e.clientY - r.top) < r.height / 2;
@@ -12039,7 +12092,7 @@ function bindDnD() {
       card.addEventListener("dragend", () => {
         if (!dragEl) return;
         const pane = dragEl.parentElement.dataset.pane;
-        state.layout.order[pane] = [...dragEl.parentElement.querySelectorAll("[data-card]")].map(el => el.dataset.card);
+        state.layout.order[pane] = layMergeOrder(pane, [...dragEl.parentElement.querySelectorAll("[data-card]:not(.lay-hidcard)")].map(el => el.dataset.card));
         dragEl = null; store.write(state);
       });
       /* corner resize: width snaps to grid columns, height is free */
@@ -12079,6 +12132,332 @@ document.addEventListener("mouseup", () => {
   rzState = null;
   store.write(state);
 });
+
+/* ===================== lay: unhide on the card, Align cards, ▲ ▼ reordering =====================
+   No new synced state. Everything lives in the existing layout.order / hidden / size structures (merged
+   by the default three-way rule like before). The only extra is the Align undo record, which is a
+   device-local string in state.views["lay-undo"] (DEVICE_UI_KEYS, never synced) and is offered only
+   while the layout of the aligned panes still matches what Align produced — any later move, resize,
+   hide or show changes that signature, which is what "until the next layout change" means here.
+   Layout stays per PANE and is shared by both accounts (as it always was): the card set of a pane is
+   the same for Ollie and Tiny, so a card hidden on Overview is hidden on Overview for both, and never
+   on another tab. The edit bar only lists the current tab's hidden cards. */
+const layPaneIds = {};      // pane → full ordered card ids from the last wrapCards() (incl. hidden)
+const layTitles = {};       // pane + "/" + id → friendly title, filled while edit mode draws the cards
+let layMsg = "";            // one-shot status line for the edit bar (aria-live)
+const LAY_TITLE = { today: "Today", nextup: "Next farm actions", daily: "Daily routine", flags: "Top flags", readiness: "Readiness",
+  momentum: "What's moved", eventflags: "Event reminders", datahealth: "Data health", keystats: "Key stats" };
+const LAY_UNDO_KEY = "lay-undo", LAY_MATCH_KEY = "lay-match";     // device-local state.views entries
+/* Importance order per pane (default when the pane has no saved order; written by "Sort by importance").
+   Overview: the numbers first, then what needs action, then routine and history. GL Roadmap: the GL queue
+   and the next-characters list (both full width) lead, then the target Legend and its requirements, then
+   pace and the joint view. Coach: fix-now flags before watch & keep. Panes not listed here already render in
+   priority order; LAY_FIXED panes carry meaning in their order (farm phases, TB/TW phases, the squad
+   ranking, the tier list, weekly-goal modes) and are never re-sorted. */
+const LAY_PRIORITY = {
+  overview: ["keystats", "flags", "readiness", "today", "nextup", "daily", "eventflags", "momentum", "datahealth"],
+  leia: ["glq", "nxt", "note", "reqs-1", "reqs-2", "pace", "joint"],
+  coach: ["action-flags", "watch-keep", "squad-arena"]
+};
+const LAY_FIXED = ["farm", "tb", "tw", "gaps", "tierlist", "modes"];
+
+function layTitleOf(pane, c) {
+  let t = "";
+  try {
+    const tpl = document.createElement("template");
+    tpl.innerHTML = c.html || "";                       // inert: nothing in a template loads or runs
+    const el = tpl.content.querySelector(".cardtitle, h3, h2");
+    if (el) { el.querySelectorAll(".sub").forEach(x => x.remove()); t = el.textContent.replace(/\s+/g, " ").replace(/[\s—–·:-]+$/, "").trim(); }
+  } catch (e) { t = ""; }
+  if (t.length > 48) t = t.slice(0, 46).trim() + "…";
+  t = t || LAY_TITLE[c.id] || layTitles[pane + "/" + c.id] || layPrettyId(c.id);
+  layTitles[pane + "/" + c.id] = t;
+  return t;
+}
+function layPrettyId(id) { const s = String(id).replace(/[-_]+/g, " ").trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
+function layTitleFor(pane, id) { return layTitles[pane + "/" + id] || LAY_TITLE[id] || layPrettyId(id); }
+const layJs = s => escapeHtml(String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'"));
+
+function layToolsHtml(pane, c, i, n) {
+  const t = escapeHtml(layTitleOf(pane, c)), p = layJs(pane), id = layJs(c.id);
+  return `<div class="cardtools lay-tools" role="group" aria-label="Arrange ${t}">
+          <button type="button" class="lay-mv" data-lay-dir="-1" title="Move up" aria-label="Move ${t} up" ${i === 0 ? "disabled" : ""} onclick="layMove(event,'${p}','${id}',-1)">▲</button>
+          <button type="button" class="lay-mv" data-lay-dir="1" title="Move down" aria-label="Move ${t} down" ${i === n - 1 ? "disabled" : ""} onclick="layMove(event,'${p}','${id}',1)">▼</button>
+          <button type="button" class="lay-toggle" aria-pressed="false" title="Hide this card" aria-label="Hide ${t}" onclick="hideCard(event,'${p}','${id}')">✕ hide</button></div>`;
+}
+function layHiddenCardHtml(pane, c) {
+  const t = escapeHtml(layTitleOf(pane, c)), p = layJs(pane), id = layJs(c.id);
+  return `<div class="card lay-hidcard" data-card="${escapeHtml(c.id)}" data-lay-pane="${escapeHtml(pane)}" style="grid-column: span 12;">
+        <div class="lay-hidbody"><span class="lay-hidtag">Hidden</span><b class="lay-hidname">${t}</b> <span class="lay-hidnote">— not shown once the layout is locked</span></div>
+        <div class="cardtools lay-tools"><button type="button" class="lay-toggle" aria-pressed="true" title="Show this card again, in its old place and size" aria-label="Show ${t}" onclick="layShow(event,'${p}','${id}')">⊕ show</button></div></div>`;
+}
+function layCardEl(pane, id) {
+  const q = `.tabpane.active .card[data-lay-pane="${CSS.escape(pane)}"][data-card="${CSS.escape(id)}"]`;
+  return document.querySelector(q) || document.querySelector(q.replace(".tabpane.active ", ""));
+}
+/* Focus the first enabled control matching one of the selectors on that card (after a re-render). */
+function layFocusCard(pane, id, ...sels) {
+  if (!editMode) return;
+  const card = layCardEl(pane, id);
+  if (!card) return;
+  for (const sel of sels.concat([".lay-tools button:not([disabled])"])) {
+    const el = card.querySelector(sel);
+    if (el && !el.disabled) { el.focus(); return; }
+  }
+}
+function layShow(ev, pane, id) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  if ((state.layout.hidden[pane] || []).includes(id)) layMsg = `${layTitleFor(pane, id)} is back in its old place.`;
+  showCard(pane, id);
+  layFocusCard(pane, id, ".lay-toggle");
+}
+/* Panes (sortable grids) of the tab on screen that are actually displayed — Coach has two (tips, and
+   weekly goals, which only shows on its "Weekly goals" view). */
+function layTabPanes() {
+  return [...document.querySelectorAll(`#pane-${curTab} .sortable[data-pane]`)].filter(el => el.getClientRects().length).map(el => el.dataset.pane);
+}
+function layShowAll() {
+  let n = 0;
+  layTabPanes().forEach(p => { n += (state.layout.hidden[p] || []).length; if (state.layout.hidden[p]) state.layout.hidden[p] = []; });
+  if (n) layMsg = `Showing ${n} card${n === 1 ? "" : "s"} again.`;
+  store.write(state); render();
+}
+/* Rewrites a pane's saved order so the visible cards take the sequence `vis` while every other id (hidden
+   cards, cards of another view of the same pane) keeps its slot — so unhiding restores the old position. */
+function layMergeOrder(pane, vis) {
+  const saved = Array.isArray(state.layout.order[pane]) ? state.layout.order[pane] : [];
+  const base = saved.concat((layPaneIds[pane] || []).filter(x => !saved.includes(x)));
+  const want = new Set(vis); let k = 0;
+  const out = base.map(x => want.has(x) ? vis[k++] : x);
+  return out.concat(vis.slice(k).filter(x => !out.includes(x)));
+}
+function layVisibleCards(cont, pane) {
+  return [...cont.children].filter(el => el.matches(".card[data-card]:not(.lay-hidcard)") && el.dataset.layPane === pane);
+}
+function layMove(ev, pane, id, dir) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  const card = layCardEl(pane, id);
+  if (!card) return;
+  const vis = layVisibleCards(card.parentElement, pane).map(el => el.dataset.card);
+  const i = vis.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= vis.length) return;
+  [vis[i], vis[j]] = [vis[j], vis[i]];
+  state.layout.order[pane] = layMergeOrder(pane, vis);
+  layMsg = `Moved ${layTitleFor(pane, id)} ${dir < 0 ? "up" : "down"} — now ${j + 1} of ${vis.length}.`;
+  store.write(state); render();
+  layFocusCard(pane, id, `.lay-mv[data-lay-dir="${dir}"]`, `.lay-mv[data-lay-dir="${-dir}"]`);
+}
+/* Align widths: the leading run of full-width cards stays full width, and every card after it takes ONE
+   clean column width (6 = two columns, or 4 = three on panes whose cards are built 4 wide), so each row
+   sums to 12 and the masonry pack below can stack the columns without holes. A full-width card further
+   down would have to sit under the TALLER of the columns above it — the only ways round that hole are to
+   stretch a card (empty space inside it) or to narrow the wide card into a column, and Align does the
+   latter. Fewer cards than columns → the columns widen so no horizontal space is left over. */
+function layColumnSpans(widths) {
+  let lead = 0;
+  while (lead < widths.length && widths[lead] >= 12) lead++;
+  const rest = widths.slice(lead);
+  const small = rest.filter(w => w <= 4).length;
+  const cols = Math.max(1, Math.min(small * 2 > rest.length ? 3 : 2, rest.length));
+  return widths.slice(0, lead).concat(rest.map(() => 12 / cols));
+}
+const laySpanOf = el => Math.min(12, Math.max(3, parseInt((String(el.style.gridColumn).match(/span\s+(\d+)/) || [])[1], 10) || 6));
+function laySig(panes) {
+  return stableJson(panes.map(p => [p, state.layout.order[p] || null, state.layout.size[p] || null, state.layout.hidden[p] || null]));
+}
+function layUndoRecord() {
+  try {
+    const r = JSON.parse((state.views || {})[LAY_UNDO_KEY] || "null");
+    return isPlainObject(r) && isPlainObject(r.panes) && typeof r.sig === "string" && r.sig === laySig(Object.keys(r.panes)) ? r : null;
+  } catch (e) { return null; }
+}
+function layBefore(pane) {
+  return { order: state.layout.order[pane] ? state.layout.order[pane].slice() : null,
+           size: state.layout.size[pane] ? JSON.parse(JSON.stringify(state.layout.size[pane])) : null };
+}
+function laySaveUndo(kind, before) {
+  if (!isPlainObject(state.views)) state.views = {};
+  state.views[LAY_UNDO_KEY] = JSON.stringify({ kind, tab: curTab, panes: before, sig: laySig(Object.keys(before)) });
+}
+/* Align cards on THIS tab: clean column widths (layColumnSpans), custom heights cleared, and the gap-free
+   masonry pack switched back on if "Match heights" was chosen. Hidden cards keep their size, so ⊕ show
+   still restores it. */
+function layAlign() {
+  const panes = layTabPanes(), before = {};
+  let changed = 0, cards = 0;
+  panes.forEach(pane => {
+    const cont = document.querySelector(`#pane-${curTab} .sortable[data-pane="${CSS.escape(pane)}"]`);
+    const els = cont ? layVisibleCards(cont, pane) : [];
+    if (!els.length) return;
+    before[pane] = layBefore(pane);
+    const widths = els.map(laySpanOf);
+    const spans = layColumnSpans(widths);
+    const sizes = (state.layout.size[pane] = state.layout.size[pane] || {});
+    els.forEach((el, q) => {
+      const id = el.dataset.card, sz = Object.assign({}, sizes[id] || {});
+      if (spans[q] !== widths[q] || sz.h) changed++;
+      cards++;
+      sz.w = spans[q]; delete sz.h;
+      sizes[id] = sz;
+    });
+  });
+  const ps = Object.keys(before);
+  if (!ps.length) { layMsg = "Nothing to align on this tab."; render(); return; }
+  laySaveUndo("align", before);
+  if (layMatchOn()) delete state.views[LAY_MATCH_KEY];
+  layMsg = changed ? `Aligned ${cards} cards into clean columns, packed with no gaps (${changed} resized).` : `Already aligned — ${cards} cards in clean columns.`;
+  store.write(state); render();
+}
+/* Sort by importance (this tab): writes the pane's priority order (LAY_PRIORITY) into layout.order, or —
+   for panes whose code order already IS the priority — drops the custom order. Panes whose order carries
+   meaning (LAY_FIXED: phases, rankings) are left alone. Same Undo record as Align. */
+function laySortable(pane) { return !LAY_FIXED.includes(pane); }
+function laySortImportance() {
+  const panes = layTabPanes().filter(laySortable), before = {};
+  panes.forEach(pane => {
+    before[pane] = layBefore(pane);
+    if (LAY_PRIORITY[pane]) {
+      const saved = Array.isArray(state.layout.order[pane]) ? state.layout.order[pane] : [];
+      const ids = (layPaneIds[pane] || []).concat(saved.filter(x => !(layPaneIds[pane] || []).includes(x)));
+      state.layout.order[pane] = layPrioritySort(pane, ids.map(id => ({ id }))).map(c => c.id);
+    } else delete state.layout.order[pane];
+  });
+  if (!panes.length) { layMsg = "The order on this tab carries meaning (phases or a ranking), so it is left as it is."; render(); return; }
+  laySaveUndo("sort", before);
+  layMsg = "Sorted by importance — most important first.";
+  store.write(state); render();
+}
+function layUndoAlign() {
+  const r = layUndoRecord();
+  if (!r) return;
+  Object.entries(r.panes).forEach(([pane, b]) => {
+    if (b && Array.isArray(b.order)) state.layout.order[pane] = b.order; else delete state.layout.order[pane];
+    if (b && isPlainObject(b.size)) state.layout.size[pane] = b.size; else delete state.layout.size[pane];
+  });
+  delete state.views[LAY_UNDO_KEY];
+  layMsg = r.kind === "sort" ? "Undid Sort — the previous order is back." : "Undid Align — the previous widths and heights are back.";
+  store.write(state); render();
+}
+/* Priority order: stable sort by rank in LAY_PRIORITY[pane]; ids not in the list keep their relative order after it. */
+function layPrioritySort(pane, cards) {
+  const list = LAY_PRIORITY[pane];
+  if (!list) return cards;
+  const rank = id => { const i = list.indexOf(id); return i < 0 ? list.length : i; };
+  return cards.map((c, i) => [c, i]).sort((a, b) => rank(a[0].id) - rank(b[0].id) || a[1] - b[1]).map(x => x[0]);
+}
+/* orderCards() for a pane with a priority list: no saved order → the priority order; a saved order is kept as
+   it is, and a card it has never seen (e.g. the new Key stats card) goes in at its priority place instead of last. */
+function layOrderCards(pane, cards) {
+  const saved = state.layout.order[pane];
+  if (!Array.isArray(saved)) return layPrioritySort(pane, cards);
+  const list = LAY_PRIORITY[pane], rank = id => { const i = list.indexOf(id); return i < 0 ? Infinity : i; };
+  const byId = Object.fromEntries(cards.map(c => [c.id, c]));
+  const out = saved.map(id => byId[id]).filter(Boolean);
+  cards.forEach(c => {
+    if (saved.includes(c.id)) return;
+    const r = rank(c.id), at = r === Infinity ? -1 : out.findIndex(o => rank(o.id) > r);
+    if (at < 0) out.push(c); else out.splice(at, 0, c);
+  });
+  return out;
+}
+/* ---- gap-free masonry pack ----
+   The 12-column grid keeps its column spans, but rows become LAY_UNIT-px tracks (.sortable.lay-mas) and every
+   grid child spans ceil((its own height + the column gap) / LAY_UNIT) of them, so each card keeps its natural
+   height (no stretch, no blank space inside) and the card below starts one gap (+ < LAY_UNIT px) under it.
+   Re-run after every render, by a ResizeObserver on each child (folds opening, fonts and images arriving, the
+   window or the sidebar changing width) and when fonts finish loading. A grid that isn't displayed (another
+   tab, Coach's hidden weekly view) is skipped and packed when it is shown, because render() runs on every
+   tab/view switch. "Match heights in a row" (device-local view) turns this off for the old stretched rows. */
+const LAY_UNIT = 2;
+let layRO = null;
+const layMatchOn = () => (state.views || {})[LAY_MATCH_KEY] === "1";
+function layToggleMatch() {
+  if (!isPlainObject(state.views)) state.views = {};
+  if (layMatchOn()) delete state.views[LAY_MATCH_KEY]; else state.views[LAY_MATCH_KEY] = "1";
+  layMsg = layMatchOn() ? "Cards in a row now share one height (shorter cards get blank space)." : "Cards keep their own height and pack with no gaps.";
+  store.write(state); render();
+}
+function layMasonry(cont) {
+  if (!cont || !cont.isConnected || !cont.getClientRects().length) return;
+  if (getComputedStyle(cont).display !== "grid") {               // e.g. the phone Overview is a flex column: a plain stack already
+    cont.classList.remove("lay-mas", "lay-match");
+    [...cont.children].forEach(el => { if (el.style.gridRowEnd) el.style.gridRowEnd = ""; });
+    return;
+  }
+  const match = layMatchOn();
+  cont.classList.toggle("lay-mas", !match);
+  cont.classList.toggle("lay-match", match);
+  const kids = [...cont.children];
+  if (match) { kids.forEach(el => { if (el.style.gridRowEnd) el.style.gridRowEnd = ""; }); return; }
+  const gap = parseFloat(getComputedStyle(cont).columnGap) || 0;
+  const spans = kids.map(el => {                                   // all reads first, then all writes
+    if (!el.getClientRects().length) return 0;
+    const cs = getComputedStyle(el);
+    const h = el.getBoundingClientRect().height + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+    return Math.max(1, Math.ceil((h + gap) / LAY_UNIT));
+  });
+  kids.forEach((el, i) => { const v = spans[i] ? "span " + spans[i] : ""; if (el.style.gridRowEnd !== v) el.style.gridRowEnd = v; });
+  if (window.ResizeObserver) {
+    if (!layRO) layRO = new ResizeObserver(entries => {
+      const conts = new Set();
+      entries.forEach(e => { const p = e.target.parentElement; if (p && p.classList.contains("sortable")) conts.add(p); else layRO.unobserve(e.target); });
+      conts.forEach(layMasonry);
+    });
+    kids.forEach(el => layRO.observe(el));
+  }
+}
+/* A grid whose cards are swapped by code other than render() (e.g. gcoRun redrawing the GAC planner) is
+   re-packed by a MutationObserver on its child list — microtask timing, so before the next paint. */
+let layMO = null;
+function layMasonryAll() {
+  if (!layMO && window.MutationObserver) {
+    layMO = new MutationObserver(recs => { const conts = new Set(recs.map(r => r.target)); conts.forEach(c => { try { layMasonry(c); } catch (e) {} }); });
+    document.querySelectorAll(".sortable").forEach(c => layMO.observe(c, { childList: true }));
+  }
+  document.querySelectorAll(".tabpane.active .sortable").forEach(layMasonry);
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { try { layMasonryAll(); } catch (e) {} });
+window.addEventListener("resize", () => { try { layMasonryAll(); } catch (e) {} });
+/* Key stats (Overview, first card): the numbers that used to sit in the tile strip at the bottom of the page. */
+function layKeyStatsCard(acct, v, s) {
+  const stats = [
+    { lbl: "Galactic power", val: fmtM(s.gp), note: fmtM(s.gpChar) + " chars · " + fmtM(s.gpShip) + " ships" },
+    { lbl: escapeHtml(v.gl.name) + " readiness", hero: true, val: v.owned ? "Owned ✓" : (v.live ? "" : "~") + hardNum(v.avg) + "%",
+      note: v.owned ? "already unlocked" : hardNum(v.doneCount) + " of " + hardNum(v.reqRows.length) + " reqs done · materials-weighted" },
+    { lbl: "GLs owned", val: hardNum(s.glCount), note: escapeHtml(s.glNote) },
+    { lbl: "Fleet arena", val: "#" + escapeHtml(s.fleetRank), note: escapeHtml(s.fleetNote) },
+    { lbl: "GAC", val: escapeHtml(s.gac), note: escapeHtml(s.gacNote) },
+    { lbl: "Abilities", val: escapeHtml(s.extraNote), note: "zetas &amp; omicrons unlocked" }
+  ];
+  return { id: "keystats", w: 12, html: `<div class="cardtitle">Key stats <span class="sub">— ${escapeHtml(acct.label)}</span></div>
+    <div class="lay-stats">${stats.map(t => `<div class="lay-stat${t.hero ? " lay-stat-hero" : ""}"><div class="lbl">${t.lbl}</div><div class="val">${t.val}</div><div class="note">${t.note}</div></div>`).join("")}</div>` };
+}
+/* Edit bar: Align / Sort / Undo, Match heights, the current tab's hidden cards by title, Show all, status line. */
+function layPaintBar() {
+  const tools = document.getElementById("layTools"), pills = document.getElementById("hiddenPills");
+  if (!tools || !pills) return;
+  if (!editMode) { tools.innerHTML = ""; pills.innerHTML = ""; layMsg = ""; return; }
+  const panes = layTabPanes(), undo = layUndoRecord(), sortable = panes.filter(laySortable).length;
+  tools.innerHTML = `<button type="button" class="pill lay-align" onclick="layAlign()" ${panes.length ? "" : "disabled"}
+      title="Gives this tab's cards clean column widths and packs them with no gaps">⊞ Align cards on this tab</button>` +
+    `<button type="button" class="pill lay-sort" onclick="laySortImportance()" ${sortable ? "" : "disabled"}
+      title="${sortable ? "Puts this tab's cards in order of importance, most important first" : "The order on this tab carries meaning (phases or a ranking), so it is left as it is"}">↧ Sort by importance</button>` +
+    (undo ? `<button type="button" class="pill lay-undo" onclick="layUndoAlign()">↶ Undo ${undo.kind === "sort" ? "sort" : "align"}</button>` : "") +
+    `<button type="button" class="pill lay-match-btn ${layMatchOn() ? "on" : ""}" aria-pressed="${layMatchOn()}" onclick="layToggleMatch()"
+      title="Off: every card keeps its own height and the columns pack with no gaps. On: cards in a row share one height.">▤ Match heights in a row</button>` +
+    `<span class="lay-status" id="layStatus" role="status" aria-live="polite">${escapeHtml(layMsg)}</span>`;
+  layMsg = "";
+  const mine = [];
+  panes.forEach(p => (state.layout.hidden[p] || []).forEach(id => mine.push({ p, id })));
+  let other = 0;
+  Object.entries(state.layout.hidden || {}).forEach(([p, ids]) => { if (!panes.includes(p) && Array.isArray(ids)) other += ids.length; });
+  pills.innerHTML = (mine.length
+      ? `<span class="lay-muted">Hidden on this tab:</span>` + mine.map(h =>
+          `<button type="button" class="pill lay-pill" data-lay-pane="${escapeHtml(h.p)}" data-lay-id="${escapeHtml(h.id)}" title="Show this card again" onclick="layShow(event,'${layJs(h.p)}','${layJs(h.id)}')">⊕ ${escapeHtml(layTitleFor(h.p, h.id))}</button>`).join("") +
+        (mine.length > 1 ? `<button type="button" class="pill lay-showall" onclick="layShowAll()">Show all hidden (${mine.length})</button>` : "")
+      : "") +
+    (other ? `<span class="lay-muted">${other} card${other === 1 ? "" : "s"} hidden elsewhere</span>` : "");
+}
 
 /* ===================== rendering ===================== */
 /* Every chip class has a glyph as well as a colour. Colour alone fails for red/green and blue/violet
@@ -13437,13 +13816,7 @@ function render() {
     { lbl: "GAC", val: escapeHtml(s.gac) }
   ].map(q => `<div class="qstat"><span class="qlbl">${escapeHtml(q.lbl)}</span><span class="qval">${q.val}</span></div>`).join("");
 
-  /* hidden-card restore pills */
-  const hiddenAll = [];
-  Object.entries(state.layout.hidden).forEach(([pane, ids]) => ids.forEach(id => hiddenAll.push({ pane, id })));
-  document.getElementById("hiddenPills").innerHTML = hiddenAll.length
-    ? `<span style="color:var(--ink-3)">Hidden:</span>` + hiddenAll.map(h =>
-        `<button class="pill" onclick="showCard('${h.pane}','${h.id}')">⊕ ${h.id}</button>`).join("")
-    : "";
+  /* hidden-card restore pills: painted by layPaintBar() after the panes, so they can use the cards' titles */
 
   /* #datasrc lives in the <header>, not in the Overview pane, so it has to be written with the chrome:
      written inside the (now gated) Overview pane it would read whatever account/tab you last had
@@ -13456,15 +13829,10 @@ function render() {
 
   /* ---- overview ---- */
   safeRender("Overview", "ovGrid", () => {
-    document.getElementById("tiles").innerHTML = [
-      { lbl: "Galactic power", val: fmtM(s.gp), note: fmtM(s.gpChar) + " chars · " + fmtM(s.gpShip) + " ships" },
-      { lbl: "GLs owned", val: hardNum(s.glCount), note: escapeHtml(s.glNote) },
-      { lbl: v.gl.name + " readiness", val: v.owned ? "Owned ✓" : (v.live ? "" : "~") + v.avg + "%",
-        note: v.owned ? "already unlocked" : v.doneCount + " of " + v.reqRows.length + " reqs done · materials-weighted" },
-      { lbl: "Fleet arena", val: "#" + escapeHtml(s.fleetRank), note: escapeHtml(s.fleetNote) },
-      { lbl: "GAC", val: escapeHtml(s.gac), note: escapeHtml(s.gacNote) },
-      { lbl: "Abilities", val: escapeHtml(s.extraNote), note: "zetas &amp; omicrons unlocked" }
-    ].map(t => `<div class="tile"><div class="lbl">${t.lbl}</div><div class="val">${t.val}</div><div class="note">${t.note}</div></div>`).join("");
+    /* lay: the stat tiles moved to the top of the Overview as the "Key stats" card (layKeyStatsCard); the old
+       strip at the bottom stays empty. The "Show: Stat tiles" toggle now shows/hides that card. */
+    const tilesEl = document.getElementById("tiles");
+    tilesEl.innerHTML = ""; tilesEl.style.display = "none";
 
     const nextUp = [];
     const plan = farmPlanFor(current, v);
@@ -13485,9 +13853,10 @@ function render() {
     const todayCard = todayStripCard(current);
     nxtPaint(current);   /* "Next up" deadline strip, in #nxtStrip above this grid — empty when nothing is due */
     document.getElementById("ovGrid").innerHTML = wrapCards("overview", [
+      ...(state.layout.show.tiles !== false ? [layKeyStatsCard(acct, v, s)] : []),
       /* First when present; absent (not empty) when nothing needs the user today — see todayStripCard. */
-      ...(todayCard ? [todayCard] : []),
-      { id: "readiness", w: 4, html: v.owned ? `
+      ...(todayCard ? [{ ...todayCard, w: 6 }] : []),   /* lay: half width so the two columns pack with no holes */
+      { id: "readiness", w: 6, html: v.owned ? `
           <div class="cardtitle">${escapeHtml(v.gl.name)} <span class="sub">— ${acct.label}</span></div>
           <div class="hero">✓<small> owned</small></div>
           <div class="prog-summary">Already unlocked — browse the GL Roadmap tab to plan your next Legend.</div>` : `
@@ -13501,23 +13870,23 @@ function render() {
             <span class="chip grind">⛭ ${v.counts.grind} long grind</span>
           </div>
           <div class="prog-summary">${escapeHtml(glProgressSummary(v))}</div>` },
-      { id: "momentum", w: 5, html: momentumCardHtml(current, v) },
-      { id: "daily", w: 5, html: `
+      { id: "momentum", w: 6, html: momentumCardHtml(current, v) },
+      { id: "daily", w: 6, html: `
           <div class="cardtitle">Daily routine <span class="sub">— resets each day</span></div>
           ${DAILY.map((it, ii) => { const row = it || dailyFarmRow(); return tickbox(`d-${current}-${ii}`, row[0], row[1]); }).join("")}
           <div class="prog-summary" id="dailyProg"></div>` },
-      { id: "flags", w: 4, html: `
+      { id: "flags", w: 6, html: `
           <div class="cardtitle">Top flags <span class="sub">— from Coach's corner</span></div>
           ${pbmGacStripHtml(current)}
           ${activeTips(current, s.reqs || {}, ["fixnow"]).map(({ tp }) =>
             `<div style="padding:6px 0"><span class="chip fixnow">${sevText.fixnow}</span>
                <b style="font-size:13.5px"> ${tp.t}</b></div>`).join("") || `<div class="mnote">No urgent coach flags right now.</div>`}
           <div class="prog-summary"><a href="#" style="color:var(--accent)" onclick="switchTab('coach');return false;">Open Coach's corner →</a></div>` },
-      { id: "eventflags", w: 4, html: `
+      { id: "eventflags", w: 6, html: `
           <div class="cardtitle">Event reminders <span class="sub">— soonest on your calendar</span></div>
           ${eventReminderHtml()}
           <div class="prog-summary"><a href="#" style="color:var(--accent)" onclick="switchTab('events');return false;">Open Events &amp; Calendar →</a></div>` },
-      { id: "nextup", w: 7, html: `
+      { id: "nextup", w: 6, html: `
           <div class="cardtitle">Next farm actions <span class="sub">— unfinished items, in plan order</span></div>
           <ul class="nextup">${nextUp.slice(0, 4).map((n, i) =>
             `<li><span class="n">${String(i + 1).padStart(2, "0")}</span><span>${n.t}<span class="ph">${n.ph}</span></span></li>`).join("") ||
@@ -13525,7 +13894,7 @@ function render() {
           <div class="prog-summary" id="ovFarmProg"></div>` },
       /* Only present when something is actually aging or stale; otherwise #dataHealthLine below
          says so in one line. Hiding it is the ordinary card hide — no new state, see SNAPSHOTS. */
-      ...(dataHealth ? [dataHealth] : [])
+      ...(dataHealth ? [{ ...dataHealth, w: 6 }] : [])
     ]);
     const dhLine = document.getElementById("dataHealthLine");
     dhLine.innerHTML = dataHealthLineHtml();
@@ -13680,6 +14049,7 @@ function render() {
   chromePaintChrome();
   updateProg(v);
   bindDnD();
+  try { layPaintBar(); layMasonryAll(); } catch (e) { console.error("[render] layout edit bar / pack failed:", e); }
 }
 function tick(el) {
   state.ticks[el.dataset.k] = el.checked;

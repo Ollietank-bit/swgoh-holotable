@@ -29,12 +29,21 @@
      objects, media, manifests). base-uri 'none' and form-action 'none' close the two redirect tricks
      that survive a locked-down default-src.
 
+     frame-src https://www.swgohrote.com is the one frame this page may load (tbg, 13 Oct 2026): the TB
+     Guide tab embeds that community Rise of the Empire site in an <iframe>, and with default-src 'none'
+     a frame from any origin is otherwise refused. It is the exact origin and nothing broader — no
+     scheme-wide https:, no wildcard subdomain, not even the bare swgohrote.com apex — so a navigation
+     inside the frame that leaves that origin is blocked rather than shown (the site's own external links
+     open as pop-ups, which the frame's sandbox allows and this directive does not govern). A frame cannot
+     read this page: it is cross-origin, so the token in localStorage and connect-src above are untouched
+     by it. child-src/worker-src stay at default-src 'none'.
+
      'self' appears nowhere on purpose. Every asset in this file is inline or a data: URI, so nothing
      needs it on GitHub Pages — and over file:// 'self' does not reliably match anyway, so relying on it
      would have made the policy behave differently depending on how the file was opened. The one
      exception is img-src, which carries 'self' solely so the browser's automatic /favicon.ico probe on
      the hosted origin is not reported as a violation; there is no <link rel="icon"> to suppress it. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://swgoh.gg https://corsproxy.io https://api.allorigins.win https://api.codetabs.com https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://swgoh.gg https://corsproxy.io https://api.allorigins.win https://api.codetabs.com https://api.github.com; frame-src https://www.swgohrote.com; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SWGOH Holotable — Live Goal Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -258,7 +267,7 @@
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,6 90,28 90,72 50,94 10,72 10,28" fill="none" stroke="white" stroke-opacity="0.08" stroke-width="1.4"/><polygon points="50,26 74,40 74,64 50,78 26,64 26,40" fill="%23a83250" fill-opacity="0.09"/></svg>');
     background-position: 12% 20%, 84% 70%;
     background-size: 180px 180px, 260px 260px; }
-  /* TB Planner: campaign map grid + platoon markers */
+  /* TB Guide: campaign map grid + platoon markers */
   body[data-tab="tb"]::after { background-image:
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g stroke="white" stroke-opacity="0.07" stroke-width="1"><line x1="10" y1="30" x2="90" y2="30"/><line x1="10" y1="55" x2="90" y2="55"/><line x1="10" y1="80" x2="90" y2="80"/><line x1="30" y1="10" x2="30" y2="90"/><line x1="55" y1="10" x2="55" y2="90"/><line x1="80" y1="10" x2="80" y2="90"/></g><g fill="%238a9a3c" fill-opacity="0.16"><rect x="24" y="24" width="12" height="12" rx="2"/><rect x="74" y="49" width="12" height="12" rx="2"/><rect x="49" y="74" width="12" height="12" rx="2"/></g></svg>'),
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="white" stroke-opacity="0.07" stroke-width="1.2"/><circle cx="50" cy="50" r="6" fill="%238a9a3c" fill-opacity="0.16"/></svg>');
@@ -1047,6 +1056,42 @@
   .form-row > button { justify-self: start; border: 0; background: transparent; cursor: pointer; }
   .form-empty { grid-column: 1 / -1; padding: 22px 14px; color: var(--ink-3); text-align: center; font-size: 12.5px; font-style: italic; }
   .tb-form { --form-columns: 34px minmax(190px, 1fr) 150px; }
+  /* tbg: TB Guide — swgohrote.com embed (credit row, open-in-new-tab, ally-code chips, the frame). One block; prefixed.
+     The frame is ~80% of the viewport tall (dvh where supported, so a phone's collapsing toolbar doesn't
+     clip it) with a floor that keeps the site usable on a short screen; width is the pane's, never wider. */
+  .tbg { margin: 0 0 14px; min-width: 0; }
+  .tbg-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 6px; }
+  .tbg-credit { flex: 1 1 260px; min-width: 0; font-size: 12.5px; color: var(--ink-2); }
+  .tbg-credit b { color: var(--ink-1); }
+  .tbg-open { flex: none; display: inline-flex; align-items: center; min-height: 36px; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 13px;
+              text-decoration: none; color: #06131a; background: var(--accent); border: 1px solid var(--accent); }
+  .tbg-open:hover { filter: brightness(1.08); }
+  .tbg-open:focus-visible, .tbg-chip:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+  .tbg-note { color: var(--ink-3); font-size: 11.5px; }
+  .tbg-codes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 2px 0 4px; }
+  .tbg-codes-label { font-size: 12px; color: var(--ink-3); }
+  .tbg-chip { font: 600 12px/1.2 system-ui, sans-serif; color: var(--ink-1); background: rgba(255,255,255,0.04); border: 1px solid var(--border-strong);
+              border-radius: 999px; padding: 7px 12px; min-height: 34px; cursor: pointer; max-width: 100%; text-align: left; }
+  .tbg-chip:hover { border-color: color-mix(in srgb, var(--accent) 60%, var(--border)); }
+  .tbg-code { font-family: ui-monospace, monospace; color: var(--accent); margin-left: 2px; white-space: nowrap; }
+  .tbg-msg:empty { display: none; }
+  .tbg-copy { display: block; width: 100%; max-width: 260px; box-sizing: border-box; margin: 0 0 8px; padding: 6px 8px; font: 13px ui-monospace, monospace;
+              color: var(--ink-1); background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px; }
+  .tbg-copy[hidden] { display: none; }
+  .tbg-frame { position: relative; width: 100%; height: 80vh; height: 80dvh; min-height: 480px; border: 1px solid var(--border); border-radius: 10px;
+               overflow: hidden; background: var(--surface-1); }
+  .tbg-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; text-align: center;
+                 font-size: 12.5px; color: var(--ink-3); }
+  .tbg-frame iframe { position: relative; z-index: 1; display: block; width: 100%; height: 100%; border: 0; }
+  @media (pointer: coarse) { .tbg-chip, .tbg-open { min-height: 44px; } }
+  /* Phone: the frame is the point, so the helper rows above it get compact — chips drop to "⧉ Name code" two
+     abreast (the aria-label keeps the full "Copy <name>'s ally code" wording) and the note shrinks a size. */
+  @media (max-width: 480px) {
+    .tbg-long { display: none; }
+    .tbg-codes-label { flex-basis: 100%; }
+    .tbg-chip { flex: 1 1 0; min-width: 0; padding: 7px 9px; text-align: center; }
+    .tbg-note { font-size: 11px; margin-bottom: 6px; }
+  }
   .tw-form { --form-columns: minmax(130px,.8fr) 140px minmax(170px,1fr) max-content; }
   .arena-form { --form-columns: minmax(140px,1fr) 112px minmax(160px,1fr) 30px; }
   .events-form { --form-columns: 82px minmax(170px,1fr) max-content 126px 126px minmax(145px,.9fr) 30px; }
@@ -1947,13 +1992,17 @@
     <div id="cqBody"></div>
   </div>
 
-  <!-- ============ TB PLATOON PLANNER ============ -->
+  <!-- ============ TB GUIDE (swgohrote.com embed + legacy tracker) ============ -->
+  <!-- tbg: the TB tab is now the community site swgohrote.com shown in a frame (see renderTB / TBG_SECTIONS).
+       #tbEmbed sits OUTSIDE the sortable #tbGrid on purpose: a frame that is re-created on every render
+       would reload the site and throw away whatever the user was doing in it, and the layout editor's
+       grid is re-drawn on every render. renderTB only rebuilds #tbEmbed when the chosen section changes.
+       The old Holotable tracker lives on as a collapsed card in #tbGrid (state.tb / tbRun untouched). -->
   <div class="tabpane" id="pane-tb">
-    <h2>Territory Battle — Rise of the Empire planner</h2>
-    <div class="h2sub">Special-mission bottleneck tracker: the 6-slot Operation platoons are easy to fill from faction depth, but each phase's named-character Special Mission is a scarce-pair gate — this tracks who's assigned so the same pair isn't needed in two zones at once.</div>
-    <div class="mnote">Zone/phase data <span data-snap="tb-rote"></span> — ask Claude to refresh if a phase gets reworked.</div>
-    <div class="cqaddrow" style="margin-bottom:9px"><button onclick="tbResetAll()">↺ Reset all phases (new TB)</button></div>
+    <h2>Territory Battle — Rise of the Empire guide</h2>
+    <div class="h2sub">Auto-battle squads for every Rise of the Empire node (Phases 1–6, Zeffo, Mandalore), special missions, map, squad planner and crystal budget — the community site swgohrote.com, live below.</div>
     <div class="cqnav section-nav" id="tbNav"></div>
+    <div class="tbg" id="tbEmbed"></div>
     <div class="sortable" id="tbGrid" data-pane="tb"></div>
   </div>
 
@@ -2030,7 +2079,7 @@ const SUBTABS = [
   { key: "events",   label: "Events & Calendar" },
   { key: "arena",    label: "Arena" },
   { key: "tw",       label: "TW Coord" },
-  { key: "tb",       label: "TB Planner" },
+  { key: "tb",       label: "TB Guide" },     // tbg 13 Oct 2026: was "TB Planner" — the tab is now the swgohrote.com embed
   { key: "gac",      label: "GAC Planner" },
   { key: "conquest", label: "Conquest" },
   { key: "modes",    label: "Game modes" },
@@ -2087,7 +2136,7 @@ const EPIGRAPHS = {
   modopt:   `<b>“Use what you have, Commander.”</b> — the best loadout is the one already in your hangar.`,
   tierlist: `<b>“I find your lack of data… disturbing.”</b> — almost 9 million real battles beat a hunch.`,
   conquest: `<b>“The path to the red crate is long, but the keycards are worth it.”</b> — sector by sector, Commander.`,
-  tb:       `<b>“Many Bothans died to bring us this information.”</b> — platoon assignments, planned right.`,
+  tb:       `<b>“Many Bothans died to bring us this information.”</b> — every Rise of the Empire node, scouted by the community.`,
   tw:       `<b>“It's a trap!”</b> — coordinate the zones, Admiral.`,
   arena:    `<b>“In my experience, there's no such thing as luck.”</b> — Obi-Wan Kenobi, on grinding out the daily climb.`,
   gac:      `<b>“Your focus determines your reality.”</b> — scout the zones before you commit.`,
@@ -5193,7 +5242,7 @@ function defaultState() {
     modesnav: { category: "raid", raidView: "o66", raidDetail: "ollie", raidSquad: "0", abView: "groundwar", abDetail: "teams", eraView: "overview" },  // Game modes tab: category, event and focused detail subtabs
     views: {                                    // task-focused local subtabs; only the selected card group is rendered
       gaps: "squads", coach: "priorities", arena: "overview", gac: "plan",
-      intel: "shopping", tb: "1", tierlist: "5v5", events: "next",
+      intel: "shopping", tb: "guide", tierlist: "5v5", events: "next",   // tb: TB Guide section (TBG_SECTIONS); the legacy tracker's phase is views["tb-phase"]
       twshared: "defense"                       // TW Coord's shared-with-GAC reference section (defense | counters)
     },
     /* Per-nav-group "where you were last" memory — see switchGroup() up top. Seeded to each group's
@@ -8458,7 +8507,10 @@ function renderGaps(s) {
   grid.innerHTML = wrapCards("gaps", cards, "sq");
 }
 
-/* ===================== TB Platoon Planner ===================== */
+/* ===================== TB Guide: swgohrote.com embed + legacy special-mission tracker =====================
+   tbg 13 Oct 2026. The tab used to be the Holotable's own Rise of the Empire tracker (TB_ROTE + state.tb). Ollie
+   prefers swgohrote.com ("SWGOH RoTE Auto Guide"), so the tab now embeds that site and the old tracker is kept,
+   fully working, in a collapsed card at the bottom. The functions below up to renderTB are that tracker, unchanged. */
 function tbKey(phase, zone) { return `${phase}-${zone}`; }
 function tbSet(phase, zone, field, val) {
   const k = tbKey(phase, zone);
@@ -8487,22 +8539,93 @@ function tbEnsureRun() {
   store.write(state);
 }
 function tbDismissRunNote() { state.tbRunResetNote = null; store.write(state); renderTB(); }
-function renderTB() {
-  const grid = document.getElementById("tbGrid");
-  if (!grid) return;
-  tbEnsureRun();
-  sectionNav("tbNav", "tb", TB_ROTE.map(ph => [String(ph.phase), `Phase ${ph.phase}`]));
-  const activePhase = String(state.views.tb || "1");
-  const phaseCards = TB_ROTE.filter(ph => String(ph.phase) === activePhase).map(ph => ({
-    id: "phase" + ph.phase,
-    w: 12,
-    html: `<div class="cardtitle">Phase ${ph.phase} <span class="sub">${escapeHtml(ph.zones)} · gate ${ph.relic}</span></div>
-      <div class="form-table tb-form">
-        <div class="form-head"><span>Done</span><span>Mission requirement</span><span>Assignee</span></div>
-      ${ph.missions.map(m => {
-        const k = tbKey(ph.phase, m.zone);
-        const v = state.tb[k] || { assigned: "", done: false };
-        return `<div class="form-row ${v.done ? "done" : ""}">
+/* The five swgohrote.com pages offered as sections. `path` is appended to TBG_ORIGIN verbatim — it is a
+   constant here, never user input, and the CSP's frame-src allows exactly TBG_ORIGIN and nothing else.
+   swgohrote.com has no public data API (only an icon API), so nothing is scraped or copied: the frame shows
+   the live site, and whatever the user does in it (roster import, saved plans) is stored by that site in its
+   own origin storage — not in this app's state, not in Cloud Sync. Its Support (donations) page is deliberately
+   not a section; the site's own bottom nav reaches it. */
+const TBG_ORIGIN = "https://www.swgohrote.com";
+const TBG_SECTIONS = [
+  { key: "guide",   label: "Guide",          path: "/",         title: "RoTE auto-battle guide: squads for every node, phases 1–6, Zeffo, Mandalore and special missions" },
+  { key: "map",     label: "Map",            path: "/map-view", title: "RoTE map view" },
+  { key: "planner", label: "Squad planner",  path: "/planner",  title: "RoTE squad planner" },
+  { key: "search",  label: "Search",         path: "/usage",    title: "RoTE search: which nodes use a unit" },
+  { key: "budget",  label: "Crystal budget", path: "/budget",   title: "Crystal income calculator" }
+];
+const TBG_SANDBOX = "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox";
+const TBG_BUDGET_URL = TBG_ORIGIN + "/budget";
+function tbgUrl(sec) { return TBG_ORIGIN + sec.path; }
+/* The section lives in state.views.tb (device-local, never synced — DEVICE_UI_KEYS). Before tbg that same
+   entry held the legacy tracker's phase ("1".."6"); such a value is moved to views["tb-phase"] the first time
+   it is seen, in memory only — the next ordinary store.write persists it, and nothing else reads it. */
+function tbgSection() {
+  if (!isPlainObject(state.views)) state.views = {};
+  const v = String(state.views.tb || "");
+  let sec = TBG_SECTIONS.find(x => x.key === v);
+  if (!sec) {
+    if (/^[1-9]$/.test(v) && !state.views["tb-phase"]) state.views["tb-phase"] = v;
+    sec = TBG_SECTIONS[0];
+    state.views.tb = sec.key;
+  }
+  return sec;
+}
+/* Tap-to-copy ally code for swgohrote.com's roster import (it can't be pre-filled: the site is another
+   origin). Same pattern as pbmBmCopy: async clipboard first, and if that is refused (file://, an old
+   browser, no user activation) the code is put in a selected read-only box to copy by hand. The digits are
+   copied without dashes — the form every ally-code field accepts; the chip shows the dashed form. */
+function tbgSay(msg, tone) {
+  const el = document.getElementById("tbgMsg");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = tone === "good" ? "var(--good)" : "var(--ink-3)";
+}
+function tbgCopyCode(key) {
+  const a = ACCOUNTS.find(x => x.key === key);
+  if (!a) return;
+  const fallback = () => {
+    const box = document.getElementById("tbgCopyText");
+    if (box) { box.hidden = false; box.value = a.code; try { box.focus(); box.select(); } catch (e) {} }
+    tbgSay(`This browser wouldn't copy automatically — ${a.label}'s ally code is selected below; copy it from there.`, "");
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(a.code).then(() => {
+        const box = document.getElementById("tbgCopyText");
+        if (box) box.hidden = true;
+        tbgSay(`Copied ${a.label}'s ally code (${a.codeFmt}) — paste it into the site's roster import.`, "good");
+      }, fallback);
+      return;
+    }
+  } catch (e) {}
+  fallback();
+}
+function tbgEmbedHtml(sec) {
+  const url = tbgUrl(sec);
+  const chips = ACCOUNTS.map(a => `<button type="button" class="tbg-chip" data-tbg-code="${escapeHtml(a.key)}" onclick="tbgCopyCode('${jsAttr(a.key)}')" aria-label="Copy ${escapeHtml(a.label)}'s ally code ${escapeHtml(a.codeFmt)}">⧉ <span class="tbg-long">Copy </span>${escapeHtml(a.label)}<span class="tbg-long">'s ally code</span> <span class="tbg-code">${escapeHtml(a.codeFmt)}</span></button>`).join("");
+  return `<div class="tbg-head">
+      <div class="tbg-credit">Powered by <b>swgohrote.com</b> — a free community tool; not part of Holotable, its data isn't stored here.</div>
+      <a class="tbg-open" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a>
+    </div>
+    <div class="mnote tbg-note">A live third-party site in a frame — it can change, break or go away without notice; if it won't load, use <b>Open in new tab</b>. Rosters and plans you make there stay with swgohrote.com in this browser, not in Holotable or ☁ Sync.</div>
+    <div class="tbg-codes"><span class="tbg-codes-label">Tap to copy an ally code for the site's roster import:</span>${chips}</div>
+    <div class="mnote tbg-msg" id="tbgMsg" role="status"></div>
+    <input class="tbg-copy" id="tbgCopyText" type="text" readonly hidden aria-label="Ally code to copy">
+    <div class="tbg-frame">
+      <div class="tbg-loading" aria-hidden="true">Loading swgohrote.com … if nothing appears, use Open in new tab ↗ above.</div>
+      <iframe src="${escapeHtml(url)}" title="${escapeHtml("swgohrote.com — " + sec.title + " (live third-party site)")}" loading="lazy" referrerpolicy="no-referrer" sandbox="${escapeHtml(TBG_SANDBOX)}"></iframe>
+    </div>`;
+}
+/* Legacy tracker card: the previous TB tab, intact. Collapsed by default via foldMore (in-memory foldState,
+   so it stays open across the re-render a tick causes, and resets to collapsed on reload — no storage).
+   Ticks/assignments still write state.tb exactly as before; the phase pills use the stock sectionNav with
+   the device-local views["tb-phase"]. */
+function tbLegacyCardHtml(activePhase) {
+  const ph = TB_ROTE.find(x => String(x.phase) === activePhase) || TB_ROTE[0];
+  const rows = ph.missions.map(m => {
+    const k = tbKey(ph.phase, m.zone);
+    const v = state.tb[k] || { assigned: "", done: false };
+    return `<div class="form-row ${v.done ? "done" : ""}">
           <input type="checkbox" aria-label="Mark ${escapeHtml(m.zone)} complete" ${v.done ? "checked" : ""} onchange="tbSet(${ph.phase},'${jsAttr(m.zone)}','done',this.checked)">
           <div class="txt"><b>${escapeHtml(m.zone)}:</b> ${escapeHtml(m.need)}</div>
           <label class="form-field"><span>Assignee</span><select class="cqselect" aria-label="Assignee for ${escapeHtml(m.zone)}" onchange="tbSet(${ph.phase},'${jsAttr(m.zone)}','assigned',this.value)">
@@ -8512,14 +8635,44 @@ function renderTB() {
             <option value="both" ${v.assigned === "both" ? "selected" : ""}>Both</option>
           </select></label>
         </div>`;
-      }).join("")}</div>`
-  }));
+  }).join("");
   const note = state.tbRunResetNote;
-  /* Full-span so it reads as a line across the planner rather than a stray card in the 12-column grid. */
   const resetNote = note && note.cleared
-    ? `<div class="intelnote cqrun" style="grid-column:1/-1"><span class="cqrunspan">Cleared <b>${note.cleared}</b> assignment${note.cleared === 1 ? "" : "s"} from the previous TB — that run ended more than a week ago.</span> <a href="#" onclick="event.preventDefault();tbDismissRunNote()">dismiss</a></div>`
+    ? `<div class="intelnote cqrun"><span class="cqrunspan">Cleared <b>${hardNum(note.cleared)}</b> assignment${note.cleared === 1 ? "" : "s"} from the previous TB — that run ended more than a week ago.</span> <a href="#" onclick="event.preventDefault();tbDismissRunNote()">dismiss</a></div>`
     : "";
-  grid.innerHTML = resetNote + wrapCards("tb", phaseCards, "tb");
+  const body = `<div class="mnote">This was the Holotable's own Rise of the Empire tracker, the TB tab before it became the swgohrote.com guide. It tracks only the scarce named-pair special missions, so the same pair isn't needed in two zones at once. Zone/phase data ${snapNoteHtml("tb-rote")}; the <b>Phase 5 gates are unconfirmed</b>. Your ticks and assignments are kept and still save.</div>
+    ${resetNote}
+    <div class="cqaddrow" style="margin-bottom:9px"><button onclick="tbResetAll()">↺ Reset all phases (new TB)</button></div>
+    <div class="cqnav section-nav" id="tbLegacyNav"></div>
+    <div class="cardtitle" style="font-size:13px">Phase ${ph.phase} <span class="sub">${escapeHtml(ph.zones)} · gate ${escapeHtml(ph.relic)}</span></div>
+    <div class="form-table tb-form">
+      <div class="form-head"><span>Done</span><span>Mission requirement</span><span>Assignee</span></div>
+      ${rows}</div>`;
+  return `<div class="cardtitle">Legacy special-mission tracker (previous TB tab)</div>
+    ${foldMore("Phases 1–6 · your saved ticks and assignments", body, { key: "tb-legacy", cls: "tb-legacy" })}`;
+}
+function renderTB() {
+  const grid = document.getElementById("tbGrid");
+  if (!grid) return;
+  tbEnsureRun();
+  const sec = tbgSection();
+  sectionNav("tbNav", "tb", TBG_SECTIONS.map(x => [x.key, x.label]));
+  const nav = document.getElementById("tbNav");
+  if (nav) nav.setAttribute("aria-label", "TB Guide sections");
+  /* Only the chosen section's frame exists; it is rebuilt only when the section changes, so an ordinary
+     re-render (a tick, an account switch, a sync merge) never reloads the embedded site. */
+  const embed = document.getElementById("tbEmbed");
+  if (embed && (embed.dataset.tbgSection !== sec.key || !embed.querySelector("iframe"))) {
+    embed.innerHTML = tbgEmbedHtml(sec);
+    embed.dataset.tbgSection = sec.key;
+  }
+  const phases = TB_ROTE.map(ph => [String(ph.phase), `Phase ${ph.phase}`]);
+  if (state.views["tb-phase"] !== undefined && !phases.some(([k]) => k === String(state.views["tb-phase"]))) delete state.views["tb-phase"];
+  const activePhase = String(state.views["tb-phase"] || "1");
+  grid.innerHTML = wrapCards("tb", [{ id: "legacy", w: 12, html: tbLegacyCardHtml(activePhase) }], "tb");
+  sectionNav("tbLegacyNav", "tb-phase", phases);
+  const lnav = document.getElementById("tbLegacyNav");
+  if (lnav) lnav.setAttribute("aria-label", "Legacy tracker phases");
 }
 
 /* ===================== shared editable-list CRUD =====================
@@ -8904,7 +9057,8 @@ function executorProgressHtml() {
     <div class="mnote">Unlocks at 4★; reaching 5★/6★/7★ costs ${SHIP_STAR_COST[5]}/${SHIP_STAR_COST[6]}/${SHIP_STAR_COST[7]} blueprints. The event runs monthly on the ${ev.dayOfMonth}th and is auto-listed on the calendar below.</div>
     ${body}
     <div class="srcline">Unlock gate (${EXECUTOR_REQ.chars.length} characters + ${EXECUTOR_REQ.ships.length} ships, level ${EXECUTOR_REQ.playerLevel}+) ${snapNoteHtml("executor-req")} — the rows above show it only for an account that hasn't unlocked the ship yet.</div>
-    <div class="mnote"${stale ? ` style="color:var(--serious);font-weight:650"` : ""}>Costs and cadence ${snapNoteHtml("executor-event")}, per ${escapeHtml(ev.source)}${stale ? ` — that snapshot is ${ageDays} days old, past its ${SNAP_BY_KEY["executor-event"].halfLife}-day shelf life: re-check before spending crystals.` : "."} Blueprint counts are typed by hand — the live pull only carries the star level.</div>`;
+    <div class="mnote"${stale ? ` style="color:var(--serious);font-weight:650"` : ""}>Costs and cadence ${snapNoteHtml("executor-event")}, per ${escapeHtml(ev.source)}${stale ? ` — that snapshot is ${ageDays} days old, past its ${SNAP_BY_KEY["executor-event"].halfLife}-day shelf life: re-check before spending crystals.` : "."} Blueprint counts are typed by hand — the live pull only carries the star level.</div>
+    <div class="mnote tbg-budget">Planning crystals across the month? <a href="${escapeHtml(TBG_BUDGET_URL)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">swgohrote.com's Crystal Income Calculator ↗</a> — a free community tool, not part of Holotable (also under TB Guide → Crystal budget).</div>`;
 }
 function executorReadinessHtml() {
   const chipText = { done: "✓ ready", close: "→ close", stargate: "★ not started", grind: "⛭ grinding" };
@@ -13249,10 +13403,13 @@ const SNAPSHOTS = [
   /* Half-life 120: zone and phase layout for Rise of the Empire is effectively fixed content and
      changes only on a rework. The scarce-pair special missions it actually tracks change with it. Note
      the Phase 5 row says "(unconfirmed)" — that is a research GAP, not decay, and no amount of
-     freshness fixes it; it is left saying so. */
-  { key: "tb-rote", label: "TB: Rise of the Empire special missions", tab: "tb",
+     freshness fixes it; it is left saying so.
+     tbg 13 Oct 2026: since the TB tab became the swgohrote.com embed, TB_ROTE feeds ONLY the collapsed legacy
+     tracker card. The embed is a live site with no snapshot of ours, so it has no entry; this one is kept
+     (same key, date and half-life) but now says which part of the tab it describes. */
+  { key: "tb-rote", label: "TB legacy tracker: Rise of the Empire special missions", tab: "tb",
     asOf: "2026-08-09", halfLife: 120,
-    hint: "ask Claude to re-check the RotE phase/special-mission gates (Phase 5 is still unconfirmed)" },
+    hint: "only the legacy tracker card at the bottom of TB Guide uses this — the guide above it is swgohrote.com, live. If you still use the tracker, ask Claude to re-check the RotE special-mission gates (Phase 5 is still unconfirmed)" },
   /* Half-life 180: Assault Battles are fixed events. The mechanics, faction locks and tier gates
      change only when CG reworks one, which is rare and announced. Dated from the OLDEST pass in the
      set (Ground War, 22 Aug) rather than the newest, so the chip describes the weakest link. */

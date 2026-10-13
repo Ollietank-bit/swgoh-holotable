@@ -23,7 +23,7 @@ async function open(b, o) {
       if (withPulls) localStorage.setItem("swgoh-holotable-pulls-v1", pl);
       sessionStorage.setItem(seedKey, "1"); } catch (e) {}
   }, [o.state || REAL, PULLS, o.pulls !== false, "seeded-" + (o.tag || "x")]);
-  await ctx.route(/fonts\.g|swgoh\.gg|corsproxy|allorigins|codetabs|api\.github/, r => r.abort());
+  await ctx.route(/fonts\.g|swgoh\.gg|swgohrote\.com|corsproxy|allorigins|codetabs|api\.github/, r => r.abort());   // tbg: + swgohrote.com (the TB Guide frame) — no suite reaches the network
   const p = await ctx.newPage(); const errs = [];
   p.on("pageerror", e => errs.push(String(e).slice(0, 300)));
   p.on("console", m => { if (m.type() === "error" && !/Failed to load resource|net::ERR|fonts\.g/.test(m.text())) errs.push("console: " + m.text().slice(0, 200)); });

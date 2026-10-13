@@ -85,7 +85,7 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
     L.ck("seasons start every 28 days (S83 9 Sep, S84 7 Oct, S85 4 Nov) and each season's events are 7 days apart",
       (Date.UTC(2026, 9, 7) - Date.UTC(2026, 8, 9)) / 864e5 === 28 && (Date.UTC(2026, 10, 4) - Date.UTC(2026, 9, 7)) / 864e5 === 28 && c.sched.filter(r => r[2] > 1).every(r => { const prev = c.sched.find(q => q[1] === r[1] && q[2] === r[2] - 1); return (Date.UTC(...r[4].split("-").map((x, i) => i === 1 ? x - 1 : +x)) - Date.UTC(...prev[4].split("-").map((x, i) => i === 1 ? x - 1 : +x))) / 864e5 === 7; }), "");
     const snap = k => c.snaps[k];
-    L.ck("SNAPSHOTS: registry still 22 entries", c.reg === 22, String(c.reg));
+    L.ck("SNAPSHOTS: registry 23 entries (22 + drr droid-raid)", c.reg === 23, String(c.reg));
     L.ck("SNAPSHOTS asOf 2026-10-12 for the entries re-read today: events, gac-schedule, gac-format", snap("events") === "2026-10-12" && snap("gac-schedule") === "2026-10-12" && snap("gac-format") === "2026-10-12", JSON.stringify([snap("events"), snap("gac-schedule"), snap("gac-format")]));
     L.ck("SNAPSHOTS NOT bumped where the content was not re-read: conquest (plan/feats/enemy intel) 2026-09-27, executor-event (pricing) 2026-10-07", snap("conquest") === "2026-09-27" && snap("executor-event") === "2026-10-07", JSON.stringify([snap("conquest"), snap("executor-event")]));
     L.ck("no SNAPSHOTS asOf is in the future (after 12 Oct)", Object.values(c.snaps).every(a => !a || a <= "2026-10-12"), JSON.stringify(c.snaps));

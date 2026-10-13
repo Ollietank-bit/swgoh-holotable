@@ -601,6 +601,15 @@
     .glq-why summary::-webkit-details-marker { display: none; }
     .glq-why summary::before { content: "▸"; flex: none; font-size: 11px; }
     .glq-why[open] summary::before { content: "▾"; } }
+  /* mgl: Mandalorian & Grogu GL watch — requirement sets inside the GL order card's "Why" panel. One block. */
+  .mgl-set { margin-top: 8px; }
+  .mgl-sethead { color: var(--ink-2); font-weight: 650; font-size: 12px; overflow-wrap: anywhere; }
+  .mgl-setsrc { color: var(--ink-3); font-size: 11.5px; overflow-wrap: anywhere; }
+  .mgl-set ul { margin: 3px 0 0 18px; padding: 0; }
+  .mgl-set li { overflow-wrap: anywhere; margin-top: 2px; }
+  .mgl-gap { color: var(--ink-3); }
+  .mgl-raid { color: var(--accent); font-size: 11px; font-weight: 650; white-space: nowrap; }
+  .mgl-pending { border: 1px dashed var(--border-strong); border-radius: 8px; padding: 5px 8px; }
   /* Next characters (non-GL) card (GL Roadmap tab) — see NXT_QUEUE. Rows reuse the .glq-row look. */
   .nxt-opt { color: var(--ink-2); }
   .nxt-week { margin: 2px 0 6px; overflow-wrap: anywhere; }
@@ -1561,6 +1570,107 @@
     .lay-hint-touch { display: inline; }
     .lay-tools button, .editbar .pill { min-height: 44px; min-width: 44px; }
   }
+  /* ===== drr: Droid Destruction raid planner (Game modes › Raids) ===== */
+  #drrGrid { margin-top: 2px; }
+  .drr-confs { display: flex; flex-direction: column; gap: 5px; margin: 4px 0 8px; }
+  .drr-conf { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+  .drr-conf .chip { text-transform: uppercase; letter-spacing: .05em; min-width: 104px; justify-content: center; }
+  .drr-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid var(--grid); border-radius: 999px;
+    font-size: 11px; color: var(--ink-2); background: rgba(255,255,255,.025); line-height: 1.3; max-width: 100%; overflow-wrap: anywhere; }
+  .drr-pill.hot { border-color: var(--accent); color: var(--ink-1); }
+  .drr-matrix { display: flex; flex-direction: column; margin-top: 6px; }
+  .drr-row { display: grid; grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "name lvl" "tags lvl"; gap: 2px 8px; align-items: center;
+    padding: 6px 0; border-top: 1px solid var(--grid); font-size: 12.5px; }
+  .drr-row:first-child { border-top: 0; }
+  .drr-name { grid-area: name; min-width: 0; display: flex; flex-direction: column; }
+  .drr-name b { color: var(--ink-1); font-weight: 600; }
+  .drr-why { font-size: 11px; color: var(--ink-3); line-height: 1.35; overflow-wrap: anywhere; }
+  .drr-tags { grid-area: tags; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .drr-tags .chip { font-size: 10px; padding: 1px 6px; }
+  .drr-pri, .drr-sq { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em; padding: 1px 6px; border-radius: 5px; border: 1px solid var(--border-strong); color: var(--ink-2); }
+  .drr-sq { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+  .drr-off { opacity: .5; }
+  .drr-off .drr-name b { color: var(--ink-3); font-style: italic; }
+  .drr-row .drr-lvl { grid-area: lvl; }
+  .drr-lvl { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 64px; padding: 4px 8px; border-radius: 8px;
+    border: 1px solid var(--border-strong); font-size: 12px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.2; }
+  .drr-slotwrap .drr-lvl { min-width: 58px; padding: 3px 6px; font-size: 11px; }
+  .drr-lvl.drr-empty { color: var(--ink-3); border-style: dashed; }
+  .drr-lvl small { font-size: 10px; font-weight: 700; letter-spacing: .05em; opacity: .9; }
+  .drr-lvl.drr-tneg { color: var(--ink-3); border-color: var(--border); border-style: dashed; }
+  .drr-lvl.drr-t0 { color: var(--series-1); border-color: var(--series-1); background: color-mix(in srgb, var(--series-1) 10%, transparent); }
+  .drr-lvl.drr-t1 { color: var(--good); border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, transparent); }
+  .drr-lvl.drr-t2, .drr-lvl.drr-t3 { color: var(--teal); border-color: var(--teal); background: color-mix(in srgb, var(--teal) 10%, transparent); }
+  .drr-lvl.drr-t4, .drr-lvl.drr-t5 { color: var(--warning); border-color: var(--warning); background: color-mix(in srgb, var(--warning) 10%, transparent); }
+  .drr-lvl.drr-t6, .drr-lvl.drr-t7 { color: var(--swyellow); border-color: var(--swyellow); background: color-mix(in srgb, var(--swyellow) 10%, transparent); }
+  .drr-total { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px 10px; margin: 2px 0 8px; }
+  .drr-total > div { padding: 6px 10px 6px 11px; border-left: 2px solid var(--border-strong); min-width: 0; display: flex; flex-direction: column; }
+  .drr-total > div:first-child { border-left-color: var(--accent); }
+  .drr-total .lbl, .drr-modelrow .lbl, .drr-sliderrow .lbl, .drr-scen .lbl { font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .07em; }
+  .drr-total .val { font-size: 22px; font-weight: 600; font-family: "Orbitron", system-ui, sans-serif; color: var(--ink-1); line-height: 1.2; }
+  .drr-total > div:first-child .val { color: var(--accent); }
+  .drr-total .val small { font-size: 12px; color: var(--ink-3); font-family: system-ui, sans-serif; }
+  .drr-total .note { font-size: 11.5px; color: var(--ink-2); }
+  .drr-modelrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .drr-modelrow .lbl { margin-right: 4px; }
+  .drr-btn { font: inherit; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--ink-2); cursor: pointer; line-height: 1.2; }
+  .drr-btn:hover { color: var(--ink-1); border-color: var(--border-strong); }
+  .drr-btn.on { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, var(--surface-2)); }
+  .drr-btn:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+  .drr-squads { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+  .drr-squad { padding: 9px 10px 8px; border: 1px solid var(--grid); border-radius: 10px; background: rgba(255,255,255,.018); min-width: 0; }
+  .drr-sqhead { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px; margin-bottom: 7px; font-size: 13px; }
+  .drr-sqhead b { color: var(--ink-1); flex: 1 1 auto; }
+  .drr-slots { display: flex; flex-direction: column; gap: 5px; }
+  .drr-slotwrap { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 6px; border-left: 3px solid var(--border); padding-left: 6px; border-radius: 3px; }
+  .drr-slotwrap.drr-t0 { border-left-color: var(--series-1); } .drr-slotwrap.drr-t1 { border-left-color: var(--good); }
+  .drr-slotwrap.drr-t2, .drr-slotwrap.drr-t3 { border-left-color: var(--teal); } .drr-slotwrap.drr-t4, .drr-slotwrap.drr-t5 { border-left-color: var(--warning); }
+  .drr-slotwrap.drr-t6, .drr-slotwrap.drr-t7 { border-left-color: var(--swyellow); } .drr-slotwrap.drr-tneg { border-left-style: dashed; }
+  .drr-slotlbl { font-size: 10.5px; font-weight: 700; color: var(--ink-3); display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+  .drr-guess { font-size: 8.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--warning); }
+  select.drr-slot { font: 500 12.5px/1.25 system-ui, sans-serif; color: var(--ink-1); background: var(--surface-2); border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px 28px 7px 9px; width: 100%; max-width: none; min-height: 36px; appearance: none; -webkit-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+    background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; text-overflow: ellipsis; }
+  select.drr-slot:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 1px; }
+  .drr-needs { margin-top: 7px; font-size: 11.5px; color: var(--ink-2); line-height: 1.45; display: flex; flex-direction: column; gap: 2px; }
+  .drr-needs b { color: var(--ink-1); display: inline-block; min-width: 22px; }
+  .drr-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+  .drr-sliderrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 2px 0 8px; font-size: 12.5px; color: var(--ink-2); }
+  .drr-sliderrow .lbl { flex: 1 1 100%; text-transform: none; letter-spacing: 0; font-size: 12.5px; color: var(--ink-2); }
+  .drr-sliderrow .lbl b { color: var(--ink-1); } .drr-sliderrow .lbl small { color: var(--ink-3); }
+  .drr-sliderrow input[type=range] { flex: 1 1 160px; min-width: 120px; accent-color: var(--accent); min-height: 32px; }
+  .drr-simout { flex: 1 1 200px; font-variant-numeric: tabular-nums; } .drr-simout b { color: var(--ink-1); }
+  .drr-ladder { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 4px; margin: 4px 0 6px; }
+  .drr-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 2px; border-radius: 6px; border: 1px solid var(--grid);
+    font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; line-height: 1.2; min-height: 34px; }
+  .drr-box b { font-size: 9.5px; font-weight: 700; opacity: .75; }
+  .drr-box.hit { color: #06131a; background: var(--accent); border-color: var(--accent); } .drr-box.hit b { opacity: .7; }
+  .drr-box.sim { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .drr-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .drr-legend .drr-box { flex-direction: row; min-height: 0; padding: 2px 8px; font-size: 10.5px; }
+  .drr-scens { display: flex; flex-direction: column; gap: 4px; }
+  .drr-scen { display: grid; grid-template-columns: minmax(0,1fr) auto auto; grid-template-areas: "lbl val bx" "note note note"; gap: 0 10px; align-items: baseline;
+    padding: 6px 0; border-top: 1px solid var(--grid); font-size: 12.5px; }
+  .drr-scen .lbl { grid-area: lbl; color: var(--ink-1); text-transform: none; letter-spacing: 0; font-size: 12.5px; font-weight: 600; }
+  .drr-scen .val { grid-area: val; font-weight: 600; color: var(--ink-1); font-variant-numeric: tabular-nums; }
+  .drr-scen .bx { grid-area: bx; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .drr-scen .note { grid-area: note; font-size: 11px; color: var(--ink-3); }
+  .drr-scen[data-drr-scen="today"] { border-top: 0; } .drr-scen[data-drr-scen="today"] .lbl { color: var(--accent); }
+  .drr-waves { display: flex; flex-direction: column; gap: 8px; }
+  .drr-wave { padding: 8px 10px; border: 1px solid var(--grid); border-radius: 10px; background: rgba(255,255,255,.018); }
+  .drr-wave.drr-wlive { border-color: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 22px -12px var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .drr-wave.drr-wpast { opacity: .62; }
+  .drr-whead { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 13px; color: var(--ink-2); }
+  .drr-whead b { color: var(--ink-1); }
+  .drr-wave .fold-more { margin: 4px 0 0; }
+  .drr-wslots { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; margin-top: 4px; }
+  .drr-wslot { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .drr-wslot span { font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+  .drr-wadvice { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .drr-wtick label.item { padding: 4px 0 0; margin: 0; }
+  .drr-wseen { font-size: 11px; color: var(--ink-3); margin-top: 4px; line-height: 1.4; }
+  @media (pointer: coarse) { select.drr-slot { min-height: 44px; } .drr-btn { min-height: 40px; } }
 </style>
 </head>
 <body data-tab="overview">
@@ -1779,6 +1889,7 @@
       <div class="cqnav section-nav nav-tertiary" id="raidDetailNav"></div>
       <div class="cqnav section-nav nav-tertiary" id="raidSquadNav"></div>
       <div id="raidBody"></div>
+      <div class="sortable" id="drrGrid" data-pane="drr" style="display:none"></div>   <!-- drr: Droid Destruction planner (shown when the Raid selector is on it) -->
     </div>
 
     <div id="assaultSection">
@@ -2524,12 +2635,12 @@ function renderModesCrumb() {
     segs.push({ label: "Eras", act: `modesCrumbRoot('eras')` });
     segs.push({ label: cur.label, act: `eraView('${jsAttr(cur.key)}')` });
   } else {
-    const cur = RAID_INTEL.find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];
+    const cur = drrRaidList().find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];   // drr: + the planner entry
     segs.push({ label: "Raids", act: `modesCrumbRoot('raid')` });
     segs.push({ label: cur.label, act: `modesCrumbRaid('${jsAttr(cur.key)}')` });
     const detail = state.modesnav.raidDetail || "ollie";
-    segs.push({ label: RAID_DETAIL_LABELS[detail] || detail, act: `raidDetail('${jsAttr(detail)}')` });
-    if (detail !== "notes") {
+    if (!cur.drr) segs.push({ label: RAID_DETAIL_LABELS[detail] || detail, act: `raidDetail('${jsAttr(detail)}')` });   // drr: the planner has no account/squad level
+    if (detail !== "notes" && !cur.drr) {
       /* "compare" isn't an account key — state.pulls.compare doesn't exist — so it needs the same
          guard renderRaids() already applies before calling raidCoachForRaid(), or this throws deep
          inside accountView(). Missing here is exactly what wedged the Game Modes tab. */
@@ -2549,6 +2660,7 @@ function renderModesCrumb() {
 function renderModesCategory() {
   const nav = document.getElementById("modesCatNav");
   if (!nav) return;
+  drrConsumeJump();   // drr: a Coach/Next-up deep link lands on the Droid Destruction planner
   const cats = [["raid", "Raids"], ["assault", "Assault Battles"], ["eras", "Eras"]];
   const cur = ["assault", "eras"].includes(state.modesnav.category) ? state.modesnav.category : "raid";
   nav.innerHTML = `<label class="mode-select-row"><span>Activity</span><select class="cqselect" onchange="modesCategory(this.value)">${cats.map(c => `<option value="${c[0]}" ${cur === c[0] ? "selected" : ""}>${c[1]}</option>`).join("")}</select></label>` +
@@ -3603,6 +3715,27 @@ const FARM_CHECKS = {
     "p3-0": relic("HOTHLEIA", 6)
   }
 };
+/* ===================== mgl: Mandalorian & Grogu GL — the published requirement sets =====================
+   The GL has FOUR requirement sets. swgoh.gg's quest page shows the current one as "3 of 4" = set 3 of 4 SETS (not 3 of 4
+   requirements). Sets 1-3 are published (12 units, every one a RELIC level — no star/gear/shard/currency requirement is shown
+   anywhere); set 4 is still "Coming Soon". NO release date and NO kit reveal exist as of 12 Oct 2026 (ref/MANDO-GL-RESEARCH.md).
+   Sources: swgoh.gg/quests/?page=9 (read 12 Oct 2026), cross-checked against swgoh.gg unit pages; set 2 swgoh.gg news "Update
+   8-19-2026"; set 3 EA "Update 9-16". Unit ids are the roster base_ids; NAMES are the exact in-game names and are matched exactly
+   (mglResolve) — "The Mandalorian" is NOT "The Mandalorian (Beskar Armor)", "Boba Fett" is NOT "Boba Fett, Scion of Jango".
+   RACCOON (Rotta) is the id this file's shipment guide carries (swgoh.gg journey-guide URL); neither pull owns him, so it is
+   unverified against a pull. raid: true = also one of Droid Destruction's 33 eligible units. */
+const MGL_ASOF = "2026-10-12";
+const MGL_SETS = [
+  { n: 1, quest: "Companion", revealed: "by 22 Jul 2026 (exact date not found)", src: "swgoh.gg quests page, read 12 Oct 2026; EA 22 Jul patch notes",
+    req: [["THEMANDALORIAN", "The Mandalorian", 10], ["R5D4", "R5-D4", 9, true], ["GREEFKARGA", "Greef Karga", 7], ["RACCOON", "Rotta the Hutt", 6, true]] },
+  { n: 2, quest: "Hunted", revealed: "19 Aug 2026", src: "swgoh.gg news (Update 8-19-2026); swgoh.gg quests page, read 12 Oct 2026",
+    req: [["IG11", "IG-11", 9], ["CARSONTEVA", "Captain Carson Teva", 7, true], ["RANGERZEB", "Zeb Orrelios (New Republic Pilot)", 7, true], ["BISHOP", "Colonel Ward", 7, true]] },
+  { n: 3, quest: "Caretaker", revealed: "16 Sep 2026", src: "EA Update 9-16; swgoh.gg quests page, read 12 Oct 2026",
+    req: [["BOBAFETTSCION", "Boba Fett, Scion of Jango", 9], ["JEDIKNIGHTLUKE", "Jedi Knight Luke Skywalker", 8], ["GOPHERANTS", "Grogu & Anzellans", 7, true], ["THEMANDALORIANBESKARARMOR", "The Mandalorian (Beskar Armor)", 10]] },
+  { n: 4, pending: true, quest: "TBA", revealed: "not announced", src: "swgoh.gg quests page, read 12 Oct 2026: four \"Coming Soon!\" placeholder rows", req: [] }
+];
+/* flat [id, name, relic, setN, raid] list of the 12 published requirements, in set order */
+const MGL_REQ = MGL_SETS.flatMap(st => st.req.map(([id, name, rr, raid]) => [id, name, rr, st.n, !!raid]));
 /* ===================== GL build order — the expert queue (glq) =====================
    The owner asked for "the tier GL order in the accounts, and prep for the next GLs in order". GL_ORDER
    above is RELEASE order (display only) and state.glTarget is whichever Legend the Roadmap is showing —
@@ -3633,12 +3766,11 @@ const GL_QUEUE = {
         JEDIMASTERKENOBI: "Jedi Master Kenobi", LORDVADER: "Lord Vader", JABBATHEHUTT: "Jabba the Hutt",
         GLAHSOKATANO: "Ahsoka Tano", GLHONDO: "Pirate King Hondo Ohnaka" },
   watch: {
-    MANDOGROGU: { name: "Mandalorian & Grogu (Galactic Legend)",
-      note: "Not released — no exact date announced as of 7 Oct 2026 (November is inferred: EA's Droid Destruction guild raid is \"targeting a November release, closely following\" this Legend). Droid Destruction itself (swgoh.gg news, 7 Oct): 8 entry tiers (Tier 0–7, Relic 10 at the top) and 33 eligible Marquee/Journey units from the last year of Eras, including Rotta the Hutt and Grogu & Anzellans. The 4 requirements below are from EA's Update 9-16 post and swgoh.gg shows them as \"3 of 4\"; none changed by 7 Oct, so more may follow — a watch-only entry, not a roadmap target.",
-      /* BOBAFETTSCION confirmed as the swgoh.gg base_id on 4 Oct 2026 (unit page). Jedi Knight Luke R8 is from
-         the EA post only; swgoh.gg's Luke page does not list it. */
-      req: [["BOBAFETTSCION", "Boba Fett, Scion of Jango", 9], ["JEDIKNIGHTLUKE", "Jedi Knight Luke Skywalker", 8],
-            ["GOPHERANTS", "Grogu & Anzellans", 7], ["THEMANDALORIANBESKARARMOR", "The Mandalorian (Beskar Armor)", 10]] }
+    MANDOGROGU: { name: "Mandalorian & Grogu (Galactic Legend)", asOf: MGL_ASOF,
+      note: "Not released — no release date and no kit reveal announced as of 12 Oct 2026 (late Oct to early Nov is inference only: EA's Droid Destruction guild raid is \"currently targeting release in November, closely following\" this Legend, and Rotta the Hutt's journey reruns before it, no date given). Droid Destruction itself (swgoh.gg news, 7 Oct): 8 entry tiers (Tier 0–7, Relic 10 at the top) and 33 eligible Marquee/Journey units from the last year of Eras, including Rotta the Hutt and Grogu & Anzellans. The unlock has FOUR requirement sets: swgoh.gg's \"3 of 4\" means set 3 of 4 sets, not 3 of 4 requirements. Sets 1–3 are published (12 units, all Relic-only: R10, R9, R7, R6 · R9, R7, R7, R7 · R9, R8, R7, R10); set 4 is still \"Coming Soon\" and may change what is needed. A watch-only entry, not a roadmap target.",
+      /* mgl 12 Oct 2026: sets 1-3 (12 units) from MGL_SETS above; BOBAFETTSCION confirmed as the swgoh.gg base_id on 4 Oct 2026
+         (unit page). Jedi Knight Luke R8: EA post and swgoh.gg's quest page (the Luke unit page does not list it). */
+      req: MGL_REQ }
   },
   ollie: {
     note: "Do both, GAC first: your three built Legends (Rey, Supreme Leader Kylo Ren, Jabba) sit idle in Carbonite. Setting a GAC defense every round costs no relic materials and its crystals fund this whole queue — it is already the top flag in Coach's corner.",
@@ -3654,8 +3786,8 @@ const GL_QUEUE = {
         trigger: "Starts when Leia's build-up above is done. Mandalorian & Grogu only jumps ahead of it if all three of its switch conditions hold.",
       },
       { watchId: "MANDOGROGU", status: "watch",
-        why: "Unreleased and only partly announced, so nothing gets relic'd for it yet. But the one announced requirement you don't own (Boba Fett, Scion of Jango) and the 3★ Grogu & Anzellans are shard farms, and shards are the slow part — those are in Prep below. The Mandalorian (Beskar Armor) is R7 here against an announced R10.",
-        trigger: "Promote to #2 only if (a) Capital Games officially confirms the requirement list is complete, (b) Scion of Jango is 5★ or better here, and (c) the first tier-list data puts it S or A." },
+        why: "Unreleased — no release date, no kit — and only sets 1–3 of its 4 requirement sets are public (12 units, all Relic levels), so nothing gets relic'd for it yet. On the 12 Oct pull you own 10 of the 12; Rotta the Hutt and Boba Fett, Scion of Jango are not owned, and only Jedi Knight Luke (R7 of R8) and The Mandalorian (Beskar Armor) (R7 of R10) have relics. Shards are the slow part: Grogu & Anzellans, R5-D4, Captain Carson Teva, Colonel Ward and Zeb are all below 7★ (five of the six New Republic requirements are also Droid Destruction raid units). The live per-unit gap is in the requirements list below.",
+        trigger: "Promote to #2 only if (a) Capital Games announces set 4 and confirms the requirement list is complete, (b) Scion of Jango is 5★ or better here, and (c) the first tier-list data puts it S or A." },
       { glId: "GRANDMASTERLUKE", status: "then", label: "Fallback",
         why: "Cheap (~29 relic tiers on the 1 Oct pull) but the weakest rating of the realistic options — B in 5v5, A in 3v3. Shares Lando and Threepio & Chewie with Leia, so Leia's build pays toward it.",
         trigger: "Only if SEE stalls (for example gear runs dry) or the tier lists move Luke up." },
@@ -3669,7 +3801,7 @@ const GL_QUEUE = {
       { id: "maul-g13", text: "Darth Maul G12 → G13 — spare pieces only, no relics yet", note: "SEE requirement; on 3 Oct he was 3 pieces short (1 to find, 2 to craft)", check: gear("MAUL", 13) },
       { id: "groguants-7", text: "Farm Grogu & Anzellans to 7★", note: "Light Side Battles Hard 8-E with spare energy — farmable there since the 30 Sep patch", check: star("GOPHERANTS", 7) },
       { id: "scion-unlock", text: "Start Boba Fett, Scion of Jango", note: "Guild Events Mk III store — 5 shards per 1,750 tokens — or Legend Tokens; 330 shards to activate", check: star("BOBAFETTSCION", 1) },
-      { id: "skip-peridea", rule: true, text: "Peridea/Ahsoka units and Rotta stay at gear-only or skipped", note: "your decision — no relic materials for them" }
+      { id: "skip-peridea", rule: true, text: "Peridea/Ahsoka units and Rotta stay at gear-only or skipped", note: "your decision — no relic materials for them. Revisit Rotta: he is now a published Mandalorian & Grogu requirement (R6, set 1 of 4); his journey reruns before that Legend (no date)." }
     ]
   },
   tiny: {
@@ -3688,8 +3820,8 @@ const GL_QUEUE = {
         why: "Only ~16 relic tiers more than Luke (~40 on the 1 Oct pull, 5 of 14 met; Grand Admiral Thrawn at G7 is the expensive one), but S-tier in 3v3 and a listed counter to Rey, Leia and Ahsoka.",
         trigger: "If Luke is still B-tier in 5v5 when Leia reaches R7, swap SEE ahead of Luke — press Set as target on SEE instead." },
       { watchId: "MANDOGROGU", status: "watch",
-        why: "Same picture as on Ollietank: unreleased, 4 requirements announced. Grogu & Anzellans is 3★ here, Scion of Jango isn't owned, and Beskar Mando is R7 against an announced R10.",
-        trigger: "If Capital Games confirms the list with Scion of Jango in it, start the Scion and Grogu & Anzellans shard farms immediately — shards are the long pole." },
+        why: "Same picture as on Ollietank: unreleased (no date, no kit), sets 1–3 of 4 published (12 units). On the 12 Oct pull Tiny also owns 10 of the 12 — Rotta the Hutt and Boba Fett, Scion of Jango are not owned — Grogu & Anzellans is 3★, and Beskar Mando is R7 against a published R10.",
+        trigger: "If Capital Games announces set 4 and confirms the list (Scion of Jango is already in set 3), start the Scion and Grogu & Anzellans shard farms immediately — shards are the long pole." },
       { glId: "JABBATHEHUTT", status: "later", why: "Not owned, and a long Bounty Hunter build — behind the three above." },
       { glId: "LORDVADER", status: "later", why: "A deep stack of R7–R8 requirements — after the three above." },
       { glId: "GLAHSOKATANO", status: "later", why: "The furthest: ~87 relic tiers on the 1 Oct pull, three R9s, Commander Ahsoka at G1." },
@@ -3715,6 +3847,45 @@ function glqUnitCur(u) {
   if (!u) return "not unlocked";
   return (hardNum(u.s) < 7 ? `${hardNum(u.s)}★ ` : "") + (hardNum(u.r) > 0 ? `R${hardNum(u.r)}` : `G${hardNum(u.g) || 1}`);
 }
+/* mgl: the Mandalorian & Grogu watch's per-unit status. EXACT matching only: the pull's unit under the base_id must carry the
+   exact in-game name (when the pull carries one — the built-in BASELINE has no names), else the exact (case-insensitive) name is
+   looked up across the roster; nothing is ever guessed ("The Mandalorian" ≠ "The Mandalorian (Beskar Armor)"). */
+function mglResolve(reqs, id, name) {
+  const u = reqs && reqs[id];
+  if (isPlainObject(u) && (!u.name || u.name === name)) return u;
+  return findUnitByName(reqs, name) || undefined;
+}
+/* The roster map with each watch requirement's id pointing at its exactly-resolved unit (or removed when not owned). */
+function mglReqMap(reqs, req) {
+  const m = Object.assign({}, reqs);
+  req.forEach(([id, name]) => { const u = mglResolve(reqs, id, name); if (u) m[id] = u; else delete m[id]; });
+  return m;
+}
+function mglCur(u) {
+  if (!isPlainObject(u)) return "not owned";
+  return `${hardNum(u.s)}★ ${hardNum(u.r) > 0 ? "R" + hardNum(u.r) : "G" + (hardNum(u.g) || 1)}`;
+}
+/* What is still missing for one requirement: stars to 7★, gear to G13 (relics can't start below it), relic tiers to the floor. */
+function mglGap(u, need) {
+  need = hardNum(need);
+  if (!isPlainObject(u)) return "unlock first";
+  const s = hardNum(u.s), g = hardNum(u.g) || 1, r = hardNum(u.r), bits = [];
+  if (s < 7) bits.push(`${7 - s}★ to 7★`);
+  if (r <= 0 && g < 13) bits.push(`G${g} → G13`);
+  if (r < need) bits.push(`${need - r} relic tier${need - r === 1 ? "" : "s"} (R${r} → R${need})`);
+  return bits.length ? bits.join(" · ") : "met ✓";
+}
+/* The requirement list grouped by set, with the live status of each unit (rows come from glqRows' watch branch). */
+function mglSetsHtml(rows) {
+  return MGL_SETS.map(st => {
+    const head = `<div class="mgl-sethead">Set ${st.n} of ${MGL_SETS.length}${st.pending ? " — not announced" : ` — “${escapeHtml(st.quest)}” · published ${escapeHtml(st.revealed)}`}</div>
+      <div class="mgl-setsrc">Source: ${escapeHtml(st.src)}</div>`;
+    if (st.pending) return `<div class="mgl-set mgl-pending" data-mgl-set="${st.n}">${head}<div class="mgl-gap">“Coming Soon” — requirements, and whether they change anything above, are unknown.</div></div>`;
+    const list = rows.filter(x => x.set === st.n).map(x =>
+      `<li class="${x.done ? "glq-met" : ""}" data-mgl-id="${escapeHtml(x.id)}">${x.done ? "✓ " : ""}<b>${escapeHtml(x.name)}</b>: ${escapeHtml(mglCur(x.u))} → R${hardNum(x.need)}${x.raid ? ` <span class="mgl-raid" title="also one of Droid Destruction's 33 eligible units">raid unit</span>` : ""} <span class="mgl-gap">— ${escapeHtml(mglGap(x.u, x.need))}</span></li>`).join("");
+    return `<div class="mgl-set" data-mgl-set="${st.n}">${head}<ul>${list}</ul></div>`;
+  }).join("");
+}
 /* The queue with effective statuses resolved against the roster. `rank` counts unbuilt, non-watch rows:
    the first is NOW, the second NEXT, the rest keep their static status (a static building/next pushed
    down by an earlier unbuilt row reads "then"). */
@@ -3729,10 +3900,11 @@ function glqRows(acct) {
   return cfg.queue.filter(e => e.watchId ? !!GL_QUEUE.watch[e.watchId] : !!GL_ROADMAP[e.glId]).map(e => {
     if (e.watchId) {
       const w = GL_QUEUE.watch[e.watchId];
-      const rows = w.req.map(([id, name, rr]) => ({ id, name, need: rr, u: reqs[id], ...unitProgress(reqs[id], rr) }));
-      return { e, kind: "watch", eff: "watch", name: w.name, note: w.note, rows, live: base.live,
+      const wm = mglReqMap(reqs, w.req);   // mgl: ids resolved by exact name (see mglResolve)
+      const rows = w.req.map(([id, name, rr, set, raid]) => ({ id, name, need: rr, set, raid, u: wm[id], ...unitProgress(wm[id], rr) }));
+      return { e, kind: "watch", eff: "watch", name: w.name, note: w.note, asOf: w.asOf, rows, live: base.live,
         doneCount: rows.filter(r => r.done).length, total: rows.length,
-        avg: Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length), tiers: glqTiersLeft(reqs, w.req) };
+        avg: Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length), tiers: glqTiersLeft(wm, w.req) };
     }
     const v = accountView(acct, e.glId);
     /* rv: only the first entry per queue carries a hand-written doneWhen; every other Legend counts as
@@ -3751,7 +3923,7 @@ function glqTierHtml(glId) {
   return parts.length ? `<span class="glq-tier" title="swgoh.gg GAC tier lists, pulled ${escapeHtml(TIER_LIST.updated)}">${parts.join(" · ")}</span>` : "";
 }
 function glqReadyText(r) {
-  if (r.kind === "watch") return `${r.doneCount}/${r.total} announced requirements met · ${(r.live ? "" : "~") + r.avg}% · ≈${r.tiers} relic tiers left`;
+  if (r.kind === "watch") return `${r.doneCount}/${r.total} published requirements met (sets 1–3 of 4; set 4 not announced) · ${(r.live ? "" : "~") + r.avg}% · ≈${r.tiers} relic tiers left`;
   const v = r.v;
   if (v.owned) return `unlocked ✓ · ${glqUnitCur(r.u)}${r.build ? ` · build-up ${r.build.doneCount}/${r.build.total}` : ""}`;
   return `${v.doneCount}/${v.reqRows.length} met · ${(v.live ? "" : "~") + v.avg}% · ≈${r.tiers} relic tiers left`;
@@ -3783,12 +3955,11 @@ function glqCardHtml(acct) {
     const btn = r.kind !== "gl" ? ""
       : r.e.glId === target ? `<span class="glq-viewing">Roadmap target</span>`
       : `<button type="button" class="glq-target" aria-label="Set ${escapeHtml(r.name)} as the GL Roadmap target" onclick="switchGlTarget('${escapeHtml(r.e.glId)}')">Set as target</button>`;
-    const watchReqs = r.kind === "watch" ? `<div class="glq-watchreqs">${escapeHtml(r.note)}<ul>${r.rows.map(x =>
-        `<li class="${x.done ? "glq-met" : ""}">${x.done ? "✓ " : ""}${escapeHtml((x.u && x.u.name) || x.name)}: ${escapeHtml(glqUnitCur(x.u))} → R${hardNum(x.need)}</li>`).join("")}</ul></div>` : "";
+    const watchReqs = r.kind === "watch" ? `<div class="glq-watchreqs">${escapeHtml(r.note)}<div class="mgl-setsrc">Watch entry re-checked ${escapeHtml(snapLabel(r.asOf || GL_QUEUE.asOf))} (the order above is as of ${escapeHtml(snapLabel(GL_QUEUE.asOf))}).</div>${mglSetsHtml(r.rows)}</div>` : "";
     return `<div class="glq-row glq-${escapeHtml(r.eff)}${r.eff === "building" ? " glq-current" : ""}" data-glq="${escapeHtml(r.e.glId || r.e.watchId)}">
       <div class="glq-head"><b class="glq-name"><span class="glq-n">${String(i + 1).padStart(2, "0")}</span> ${escapeHtml(r.name)}</b>${chip}${r.kind === "gl" ? glqTierHtml(r.e.glId) : ""}${btn}</div>
       <div class="glq-ready">${escapeHtml(glqReadyText(r))}</div>
-      <details class="glq-why"${r.eff === "building" ? " open" : ""} data-rv-def="${r.eff === "building" ? 1 : 0}"><summary>Why${r.e.trigger ? " · switch rule" : ""}</summary>
+      <details class="glq-why"${r.eff === "building" ? " open" : ""} data-rv-def="${r.eff === "building" ? 1 : 0}"><summary>Why${r.e.trigger ? " · switch rule" : ""}${r.kind === "watch" ? " · the 12 requirements" : ""}</summary>
         <p>${escapeHtml(r.e.why)}</p>${r.e.trigger ? `<p><b>Switch rule:</b> ${escapeHtml(r.e.trigger)}</p>` : ""}${r.e.optional ? `<p class="nxt-opt"><b>Optional — 5-unit (5v5) build:</b> ${escapeHtml(r.e.optional)}</p>` : ""}
         ${r.e.flag ? `<p class="glq-flag">⚠ Unverified: ${escapeHtml(r.e.flag)}</p>` : ""}${watchReqs}</details></div>`;
   };
@@ -3931,7 +4102,7 @@ const NXT_QUEUE = {
         cost: "Gear only — G13.",
         reqs: [gear("CASSIANANDOR", 13)], doneWhen: "G13." },
       { id: "grogu-ants", name: "Grogu & Anzellans — stars",
-        why: "Owned at 3★ and needs shards to go up. An announced Mandalorian & Grogu requirement, so it ties to the Rotta / Mando Legend watch on the GL order card.",
+        why: "Owned at 3★ and needs shards to go up. A published Mandalorian & Grogu requirement (R7, set 3 of 4, 16 Sep) and a Droid Destruction raid unit, so it ties to the Mando Legend watch on the GL order card.",
         cost: "Shards — Light Side Battles Hard 8-E with spare energy (farmable there since the 30 Sep patch).",
         reqs: [star("GOPHERANTS", 7)], doneWhen: "7★." },
       { id: "rey-dsv", name: "Rey (Dark Side Vision) — check",
@@ -4163,14 +4334,14 @@ const SHIP_DATA = {
     ["EMBOANDKEIBU", "Embo & Keibu", "Conquest (a Conquest reward unit)"]]
 };
 const SHP_WHY = {
-  ga: "Announced requirement (R7) for the Mandalorian & Grogu Galactic Legend, and a Rotta-journey unit. Shards are the slow part, and the cheapest route is free: spare energy on Light Side Hard 8-E (farmable there since the 30 Sep patch). Featured and Weekly bundles at 80 crystals a shard are the paid top-up.",
+  ga: "Published requirement (R7, set 3 of 4, 16 Sep) for the Mandalorian & Grogu Galactic Legend, a Rotta-journey unit and a Droid Destruction raid unit. Shards are the slow part, and the cheapest route is free: spare energy on Light Side Hard 8-E (farmable there since the 30 Sep patch). Featured and Weekly bundles at 80 crystals a shard are the paid top-up.",
   gaWhen: "Buy whenever a Featured or Weekly bundle shows — but it's prep for an unreleased Legend (no release date announced yet), so don't spend crystals you need elsewhere.",
-  scion: "Announced requirement (R9) for the Mandalorian & Grogu Galactic Legend, and not on this account. 330 shards is the longest farm in this guide. Legend Tokens (150 a shard) are the cheapest currency for him; Guild Events Mk III (350 a shard) second.",
+  scion: "Published requirement (R9, set 3 of 4, 16 Sep) for the Mandalorian & Grogu Galactic Legend, and not on this account. 330 shards is the longest farm in this guide. Legend Tokens (150 a shard) are the cheapest currency for him; Guild Events Mk III (350 a shard) second.",
   scionWhen: "Each week, Legend Tokens go to his shards first (before Ben Solo). Mk III tokens only once nothing your guild plan needs is on offer — prep, not a crystal spend.",
-  mgFlag: "Mandalorian & Grogu is unreleased with no exact date, and only 4 requirements are public (EA Update 9-16; more may follow). The Scion id (BOBAFETTSCION) is confirmed on swgoh.gg.",
-  rottaWhen: "Only if you'll run Rotta Tier I at the ~27 Oct rerun — 4★ before ~26 Oct. Your GL order calls Rotta prep-only, so skipping it is fine.",
+  mgFlag: "Mandalorian & Grogu is unreleased with no release date and no kit reveal; 12 requirements are public across sets 1–3 of 4 (set 4 is still unannounced, so more may follow — swgoh.gg's \"3 of 4\" means set 3 of 4 sets). The Scion id (BOBAFETTSCION) is confirmed on swgoh.gg.",
+  rottaWhen: "Only if you'll run Rotta Tier I at the ~27 Oct rerun — 4★ before ~26 Oct. Your GL order calls Rotta prep-only, so skipping it is fine — but Rotta the Hutt (R6) and R5-D4 (R9), Teva, Zeb and Ward (R7) are all published Mandalorian & Grogu requirements (sets 1–2 of 4), so the rerun is also the Legend's route to Rotta.",
   rottaFlag: "Rotta tier gates conflict between sources: swgoh.gg's event page says Tier I needs R5-D4 4★, Tier II Carson Teva 5★, Tier III Snowtrooper Commander 6★, Tier IV all 7★, which disagrees with the journey guide. Each tier also has an Era Level gate.",
-  tinyRotta: "Rotta is a skip for this account this run, so no shards for its journey units now.",
+  tinyRotta: "Rotta is a skip for this account this run, so no shards for its journey units now. (Rotta, R5-D4, Teva, Zeb and Ward are published Mandalorian & Grogu requirements — revisit if that Legend becomes the target.)",
   hondo: "Pirate King Hondo asks for it at R7 — Hondo is a 'later' Legend in your GL order. The Cantina node is the cheap route; no crystals until Hondo is the target.",
   ahsoka: "A GL Ahsoka requirement — the furthest Legend in your GL order, so not yet.",
   p3When: "Only when that Legend becomes the active target in the GL order.",
@@ -4610,7 +4781,8 @@ const TIPS = {
     { sev: "watch", id: "freeze-luxury-relics-until-leia", t: "Freeze luxury relics until Leia is done", note: "With only C3PO & Chewie and Lobot left as real long poles, every relic mat should still have a Leia address — a Kelleran or Paz sidegrade now is exactly how GLs slip a year." },
     { sev: "watch", id: "only-chief-chirpa-carries-a", t: "Only Chief Chirpa carries a TB omicron among the Leia squad", note: "ROLO, Kneesaa and Rex are all fully relic-invested Leia pieces but have zero TB omicrons between them — route the next TB omicron tokens their way." },
     { sev: "improve", id: "executor-fleet-slipped-to-rank", t: "Executor fleet slipped to rank 80 — outside top 50", note: "Was cracking top 50 for free daily crystals; retime the snipe (or push stars/gear) to get back above rank 50." },
-    chxExecTip("ollie", "chx-executor-plan")   // chx: appended LAST so positional tick migration (hardMigrateTipTicks) is unaffected
+    chxExecTip("ollie", "chx-executor-plan"),   // chx: appended LAST so positional tick migration (hardMigrateTipTicks) is unaffected
+    drrTip("ollie", "drr-four-star-floor")   // drr: derived from the pull + the wave calendar — see drrTipView (after chx for the same reason)
   ],
   tiny: [
     { sev: "keep", id: "gl-leia-organa-is-unlocked", t: "GL Leia Organa is unlocked — the farm is done", note: "She landed at 7★, R0, G9. Every requirement on the checklist you'd been grinding since August is now moot — next up is picking the new target below." },
@@ -4621,7 +4793,8 @@ const TIPS = {
     chxExecTip("tiny", "executor-is-still-only-4"),   // chx: derived from executorProgress() — was a static "still only 4★" line
     { sev: "watch", id: "freeze-luxury-relics-until-jedi", t: "Freeze luxury relics until Jedi Master Luke's near-done units land", note: "Chewbacca, C-3PO and Hermit Yoda are all two tiers or fewer away — finish those before spending relic mats on anything not on this chain." },
     { sev: "watch", id: "jedi-knight-revan-is-a", t: "Jedi Knight Revan is a dead end without Darth Revan or Malak", note: "Still G10 with no further Old Republic support on this account — zero further investment until after the next Legend push, if ever." },
-    { sev: "keep", id: "mandalorian-squad-bo-katan-mand", t: "Mandalorian squad (Bo-Katan Mand'alor R8, 2 of 3 omicrons)", note: "Genuinely meta for GAC and TW — keep it modded and together." }
+    { sev: "keep", id: "mandalorian-squad-bo-katan-mand", t: "Mandalorian squad (Bo-Katan Mand'alor R8, 2 of 3 omicrons)", note: "Genuinely meta for GAC and TW — keep it modded and together." },
+    drrTip("tiny", "drr-four-star-floor")   // drr: derived from the pull + the wave calendar — see drrTipView (appended last)
   ]
 };
 /* Daily routine — same habits both accounts; checkboxes auto-reset each day */
@@ -5057,7 +5230,10 @@ function defaultState() {
       legacyUpdates: { gac: [], cq: [] },       // later flat writes from an older client; original archives stay immutable
       assignmentBackups: { gac: { ollie: [], tiny: [] }, cq: { ollie: [], tiny: [] } }
     },
-    events: { items: [] }                       // Events & Calendar: items = [{ id, name, cat, date, ends, note }]
+    events: { items: [] },                      // Events & Calendar: items = [{ id, name, cat, date, ends, note }]
+    /* drr: Droid Destruction planner — waves = { [n]: { e, c, m, s } } featured-unit slots (game-wide), per account
+       squads = { [i]: [base_ids] } only for squads the user edited (else the Opus pre-fill). SYNCED, generic merge rule. */
+    drr: { waves: {}, ollie: { squads: {} }, tiny: { squads: {} } }
   };
 }
 function isPlainObject(v) { return v !== null && typeof v === "object" && !Array.isArray(v); }
@@ -5118,7 +5294,8 @@ const HARD_SHAPE = {
   gac: { ollie: HARD_GAC_ACCT, tiny: HARD_GAC_ACCT, zones: "ao", offense: "ao" },
   legacyMigration: { pending: "b", resolved: "s", resolvedAt: "n", shared: { "*": "b" }, legacyGac: "?o", legacyCq: "?o",
                      legacyUpdates: { "*": "ao" }, assignmentBackups: { "*": { "*": "a" } } },
-  events: { items: "events" }
+  events: { items: "events" },
+  drr: { waves: { "*": { "*": "s" } }, "*": { squads: { "*": "as" } } }   // drr: wave slots are base_id strings, squads arrays of base_ids
 };
 /* A roster snapshot is only usable with a reqs map: accountView() reads src.reqs[id] unguarded, so a pull
    without one would take the whole page down. Dropping it falls back to the built-in BASELINE. */
@@ -10312,9 +10489,9 @@ function raidSquad(v) { state.modesnav.raidSquad = String(v); store.write(state)
 function renderRaids() {
   const nav = document.getElementById("raidNav");
   if (!nav) return;
-  const cur = RAID_INTEL.find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];
-  nav.innerHTML = `<label class="mode-select-row"><span>Raid</span><select class="cqselect" onchange="raidView(this.value)">${RAID_INTEL.map(r => `<option value="${r.key}" ${cur.key === r.key ? "selected" : ""}>${escapeHtml(r.label)}</option>`).join("")}</select></label>` +
-    `<div class="mobile-mode-buttons">${RAID_INTEL.map(r => `<button class="${cur.key === r.key ? "active" : ""}" onclick="raidView('${r.key}')">${escapeHtml(r.label)}</button>`).join("")}</div>`;
+  const cur = drrRaidList().find(r => r.key === state.modesnav.raidView) || RAID_INTEL[0];   // drr: + the Droid Destruction planner entry
+  nav.innerHTML = `<label class="mode-select-row"><span>Raid</span><select class="cqselect" onchange="raidView(this.value)">${drrRaidList().map(r => `<option value="${r.key}" ${cur.key === r.key ? "selected" : ""}>${escapeHtml(r.label)}</option>`).join("")}</select></label>` +
+    `<div class="mobile-mode-buttons">${drrRaidList().map(r => `<button class="${cur.key === r.key ? "active" : ""}" onclick="raidView('${r.key}')">${escapeHtml(r.label)}</button>`).join("")}</div>`;
   let detail = state.modesnav.raidDetail || current;
   if (![current, "compare", "notes"].includes(detail)) detail = current;
   const detailNav = document.getElementById("raidDetailNav");
@@ -10331,8 +10508,478 @@ function renderRaids() {
       `<div class="mobile-mode-buttons">${detailRows.map((x, i) => `<button class="${squadIndex === i ? "active" : ""}" onclick="raidSquad('${i}')">${escapeHtml(x.sq.name)}</button>`).join("")}</div>`;
   }
   const body = document.getElementById("raidBody");
-  if (body) body.innerHTML = `<div class="card">${raidCoachHtmlForRaid(cur, detail, squadIndex)}</div>`;
+  if (body) body.innerHTML = cur.drr ? "" : `<div class="card">${raidCoachHtmlForRaid(cur, detail, squadIndex)}</div>`;
+  drrPaint(!!cur.drr);   // drr: the planner grid replaces the coach card for its own Raid entry
   renderModesCrumb();
+}
+/* ===================== drr: Droid Destruction raid planner (Game modes › Raids › "Droid Destruction (planner)") =====================
+   One contiguous block (merge hygiene). A planner for a raid that has NOT been released (CG: "targeting November 2026,
+   after the Mandalorian & Grogu GL"), built from the only published facts — see ref/FACTS.md, ROSTER.md, OPUS-REPORT.md and
+   FABLE-REPORT.md §5 (the card spec this implements). Confidence is graded per fact and shown in the UI, never smoothed over:
+     CONFIRMED  (CG community update 28 Sep / 5 Oct 2026, EA Additive Drops post ~9 Oct): release month, the 33 eligible
+                units, entry tiers 0–7 + base points, the 17-box track, the 7 wave windows, the 7★ replacement materials.
+     UNVERIFIED (swgoh.gg's own raid page, "based on CG's update"): 5 attempts, squads of ≤5 with ≤1 large unit, each
+                unit once, a squad scores at its WEAKEST unit's tier, and the T0 floor (CG's post says "no requirement",
+                swgoh.gg + the EA additive post say 4★). The planner takes the stricter 4★ reading in ONE constant.
+     UNKNOWN    bosses/phases, tickets/energy, box contents, guild rewards, which unit each wave features.
+   Everything is DERIVED on every read from state.pulls[acct].reqs[id].{s,g,r} (r = display relic, parsePlayer stores
+   relic_tier − 2) through drrTier(). Squad compositions are the Opus analyst's five tag-based squads, pre-filled per account
+   with the units it owns; they are labelled "tag-based guess" where that report says so and never presented as a meta.
+   State: squad edits and the per-wave featured-unit slots are SYNCED in state.drr (new field, additive — mergeDefaults
+   backfills it, HARD_SHAPE names it, and the generic three-way rule is the right one: a squad array is one fact edited
+   as a whole, so "rows" (union) would be wrong and the clock tiebreak is right; wave slots are plain scalars). The
+   scoring-model toggle, the tier slider and the "jump to planner" flag are device-local state.views entries. Wave
+   "simmed" ticks are derived tick keys `${acct}-p:drr:w<n>`. No new localStorage key. Every string goes through escapeHtml(). */
+const DROID_RAID = {
+  asOf: "2026-10-12", recheck: "2026-10-26",
+  recheckNote: "last re-checked 12 Oct 2026 — re-check 26 Oct 2026, or the day CG's “next update” (gameplay + rewards) posts, whichever is first",
+  /* The 33 eligible units in CG's order. id = roster base_id resolved against both 12 Oct pulls by EXACT in-game name
+     (never a fuzzy match: "Maul" ≠ "Maul (Hate-Fueled)", "Cassian Andor" ≠ "Cassian Andor (Undercover)", "The Mandalorian"
+     ≠ the GL, and the roster's 7★ "B1 Battle Droid" (B1BATTLEDROIDV2) is the existing unit, not the coming marquee).
+     idSrc "ship-guide" = an id this file's shipment guide already carries for a unit NEITHER pull owns — kept so a future
+     pull can resolve it, but unverified against a pull. id null = no id known. overlap: dual (also serves a GL / squad
+     plan), glreq (a PUBLISHED Mandalorian & Grogu GL requirement — sets 1–3 of 4, 12 Oct 2026 — that is also raid-eligible; glRelic = the relic level
+     the GL asks for; dual-use, but no relic spend before the raid's boxes are known — the GL's kit and release date are UNKNOWN), raid (raid-only), bench
+     (no sourced partner here), skip. alt = the material a 7★ owner gets instead of shards on that unit's wave (EA post). */
+  ELIGIBLE: [
+    { name: "4-LOM", id: "4LOM", overlap: "dual", why: "Bounty Hunter — Bossk BH offence squad", alt: "Mk7 Kyrotech" },
+    { name: "Zuckuss", id: "ZUCKUSS", overlap: "dual", why: "Bounty Hunter — Bossk BH offence squad", alt: "Mk9 Kyrotech" },
+    { name: "Stormtrooper Luke", id: "STORMTROOPERLUKE", overlap: "dual", why: "Rebel — possible CLS filler (unverified)", alt: "Flawed Signal Data" },
+    { name: "IG-90", id: "IG90", overlap: "dual", why: "Bounty Hunter / Droid (unverified tag)", alt: "Zinbiddle" },
+    { name: "Asajj Ventress (Dark Disciple)", id: "ASAJJDARKDISCIPLE", overlap: "dual", why: "Dark Side faction filler (unverified)", alt: "Impulse Detector" },
+    { name: "Inquisitor Barriss", id: "INQUISITORBARRISS", overlap: "dual", why: "Dark Side faction filler (unverified)", alt: "Aeromagnifier" },
+    { name: "Yoda & Chewie", id: "YODACHEWBACCA", overlap: "bench", why: "no sourced partner in these rosters — don't star up for the raid", alt: "Flawed Signal Data" },
+    { name: "Darth Vader (Duel's End)", id: "VADERDUELSEND", overlap: "dual", why: "Empire/Sith — Emperor Palpatine squad candidate (unverified)", alt: "Zinbiddle" },
+    { name: "Maul (Hate-Fueled)", id: "MAULHATEFUELED", idSrc: "ship-guide", overlap: "skip", why: "not owned on either account" },
+    { name: "Kleya Marki", id: "KLEYA", overlap: "raid", why: "Andor set — raid-only", alt: "Impulse Detector" },
+    { name: "Vel Sartha", id: "VEL", overlap: "raid", why: "Andor set — raid-only", alt: "Aeromagnifier" },
+    { name: "Cinta Kaz", id: "CINTA", overlap: "raid", why: "Andor set — raid-only", alt: "Flawed Signal Data" },
+    { name: "Dedra Meero", id: "DEDRAMEERO", overlap: "raid", why: "Andor/ISB — raid-only, but already G12: anchors the free T1 squad", alt: "Zinbiddle" },
+    { name: "Major Partagaz", id: "MAJORPARTAGAZ", overlap: "raid", why: "Andor/ISB — raid-only, but already G12: anchors the free T1 squad", alt: "Impulse Detector" },
+    { name: "KX Security Droid", id: "KXSECURITYDROID", overlap: "raid", why: "Andor/ISB — raid-only, but already G12: anchors the free T1 squad", alt: "Aeromagnifier" },
+    { name: "Cassian Andor (Undercover)", id: "CASSIANUNDERCOVER", idSrc: "ship-guide", overlap: "skip", why: "not owned on either account" },
+    { name: "Captain Carson Teva", id: "CARSONTEVA", overlap: "glreq", glRelic: 7, why: "New Republic — published M&G GL requirement R7 (set 2 of 4, 19 Aug) + raid-eligible; relic work is dual-use but not before the raid's boxes are known", alt: "Flawed Signal Data" },
+    { name: "R5-D4", id: "R5D4", overlap: "glreq", glRelic: 9, why: "New Republic — published M&G GL requirement R9 (set 1 of 4, by 22 Jul) + raid-eligible; the costliest relic ask in this squad, so no relics before the raid's boxes are known", alt: "Zinbiddle" },
+    { name: "Colonel Ward", id: "BISHOP", overlap: "glreq", glRelic: 7, why: "New Republic — published M&G GL requirement R7 (set 2 of 4, 19 Aug) + raid-eligible; relic work is dual-use but not before the raid's boxes are known", alt: "Impulse Detector" },
+    { name: "Zeb Orrelios (New Republic Pilot)", id: "RANGERZEB", overlap: "glreq", glRelic: 7, why: "New Republic — published M&G GL requirement R7 (set 2 of 4, 19 Aug) + raid-eligible; relic work is dual-use but not before the raid's boxes are known", alt: "Aeromagnifier" },
+    { name: "Grogu & Anzellans", id: "GOPHERANTS", overlap: "glreq", glRelic: 7, why: "New Republic — published M&G GL requirement R7 (set 3 of 4, 16 Sep) + raid-eligible; farmable on LSB 8-E Hard, so stars first, relics later", alt: "Impulse Detector" },
+    { name: "Snowtrooper Commander", id: "REMNANTSNOWCOMMANDER", overlap: "raid", why: "raid-only", alt: "Aeromagnifier" },
+    { name: "Rotta the Hutt", id: "RACCOON", idSrc: "ship-guide", large: true, overlap: "glreq", glRelic: 6, why: "LARGE unit (≤1 per squad), not owned, not in the drop table — ignore for the raid; he is also a published M&G GL requirement R6 (set 1 of 4), via his journey rerun" },
+    { name: "Mara Jade Skywalker", id: "MARAJADESKYWALKER", overlap: "dual", why: "Empire-flavoured journey unit (unverified) — don't star up for the raid alone", alt: "Zeta" },
+    { name: "Yoda (Dark Side Vision)", id: "YODADSV", overlap: "raid", why: "raid-only", alt: "Omicron" },
+    { name: "Starkiller (Luke Concept)", id: "LUKESTARKILLER", overlap: "raid", why: "raid-only (Rebel buffs need Commander Luke)", alt: "Gyrda Keypad" },
+    { name: "Stormtrooper (Concept)", id: "STORMTROOPERCONCEPT", overlap: "raid", why: "raid-only", alt: "Droid Brain" },
+    { name: "Jaxxon", id: "JAXXON", overlap: "raid", why: "raid-only", alt: "Corrupted Signal" },
+    { name: "The Ronin", id: "THERONIN", overlap: "raid", why: "raid-only", alt: "Coaxial" },
+    { name: "Darth Jar Jar", id: "DARTHJARJAR", idSrc: "ship-guide", overlap: "skip", why: "not owned on either account" },
+    { name: "The Mandalorian and Grogu", id: null, overlap: "skip", gl: true, why: "the Galactic Legend — unreleased; its base_id is not in any pull" },
+    { name: "B1 Battle Droid", id: null, unconfirmed: true, overlap: "skip", why: "‘coming soon’ marquee named in the 28 Sep post and removed by the 5 Oct edit — identity UNCONFIRMED; the roster's 7★ B1 Battle Droid is the existing unit, not this one" },
+    { name: "Adelphi Ranger", id: null, unconfirmed: true, overlap: "skip", why: "‘coming soon’ marquee named in the 28 Sep post and removed by the 5 Oct edit — identity UNCONFIRMED" }
+  ],
+  /* THE T0 floor, in one place. CG's 28 Sep post: "no requirement"; swgoh.gg's raid page and EA's Additive Drops post:
+     4★ ("initial tier will only require units to be at 4 stars"). The planner uses 4★ — the stricter reading — so a 3★
+     unit is shown as unable to enter. Set stars to 1 here if CG's "none" turns out to be right. */
+  T0_FLOOR: { stars: 4, conf: "UNVERIFIED", note: "T0 floor: 4★ per swgoh.gg and EA's Additive Drops post; CG's 28 Sep post says “no requirement” — contradictory, so UNVERIFIED. This planner uses 4★." },
+  /* Entry tiers: requirement → base points per battle (CONFIRMED, CG post). "Gear X11" in one mirror is a typo for XII. */
+  TIERS: [
+    { t: 0, req: "4★ floor", pts: 300000 }, { t: 1, req: "Gear XII", pts: 450000 }, { t: 2, req: "Relic 2", pts: 600000 }, { t: 3, req: "Relic 4", pts: 900000 },
+    { t: 4, req: "Relic 6", pts: 1200000 }, { t: 5, req: "Relic 8", pts: 1800000 }, { t: 6, req: "Relic 9", pts: 2700000 }, { t: 7, req: "Relic 10", pts: 3600000 }
+  ],
+  /* Personal reward track, 17 boxes (CONFIRMED). 18m = the max possible score (5 clears at T7). Contents unannounced. */
+  BOXES: [65000, 85000, 170000, 255000, 340000, 500000, 1000000, 1700000, 2200000, 3000000, 4250000, 5470000, 6200000, 8510000, 9720000, 14400000, 18000000],
+  /* Limited-Time Additive Drops (EA, ~9 Oct): 7 waves, local calendar dates inclusive (CONFIRMED). Each wave features one
+     eligible character on each of Energy / Cantina / Mod / Ship energy — WHICH units is not announced, hence the slots. */
+  WAVES: [
+    { n: 1, start: "2026-10-16", end: "2026-10-18" }, { n: 2, start: "2026-10-20", end: "2026-10-22" }, { n: 3, start: "2026-10-23", end: "2026-10-25" },
+    { n: 4, start: "2026-10-27", end: "2026-10-29" }, { n: 5, start: "2026-10-30", end: "2026-11-01" }, { n: 6, start: "2026-11-03", end: "2026-11-05" },
+    { n: 7, start: "2026-11-06", end: "2026-11-08" }
+  ],
+  WAVE_SLOTS: [["e", "Energy"], ["c", "Cantina"], ["m", "Mod energy"], ["s", "Ship energy"]],
+  SCORING_MODELS: {
+    "weakest-unit": { label: "Weakest unit", desc: "a squad scores at its LOWEST unit's tier (swgoh.gg's model — UNVERIFIED)" },
+    "per-unit": { label: "Per-unit mean", desc: "squad tier = the mean of its units' tiers, rounded down (hypothetical alternative — nobody has published this)" }
+  },
+  SCORING_MODEL: "weakest-unit",
+  ATTEMPTS: 5,            // UNVERIFIED (swgoh.gg)
+  SQUAD_MAX: 5, LARGE_MAX: 1,   // UNVERIFIED (swgoh.gg)
+  CONFIDENCE: [
+    { k: "confirmed", cls: "done", items: ["November release, after the M&G GL", "33 eligible units", "tiers 0–7 + points", "17 boxes", "7 drop waves 16 Oct–8 Nov"] },
+    { k: "unverified", cls: "grind", items: ["5 attempts", "≤5 units, ≤1 large, each once", "weakest-unit scoring", "T0 = 4★ floor"] },
+    { k: "unknown", cls: "watch", items: ["bosses / phases", "box contents", "tickets / energy", "which units each wave features"] }
+  ],
+  /* The Opus analyst's five squads (12 Oct 2026) — the same for both accounts; 25 of the 26 owned units. `guess` marks
+     the members that report labels a TAG-BASED GUESS; `conf` is its one-line sourcing. Not a meta: nobody knows what clears this raid. */
+  SQUADS: [
+    { key: "A", name: "Bounty Hunters", units: ["IG90", "4LOM", "ZUCKUSS", "ASAJJDARKDISCIPLE", "JAXXON"], guess: ["JAXXON"],
+      conf: "IG-90's lead covers BH, Dark Side Droids and Scoundrels; Zuckuss + 4-LOM have a team-up (sourced). Jaxxon's place rests only on the Scoundrel clause." },
+    { key: "B", name: "ISB + Empire", units: ["MAJORPARTAGAZ", "DEDRAMEERO", "KXSECURITYDROID", "VADERDUELSEND", "INQUISITORBARRISS"], guess: ["INQUISITORBARRISS"],
+      conf: "Partagaz's lead covers ISB; Dedra and KX have ISB kits (sourced). Vader is an inference (gains Speed when Empire allies hit debuffed enemies; Partagaz debuffs at start). Barriss is a tag-based guess (Empire healer)." },
+    { key: "C", name: "New Republic", units: ["CARSONTEVA", "R5D4", "RANGERZEB", "BISHOP", "GOPHERANTS"], guess: [],
+      conf: "Best-sourced squad: swgoh.gg's example team, and the kits cross-reference each other. All five are published Mandalorian & Grogu GL requirements (R5-D4 R9; Teva, Zeb, Ward, Grogu & Anzellans R7; sets 1–3 of 4), so relic work here is dual-use for the GL — but still not before the raid's boxes are known (the GL's kit and release date are unknown)." },
+    { key: "D", name: "Rebels", units: ["STORMTROOPERLUKE", "KLEYA", "VEL", "CINTA", "LUKESTARKILLER"], guess: [],
+      conf: "Luke's lead covers Rebels; Vel and Cinta reference each other; Kleya buffs Rebel Fighters (sourced). Starkiller's strongest effects need Commander Luke, who isn't here." },
+    { key: "E", name: "Sith & Troopers", units: ["REMNANTSNOWCOMMANDER", "STORMTROOPERCONCEPT", "YODADSV", "THERONIN"], guess: ["REMNANTSNOWCOMMANDER", "STORMTROOPERCONCEPT"],
+      conf: "Yoda DSV with The Ronin (Sith healer) is sourced; Snowtrooper Cmdr + Stormtrooper (Concept) is a tag-based guess (Imperial Trooper). The weakest squad — a 4-unit squad is cheaper to raise a tier." }
+  ],
+  /* Wave-day priority per account (Opus four-week plan): which featured unit gets the energy. Rank 1 first. */
+  PRIORITY: {
+    ollie: [["KLEYA", "VEL", "CINTA"], ["LUKESTARKILLER"], ["R5D4", "BISHOP", "GOPHERANTS"], ["IG90", "JAXXON", "4LOM"], ["REMNANTSNOWCOMMANDER", "STORMTROOPERCONCEPT", "YODADSV", "THERONIN"], ["DEDRAMEERO", "KXSECURITYDROID", "MAJORPARTAGAZ"]],
+    tiny:  [["VADERDUELSEND", "INQUISITORBARRISS"], ["VEL", "LUKESTARKILLER"], ["CARSONTEVA", "GOPHERANTS"], ["IG90", "JAXXON", "4LOM"], ["REMNANTSNOWCOMMANDER", "STORMTROOPERCONCEPT", "YODADSV", "THERONIN"]]
+  },
+  /* Fable report §2a: uniform-floor scenarios (5 attempts, full clears — both UNVERIFIED). Checked by drr-check against drrBoxes(). */
+  SCENARIOS: [
+    { key: "floor", label: "Floor", mix: [[0, 5]], note: "5 × T0 — 25 units at 4★" },
+    { key: "likely", label: "Likely at release", mix: [[0, 3], [1, 2]], note: "3 × T0 + 2 × T1 — 15 at 4★ + 10 at G12" },
+    { key: "stretch", label: "Stretch", mix: [[1, 5]], note: "5 × T1 — 25 units at G12" },
+    { key: "long", label: "Long-term", mix: [[2, 5]], note: "5 × T2 — 25 units at R2 (not reachable by November without crystals)" }
+  ],
+  SOURCES: "CG community update (EA Forums 28 Sep, edited 5 Oct 2026) · EA “Limited-Time Additive Drops” post (~9 Oct) · swgoh.gg/raids/droid-destruction/ (model, re-fetched 12 Oct) · Opus/Fable analyst reports 12 Oct 2026"
+};
+const DRR_RAID_ENTRY = { key: "droid", label: "Droid Destruction (planner)", drr: true, squads: [], notes: [], sources: [] };
+const DRR_MODEL_KEY = "drr-model", DRR_SLIDER_KEY = "drr-slider", DRR_JUMP_KEY = "drr-jump", DRR_NXT_HORIZON_DAYS = 7;
+const DRR_OVERLAP = { dual: ["Dual-use", "done"], glreq: ["GL requirement (published) + raid-eligible", "close"], raid: ["Raid-only", "watch"], bench: ["Bench", "grind"], skip: ["—", ""] };
+const DRR_TIER_CLS = ["drr-t0", "drr-t1", "drr-t2", "drr-t3", "drr-t4", "drr-t5", "drr-t6", "drr-t7"];
+function drrRaidList() { return RAID_INTEL.concat([DRR_RAID_ENTRY]); }
+function drrNow() { return Date.now(); }
+const drrFmt = n => { n = Math.round(hardNum(n)); return n >= 1e6 ? (n / 1e6).toFixed(n % 1e6 ? 2 : 1).replace(/\.?0+$/, "") + "M" : n >= 1e3 ? Math.round(n / 1e3) + "k" : String(n); };
+const drrFmtBox = n => n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, "") + "m" : Math.round(n / 1e3) + "k";
+/* The derived entry tier of one pulled unit (FABLE §5): −1 = cannot enter (below the T0 floor), null = not owned. */
+function drrTier(u) {
+  if (!isPlainObject(u)) return null;
+  const s = hardNum(u.s), g = hardNum(u.g), r = hardNum(u.r);
+  return r >= 10 ? 7 : r >= 9 ? 6 : r >= 8 ? 5 : r >= 6 ? 4 : r >= 4 ? 3 : r >= 2 ? 2 : g >= 12 ? 1 : s >= DROID_RAID.T0_FLOOR.stars ? 0 : -1;
+}
+function drrTierLabel(t) { return t === null ? "not owned" : t < 0 ? "T– (below 4★)" : `T${t}`; }
+function drrLevel(u) { if (!isPlainObject(u)) return "—"; const s = hardNum(u.s), g = hardNum(u.g), r = hardNum(u.r); return `${s}★ ${r > 0 ? "R" + r : "G" + (g || 1)}`; }
+function drrReqs(acct) { const v = accountView(acct); return { reqs: (v.src && isPlainObject(v.src.reqs)) ? v.src.reqs : {}, live: !!v.live }; }
+/* Every eligible unit for one account: { e, u, tier, owned, name } in CG's order. */
+function drrRows(acct) {
+  const { reqs } = drrReqs(acct);
+  return DROID_RAID.ELIGIBLE.map(e => { const u = e.id ? reqs[e.id] : null; return { e, u: isPlainObject(u) ? u : null, tier: drrTier(u), owned: isPlainObject(u), name: e.name }; });
+}
+function drrCounts(acct) {
+  const rows = drrRows(acct), owned = rows.filter(r => r.owned);
+  return { total: rows.length, owned: owned.length, floor: owned.filter(r => hardNum(r.u.s) >= DROID_RAID.T0_FLOOR.stars).length,
+    g12: owned.filter(r => hardNum(r.u.g) >= 12 || hardNum(r.u.r) > 0).length, r2: owned.filter(r => hardNum(r.u.r) >= 2).length,
+    below: owned.filter(r => hardNum(r.u.s) < DROID_RAID.T0_FLOOR.stars) };
+}
+function drrPriorityRank(acct, id) { const p = DROID_RAID.PRIORITY[acct] || []; const i = p.findIndex(g => g.includes(id)); return i < 0 ? null : i + 1; }
+function drrById(id) { return DROID_RAID.ELIGIBLE.find(e => e.id === id) || null; }
+/* ---- synced planner state: state.drr = { waves: { [n]: { e,c,m,s } }, [acct]: { squads: { [i]: [ids] } } } ---- */
+function drrState() {
+  if (!isPlainObject(state.drr)) state.drr = {};
+  if (!isPlainObject(state.drr.waves)) state.drr.waves = {};
+  return state.drr;
+}
+function drrAcctState(acct) {
+  const d = drrState();
+  if (!isPlainObject(d[acct])) d[acct] = {};
+  if (!isPlainObject(d[acct].squads)) d[acct].squads = {};
+  return d[acct];
+}
+/* Legal squads only: owned units, each unit once (first slot wins), ≤ SQUAD_MAX, ≤ LARGE_MAX large units. */
+function drrLegalise(lists, reqs) {
+  const seen = new Set();
+  return lists.map(list => {
+    const out = []; let large = 0;
+    (Array.isArray(list) ? list : []).forEach(id => {
+      id = String(id || "");
+      const e = drrById(id);
+      if (!e || !isPlainObject(reqs[id]) || seen.has(id) || out.length >= DROID_RAID.SQUAD_MAX) return;
+      if (e.large) { if (large >= DROID_RAID.LARGE_MAX) return; large++; }
+      seen.add(id); out.push(id);
+    });
+    return out;
+  });
+}
+/* The five squads for an account: the user's saved edit for a slot, else the Opus pre-fill (owned units only). */
+function drrSquads(acct) {
+  const { reqs } = drrReqs(acct);
+  const saved = isPlainObject(state.drr) && isPlainObject(state.drr[acct]) && isPlainObject(state.drr[acct].squads) ? state.drr[acct].squads : {};
+  const lists = DROID_RAID.SQUADS.map((sq, i) => Array.isArray(saved[i]) ? saved[i] : sq.units);
+  return drrLegalise(lists, reqs);
+}
+function drrSquadEdited(acct, i) { return !!(isPlainObject(state.drr) && isPlainObject(state.drr[acct]) && isPlainObject(state.drr[acct].squads) && Array.isArray(state.drr[acct].squads[i])); }
+function drrModel() { const m = isPlainObject(state.views) ? state.views[DRR_MODEL_KEY] : ""; return DROID_RAID.SCORING_MODELS[m] ? m : DROID_RAID.SCORING_MODEL; }
+/* Squad tier under the chosen model: null = no units (no attempt); −1 = blocked (weakest unit below the floor). */
+function drrSquadTier(ids, reqs, model) {
+  const tiers = ids.map(id => drrTier(reqs[id])).filter(t => t !== null);
+  if (!tiers.length) return null;
+  if ((model || drrModel()) === "per-unit") {
+    const ok = tiers.filter(t => t >= 0);
+    return ok.length ? Math.floor(ok.reduce((a, b) => a + b, 0) / ok.length) : -1;
+  }
+  return Math.min(...tiers);
+}
+function drrTierPts(t) { return t === null || t < 0 ? 0 : (DROID_RAID.TIERS[t] || DROID_RAID.TIERS[DROID_RAID.TIERS.length - 1]).pts; }
+function drrBoxes(total) {
+  total = hardNum(total);
+  const reached = DROID_RAID.BOXES.filter(b => b <= total).length;
+  const next = DROID_RAID.BOXES.find(b => b > total);
+  return { reached, next: next === undefined ? null : next, gap: next === undefined ? 0 : next - total };
+}
+function drrMixTotal(mix) { return mix.reduce((a, [t, n]) => a + drrTierPts(t) * n, 0); }
+function drrPlan(acct, model) {
+  const { reqs } = drrReqs(acct), m = model || drrModel();
+  const squads = drrSquads(acct).map((ids, i) => { const tier = drrSquadTier(ids, reqs, m); return { i, sq: DROID_RAID.SQUADS[i], ids, tier, pts: drrTierPts(tier) }; });
+  const total = squads.reduce((a, s) => a + s.pts, 0);
+  return { squads, total, boxes: drrBoxes(total), model: m };
+}
+/* "To reach T0 / T1 / T2" for a list of unit ids — computed from the pull, never hard-coded (standard star/gear rules:
+   STAR_SHARDS_CUM, G13 and relics need 7★). Returns { t0:{shards,parts}, t1:{gear,parts,shards}, t2:{shards,gear,relics} }. */
+function drrNeeds(ids, reqs) {
+  const floor = DROID_RAID.T0_FLOOR.stars, out = { t0: { shards: 0, parts: [] }, t1: { gear: 0, parts: [], shards: 0 }, t2: { shards: 0, gear: 0, relics: 0 } };
+  ids.forEach(id => {
+    const u = reqs[id]; if (!isPlainObject(u)) return;
+    const nm = String(u.name || id), s = Math.min(7, Math.max(0, hardNum(u.s))), g = Math.max(1, hardNum(u.g)), r = hardNum(u.r);
+    if (s < floor) { const sh = STAR_SHARDS_CUM[floor] - STAR_SHARDS_CUM[s]; out.t0.shards += sh; out.t0.parts.push(`${nm} ${sh}`); out.t1.shards += sh; }
+    if (g < 12 && r === 0) { out.t1.gear += 12 - g; out.t1.parts.push(`${nm} +${12 - g}`); }
+    out.t2.shards += STAR_SHARDS_CUM[7] - STAR_SHARDS_CUM[s];
+    if (r === 0) out.t2.gear += Math.max(0, 13 - g);
+    out.t2.relics += Math.max(0, 2 - r);
+  });
+  return out;
+}
+function drrNeedsHtml(ids, reqs) {
+  const n = drrNeeds(ids, reqs), li = [];
+  li.push(`<b>T0</b> ${n.t0.shards ? `${n.t0.shards} shards to the 4★ floor (${escapeHtml(n.t0.parts.join(", "))})` : "ready now"}`);
+  li.push(`<b>T1</b> ${n.t1.gear ? `+${n.t1.gear} gear levels to G12 (${escapeHtml(n.t1.parts.join(", "))})` : "G12 done"}${n.t1.shards ? ` · plus the T0 shards` : ""}`);
+  li.push(`<b>T2</b> ${n.t2.shards.toLocaleString()} shards to 7★ · ${n.t2.gear} gear levels to G13 · ${n.t2.relics} relic tiers`);
+  return `<div class="drr-needs">${li.map(x => `<div>${x}</div>`).join("")}</div>`;
+}
+/* ---- local calendar days (same convention as nxt: Date.UTC(local y, m, d) keys) ---- */
+function drrDayKey(ms) { const d = new Date(ms); return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); }
+function drrISOKey(iso) { const p = String(iso || "").split("-").map(Number); return p.length === 3 && p.every(Number.isFinite) ? Date.UTC(p[0], p[1] - 1, p[2]) : NaN; }
+function drrDate(iso, o) { return new Date(drrISOKey(iso)).toLocaleDateString(undefined, Object.assign({ timeZone: "UTC", day: "numeric", month: "short" }, o || {})); }
+/* { live: wave | null, next: wave | null, past: n } at one instant. */
+function drrWaveStatus(nowMs) {
+  const today = drrDayKey(+nowMs || drrNow());
+  const live = DROID_RAID.WAVES.find(w => drrISOKey(w.start) <= today && today <= drrISOKey(w.end)) || null;
+  const next = DROID_RAID.WAVES.find(w => drrISOKey(w.start) > today) || null;
+  return { today, live, next, over: !live && !next };
+}
+function drrWaveSlots(n) { const w = isPlainObject(state.drr) && isPlainObject(state.drr.waves) ? state.drr.waves[String(n)] : null; return isPlainObject(w) ? w : {}; }
+function drrWaveTickKey(acct, n) { return `${acct}-p:drr:w${n}`; }
+/* ---- writes ---- */
+function drrSetSlot(acct, sqIndex, slot, id) {
+  const { reqs } = drrReqs(acct);
+  const before = drrSquads(acct), squads = before.map(l => l.slice());
+  const i = +sqIndex, k = +slot; id = String(id || "");
+  if (!squads[i]) return;
+  squads.forEach((l, j) => { if (j !== i) { const at = l.indexOf(id); if (at >= 0) l.splice(at, 1); } });   // each unit once: moving it out of another squad
+  if (id) squads[i][k] = id; else squads[i].splice(k, 1);
+  squads[i] = squads[i].filter(Boolean);
+  const legal = drrLegalise(squads, reqs);
+  const st = drrAcctState(acct);
+  legal.forEach((l, j) => { if (j === i || drrSquadEdited(acct, j) || l.join() !== before[j].join()) st.squads[j] = l; });   // save the edited squad and any squad the move changed
+  store.write(state); drrRefresh();
+}
+function drrResetSquads(acct) { const st = drrAcctState(acct); st.squads = {}; store.write(state); drrRefresh(); }
+/* Greedy auto-fill: the 25 best units by derived tier (then stars, then gear), chunked five at a time, so under the
+   weakest-unit rule every squad is as uniform as the roster allows. Ignores synergy on purpose — it is a tier ceiling. */
+function drrAutoFill(acct) {
+  const { reqs } = drrReqs(acct);
+  const owned = drrRows(acct).filter(r => r.owned && r.tier !== null && r.tier >= 0)
+    .sort((a, b) => b.tier - a.tier || hardNum(b.u.s) - hardNum(a.u.s) || hardNum(b.u.g) - hardNum(a.u.g) || a.name.localeCompare(b.name)).map(r => r.e.id);
+  const lists = DROID_RAID.SQUADS.map((sq, i) => owned.slice(i * DROID_RAID.SQUAD_MAX, (i + 1) * DROID_RAID.SQUAD_MAX));
+  const st = drrAcctState(acct);
+  drrLegalise(lists, reqs).forEach((l, i) => { st.squads[i] = l; });
+  store.write(state); drrRefresh();
+}
+function drrSetModel(m) { if (!isPlainObject(state.views)) state.views = {}; state.views[DRR_MODEL_KEY] = DROID_RAID.SCORING_MODELS[m] ? m : DROID_RAID.SCORING_MODEL; store.write(state); drrRefresh(); }
+function drrSetSlider(v) { if (!isPlainObject(state.views)) state.views = {}; state.views[DRR_SLIDER_KEY] = String(Math.min(7, Math.max(0, Math.round(hardNum(v))))); store.write(state); drrRefresh(); }
+function drrSlider() { const v = isPlainObject(state.views) ? hardNum(state.views[DRR_SLIDER_KEY]) : 0; return Math.min(7, Math.max(0, Math.round(v))); }
+function drrSetWaveSlot(n, slot, id) {
+  const d = drrState(); const key = String(+n || 0);
+  if (!isPlainObject(d.waves[key])) d.waves[key] = {};
+  id = String(id || "");
+  if (id && !drrById(id)) return;
+  if (id) d.waves[key][slot] = id; else delete d.waves[key][slot];
+  if (!Object.keys(d.waves[key]).length) delete d.waves[key];
+  store.write(state); drrRefresh();
+}
+/* Coach / Next-up deep link: a device-local flag that renderModesCategory() consumes on its next paint. */
+function drrConsumeJump() {
+  if (!isPlainObject(state.views) || state.views[DRR_JUMP_KEY] === undefined) return;
+  delete state.views[DRR_JUMP_KEY];
+  state.modesnav.category = "raid"; state.modesnav.raidView = DRR_RAID_ENTRY.key;
+  store.write(state);
+}
+/* ---- cards ---- */
+function drrStatusCardHtml(acct) {
+  const c = drrCounts(acct), live = drrReqs(acct).live, label = (ACCOUNTS.find(a => a.key === acct) || { label: acct }).label;
+  const pills = DROID_RAID.CONFIDENCE.map(g => `<div class="drr-conf"><span class="chip ${g.cls}">${chipGlyph(g.cls)} ${escapeHtml(g.k)}</span>${g.items.map(x => `<span class="drr-pill">${escapeHtml(x)}</span>`).join("")}</div>`).join("");
+  return `<div class="cardtitle">Droid Destruction <span class="sub">— raid planner · unreleased (CG: November 2026, after the M&amp;G GL)</span>${snapChipHtml("droid-raid")}</div>
+    <div class="mnote">Nothing announced justifies relic, G13 or crystal spend on raid-only units before box contents and boss kits are known. The 4★ floor is the cheapest score available and the free additive-drop waves (16 Oct–8 Nov) are the whole plan until CG's next update. <b>${escapeHtml(label)}</b>: ${c.owned} of ${c.total} eligible units owned · ≥${DROID_RAID.T0_FLOOR.stars}★ <b>${c.floor}</b> · G12 <b>${c.g12}</b> · R2+ <b>${c.r2}</b>${live ? "" : ` <span style="color:var(--ink-3)">(no live pull on this device — showing the baseline roster)</span>`}.</div>
+    <div class="drr-confs">${pills}</div>
+    <div class="srcline">${escapeHtml(DROID_RAID.recheckNote)}. ${escapeHtml(DROID_RAID.T0_FLOOR.note)} Sources: ${escapeHtml(DROID_RAID.SOURCES)}.</div>`;
+}
+function drrChipHtml(u, tier) {
+  const cls = tier === null ? "" : tier < 0 ? "drr-tneg" : DRR_TIER_CLS[tier];
+  return `<span class="drr-lvl ${cls}" title="${escapeHtml(drrTierLabel(tier))}">${escapeHtml(drrLevel(u))}<small>${tier === null ? "—" : tier < 0 ? "T–" : "T" + tier}</small></span>`;
+}
+function drrMatrixCardHtml(acct) {
+  const rows = drrRows(acct), c = drrCounts(acct), label = (ACCOUNTS.find(a => a.key === acct) || { label: acct }).label;
+  const other = ACCOUNTS.find(a => a.key !== acct), oc = other ? drrCounts(other.key) : null;
+  const sorted = rows.slice().sort((a, b) => (b.owned - a.owned) || ((b.tier === null ? -9 : b.tier) - (a.tier === null ? -9 : a.tier)) || (a.owned ? hardNum(b.u.s) - hardNum(a.u.s) || hardNum(b.u.g) - hardNum(a.u.g) : 0) || a.name.localeCompare(b.name));
+  const used = new Map(); drrSquads(acct).forEach((ids, i) => ids.forEach(id => used.set(id, DROID_RAID.SQUADS[i].key)));
+  const row = r => {
+    const ov = DRR_OVERLAP[r.e.overlap] || DRR_OVERLAP.skip, pr = drrPriorityRank(acct, r.e.id), sq = used.get(r.e.id);
+    const tags = [ov[0] !== "—" ? (r.e.overlap === "glreq" ? `<span class="chip ${ov[1]}" title="GL requirement (R${hardNum(r.e.glRelic)}, published) + raid-eligible">GL req R${hardNum(r.e.glRelic)}</span>` : `<span class="chip ${ov[1]}">${escapeHtml(ov[0])}</span>`) : "", pr ? `<span class="drr-pri" title="Opus wave-day priority ${pr}">P${pr}</span>` : "", sq ? `<span class="drr-sq" title="in squad ${sq}">${escapeHtml(sq)}</span>` : "", r.e.large ? `<span class="drr-pri">LARGE</span>` : "", r.e.unconfirmed ? `<span class="chip grind">unconfirmed</span>` : "", r.e.gl ? `<span class="drr-pri">GL</span>` : ""].filter(Boolean).join("");
+    const idNote = !r.owned ? (r.e.id ? (r.e.idSrc ? ` · id ${r.e.id} from the shipment guide, unverified` : ` · ${r.e.id}`) : " · unowned / unknown id") : "";
+    return `<div class="drr-row${r.owned ? "" : " drr-off"}" data-drr-id="${escapeHtml(r.e.id || "")}">
+      <div class="drr-name"><b>${escapeHtml(r.name)}</b><span class="drr-why">${escapeHtml(r.e.why || "")}${escapeHtml(idNote)}</span></div>
+      <div class="drr-tags">${tags}</div>
+      ${r.owned ? drrChipHtml(r.u, r.tier) : `<span class="drr-lvl">not owned</span>`}
+    </div>`;
+  };
+  return `<div class="cardtitle">Readiness matrix <span class="sub">— ${escapeHtml(label)} · ${c.owned}/${c.total} owned</span></div>
+    <div class="statuscounts"><span class="chip ${c.floor ? "done" : "watch"}">★ ≥${DROID_RAID.T0_FLOOR.stars}★ ${c.floor}/${c.owned}</span><span class="chip close">→ G12 ${c.g12}</span><span class="chip grind">⛭ R2+ ${c.r2}</span>${oc ? `<span class="drr-pill" title="${escapeHtml(other.label)} for comparison">${escapeHtml(other.label)}: ≥4★ ${oc.floor} · G12 ${oc.g12} · R2+ ${oc.r2}</span>` : ""}</div>
+    <div class="mnote">Tier is derived from the pull (★ / gear / relic → T0–T7; T– = below the ${DROID_RAID.T0_FLOOR.stars}★ floor, UNVERIFIED). Overlap tags follow the Fable report: dual-use units earn shards/G12 first; raid-only units stop at the floor; <b>GL req R<i>n</i></b> = a <i>published</i> Mandalorian &amp; Grogu GL requirement (R5-D4 R9, Rotta R6, Teva / Zeb / Ward / Grogu &amp; Anzellans R7; sets 1–3 of 4, GL kit and release date unknown) that is also raid-eligible — relic work there is dual-use, but still not before the raid's boxes are known. P<i>n</i> = Opus wave-day priority, A–E = squad below.</div>
+    <div class="drr-matrix">${sorted.map(row).join("")}</div>`;
+}
+function drrSquadsCardHtml(acct) {
+  const { reqs } = drrReqs(acct), plan = drrPlan(acct), label = (ACCOUNTS.find(a => a.key === acct) || { label: acct }).label;
+  const model = DROID_RAID.SCORING_MODELS[plan.model];
+  const usedElsewhere = i => new Set(plan.squads.filter(s => s.i !== i).flatMap(s => s.ids));
+  const owned = drrRows(acct).filter(r => r.owned);
+  const squadHtml = s => {
+    const taken = usedElsewhere(s.i), hasLarge = s.ids.some(id => (drrById(id) || {}).large);
+    const slots = [];
+    for (let k = 0; k < DROID_RAID.SQUAD_MAX; k++) {
+      const cur = s.ids[k] || "";
+      if (!cur && k > s.ids.length) break;   // one empty slot after the last filled one
+      const opts = owned.filter(r => r.e.id === cur || (!taken.has(r.e.id) && !s.ids.includes(r.e.id) && !(r.e.large && hasLarge)))
+        .map(r => `<option value="${escapeHtml(r.e.id)}" ${r.e.id === cur ? "selected" : ""}>${escapeHtml(r.name)} · ${escapeHtml(r.tier < 0 ? "T–" : "T" + r.tier)}</option>`).join("");
+      const t = cur ? drrTier(reqs[cur]) : null, cls = t === null ? "" : t < 0 ? "drr-tneg" : DRR_TIER_CLS[t];
+      const guess = cur && (s.sq.guess || []).includes(cur) ? `<span class="drr-guess" title="tag-based guess in the Opus report">guess</span>` : "";
+      slots.push(`<label class="drr-slotwrap ${cls}"><span class="drr-slotlbl">${k === 0 ? "L" : k + 1}${guess}</span><select class="drr-slot" aria-label="Squad ${escapeHtml(s.sq.key)} slot ${k + 1}" onchange="drrSetSlot('${jsAttr(acct)}',${s.i},${k},this.value)"><option value="">${cur ? "— remove —" : "— add a unit —"}</option>${opts}</select>${cur ? drrChipHtml(reqs[cur], t) : `<span class="drr-lvl drr-empty">—</span>`}</label>`);
+    }
+    const tierTxt = s.tier === null ? "no units" : s.tier < 0 ? (plan.model === "per-unit" ? "no unit at the floor" : "blocked — a unit is below 4★") : `T${s.tier} · ${drrFmt(s.pts)} pts`;
+    const chipCls = s.tier === null ? "watch" : s.tier < 0 ? "fixnow" : s.tier >= 1 ? "done" : "close";
+    return `<div class="drr-squad" data-drr-squad="${escapeHtml(s.sq.key)}">
+      <div class="drr-sqhead"><b>${escapeHtml(s.sq.key)} · ${escapeHtml(s.sq.name)}</b><span class="chip ${chipCls}">${escapeHtml(tierTxt)}</span>${s.sq.guess && s.sq.guess.length ? `<span class="chip grind" title="${escapeHtml(s.sq.conf)}">tag-based guess</span>` : ""}${drrSquadEdited(acct, s.i) ? `<span class="drr-pill">edited</span>` : ""}</div>
+      <div class="drr-slots">${slots.join("")}</div>
+      ${s.ids.length ? drrNeedsHtml(s.ids, reqs) : ""}
+      <div class="srcline">${escapeHtml(s.sq.conf)}</div>
+    </div>`;
+  };
+  const bx = plan.boxes;
+  const unused = owned.filter(r => !plan.squads.some(s => s.ids.includes(r.e.id)));
+  return `<div class="cardtitle">Five squads <span class="sub">— ${escapeHtml(label)} · ${DROID_RAID.ATTEMPTS} attempts (unverified)</span></div>
+    <div class="drr-total"><div><span class="lbl">Projected total</span><span class="val">${escapeHtml(drrFmt(plan.total))}</span></div>
+      <div><span class="lbl">Boxes</span><span class="val">${bx.reached}<small>/${DROID_RAID.BOXES.length}</small></span></div>
+      <div><span class="lbl">Next box</span><span class="val">${bx.next === null ? "max" : escapeHtml(drrFmtBox(bx.next))}</span><span class="note">${bx.next === null ? "all 17 reached" : `${escapeHtml(drrFmt(bx.gap))} short`}</span></div></div>
+    <div class="drr-modelrow"><span class="lbl">Scoring model (unverified)</span>${Object.entries(DROID_RAID.SCORING_MODELS).map(([k, m]) => `<button type="button" class="drr-btn drr-model ${plan.model === k ? "on" : ""}" aria-pressed="${plan.model === k}" title="${escapeHtml(m.desc)}" onclick="drrSetModel('${k}')">${escapeHtml(m.label)}</button>`).join("")}</div>
+    <div class="mnote">${escapeHtml(model.desc)}. Pre-filled with the Opus analyst's tag-based compositions (12 Oct) for the units this account owns — a starting point, not a meta: nobody knows yet which squads clear this raid. Tap a slot to change it; each unit fights once, at most one large unit per squad. Edits are saved and synced per account.</div>
+    <div class="drr-squads">${plan.squads.map(squadHtml).join("")}</div>
+    <div class="drr-actions"><button type="button" class="drr-btn" onclick="drrAutoFill('${jsAttr(acct)}')" title="Best 25 units by derived tier, five at a time — ignores synergy">Auto-fill by tier</button><button type="button" class="drr-btn" onclick="drrResetSquads('${jsAttr(acct)}')">Reset to suggested</button>${unused.length ? `<span class="drr-pill">Bench: ${escapeHtml(unused.map(r => r.name).join(", "))}</span>` : ""}</div>`;
+}
+function drrCalcCardHtml(acct) {
+  const plan = drrPlan(acct), n = drrSlider(), tier = DROID_RAID.TIERS[n], simTotal = drrTierPts(n) * DROID_RAID.ATTEMPTS, sim = drrBoxes(simTotal);
+  const ladder = DROID_RAID.BOXES.map((b, i) => `<span class="drr-box ${b <= plan.total ? "hit" : b <= simTotal ? "sim" : ""}" title="box ${i + 1}: ${b.toLocaleString()} points"><b>${i + 1}</b>${escapeHtml(drrFmtBox(b))}</span>`).join("");
+  const scen = [{ key: "today", label: "Today", total: plan.total, note: `${escapeHtml(DROID_RAID.SCORING_MODELS[plan.model].label)} model on the squads above` }]
+    .concat(DROID_RAID.SCENARIOS.map(s => ({ key: s.key, label: s.label, total: drrMixTotal(s.mix), note: s.note })))
+    .map(s => { const b = drrBoxes(s.total); return `<div class="drr-scen" data-drr-scen="${escapeHtml(s.key)}"><span class="lbl">${escapeHtml(s.label)}</span><span class="val">${escapeHtml(drrFmt(s.total))}</span><span class="bx">${b.reached} box${b.reached === 1 ? "" : "es"}</span><span class="note">${escapeHtml(s.note)}</span></div>`; }).join("");
+  return `<div class="cardtitle">Tier calculator <span class="sub">— box ladder</span></div>
+    <label class="drr-sliderrow"><span class="lbl">All 25 units at <b>T${n}</b> <small>(${escapeHtml(tier.req)})</small></span>
+      <input type="range" min="0" max="7" step="1" value="${n}" aria-label="All 25 units at tier" oninput="drrSetSlider(this.value)">
+      <span class="drr-simout">${DROID_RAID.ATTEMPTS} × ${escapeHtml(drrFmt(tier.pts))} = <b>${escapeHtml(drrFmt(simTotal))}</b> → <b>${sim.reached}</b> of ${DROID_RAID.BOXES.length} boxes</span></label>
+    <div class="drr-ladder" role="img" aria-label="Box ladder: ${plan.boxes.reached} reached today, ${sim.reached} at T${n}">${ladder}</div>
+    <div class="drr-legend"><span class="drr-box hit">today</span><span class="drr-box sim">at T${n}</span><span class="drr-box">not reached</span></div>
+    <div class="drr-scens">${scen}</div>
+    <div class="srcline">Scenarios from the Fable report §2a. 7 of 17 boxes sit at ≤1M, reachable with T0 squads; every row after T1 buys exactly one box for 25 units' worth of a relic step, and CG says the floors will rise with max relic. 5 attempts and the weakest-unit rule are swgoh.gg's model, not CG's — treat every total as an upper bound until damage mechanics are published.</div>`;
+}
+function drrWavesCardHtml(acct) {
+  const ws = drrWaveStatus(drrNow()), { reqs } = drrReqs(acct), label = (ACCOUNTS.find(a => a.key === acct) || { label: acct }).label;
+  const owned = drrRows(acct).filter(r => r.owned);
+  let hist = [];
+  try { hist = historyNormalise(historyFor(acct)).ev.filter(e => drrById(e.id)); } catch (e) { hist = []; }
+  const rowHtml = w => {
+    const sk = drrISOKey(w.start), ek = drrISOKey(w.end), live = ws.live && ws.live.n === w.n, past = ek < ws.today;
+    const slots = drrWaveSlots(w.n);
+    const picks = DROID_RAID.WAVE_SLOTS.map(([k, lbl]) => `<label class="drr-wslot"><span>${lbl}</span><select class="drr-slot" aria-label="Wave ${w.n} ${lbl} unit" onchange="drrSetWaveSlot(${w.n},'${k}',this.value)"><option value="">— TBA —</option>${DROID_RAID.ELIGIBLE.filter(e => e.id).map(e => `<option value="${escapeHtml(e.id)}" ${slots[k] === e.id ? "selected" : ""}>${escapeHtml(e.name)}</option>`).join("")}</select></label>`).join("");
+    const featured = DROID_RAID.WAVE_SLOTS.map(([k]) => slots[k]).filter(Boolean).map(id => { const e = drrById(id), u = reqs[id], pr = drrPriorityRank(acct, id); return { id, e, u, pr, s: isPlainObject(u) ? hardNum(u.s) : null }; })
+      .sort((a, b) => (a.pr || 9) - (b.pr || 9) || a.e.name.localeCompare(b.e.name));
+    const advice = featured.length ? `<div class="drr-wadvice">${featured.map(f => `<span class="drr-pill ${f.pr && f.pr <= 2 ? "hot" : ""}">${escapeHtml(f.e.name)}${f.pr ? ` P${f.pr}` : ""}${f.s === null ? " · not owned" : f.s >= 7 ? ` · 7★ → ${escapeHtml(f.e.alt || "replacement mats")}` : f.s < DROID_RAID.T0_FLOOR.stars ? ` · ${f.s}★ → farm to ${DROID_RAID.T0_FLOOR.stars}★` : ` · ${f.s}★ at the floor`}</span>`).join("")}</div>` : "";
+    const seen = hist.filter(e => { const d = e.ts * 60000; return drrDayKey(d) >= sk && drrDayKey(d) <= ek; });
+    const seenHtml = seen.length ? `<div class="drr-wseen">Seen in this wave: ${seen.map(e => `${escapeHtml((reqs[e.id] && reqs[e.id].name) || (drrById(e.id) || {}).name || e.id)} ${escapeHtml(hvStep(e.from, e.to))}`).join(" · ")}</div>` : (past || live) ? `<div class="drr-wseen">No eligible-unit promotion recorded in this window yet (the pull only sees stars, not shards).</div>` : "";
+    return `<div class="drr-wave ${live ? "drr-wlive" : past ? "drr-wpast" : ""}" data-drr-wave="${w.n}">
+      <div class="drr-whead"><b>Wave ${w.n}</b><span>${escapeHtml(drrDate(w.start, { weekday: "short" }))} – ${escapeHtml(drrDate(w.end, { weekday: "short" }))}</span>${live ? `<span class="chip fixnow">! live today</span>` : past ? `<span class="chip keep">✓ over</span>` : ws.next && ws.next.n === w.n ? `<span class="chip close">→ next</span>` : ""}</div>
+      ${foldMore(`Featured units${featured.length ? ` (${featured.length}/4 entered)` : " — enter them on day 1"}`, `<div class="drr-wslots">${picks}</div>`, { key: `drr-w${w.n}`, open: live && !featured.length })}
+      ${advice}
+      <div class="drr-wtick">${tickbox(drrWaveTickKey(acct, w.n), `Simmed / farmed this wave (${escapeHtml(label)})`, "")}</div>
+      ${seenHtml}
+    </div>`;
+  };
+  const head = ws.live ? `Wave ${ws.live.n} is live (to ${drrDate(ws.live.end, { weekday: "short" })}).` : ws.next ? `Next: wave ${ws.next.n} from ${drrDate(ws.next.start, { weekday: "short" })}.` : "All seven waves have run.";
+  return `<div class="cardtitle">Additive-drop waves <span class="sub">— 16 Oct – 8 Nov · ${escapeHtml(label)}</span></div>
+    <div class="mnote">${escapeHtml(head)} Each wave features one eligible character on each of Energy, Cantina, Mod and Ship energy (EA post, CONFIRMED) — <b>which</b> units is not announced, so enter them when the wave reveals them; the featured units then rank by this account's Opus priority. Stop each unit at ${DROID_RAID.T0_FLOOR.stars}★ unless it is a squad B or D core; a unit already 7★ gets the listed replacement material instead. Spend crystals on refreshes only for dual-use units.</div>
+    <div class="drr-waves">${DROID_RAID.WAVES.map(rowHtml).join("")}</div>
+    <div class="srcline">The featured-unit slots are shared by both accounts (game-wide); the simmed tick is per account. Dates are local calendar days per EA's post (10/16-18, 10/20-22, 10/23-25, 10/27-29, 10/30-11/1, 11/3-5, 11/6-8). Grogu &amp; Anzellans shards are also on LSB 8-E Hard since 30 Sep.</div>`;
+}
+function drrCards(acct) {
+  return [
+    { id: "drr-status", w: 12, html: drrStatusCardHtml(acct) },
+    { id: "drr-squads", w: 12, html: drrSquadsCardHtml(acct) },
+    { id: "drr-matrix", w: 6, html: drrMatrixCardHtml(acct) },
+    { id: "drr-waves", w: 6, html: drrWavesCardHtml(acct) },
+    { id: "drr-calc", w: 6, html: drrCalcCardHtml(acct) }
+  ];
+}
+function drrRender() {
+  const grid = document.getElementById("drrGrid");
+  if (!grid) return;
+  let cards;
+  try { cards = drrCards(current); }
+  catch (e) { console.error("[drr] planner failed:", e); grid.innerHTML = `<div class="emptystate">The Droid Destruction planner hit an error — check the console, or ask Claude to look at it.</div>`; return; }
+  grid.innerHTML = wrapCards("drr", cards);
+  grid.querySelectorAll("input[data-k]").forEach(el => { el.checked = !!state.ticks[el.dataset.k]; });
+}
+/* After a planner write: redraw just this grid (and re-pack it); in layout-edit mode a full render(), so the drag
+   handles are bound once by render()'s own bindDnD() instead of a second time here. */
+function drrRefresh() { if (editMode) render(); else { drrRender(); layMasonryAll(); } }
+/* Called by renderRaids(): shows the planner grid (and hides the per-raid account nav) when the Raid selector is on it. */
+function drrPaint(on) {
+  const grid = document.getElementById("drrGrid"), detailNav = document.getElementById("raidDetailNav");
+  if (grid) grid.style.display = on ? "" : "none";
+  if (detailNav) detailNav.style.display = on ? "none" : "";
+  if (on) drrRender(); else if (grid) grid.innerHTML = "";
+}
+/* Next-up tiles: the next wave start, or the live wave's end, inside DRR_NXT_HORIZON_DAYS (one week: the waves come
+   weekly, so a 30-day horizon would always show one and the tile would stop meaning "soon"). */
+function drrNxtItems(acct, nowMs) {
+  const now = +nowMs || drrNow(), ws = drrWaveStatus(now), items = [];
+  const within = day => Number.isFinite(day) && day >= ws.today && day <= ws.today + DRR_NXT_HORIZON_DAYS * NXT_DAY;
+  const names = w => { const s = drrWaveSlots(w.n); const n = DROID_RAID.WAVE_SLOTS.map(([k]) => s[k]).filter(Boolean).map(id => (drrById(id) || {}).name).filter(Boolean); return n.length ? n.join(", ") : "featured units TBA"; };
+  if (ws.live) {
+    const due = drrISOKey(ws.live.end);
+    if (within(due)) items.push({ id: `drr-w${ws.live.n}-end`, due, title: `Droid raid wave ${ws.live.n}`, action: `Live to ${nxtDate(due)} · ${names(ws.live)} · stop at 4★`, route: ["modes", DRR_JUMP_KEY, "1", "drr-waves"] });
+  } else if (ws.next) {
+    const due = drrISOKey(ws.next.start);
+    if (within(due)) items.push({ id: `drr-w${ws.next.n}-start`, due, title: `Droid raid wave ${ws.next.n}`, action: `Additive drops ${nxtDate(due)}–${nxtDate(drrISOKey(ws.next.end))} · ${ws.next.n === 1 ? "spend nothing on relics before it" : names(ws.next)}`, route: ["modes", DRR_JUMP_KEY, "1", "drr-waves"] });
+  }
+  return items;
+}
+/* Coach flag, derived from the pull (same getter pattern as chxExecTip): the 25 units the five squads need at the 4★ floor —
+   the ones already there plus the highest-priority 3★ ones — as star specs, so tipProgress() shows "n/25" and the flag
+   retires itself through the existing tipIsDone() machinery once 25 are at 4★ (or every owned eligible unit, if fewer). */
+function drrTipView(acct, nowMs) {
+  const floor = DROID_RAID.T0_FLOOR.stars, owned = drrRows(acct).filter(r => r.owned), ws = drrWaveStatus(nowMs || drrNow());
+  const need = Math.min(owned.length, DROID_RAID.ATTEMPTS * DROID_RAID.SQUAD_MAX);
+  const at = owned.filter(r => hardNum(r.u.s) >= floor), below = owned.filter(r => hardNum(r.u.s) < floor)
+    .sort((a, b) => (drrPriorityRank(acct, a.e.id) || 9) - (drrPriorityRank(acct, b.e.id) || 9) || a.name.localeCompare(b.name));
+  const picked = at.concat(below).slice(0, need);
+  const check = picked.map(r => star(r.e.id, floor));
+  const when = ws.live ? `wave ${ws.live.n} is live to ${drrDate(ws.live.end)} — sim its featured units` : ws.next ? (ws.next.n === 1 ? `spend nothing on relics before ${drrDate(ws.next.start)}` : `next free shards: wave ${ws.next.n} from ${drrDate(ws.next.start)}`) : "the free waves are over";
+  const t = `Droid Destruction: ${when}; farm the ${floor}★ floor (${Math.min(at.length, need)} of ${need} units there)`;
+  const list = below.slice(0, need - at.length);
+  const note = `${below.length} of ${owned.length} owned eligible units are still below ${floor}★${list.length ? `: ${list.slice(0, 6).map(r => r.name).join(", ")}${list.length > 6 ? ` +${list.length - 6} more` : ""}` : ""}. 30 shards each from the additive-drop waves (16 Oct–8 Nov) is the cheapest score in the raid; relics, G13 and crystals wait for CG's next update. Planner: Game modes → Raids → Droid Destruction.`;
+  return { sev: "improve", t: escapeHtml(t), note: escapeHtml(note), check: check.length ? check : undefined };
+}
+function drrTip(acct, id) {
+  const view = () => { try { return drrTipView(acct); } catch (e) { return { sev: "improve", t: "Droid Destruction: farm the 4★ floor", note: "See Game modes → Raids → Droid Destruction.", check: undefined }; } };
+  return { id, chxRoute: true, get sev() { return view().sev; }, get t() { return view().t; }, get note() { return view().note; }, get check() { return view().check; } };
 }
 function renderGac() {
   const grid = document.getElementById("gacGrid");
@@ -12157,7 +12804,8 @@ const LAY_UNDO_KEY = "lay-undo", LAY_MATCH_KEY = "lay-match";     // device-loca
 const LAY_PRIORITY = {
   overview: ["keystats", "flags", "readiness", "today", "nextup", "daily", "eventflags", "momentum", "datahealth"],
   leia: ["glq", "nxt", "note", "reqs-1", "reqs-2", "pace", "joint"],
-  coach: ["action-flags", "watch-keep", "squad-arena"]
+  coach: ["action-flags", "watch-keep", "squad-arena"],
+  drr: ["drr-status", "drr-squads", "drr-matrix", "drr-waves", "drr-calc"]   // drr: Droid Destruction planner — honesty strip, then the squads (the numbers), then roster, waves, calculator
 };
 const LAY_FIXED = ["farm", "tb", "tw", "gaps", "tierlist", "modes"];
 
@@ -12684,7 +13332,13 @@ const SNAPSHOTS = [
      with the same hard end: Mandalorian & Grogu (~November) reshuffles what is worth building. */
   { key: "nxt-queue", label: "Next characters order (non-GL)", tab: "leia",
     asOf: snapISO(NXT_QUEUE.asOf), expires: "2026-11-14", halfLife: 21,
-    hint: "ask Claude to re-rank the next characters for both rosters" }
+    hint: "ask Claude to re-rank the next characters for both rosters" },
+  /* drr: half-life 14 — the raid is unreleased and CG has promised a "next update" (gameplay + rewards) that will replace
+     the swgoh.gg model this planner runs on; the Fable report's own re-check date is 26 Oct, exactly one half-life. The
+     chip flips amber on 26 Oct by itself. No hard `expires`: the release month is known, the day is not. */
+  { key: "droid-raid", label: "Droid Destruction raid facts (tiers, boxes, waves, eligibility)", tab: "modes",
+    asOf: DROID_RAID.asOf, halfLife: 14,
+    hint: "ask Claude to re-check the Droid Destruction posts (EA Forums community update, swgoh.gg raid page) and the Mandalorian & Grogu GL requirements" }
 ];
 const SNAP_BY_KEY = Object.fromEntries(SNAPSHOTS.map(s => [s.key, s]));
 /* Reuses the existing chip vocabulary rather than inventing a third colour language: green/done for
@@ -13035,6 +13689,8 @@ function nxtItems(acct, nowMs) {
     const due = nxtISOKey(NXT_ROTTA_EST.date);
     if (within(due, NXT_HORIZON_DAYS)) items.push({ id: `rotta-${NXT_ROTTA_EST.date}`, due, tag: "est.", title: "Rotta rerun", action: `~${nxtDate(due)} · journey units 4★ by ~${nxtDate(nxtISOKey(NXT_ROTTA_EST.prepBy))}`, route: ["farm"] });
   }
+  /* drr: the next Droid Destruction additive-drop wave (or the live one's end), one week out — see drrNxtItems. */
+  try { items.push(...drrNxtItems(acct, now)); } catch (e) { console.error("[nxt] droid raid:", e); }
   /* One "data is stale" tile when a reference snapshot is past 2× its half-life or its hard window; the id
      carries the stale set, so a dismissal lapses when a different reference goes stale. Sorted last (no due). */
   try {
@@ -13583,6 +14239,7 @@ function jumpToView(tab, viewKey, viewVal) {
    2. Otherwise the flag's headline is keyword-routed to the tab that actually addresses it.
    Returns null when nothing sensible matches, in which case the flag renders exactly as it did before. */
 const TIP_ROUTES = [
+  [/droid destruction/i,                                { tab: "modes", view: [DRR_JUMP_KEY, "1"], label: "Game modes · Droid Destruction planner" }],   // drr: before the relic/gear route
   [/set gac defen[cs]e|re-enter gac/i,                 { tab: "gac",   view: ["gac", "defense"], label: "GAC · Defense" }],   // chx
   [/\bgac\b|carbonite|division/i,                      { tab: "gac",   label: "GAC Planner" }],
   [/datacron/i,                                        { tab: "intel", view: ["intel", "datacrons"], label: "Farm Intel · Datacrons" }],

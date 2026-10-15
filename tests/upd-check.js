@@ -1,4 +1,5 @@
-/* upd: 12 Oct 2026 data-refresh checks. Clock pinned with Playwright's clock (setFixedTime) so BOTH Date.now() and the no-argument
+/* cap 15 Oct 2026: Dark Sovereign assertions rewritten (it is the Leviathan unlock journey, not a bonus event), seed version 7 -> 8, registry 23 -> 24.
+   upd: 12 Oct 2026 data-refresh checks. Clock pinned with Playwright's clock (setFixedTime) so BOTH Date.now() and the no-argument
    new Date() the Events code uses read the pinned instant, in an Australia/Sydney context (AEDT, UTC+11).
    Covers: EVENTS_SEED contents + dates (both accounts, rendered), Proving Grounds confirmed, Bonus Proving Grounds, the Dark Sovereign
    (Leviathan) note and that it stays out of the Executor advice, the 12 Oct seed bump keeping user-added rows, ended events not
@@ -43,7 +44,7 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
       ids: SNAPSHOTS.map(s => s.key)
     }));
     L.ck("clock pinned to Mon 12 Oct 2026 19:05 AEDT (UTC+11)", /Mon Oct 12 2026 19:05/.test(c.now) && c.off === -660 && c.nowMs === NOW, c.now);
-    L.ck("EVENTS_SEED_VERSION is 7, EVENTS_SEED_CAPTURED is '12 Oct 2026', saved state was reseeded to 7", c.ver === 7 && c.cap === "12 Oct 2026" && c.stateVer === 7, JSON.stringify([c.ver, c.cap, c.stateVer]));
+    L.ck("EVENTS_SEED_VERSION is 8 (cap: 7 -> 8 for the corrected Dark Sovereign note), EVENTS_SEED_CAPTURED is '12 Oct 2026', saved state was reseeded to 8", c.ver === 8 && c.cap === "12 Oct 2026" && c.stateVer === 8, JSON.stringify([c.ver, c.cap, c.stateVer]));
     const by = Object.fromEntries(c.seed.map(r => [r[0], r]));
     /* [name, cat, date, ends] — dates are LOCAL Sydney calendar dates; ends = last live day (a 05:00 AEDT close is the day before) */
     const want = [
@@ -76,7 +77,7 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
     L.ck("Proving Grounds: no '(estimated)' in the name, start CONFIRMED in the note; Conquest row no longer says estimated/ESTIMATE for it", !/estimat/i.test(by["Proving Grounds"][0]) && /CONFIRMED/.test(by["Proving Grounds"][4]) && !c.seed.some(r => /\(estimated\)/.test(r[0])), by["Proving Grounds"][4]);
     L.ck("Bonus Proving Grounds row: live 12 Oct, ends 13 Oct 05:00 AEDT in the note", /13 Oct 05:00 AEDT/.test(by["Bonus Proving Grounds"][4]), by["Bonus Proving Grounds"][4]);
     const ds = by["Dark Sovereign"][4];
-    L.ck("Dark Sovereign note: requires Leviathan (tier 4 + 4★), neither account owns it, not Executor advice", /REQUIRES/.test(ds) && /Leviathan/.test(ds) && /tier 4/.test(ds) && /4★/.test(ds) && /Neither Ollie nor Tiny owns Leviathan/.test(ds) && /Executor/.test(ds), ds);
+    L.ck("Dark Sovereign note (cap 15 Oct): the Leviathan UNLOCK journey (16 prerequisites, 80 blueprints, 10/10/20/40), swgoh.gg 'bonus' reading flagged as conflicting, unknowns stated; the old 'REQUIRES owning Leviathan / does not apply' claims are gone", /UNLOCK journey/.test(ds) && /Leviathan/.test(ds) && /16 prerequisites/.test(ds) && /80 blueprints/.test(ds) && /10\/10\/20\/40/.test(ds) && /CONFLICT/.test(ds) && /bonus star-up/.test(ds) && /Still unknown/.test(ds) && !/REQUIRES/.test(ds) && !/does not apply/.test(ds) && !/Neither Ollie nor Tiny owns Leviathan/.test(ds), ds);
     L.ck("Conquest 25 row: last live day 11 Oct, note says 12 Oct is the close and the run is over from 12 Oct; runs 2-3 'inferred, unconfirmed'", /12 Oct is the day it closes/.test(by["Conquest 25 (Embo & Keibu) — run 1"][4]) && /inferred, unconfirmed/.test(by["Conquest 25 (Embo & Keibu) — run 1"][4]), by["Conquest 25 (Embo & Keibu) — run 1"][4]);
     L.ck("GAC_SCHEDULE: S84E2 verified (no est), S84E3 est, S85 (3v3) 4/11/18 Nov est, asOf 2026-10-12",
       JSON.stringify(c.sched) === JSON.stringify([["s83e1", 83, 1, "3v3", "2026-09-09", false], ["s83e2", 83, 2, "3v3", "2026-09-16", false], ["s83e3", 83, 3, "3v3", "2026-09-23", false],
@@ -85,10 +86,10 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
     L.ck("seasons start every 28 days (S83 9 Sep, S84 7 Oct, S85 4 Nov) and each season's events are 7 days apart",
       (Date.UTC(2026, 9, 7) - Date.UTC(2026, 8, 9)) / 864e5 === 28 && (Date.UTC(2026, 10, 4) - Date.UTC(2026, 9, 7)) / 864e5 === 28 && c.sched.filter(r => r[2] > 1).every(r => { const prev = c.sched.find(q => q[1] === r[1] && q[2] === r[2] - 1); return (Date.UTC(...r[4].split("-").map((x, i) => i === 1 ? x - 1 : +x)) - Date.UTC(...prev[4].split("-").map((x, i) => i === 1 ? x - 1 : +x))) / 864e5 === 7; }), "");
     const snap = k => c.snaps[k];
-    L.ck("SNAPSHOTS: registry 23 entries (22 + drr droid-raid)", c.reg === 23, String(c.reg));
+    L.ck("SNAPSHOTS: registry 24 entries (23 + cap cap-journeys)", c.reg === 24, String(c.reg));
     L.ck("SNAPSHOTS asOf 2026-10-12 for the entries re-read today: events, gac-schedule, gac-format", snap("events") === "2026-10-12" && snap("gac-schedule") === "2026-10-12" && snap("gac-format") === "2026-10-12", JSON.stringify([snap("events"), snap("gac-schedule"), snap("gac-format")]));
     L.ck("SNAPSHOTS NOT bumped where the content was not re-read: conquest (plan/feats/enemy intel) 2026-09-27, executor-event (pricing) 2026-10-07", snap("conquest") === "2026-09-27" && snap("executor-event") === "2026-10-07", JSON.stringify([snap("conquest"), snap("executor-event")]));
-    L.ck("no SNAPSHOTS asOf is in the future (after 12 Oct)", Object.values(c.snaps).every(a => !a || a <= "2026-10-12"), JSON.stringify(c.snaps));
+    L.ck("no SNAPSHOTS asOf is in the future (after 12 Oct) — cap 15 Oct: except cap-journeys, dated 2026-10-15 from the in-game screenshots (the pinned clock here is 12 Oct)", Object.entries(c.snaps).every(([k, a]) => !a || a <= "2026-10-12" || (k === "cap-journeys" && a === "2026-10-15")), JSON.stringify(c.snaps));
     L.ck("zero page errors (pure)", errs.length === 0, JSON.stringify(errs));
     await ctx.close();
   }
@@ -126,7 +127,7 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
         JSON.stringify(["Ultimate Journey Event", "Bonus Proving Grounds", "Coruscant", "The Wanderer's Blade", "Terrible Tings"].map(n => [n, row(n).label, row(n).ends])));
       L.ck(`[${w}] ${acct}: Conquest 25 run 1 shows as over ('1d ago'), last day 11 Oct — never 'Ends today'`, row("Conquest 25 (Embo & Keibu) — run 1").label !== "Ends today" && /^\d+d ago$/.test(row("Conquest 25 (Embo & Keibu) — run 1").label) && /11 Oct/.test(row("Conquest 25 (Embo & Keibu) — run 1").ends), JSON.stringify(row("Conquest 25 (Embo & Keibu) — run 1")));
       L.ck(`[${w}] ${acct}: upcoming rows — Dark Sovereign 8d (20 Oct), Hoth 4d, Dathomir 7d, Smuggler's Run Today`, row("Dark Sovereign").label === "in 8d" && /20 Oct/.test(row("Dark Sovereign").starts) && row("Hoth").label === "in 4d" && row("Dathomir").label === "in 7d" && row("Smuggler's Run").label === "Today", JSON.stringify([row("Dark Sovereign"), row("Hoth"), row("Dathomir"), row("Smuggler's Run")].map(r => r && r.label)));
-      L.ck(`[${w}] ${acct}: Dark Sovereign note on screen says it requires Leviathan and neither account owns it`, /REQUIRES completing the Leviathan Fleet Mastery tier 4/.test(row("Dark Sovereign").note) && /Neither Ollie nor Tiny owns Leviathan/.test(row("Dark Sovereign").note), row("Dark Sovereign").note.slice(0, 120));
+      L.ck(`[${w}] ${acct}: Dark Sovereign note on screen says it is the Leviathan unlock journey (cap 15 Oct), not a requirement-to-own bonus event`, /Leviathan UNLOCK journey/.test(row("Dark Sovereign").note) && /16 prerequisites/.test(row("Dark Sovereign").note) && !/REQUIRES/.test(row("Dark Sovereign").note) && !/does not apply/.test(row("Dark Sovereign").note), row("Dark Sovereign").note.slice(0, 120));
       const oAll = await L.overflow(p);
       L.ck(`[${w}] ${acct}: All events view (long notes) has no horizontal overflow`, oAll.doc <= oAll.inner + 1, JSON.stringify(oAll));
       await p.evaluate(() => { state.views.events = "next"; renderEvents(); }); await p.waitForTimeout(150);
@@ -164,7 +165,7 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
     await ctx.close();
   }
 
-  /* ---------- 5. reseed 6 -> 7 keeps the user's own rows ---------- */
+  /* ---------- 5. reseed 6 -> current (7 at upd, 8 since cap) keeps the user's own rows ---------- */
   {
     const st = JSON.parse(L.REAL);
     const mine = [
@@ -176,7 +177,7 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
     const { ctx, p, errs } = await openAt(b, { tag: "reseed", state: JSON.stringify(st) });
     const r = await p.evaluate(() => ({ v: state.eventsSeedVersion, items: state.events.items, n: EVENTS_SEED.length }));
     const seeds = r.items.filter(e => /^seed\d+$/.test(e.id));
-    L.ck("reseed 6 -> 7: version 7, seed rows = EVENTS_SEED (20), ids seed0..seed19, the old Jaxxon row is gone", r.v === 7 && seeds.length === 20 && r.n === 20 && seeds.every((e, i) => e.id === "seed" + i) && !seeds.some(e => e.name === "Jaxxon"), r.v + " / " + seeds.length);
+    L.ck("reseed 6 -> 8: version 8 (cap), seed rows = EVENTS_SEED (20), ids seed0..seed19, the old Jaxxon row is gone", r.v === 8 && seeds.length === 20 && r.n === 20 && seeds.every((e, i) => e.id === "seed" + i) && !seeds.some(e => e.name === "Jaxxon"), r.v + " / " + seeds.length);
     const k1 = r.items.find(e => e.id === "e1790000000001"), k2 = r.items.find(e => e.id === "e1790000000002");
     L.ck("reseed: both user-added events survive byte-for-byte and come after the seed rows", JSON.stringify(k1) === JSON.stringify(mine[0]) && JSON.stringify(k2) === JSON.stringify(mine[1]) && r.items.slice(20).map(e => e.id).join() === "e1790000000001,e1790000000002", JSON.stringify(r.items.slice(20).map(e => e.id)));
     await L.go(p, "ollie", "events");
@@ -186,7 +187,7 @@ const evRows = p => p.evaluate(() => [...document.querySelectorAll("#eventsGrid 
     await p.evaluate(() => { const e = state.events.items.find(x => x.id === "e1790000000001"); e.note = "edited after the bump"; store.write(state); });
     await p.reload({ waitUntil: "domcontentloaded" }); await p.waitForTimeout(900);
     const r2 = await p.evaluate(() => ({ v: state.eventsSeedVersion, n: state.events.items.length, note: (state.events.items.find(x => x.id === "e1790000000001") || {}).note }));
-    L.ck("reseed is idempotent on reload (22 rows, v7, edit after the bump kept)", r2.v === 7 && r2.n === 22 && r2.note === "edited after the bump", JSON.stringify(r2));
+    L.ck("reseed is idempotent on reload (22 rows, v8, edit after the bump kept)", r2.v === 8 && r2.n === 22 && r2.note === "edited after the bump", JSON.stringify(r2));
     L.ck("zero page errors (reseed)", errs.length === 0, JSON.stringify(errs));
     await ctx.close();
   }

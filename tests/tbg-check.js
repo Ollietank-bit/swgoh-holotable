@@ -18,7 +18,8 @@ try { fs.mkdirSync(SHOTS, { recursive: true }); } catch (e) {}
 const ORIGIN = "https://www.swgohrote.com";
 const SECTIONS = [["guide", "Guide", "/"], ["map", "Map", "/map-view"], ["planner", "Squad planner", "/planner"], ["search", "Search", "/usage"], ["budget", "Crystal budget", "/budget"]];
 const SANDBOX = "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox";
-const BASE_HTML = fs.readFileSync(path.join(L.ROOT, "index.base.html"), "utf8");
+/* The CSP as it was before the swgohrote.com frame-src was added (frozen literal: no dependency on a base copy of the app). */
+const PRE_FRAME_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://swgoh.gg https://corsproxy.io https://api.allorigins.win https://api.codetabs.com https://api.github.com; base-uri 'none'; form-action 'none'";
 const cspOf = html => (html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]*)">/) || [])[1] || "";
 
 /* L.open, plus: swgohrote.com is fulfilled with a stub page (registered BEFORE the first navigation, so even a
@@ -60,11 +61,11 @@ const pick = async (p, label) => { await p.evaluate(l => { const btn = [...docum
   /* ---- 1. CSP (static, both files) ---- */
   {
     const html = fs.readFileSync(L.FILE, "utf8");
-    const csp = cspOf(html), base = cspOf(BASE_HTML);
+    const csp = cspOf(html), base = PRE_FRAME_CSP;
     const dirs = Object.fromEntries(csp.split(";").map(x => x.trim()).filter(Boolean).map(x => { const [k, ...v] = x.split(/\s+/); return [k, v]; }));
     ck("CSP has frame-src https://www.swgohrote.com and nothing broader in it", JSON.stringify(dirs["frame-src"]) === JSON.stringify(["https://www.swgohrote.com"]), JSON.stringify(dirs["frame-src"]));
     ck("CSP: no child-src / worker-src added; default-src still 'none'; no wildcard or bare https: anywhere", !dirs["child-src"] && !dirs["worker-src"] && JSON.stringify(dirs["default-src"]) === `["'none'"]` && !/(^|\s)(\*|https:)(\s|;|$)/.test(csp) && !/\*\./.test(csp), csp);
-    ck("CSP: the only change vs index.base.html is the inserted frame-src directive", csp.replace(" frame-src https://www.swgohrote.com;", "") === base && csp !== base, csp);
+    ck("CSP: the only change vs the pre-frame CSP is the inserted frame-src directive", csp.replace(" frame-src https://www.swgohrote.com;", "") === base && csp !== base, csp);
     ck("exactly one CSP meta", (html.match(/http-equiv="Content-Security-Policy"/g) || []).length === 1, "");
   }
 
@@ -196,7 +197,7 @@ const pick = async (p, label) => { await p.evaluate(l => { const btn = [...docum
     const all = await p.evaluate(() => { switchTab("overview"); return document.querySelectorAll('#pane-overview a[href*="swgohrote.com"]').length; });
     ck("the budget link is not sprinkled elsewhere (Overview has none)", all === 0, String(all));
     const reg = await p.evaluate(() => ({ n: SNAPSHOTS.length, e: SNAP_BY_KEY["tb-rote"] }));
-    ck("SNAPSHOTS: still 23 entries; tb-rote kept (asOf 2026-08-09, half-life 120, tab tb), now labelled/hinted as the legacy tracker", reg.n === 23 && reg.e && reg.e.asOf === "2026-08-09" && reg.e.halfLife === 120 && reg.e.tab === "tb" && /legacy tracker/i.test(reg.e.label) && /swgohrote\.com, live/.test(reg.e.hint), JSON.stringify(reg));
+    ck("SNAPSHOTS: 24 entries (cap: + cap-journeys); tb-rote kept (asOf 2026-08-09, half-life 120, tab tb), now labelled/hinted as the legacy tracker", reg.n === 24 && reg.e && reg.e.asOf === "2026-08-09" && reg.e.halfLife === 120 && reg.e.tab === "tb" && /legacy tracker/i.test(reg.e.label) && /swgohrote\.com, live/.test(reg.e.hint), JSON.stringify(reg));
     ck("no page errors (budget)", errs.length === 0, errs.join(" | "));
     await ctx.close();
     for (const acct of ["ollie", "tiny"]) {

@@ -619,6 +619,36 @@
   .mgl-gap { color: var(--ink-3); }
   .mgl-raid { color: var(--accent); font-size: 11px; font-weight: 650; white-space: nowrap; }
   .mgl-pending { border: 1px dashed var(--border-strong); border-radius: 8px; padding: 5px 8px; }
+  /* cap: Capital ship journeys card (Arena > Fleet Arena). Narrow = stacked (default); wide = prerequisite + one column per account. */
+  .cap-wrap { container-type: inline-size; }
+  .cap-journey { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--grid); }
+  .cap-jhead { font-size: 14px; color: var(--ink-1); overflow-wrap: anywhere; }
+  .cap-jev, .cap-tl, .cap-roster, .cap-need { color: var(--ink-3); font-size: 12px; }
+  .cap-need { font-weight: 650; color: var(--ink-2); white-space: nowrap; }
+  .cap-when, .cap-reward, .cap-conflict { font-size: 12px; color: var(--ink-2); margin-top: 4px; overflow-wrap: anywhere; line-height: 1.45; }
+  .cap-conflict { color: var(--ink-3); }
+  .cap-sums { margin-top: 6px; font-size: 12.5px; color: var(--ink-2); }
+  .cap-sum { margin-top: 2px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .cap-table { margin-top: 8px; }
+  .cap-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px 10px; padding: 6px 0; border-top: 1px solid var(--grid); font-size: 12.5px; }
+  .cap-headrow { display: none; font-size: 11px; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .04em; }
+  .cap-pre { color: var(--ink-1); overflow-wrap: anywhere; }
+  .cap-cell { color: var(--ink-3); overflow-wrap: anywhere; min-width: 0; }
+  .cap-cell .cap-cur { color: var(--ink-2); }
+  .cap-cell.cap-met, .cap-cell.cap-met .cap-cur { color: var(--good); }
+  .cap-cell.cap-miss .cap-cur { font-style: italic; }
+  .cap-acct { font-size: 11px; font-weight: 650; color: var(--ink-3); }
+  .cap-order { margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
+  .cap-order summary { cursor: pointer; color: var(--accent); font-size: 12px; font-weight: 650; }
+  .cap-order p { margin: 5px 0 0; line-height: 1.45; overflow-wrap: anywhere; }
+  .cap-opn { font-weight: 400; color: var(--ink-3); }
+  .cap-pointer { margin-top: 8px; margin-bottom: 0; overflow-wrap: anywhere; }
+  @container (min-width: 720px) {
+    .cap-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr) minmax(0, 1.4fr); }
+    .cap-headrow { display: grid; }
+    .cap-acct { display: none; }
+  }
+  @media (pointer: coarse) { .cap-order summary { min-height: 44px; display: flex; align-items: center; } }
   /* Next characters (non-GL) card (GL Roadmap tab) — see NXT_QUEUE. Rows reuse the .glq-row look. */
   .nxt-opt { color: var(--ink-2); }
   .nxt-week { margin: 2px 0 6px; overflow-wrap: anywhere; }
@@ -2168,8 +2198,11 @@ const EPIGRAPHS = {
    it (Terrible Tings, The Wanderer's Blade) and otherwise the capture date, as the 1 Oct rows did; every note quotes the AEDT
    time swgoh.gg's countdown gave. Discarded Doctrine (starts 15 Oct 18:00 AEDT on swgoh.gg, which CONFIRMS the app's 15 Oct) is
    deliberately NOT a seed row: executorDerivedEvents() already puts it on this list as the "auto" row, and a seed copy would
-   show it twice. The Dark Sovereign page is swgoh.gg/events/EVENT_FLEET_MASTERY_LEVIATHAN_BONUS/ (kept out of the row's note: an
-   unbreakable 50-character token widens the Events table past a 390px screen). The Conquest and datacron-expiry rows are not event-list rows on that page and keep their own named sources
+   show it twice. The Dark Sovereign row: swgoh.gg's page for it is swgoh.gg/events/EVENT_FLEET_MASTERY_LEVIATHAN_BONUS/ (kept out of the row's note: an
+   unbreakable 50-character token widens the Events table past a 390px screen); read on 12 Oct it described the event as a BONUS star-up
+   event needing Leviathan owned at 4★. cap 15 Oct 2026: the owner's own in-game screenshots (Ollietank, 15 Oct) show it is the Leviathan
+   UNLOCK journey instead (16 prerequisites, 80 blueprints in 4 tiers, Leviathan at 0/80, "Begin Journey" button) and that in-game
+   screen wins - see the row's note and CAP_JOURNEYS (the tracker card on the Arena tab). The Conquest and datacron-expiry rows are not event-list rows on that page and keep their own named sources
    (swgoh.gg/conquest/ read 12 Oct; swgoh.gg/datacrons/ read 7 Oct). Dates not read on 12 Oct: the Terrible Tings and
    Wanderer's Blade starts (kept from the 1 Oct read), the Conquest start and the datacron rows. */
 const EVENTS_SEED = [
@@ -2188,7 +2221,7 @@ const EVENTS_SEED = [
   { name: "Daring Droid", cat: "Mythic", date: "2026-10-17", note: "Starts 17 Oct 18:00 AEDT." },
   { name: "Military Might", cat: "Assault Battle", date: "2026-10-17", note: "Empire — starts 17 Oct 18:00 AEDT." },
   { name: "Dathomir", cat: "Omega Battle", date: "2026-10-19", note: "Now with Zetas! — starts 19 Oct 18:00 AEDT." },
-  { name: "Dark Sovereign", cat: "Fleet Mastery", date: "2026-10-20", note: "Leviathan blueprints — starts 20 Oct 18:00 AEDT. A BONUS star-up event (its swgoh.gg event page, read 12 Oct): it REQUIRES completing the Leviathan Fleet Mastery tier 4 and OWNING Leviathan at 4★ or more; 10 blueprints per completion, 999 crystals per refresh x19, returns about every 31 days. Neither Ollie nor Tiny owns Leviathan (12 Oct pulls), so it does not apply to either account yet — and it is not part of the Executor crystal advice." },
+  { name: "Dark Sovereign", cat: "Fleet Mastery", date: "2026-10-20", note: "Leviathan UNLOCK journey (Journey Guide · Fleet Mastery) — starts ~20 Oct 18:00 AEDT (in-game countdown on 15 Oct: 4d 18h; swgoh.gg's event list agrees). In-game screen (Ollie, 15 Oct): 16 prerequisites, 80 blueprints in 4 reward tiers (10/10/20/40), Leviathan at 0/80. Progress for both accounts: Arena tab › Fleet Arena › Capital ship journeys. CONFLICT: swgoh.gg's page for this event, read 12 Oct, described a bonus star-up event needing Leviathan owned at 4★; the in-game screen contradicts that, so it is treated as the unlock journey. Still unknown: how long the event stays open, how often it returns, and whether a separate bonus event also exists." },
   { name: "Conquest 25 (Embo & Keibu) — run 1", cat: "Other", date: "2026-09-28", ends: "2026-10-11", note: "swgoh.gg/conquest/ (read 12 Oct) lists Conquest 25 as 28 Sep – 12 Oct; 12 Oct is the day it closes (at the reset), so the last live day is 11 Oct and the run is over from 12 Oct. Runs 2–3 follow the 14-on / 14-off cadence — inferred, unconfirmed; no Conquest 26 is listed." },
   { name: "Datacron Set 33 expires", cat: "Other", date: "2026-10-29", ends: "2026-10-29", note: "Supremacy Directive (First Order · Resistance) — swgoh.gg/datacrons/, 7 Oct. Level Set 33 datacrons before it expires." },
   { name: "Datacron Set 34 expires", cat: "Other", date: "2026-11-26", ends: "2026-11-26", note: "The Art of Command (Empire · Jedi Vanguard) — swgoh.gg/datacrons/, 7 Oct." },
@@ -2197,7 +2230,7 @@ const EVENTS_SEED = [
 /* RE-READ 12 Oct 2026 18:57 AEDT from swgoh.gg/events/ (the owner's own browser, "Current & Upcoming", 17 events) — see the
    upd paragraph above the list; it supersedes the 1 Oct read (Claude in Chrome, 01:05 UTC, "Showing 16 events") and the 22 Sep
    capture before it (same method, same caveats: a day's drift either way is rounding on swgoh.gg's own countdown). */
-const EVENTS_SEED_VERSION = 7;   // bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
+const EVENTS_SEED_VERSION = 8;   // cap 15 Oct 2026: 7 -> 8 so saved states pick up the corrected Dark Sovereign note. bump + see the re-seed block below whenever EVENTS_SEED is corrected/refreshed
 /* The day the seed list above was read off swgoh.gg — a calendar snapshot has a shelf life, and once
    its rows are all in the past the tab would otherwise sit there looking like a live feed with nothing
    on it. Named here so the "run out" notice and the tab's provenance line can't drift apart. */
@@ -2230,8 +2263,9 @@ const EXECUTOR_EVENT = { name: "Discarded Doctrine", anchorISO: "2026-09-15", da
    15 Sep -> 15 Oct is exactly 30 days, 15 Oct -> 15 Nov would be 31, so a given occurrence can land a day either side of the
    15th — treat the date as approximate and check the in-game event list. Next: 15 Oct 2026, then ~15 Nov (unconfirmed).
    upd 12 Oct 2026: swgoh.gg/events/ (read 12 Oct) lists Discarded Doctrine starting 15 Oct 18:00 AEDT, which confirms the 15 Oct date only —
-   the crystal/refresh/pack figures were NOT re-read, so asOf stays 2026-10-07. The new Leviathan "Dark Sovereign" bonus event
-   (20 Oct, needs Leviathan owned at 4★+; neither account owns it) is a different ship and plays no part in these numbers. */
+   the crystal/refresh/pack figures were NOT re-read, so asOf stays 2026-10-07. The Leviathan unlock journey "Dark Sovereign"
+   (starts ~20 Oct; cap 15 Oct 2026: in-game screens show it is the Leviathan UNLOCK journey, not a bonus event - see EVENTS_SEED) is a different
+   ship from the Executor, so the crystal/refresh/pack numbers above are unaffected by it. */
 const SHIP_STAR_COST = { 5: 65, 6: 85, 7: 100 };   // blueprints to REACH that star (cumulative from 4*: 65 / 150 / 250)
 /* Ground War (Assault Battle) — researched 22 Aug 2026 via live web search (swgoh.gg's event page,
    swgoh.wiki, EA forums, community walkthroughs) while this event is live on the calendar. Faction-
@@ -3310,6 +3344,51 @@ const META_FLEET_TIER = [
   { name: "Endurance", tier: "C" }, { name: "Executrix", tier: "C" }, { name: "Negotiator", tier: "C" }, { name: "Malevolence", tier: "C" },
   { name: "Raddus", tier: "D" }, { name: "Finalizer", tier: "D" }
 ];
+/* ===================== Capital ship journeys (cap, 15 Oct 2026) =====================
+   Fleet Mastery "Journey Guide" events that UNLOCK a capital ship: Leviathan (event "Dark Sovereign") and Profundity (event
+   "Stardust Transmission"). Shown as one card on the Arena tab › Fleet Arena (capCardHtml), with a one-line pointer on the Arena overview.
+   SOURCES, in order of authority:
+     1. PRIMARY - the owner's own in-game screenshots, Ollietank's account, taken 15 Oct 2026: both event pages (name, "Journey Guide
+        Fleet Mastery", 80 blueprints in four reward tiers 10/10/20/40, the prerequisite list with the in-game "N/M - Completed" counter) and,
+        for Leviathan, the countdown "EVENT STARTS IN 4d 18h" and a BEGIN JOURNEY button; for Profundity "EVENT CURRENTLY UNAVAILABLE" (no date shown).
+        Relic numbers are the in-game "Relic N" values, which equal the pull's display relic convention used across this app (reqs[id].r);
+        stars = reqs[id].s, gear = reqs[id].g; a relic only counts once the unit is G13.
+     2. swgoh.gg's Fleet Offense tier list, Season 83 (S for Leviathan, A for Profundity) - NOT retyped here: the tier context is read live
+        from META_FLEET_TIER / TIER_LIST (see capTierHtml), so it cannot drift from the Fleet Arena tier card.
+     3. swgoh.gg's page for Dark Sovereign, read 12 Oct, called it a bonus star-up event needing Leviathan owned at 4★ - the in-game screen
+        contradicts that and wins (see the EVENTS_SEED row). Not used for any figure here.
+   UNKNOWN (printed on the card, not guessed): how long either event stays open, whether/how often either returns, whether a separate
+   Leviathan bonus event exists, and Profundity's date. The Leviathan start (~20 Oct 18:00 AEDT) comes from the in-game countdown (4d 18h on 15 Oct).
+   Matching: by unit id where one is known, but the pull's unit under that id must carry the exact in-game name when the pull carries one
+   (mglResolve - no fuzzy matching; "Sith Empire Trooper" is SITHTROOPER and "Sith Trooper" is FOSITHTROOPER). Ids were read from the 12 Oct
+   pulls; `null` = no id verified (Fury-class Interceptor is owned by neither account), so that unit is matched by exact name only.
+   The built-in baseline roster carries no names (and no ships), so without a live pull the card refuses to guess: it says "pull needed".
+   Requirement row: [unit id | null, exact name, "r" (relic) | "s" (ship stars), required level]. */
+const CAP_ASOF = "2026-10-15";
+const CAP_JOURNEYS = [
+  { key: "leviathan", ship: "Leviathan", event: "Dark Sovereign", guide: "Journey Guide · Fleet Mastery", starts: "2026-10-20",
+    when: "Starts ~20 Oct 2026 18:00 AEDT (the in-game countdown read 4d 18h on 15 Oct; the in-game button is “Begin Journey”). How long the event stays open and whether or how often it returns are unknown, and so is whether a separate Leviathan bonus event also exists.",
+    conflict: "swgoh.gg's page for this event, read 12 Oct, described a bonus star-up event that needs Leviathan owned at 4★. The in-game screen (15 Oct) shows the Leviathan unlock journey instead, so the in-game screen is what this card follows.",
+    blueprints: 80, tiers: [10, 10, 20, 40], inGame: "Ollietank's screen on 15 Oct: Prerequisites 5/16, Leviathan 0/80 blueprints",
+    req: [
+      ["DARTHREVAN", "Darth Revan", "r", 9], ["DARTHMALAK", "Darth Malak", "r", 9], ["SITHTROOPER", "Sith Empire Trooper", "r", 7], ["FOSITHTROOPER", "Sith Trooper", "r", 7],
+      ["MAUL", "Darth Maul", "r", 7], ["HK47", "HK-47", "r", 7], ["BASTILASHAN", "Bastila Shan", "r", 7], ["SITHASSASSIN", "Sith Assassin", "r", 5], ["50RT", "50R-T", "r", 5],
+      [null, "Fury-class Interceptor", "s", 4], ["SITHSUPREMACYCLASS", "Mark VI Interceptor", "s", 4], ["TIEDAGGER", "TIE Dagger", "s", 4], ["SITHBOMBER", "B-28 Extinction-class Bomber", "s", 4],
+      ["SITHINFILTRATOR", "Scimitar", "s", 4], ["SITHFIGHTER", "Sith Fighter", "s", 4], ["EBONHAWK", "Ebon Hawk", "s", 4]],
+    order: "Cheapest first, from Ollie's 12 Oct pull: Darth Malak, Sith Empire Trooper, Sith Trooper and HK-47 are +2 relic tiers each; Darth Revan +4; Mark VI Interceptor to 4★; Fury-class Interceptor (Ollie does not own it - source unknown, check that unit's screen in-game); Darth Maul and Bastila Shan need one gear step to G13 and then +7 each; 50R-T and Sith Assassin need heavy gear first (G7 and G3 to G13) and then +5 each." },
+  { key: "profundity", ship: "Profundity", event: "Stardust Transmission", guide: "Journey Guide · Fleet Mastery", starts: null,
+    when: "Shown “EVENT CURRENTLY UNAVAILABLE” on 15 Oct - no date is known. How long it stays open and how often it returns are unknown.",
+    conflict: "",
+    blueprints: 80, tiers: [10, 10, 20, 40], inGame: "Ollietank's screen on 15 Oct: Prerequisites 7/14",
+    req: [
+      ["ADMIRALRADDUS", "Admiral Raddus", "r", 9], ["CASSIANANDOR", "Cassian Andor", "r", 8], ["DASHRENDAR", "Dash Rendar", "r", 7], ["MONMOTHMA", "Mon Mothma", "r", 5],
+      ["BISTAN", "Bistan", "r", 5], ["JYNERSO", "Jyn Erso", "r", 5], ["HERASYNDULLAS3", "Hera Syndulla", "r", 5],
+      ["OUTRIDER", "Outrider", "s", 4], ["UWINGROGUEONE", "Cassian's U-wing", "s", 4], ["UWINGSCARIF", "Bistan's U-wing", "s", 4], ["XWINGRED2", "Wedge Antilles's X-wing", "s", 4],
+      ["XWINGRED3", "Biggs Darklighter's X-wing", "s", 4], ["YWINGREBEL", "Rebel Y-wing", "s", 4], ["GHOST", "Ghost", "s", 4]],
+    order: "Cheapest first, from Ollie's 12 Oct pull: Hera Syndulla +2; then Mon Mothma, Bistan and Jyn Erso +5 each (Bistan needs 9 gear steps and Jyn 3 first); Cassian Andor +8 and Admiral Raddus +9 after heavy gear; Dash Rendar is at 4★, so he needs 7★ before any gear or relic work." }
+];
+/* The app's own opinion (labelled as such on the card) - written from Ollie's 12 Oct pull; the live numbers sit in the summary lines. */
+const CAP_OPINION = "Leviathan is the nearer target for Ollie (≈36 tiers, dated, Sith roster part-built); Profundity needs ≈41 tiers plus gear and has no date.";
 
 /* swgoh.gg's Tier List tool (https://swgoh.gg/tier-list/) — real battle-data-driven rankings, pulled live
    27 Sep 2026. Three categories tracked here — 5v5 Squads, 3v3 Squads, Fleet — since those are what this
@@ -8356,6 +8435,90 @@ function fleetTierHtml(reqs) {
       }).join("")}
     </div>`;
 }
+/* ===================== Capital ship journeys: live status (cap, 15 Oct 2026) =====================
+   Data and sources: CAP_JOURNEYS. Everything below is computed per render from the account's latest pull; nothing is stored (no state, no
+   new localStorage key). Matching is exact (mglResolve). Without a live pull the roster is not known, so rows say "pull needed" rather than
+   a false "not owned" (the built-in baseline has neither names nor ships). */
+/* One prerequisite for one account -> {owned, met, cur, gap, tiers, gear, stars}. tiers = relic tiers still to climb (a unit that is not
+   owned counts its whole requirement, like glqTiersLeft); gear = steps to G13 on a relic unit that has no relic yet; stars = ship stars missing. */
+function capEval(u, kind, need) {
+  need = hardNum(need);
+  if (!isPlainObject(u)) return { owned: false, met: false, cur: "not owned", gap: "not owned", tiers: kind === "r" ? need : 0, gear: 0, stars: kind === "s" ? need : 0 };
+  const s = hardNum(u.s), g = hardNum(u.g) || 1, r = hardNum(u.r);
+  if (kind === "s") {
+    const met = s >= need;
+    return { owned: true, met, cur: `${s}★`, gap: met ? "met ✓" : `${need - s}★ to go (${s}★ → ${need}★)`, tiers: 0, gear: 0, stars: Math.max(0, need - s) };
+  }
+  const met = r >= need, bits = [];
+  const gear = !met && r <= 0 && g < 13 ? 13 - g : 0, tiers = Math.max(0, need - r);
+  if (!met) {
+    if (s < 7) bits.push(`needs 7★ first (${s}★ → 7★)`);
+    if (gear) bits.push(`${gear} gear step${gear === 1 ? "" : "s"} to G13 (G${g} → G13)`);
+    bits.push(`+${tiers} relic tier${tiers === 1 ? "" : "s"} (R${r} → R${need})`);
+  }
+  return { owned: true, met, cur: `${s}★ ${r > 0 ? "R" + r : "G" + g}`, gap: met ? "met ✓" : bits.join(" · "), tiers, gear, stars: 0 };
+}
+/* One journey for one account: per-prerequisite rows + the totals the summary line prints. */
+function capAccount(j, acct) {
+  const pull = state.pulls[acct], live = isPlainObject(pull) && isPlainObject(pull.reqs);
+  const reqs = live ? pull.reqs : {};
+  const rows = j.req.map(([id, name, kind, need]) => {
+    const u = live ? mglResolve(reqs, id || "", name) : undefined;
+    return { id, name, kind, need, live, ...(live ? capEval(u, kind, need) : { owned: false, met: false, cur: "—", gap: "pull needed", tiers: 0, gear: 0, stars: 0 }) };
+  });
+  const ship = live ? findUnitByName(reqs, j.ship) : null;
+  return { live, rows, met: rows.filter(r => r.met).length, total: rows.length, tiers: rows.reduce((n, r) => n + r.tiers, 0), gear: rows.reduce((n, r) => n + r.gear, 0),
+    stars: rows.reduce((n, r) => n + r.stars, 0), notOwned: rows.filter(r => live && !r.owned).length, shipOwned: !!ship, shipStars: ship ? hardNum(ship.s) : 0, fetched: live ? (pull.fetchedLabel || "") : "" };
+}
+function capSummaryText(a) {
+  if (!a.live) return "pull needed to see status";
+  return `${a.met}/${a.total} prerequisites met · ≈${a.tiers} relic tiers left`;
+}
+/* Tier context: read from the same data as the Fleet tier reference card (META_FLEET_TIER + TIER_LIST), never retyped. */
+function capTierHtml(shipName) {
+  const f = META_FLEET_TIER.find(x => x.name === shipName), e = tierListEntry("fleet", shipName);
+  if (!f) return "";
+  return `<span class="chip ${TIER_CHIP[f.tier] || "watch"}" title="swgoh.gg Fleet Offense tier list - pulled ${escapeHtml(TIER_LIST.updated)}">${escapeHtml(f.tier)}-tier</span>${e ? ` <span class="cap-tl">${escapeHtml(e.wr)}% WR · ${escapeHtml(e.battles)} battles</span>` : ""}`;
+}
+function capCellHtml(acct, r) {
+  const a = ACCOUNTS.find(x => x.key === acct) || { label: acct };
+  const cls = !r.live ? "cap-na" : r.met ? "cap-met" : !r.owned ? "cap-miss" : "";
+  return `<div class="cap-cell ${cls}" data-cap-acct="${escapeHtml(acct)}"><span class="cap-acct">${escapeHtml(a.label)}</span> <span class="cap-cur">${r.met ? "✓ " : ""}${escapeHtml(r.cur)}</span> <span class="cap-gap">${r.met || (r.live && !r.owned) ? "" : "— " + escapeHtml(r.gap)}</span></div>`;
+}
+function capJourneyHtml(j) {
+  const accts = ACCOUNTS.map(a => a.key);
+  const ev = accts.map(k => ({ k, a: capAccount(j, k) }));
+  const need = ([, , kind, n]) => kind === "r" ? `R${n}` : `${n}★`;
+  const head = ev.map(({ k, a }) => {
+    const lab = (ACCOUNTS.find(x => x.key === k) || { label: k }).label;
+    const extra = a.live ? ` · ≈${a.gear} gear steps to G13${a.notOwned ? ` · ${a.notOwned} not owned` : ""}` : "";
+    return `<div class="cap-sum" data-cap-sum="${escapeHtml(k)}"><b>${escapeHtml(lab)}</b> — <span class="cap-sumtxt">${escapeHtml(capSummaryText(a))}</span>${escapeHtml(extra)}<span class="cap-roster"> · ${a.live ? `${escapeHtml(j.ship)} ${a.shipOwned ? `owned (${a.shipStars}★)` : "not owned"} · roster: ${escapeHtml(a.fetched || "latest pull")}` : "no pull on this device"}</span></div>`;
+  }).join("");
+  const rows = j.req.map((rq, i) => `<div class="cap-row" data-cap-unit="${escapeHtml(rq[1])}"><div class="cap-pre"><b>${escapeHtml(rq[1])}</b> <span class="cap-need">${escapeHtml(need(rq))}</span></div>${ev.map(({ k, a }) => capCellHtml(k, a.rows[i])).join("")}</div>`).join("");
+  const tiers = j.tiers.join("/");
+  return `<div class="cap-journey" data-cap-journey="${escapeHtml(j.key)}">
+    <div class="cap-jhead"><b class="cap-jname">${escapeHtml(j.ship)}</b> ${capTierHtml(j.ship)} <span class="cap-jev">— event “${escapeHtml(j.event)}” (${escapeHtml(j.guide)})</span></div>
+    <div class="cap-when">${escapeHtml(j.when)}</div>
+    <div class="cap-reward">Reward: ${escapeHtml(j.blueprints)} blueprints in 4 tiers (${escapeHtml(tiers)}) · ${escapeHtml(j.req.length)} prerequisites · ${escapeHtml(j.inGame)}.</div>
+    ${j.conflict ? `<div class="cap-conflict">Source conflict: ${escapeHtml(j.conflict)}</div>` : ""}
+    <div class="cap-sums">${head}</div>
+    <div class="cap-table"><div class="cap-row cap-headrow"><div>Prerequisite</div>${ACCOUNTS.map(a => `<div>${escapeHtml(a.label)}</div>`).join("")}</div>${rows}</div>
+    <details class="cap-order"><summary>Suggested cheapest-first order <span class="cap-opn">(the app's opinion)</span></summary><p>${escapeHtml(j.order)}</p></details>
+  </div>`;
+}
+function capCardHtml() {
+  return `<div class="cap-wrap"><div class="cardtitle">Capital ship journeys <span class="sub">— Leviathan · Profundity</span>${snapChipHtml("cap-journeys")}</div>
+    <div class="mnote">The two Fleet Mastery journeys that unlock the top fleet flagships. Status below is computed live from each account's latest pull, Ollietank first; requirements and dates were read off in-game screens on ${escapeHtml(snapLabel(CAP_ASOF))}. A relic only counts once the unit is G13; ships count at 4★ or more.</div>
+    <div class="intelnote cap-opinion"><b>The app's opinion (not a fact):</b> ${escapeHtml(CAP_OPINION)}</div>
+    <div class="mnote cap-raid">Darth Revan, Darth Malak and the Troopers are useful for GAC too. None of these units is on Droid Destruction's 33-unit eligible list (“Cassian Andor (Undercover)” and “Maul (Hate-Fueled)” there are different units), so the planner's hold on relic spend for raid-only units (until the raid's boxes and boss kits are known; its free drop waves start 16 Oct) does not apply to them. The only overlap is competition for the same relic materials.</div>
+    ${CAP_JOURNEYS.map(capJourneyHtml).join("")}
+    <div class="srcline">Capital ship journeys ${snapNoteHtml("cap-journeys")} - prerequisites and dates are read off the owner's in-game screenshots (Ollietank, 15 Oct 2026) and can change; re-check in-game. Tier letters: swgoh.gg Fleet Offense tier list, Season 83, read live from the Tier List data.</div></div>`;
+}
+/* One line on the Arena overview, pointing at the card (the full card lives on Fleet Arena). */
+function capPointerHtml() {
+  const L = CAP_JOURNEYS.map(j => `${escapeHtml(j.ship)} ${ACCOUNTS.map(({ key, label }) => { const a = capAccount(j, key); return a.live ? `${escapeHtml(label)} ${a.met}/${a.total}` : `${escapeHtml(label)} pull needed`; }).join(" · ")}`);
+  return `<div class="mnote cap-pointer">Capital ship journeys (prerequisites met) — ${L.join("; ")}. <a href="#" style="color:var(--accent)" onclick="sectionView('arena','fleet');return false;">Fleet Arena →</a></div>`;
+}
 const RAID_TICKET_TYPES = [
   { key: "str", label: "Sith Triumvirate" }, { key: "rancor", label: "Rancor" },
   { key: "aat", label: "AAT" }, { key: "o66", label: "Order 66" }, { key: "naboo", label: "Naboo" }
@@ -8858,7 +9021,8 @@ function arenaLiveHtml() {
       <div class="cqteam" style="margin-bottom:6px"><b style="color:var(--ink-1)">Fleet Arena</b> — <b>#${escapeHtml(pull.fleetRank)}</b>${pull.fleetLeader ? " · lead " + escapeHtml(nameFor(pull.fleetLeader)) : ""}</div>
       <div class="cqteam"><b style="color:var(--ink-1)">GAC league</b> — ${escapeHtml(pull.gac || "—")} ${pull.gacNote ? "· " + escapeHtml(pull.gacNote) : ""}</div>
     </div>
-    <div class="mnote">Squad/fleet rank feed the payout logs alongside automatically on every pull — no manual check-in needed unless you want an extra mid-day reading.</div>`;
+    <div class="mnote">Squad/fleet rank feed the payout logs alongside automatically on every pull — no manual check-in needed unless you want an extra mid-day reading.</div>
+    ${capPointerHtml()}`;
 }
 function arenaOppHtml(mode) {
   const list = (state.arena.opponents[current] || []).filter(o => o.mode === mode);
@@ -8888,7 +9052,7 @@ function renderArena() {
   const cards = view === "squad"
     ? [{ id: "squadlog", w: 6, html: arenaLogHtml("squad") }, { id: "squadopp", w: 6, html: arenaOppHtml("squad") }]
     : view === "fleet"
-      ? [{ id: "fleetlog", w: 6, html: arenaLogHtml("fleet") }, { id: "fleetopp", w: 6, html: arenaOppHtml("fleet") }]
+      ? [{ id: "capjourneys", w: 12, html: capCardHtml() }, { id: "fleetlog", w: 6, html: arenaLogHtml("fleet") }, { id: "fleetopp", w: 6, html: arenaOppHtml("fleet") }]
       : [{ id: "live", w: 12, html: arenaLiveHtml() }];
   grid.innerHTML = wrapCards("arena", cards, "arena");
 }
@@ -13495,7 +13659,13 @@ const SNAPSHOTS = [
      chip flips amber on 26 Oct by itself. No hard `expires`: the release month is known, the day is not. */
   { key: "droid-raid", label: "Droid Destruction raid facts (tiers, boxes, waves, eligibility)", tab: "modes",
     asOf: DROID_RAID.asOf, halfLife: 14,
-    hint: "ask Claude to re-check the Droid Destruction posts (EA Forums community update, swgoh.gg raid page) and the Mandalorian & Grogu GL requirements" }
+    hint: "ask Claude to re-check the Droid Destruction posts (EA Forums community update, swgoh.gg raid page) and the Mandalorian & Grogu GL requirements" },
+  /* cap: half-life 14 - the prerequisites and dates were read off the owner's in-game screenshots (15 Oct 2026), CG adjusts journey
+     gates now and then, and the Leviathan event starts ~20 Oct (then its real length and recurrence become knowable). No hard
+     `expires`: Profundity's date is unknown. Tab: arena (the card lives on Arena > Fleet Arena). */
+  { key: "cap-journeys", label: "Capital ship journeys (Leviathan & Profundity prerequisites, dates)", tab: "arena",
+    asOf: CAP_ASOF, halfLife: 14,
+    hint: "re-check in-game: prerequisites and dates are read off the user's screenshots" }
 ];
 const SNAP_BY_KEY = Object.fromEntries(SNAPSHOTS.map(s => [s.key, s]));
 /* Reuses the existing chip vocabulary rather than inventing a third colour language: green/done for

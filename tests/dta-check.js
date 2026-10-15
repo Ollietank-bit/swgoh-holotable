@@ -3,7 +3,7 @@
    (fleet tier rows, Executor, Conquest status wording, datacron expiries, Mandalorian & Grogu watch note) say what was verified.
    Run: cd DIR && NODE_PATH=/home/claude/.npm-global/lib/node_modules FILE=DIR/index.html PORT=8861 node tests/dta-check.js */
 const L = require("./lib.js");
-const TODAY = "2026-10-12";   // upd 12 Oct: the SNAPSHOTS dates of the entries re-read on 12 Oct are now <= this
+const TODAY = "2026-10-15";   // upd 12 Oct: the SNAPSHOTS dates of the entries re-read on 12 Oct are now <= this; cap 15 Oct: cap-journeys is dated 2026-10-15 (the in-game screenshots), so the bound moved to 15 Oct
 /* Rendered "Season 83" mentions that are legitimately about Season 83 DATA (a swgoh.gg tier-list / usage citation or the previous
    format), not a claim that Season 83 / 3v3 is the current GAC season. Anything else that matches /Season 83/ fails the check. */
 const ALLOWED_S83 = [
@@ -62,8 +62,8 @@ const ALLOWED_S83 = [
     L.ck("Seed datacron-expiry rows: Set 33 29 Oct, Set 34 26 Nov, Set 35 24 Dec 2026", JSON.stringify(c.seedDc) === JSON.stringify([["Datacron Set 33 expires", "2026-10-29", "2026-10-29"], ["Datacron Set 34 expires", "2026-11-26", "2026-11-26"], ["Datacron Set 35 expires", "2026-12-24", "2026-12-24"]]), JSON.stringify(c.seedDc));
     const real = d => /^\d{4}-\d{2}-\d{2}$/.test(d) && !isNaN(Date.parse(d + "T00:00:00Z")) && new Date(d + "T00:00:00Z").toISOString().slice(0, 10) === d;
     L.ck("every EVENTS_SEED date/ends is a real calendar date, ends >= date", c.seedAll.every(([d, e]) => real(d) && (!e || (real(e) && e >= d))), JSON.stringify(c.seedAll.filter(([d, e]) => !(real(d) && (!e || (real(e) && e >= d))))));
-    L.ck("EVENTS_SEED_VERSION is 7; CAPTURED '12 Oct 2026' (upd: swgoh.gg/events/ re-read 12 Oct)", c.seedVer === 7 && c.seedCaptured === "12 Oct 2026", c.seedVer + " / " + c.seedCaptured);
-    L.ck("SNAPSHOTS registry now 23 unique keys (drr: + droid-raid)", c.snaps.length === 23 && new Set(c.snaps.map(s => s.key)).size === 23, String(c.snaps.length));
+    L.ck("EVENTS_SEED_VERSION is 8 (cap 15 Oct: corrected Dark Sovereign note); CAPTURED '12 Oct 2026' (upd: swgoh.gg/events/ re-read 12 Oct)", c.seedVer === 8 && c.seedCaptured === "12 Oct 2026", c.seedVer + " / " + c.seedCaptured);
+    L.ck("SNAPSHOTS registry now 24 unique keys (drr: + droid-raid, cap: + cap-journeys)", c.snaps.length === 24 && new Set(c.snaps.map(s => s.key)).size === 24, String(c.snaps.length));
     L.ck(`every SNAPSHOTS asOf parses and is <= ${TODAY}`, c.snaps.every(s => s.iso && s.iso <= TODAY), JSON.stringify(c.snaps.filter(s => !(s.iso && s.iso <= TODAY))));
     L.ck("every SNAPSHOTS expires parses and is >= its asOf", c.snaps.filter(s => s.exp).every(s => s.expIso && s.expIso >= s.iso), JSON.stringify(c.snaps.filter(s => s.exp)));
     const asOf = k => c.snaps.find(s => s.key === k).iso;
@@ -88,7 +88,7 @@ const ALLOWED_S83 = [
     const { ctx, p, errs } = await L.open(b, { tag: "reseed", state: JSON.stringify(st) });
     const r = await p.evaluate(() => ({ v: state.eventsSeedVersion, items: state.events.items, n: EVENTS_SEED.length }));
     const seedRows = r.items.filter(e => /^seed\d+$/.test(e.id));
-    L.ck("reseed: version bumped 5 -> 7 (upd 12 Oct: current seed version)", r.v === 7, String(r.v));
+    L.ck("reseed: version bumped 5 -> 8 (cap 15 Oct: current seed version)", r.v === 8, String(r.v));
     L.ck("reseed: seed rows now equal EVENTS_SEED (20 rows after the 12 Oct refresh), ids seed0..seed19 unique", seedRows.length === r.n && r.n === 20 && new Set(seedRows.map(e => e.id)).size === r.n && seedRows.every((e, i) => e.id === "seed" + i), r.n + "/" + seedRows.length);
     L.ck("reseed: the new conquest / datacron rows are present", ["Conquest 25 (Embo & Keibu) — run 1", "Proving Grounds", "Bonus Proving Grounds", "Dark Sovereign", "Datacron Set 33 expires", "Datacron Set 34 expires", "Datacron Set 35 expires"].every(n => seedRows.some(e => e.name === n)));
     const k1 = r.items.find(e => e.id === "e1790000000001"), k2 = r.items.find(e => e.id === "e1790000000002");
@@ -106,13 +106,13 @@ const ALLOWED_S83 = [
     await p.evaluate(() => { const e = state.events.items.find(x => x.id === "e1790000000001"); e.note = "edited after the bump"; store.write(state); });
     await p.reload({ waitUntil: "domcontentloaded" }); await p.waitForTimeout(900);
     const r2 = await p.evaluate(() => ({ v: state.eventsSeedVersion, n: state.events.items.length, note: (state.events.items.find(x => x.id === "e1790000000001") || {}).note }));
-    L.ck("reseed: idempotent on reload — still 22 rows, v7, edit made after the bump kept", r2.v === 7 && r2.n === 22 && r2.note === "edited after the bump", JSON.stringify(r2));
+    L.ck("reseed: idempotent on reload — still 22 rows, v8, edit made after the bump kept", r2.v === 8 && r2.n === 22 && r2.note === "edited after the bump", JSON.stringify(r2));
     L.ck("zero page errors (reseed)", errs.length === 0, JSON.stringify(errs));
     await ctx.close();
     /* A pre-existing saved state (the real 20 Sep one, seed version 3, no user rows) also upgrades cleanly. */
     const o2 = await L.open(b, { tag: "reseed3" });
     const r3 = await o2.p.evaluate(() => ({ v: state.eventsSeedVersion, n: state.events.items.length, n2: EVENTS_SEED.length }));
-    L.ck("reseed: the real 20 Sep state (seed v3) upgrades to v7 with exactly the seed rows", r3.v === 7 && r3.n === r3.n2, JSON.stringify(r3));
+    L.ck("reseed: the real 20 Sep state (seed v3) upgrades to v8 with exactly the seed rows", r3.v === 8 && r3.n === r3.n2, JSON.stringify(r3));
     await o2.ctx.close();
   }
 

@@ -95,7 +95,7 @@ const PLAN = ([a, f, NEWN]) => { switchAcct(a); state.views["gco-" + a] = f; con
     ck("gosFmtOk: no gosOnly → every format; gosOnly 3v3 → 3v3 only", JSON.stringify(misc.fmtOk) === "[true,true,false]", JSON.stringify(misc.fmtOk));
     ck("existing GCO_TRIOS entry (Leia) untouched", misc.leiaTrio === '["GLLEIA","CAPTAINDROGAN","R2D2_LEGENDARY"]', misc.leiaTrio);
     ck("Recommended defense and Squad Arena never list a new offence-only entry", misc.recDef.length === 0 && misc.arena.length === 0, JSON.stringify([misc.recDef, misc.arena]));
-    ck("SNAPSHOTS: meta-squads asOf NOT bumped (the old entries were not re-read), registry size 23 (drr: + droid-raid)", misc.snap === "2026-09-27" && misc.snapN === 23, `${misc.snap} / ${misc.snapN}`);
+    ck("SNAPSHOTS: meta-squads asOf NOT bumped (the old entries were not re-read), registry size 24 (drr: + droid-raid, cap: + cap-journeys)", misc.snap === "2026-09-27" && misc.snapN === 24, `${misc.snap} / ${misc.snapN}`);
     ck("no page errors (data)", errs.length === 0, JSON.stringify(errs.slice(0, 3)));
     await ctx.close();
   }

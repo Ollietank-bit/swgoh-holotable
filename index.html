@@ -1488,6 +1488,64 @@
   .gof-look-opt.def .st { color: var(--warning); }
   @media (min-width: 700px) { .gof-look-row { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } .gof-look-opt + .gof-look-opt { grid-column: 2; } }
   .gof-empty { font-size: 12.5px; color: var(--ink-3); font-style: italic; padding: 8px 0; }
+  /* ===== gop: GAC Planner › Opponent — scouting + counter plan (16 Oct 2026). Mobile-first; reuses gco/gof chrome. ===== */
+  .gop-ctl { margin-top: 6px; }
+  .gop-ctl .gco-btn { max-width: 100%; overflow-wrap: anywhere; }
+  .gop-msg { margin-top: 8px; font-size: 12.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+  .gop-msg.good { color: var(--good); } .gop-msg.bad { color: var(--serious); }
+  .gop-sec { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--grid); }
+  .gop-h { font-size: 14px; font-weight: 700; color: var(--ink-1); overflow-wrap: anywhere; }
+  .gop-h .sub, .gop-h2 .sub { font-weight: 500; color: var(--ink-3); font-size: 12px; }
+  .gop-h2 { font-size: 13px; font-weight: 700; color: var(--ink-1); margin-top: 12px; overflow-wrap: anywhere; }
+  .gop-round { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 6px 0; }
+  .gop-fine { font-size: 11px; color: var(--ink-3); line-height: 1.45; overflow-wrap: anywhere; }
+  .gop-plist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: 6px; }
+  @media (min-width: 760px) { .gop-plist { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .gop-prow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; text-align: left; font: inherit; cursor: pointer;
+              padding: 8px 10px; min-height: 44px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-2); width: 100%; box-sizing: border-box; }
+  .gop-prow.me { cursor: default; opacity: 0.85; }
+  .gop-prow.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .gop-prow .chip { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+  .gop-pname { font-weight: 700; color: var(--ink-1); font-size: 13px; overflow-wrap: anywhere; }
+  .gop-pmeta { font-size: 11.5px; color: var(--ink-3); overflow-wrap: anywhere; }
+  .gop-page { grid-column: 1 / -1; font-size: 10.5px; color: var(--ink-3); overflow-wrap: anywhere; }
+  .gop-age { font-size: 12px; color: var(--ink-2); margin-top: 4px; overflow-wrap: anywhere; }
+  .gop-age.stale { color: var(--warning); font-weight: 650; }
+  .gop-dc { font-size: 12px; color: var(--ink-2); margin-top: 4px; overflow-wrap: anywhere; }
+  .gop-sq { margin-top: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+  .gop-sq-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; }
+  .gop-sq-head .gco-name { grid-column: 2; grid-row: 1; }
+  .gop-sq-head .gop-fine { grid-column: 2; grid-row: 2; }
+  .gop-sq-head .gop-x { grid-column: 3; grid-row: 1 / span 2; }
+  .gop-units { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+  .gop-u { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; align-items: center; padding: 4px 0; border-top: 1px dashed var(--grid); }
+  .gop-u .gop-x { grid-column: 2; grid-row: 1 / span 2; }
+  .gop-uname { font-weight: 650; color: var(--ink-1); font-size: 12.5px; overflow-wrap: anywhere; }
+  .gop-lead { color: var(--accent); font-weight: 700; }
+  .gop-ustat { grid-column: 1; font-size: 11.5px; color: var(--ink-3); overflow-wrap: anywhere; }
+  .gop-omi { color: var(--warning); }
+  .gop-x { font: inherit; font-size: 13px; line-height: 1; cursor: pointer; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--ink-3); min-width: 32px; min-height: 32px; }
+  .gop-x:hover { color: var(--serious); border-color: var(--serious); }
+  .gop-add { margin-top: 8px; }
+  .gop-picker { margin-top: 8px; }
+  .gop-q { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 9px 10px; min-height: 40px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface-1, var(--surface-2)); color: var(--ink-1); }
+  .gop-plist2 { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; max-height: 300px; overflow: auto; -webkit-overflow-scrolling: touch; }
+  .gop-urow { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; font: inherit; cursor: pointer; width: 100%; box-sizing: border-box;
+              padding: 6px 10px; min-height: 40px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--ink-2); }
+  .gop-urow:hover, .gop-urow:focus-visible { border-color: var(--accent); }
+  .gop-flags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .gop-flag { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--ink-2); overflow-wrap: anywhere; max-width: 100%; }
+  .gop-flag.danger { color: var(--serious); border-color: var(--serious); background: color-mix(in srgb, var(--serious) 10%, transparent); }
+  .gop-flag.edge { color: var(--good); border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, transparent); }
+  .gop-ctr { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, transparent); font-size: 12.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+  .gop-ctr b { color: var(--ink-1); }
+  .gop-ref { color: var(--accent); font-weight: 650; }
+  .gop-best { margin-top: 4px; font-size: 13px; }
+  .gop-best .st { color: var(--ink-3); font-size: 12px; } .gop-best .st.off { color: var(--good); } .gop-best .st.def { color: var(--warning); }
+  .gop-best.none { color: var(--warning); }
+  .gop-empty { font-size: 12.5px; color: var(--ink-3); font-style: italic; padding: 6px 0; overflow-wrap: anywhere; }
+  .gop-steps { margin: 6px 0 0; }
+  @media (pointer: coarse) { .gop-x { min-width: 44px; min-height: 44px; } .gop-urow { min-height: 44px; } }
   @media (max-width: 600px) {
     html { scroll-padding-top: 112px; }
     /* Row 1: title · Sync · (save-failed) · ⓘ.  Row 2: account switch · Pull.  Rows 3-6 are the tagline,
@@ -6027,6 +6085,10 @@ function parsePlayer(j, prev) {
            them and never G/R. */
         el: u.era_level || 0
       };
+      /* gop (16 Oct 2026): final Speed from the unit's `stats` map (key "5" — swgoh.gg's stat id for Speed), kept only
+         when the API carries it, so the opponent planner can put your counter's speed next to theirs. Optional field:
+         older pulls and the built-in BASELINE never have it, and every reader treats a missing `sp` as "unknown". */
+      if (isChar && u.stats && Number.isFinite(+u.stats["5"]) && +u.stats["5"] > 0) units[u.base_id].sp = Math.round(+u.stats["5"]);
       if (isChar) {
         zetas += (u.zeta_abilities || []).length;
         omis += (u.omicron_abilities || []).length;
@@ -6354,7 +6416,7 @@ function rpPullProblem(p) {
   if ("gacHist" in p && !pbmGacHistOk(p.gacHist)) return "has an invalid gacHist";
   for (const [id, u] of Object.entries(p.reqs)) {
     if (!isPlainObject(u) || !rpNum(u.s) || !rpNum(u.g) || !rpNum(u.r) || (u.t !== "char" && u.t !== "ship") ||
-        ("name" in u && typeof u.name !== "string") || ("z" in u && !rpStrArr(u.z)) || ("o" in u && !rpStrArr(u.o)) || ("el" in u && !rpNum(u.el)))
+        ("name" in u && typeof u.name !== "string") || ("z" in u && !rpStrArr(u.z)) || ("o" in u && !rpStrArr(u.o)) || ("el" in u && !rpNum(u.el)) || ("sp" in u && !rpNum(u.sp)))   /* gop: optional final Speed */
       return `has a malformed unit (${String(id).slice(0, 40)})`;
     if (!rvIntIn(u.s, 0, 7) || !rvIntIn(u.g, 1, 13) || !rvIntIn(u.r, 0, 10))
       return `has a unit with out-of-range stars/gear/relic (${String(id).slice(0, 40)}: ${String(u.s).slice(0, 8)}★ G${String(u.g).slice(0, 8)} R${String(u.r).slice(0, 8)})`;
@@ -6410,7 +6472,7 @@ function rvSnapClean(p, nowMs) {
   for (const [id, u] of Object.entries(p.reqs)) {
     if (id === "__proto__") continue;   // never a swgoh.gg base_id; assigning it would replace the prototype
     const c = { s: u.s, g: u.g, r: u.r, t: u.t };
-    for (const k of ["name", "z", "o", "el"]) if (k in u) c[k] = Array.isArray(u[k]) ? u[k].slice() : u[k];
+    for (const k of ["name", "z", "o", "el", "sp"]) if (k in u) c[k] = Array.isArray(u[k]) ? u[k].slice() : u[k];   /* gop: + sp (final Speed) */
     out.reqs[id] = c;
   }
   const stat = st => ({ n: st.n, v: st.v, pct: st.pct });
@@ -6519,13 +6581,20 @@ function pbmBookmarkletCode(appUrl) {
   const codes = {};
   ACCOUNTS.forEach(a => { codes[a.key] = String(a.code).replace(/\D/g, ""); });
   const A = JSON.stringify(codes), U = JSON.stringify(String(appUrl));
-  return "(async()=>{var A=" + A + ",U=" + U + ",O=new URL(U).origin,o={},k,r,w,t,f;" +
+  /* gop: after the two rosters, a BEST-EFFORT second pass per account — /api/v2/gac/brackets/recent/<code>/ (the
+     current GAC bracket) and /api/player/ for every other player in it — rides along as `gac:{<acct key>:{bracket,
+     players:{<allyCode>:raw}}}`. Any failure there (no bracket, 404, HTML bot page) leaves `gac` partial or empty
+     and the roster pull goes ahead exactly as before; the app compacts it (gopCompactPlayer) before storing. */
+  return "(async()=>{var A=" + A + ",U=" + U + ",O=new URL(U).origin,o={},g={},k,r,w,t,f,j,q,H={headers:{Accept:'application/json'}};" +
     "if(location.origin!=='" + PBM_SWGOH_ORIGIN + "'){alert('Holotable: open swgoh.gg first, then use this bookmark.');return}" +
     "try{for(k in A){r=await fetch('/api/player/'+A[k]+'/',{headers:{Accept:'application/json'}});" +
     "if(!r.ok)throw Error('HTTP '+r.status);o[k]=await r.json()}}catch(e){alert('Holotable: swgoh.gg sent no roster data ('+e.message+'). Reload swgoh.gg, let its check finish, then try again.');return}" +
+    "for(k in A){try{r=await fetch('/api/v2/gac/brackets/recent/'+A[k]+'/',H);if(!r.ok)continue;j=await r.json();q={};" +
+    "await Promise.all((j.bracketPlayers||[]).map(async function(p){var c=String(p.allyCode||'').replace(/\\D/g,'');if(!c||Object.values(A).indexOf(c)>=0)return;" +
+    "try{var x=await fetch('/api/player/'+c+'/',H);if(x.ok)q[c]=await x.json()}catch(e){}}));g[k]={bracket:j,players:q}}catch(e){}}" +
     "w=window.open(U+'#pbm=1');if(!w){alert('Holotable: pop-up blocked. Allow pop-ups for swgoh.gg and try again.');return}" +
     "f=function(e){if(e.source===w&&e.origin===O&&e.data&&e.data.type==='holotable-ready'){removeEventListener('message',f);clearTimeout(t);" +
-    "w.postMessage({type:'holotable-pull',v:1,accounts:o},O)}};addEventListener('message',f);" +
+    "w.postMessage({type:'holotable-pull',v:1,accounts:o,gac:g},O)}};addEventListener('message',f);" +
     "t=setTimeout(function(){removeEventListener('message',f);alert('Holotable: the app tab never answered. Use Export / Import roster snapshot instead.')},60000)})()";
 }
 function pbmBookmarkletHref(appUrl) { return "javascript:" + encodeURIComponent(pbmBookmarkletCode(appUrl)); }
@@ -6550,7 +6619,7 @@ function pbmBmRender() {
       <li>Open <b>swgoh.gg</b> (any page) and let its “checking your browser” step finish.</li>
       <li>Click the bookmark. This app opens in a new tab and shows what it got — nothing is saved until you press <b>Import</b>.</li>
     </ol>
-    <div class="mnote pbm-bm-note">The bookmark reads only swgoh.gg's public player data for ${ACCOUNTS.map(a => escapeHtml(a.codeFmt)).join(" and ")} and hands it to <b>${escapeHtml(app)}</b> — nothing else is read or sent. Allow pop-ups for swgoh.gg if the app tab doesn't open.</div>
+    <div class="mnote pbm-bm-note">The bookmark reads only swgoh.gg's public player data for ${ACCOUNTS.map(a => escapeHtml(a.codeFmt)).join(" and ")} — plus, for the GAC Planner's Opponent view, each account's current GAC bracket and the public rosters of the players in it (best effort; skipped off-season) — and hands it to <b>${escapeHtml(app)}</b> — nothing else is read or sent. Re-drag the bookmark after an app update so your copy carries the bracket step. Allow pop-ups for swgoh.gg if the app tab doesn't open.</div>
     <div class="mnote pbm-bm-msg" id="pbmBmMsg" role="status"></div>
     <textarea class="pbm-bm-copy" id="pbmBmCopyText" readonly hidden aria-label="Bookmarklet code"></textarea>`;
 }
@@ -6662,8 +6731,10 @@ function pbmReceive(d) {
     const r = pbmParseOne(a, raw, state.pulls && state.pulls[a.key]);
     if (r.pull) items.push({ a, raw, gp: hardNum(r.pull.gp) }); else bad.push({ a, why: r.why });
   });
-  if (!items.length && !bad.length) return false;
-  pbmPending = { items, bad, at: Date.now() };
+  /* gop: the optional GAC-bracket half of the payload (absent from a pre-gop bookmarklet → nothing changes here) */
+  const gac = isPlainObject(d.gac) ? gopReceive(d.gac, Date.now(), d.accounts) : null;
+  if (!items.length && !bad.length && !gac) return false;
+  pbmPending = { items, bad, at: Date.now(), gac };
   pbmConfirmShow();
   return true;
 }
@@ -6675,12 +6746,13 @@ function pbmConfirmShow() {
   if (!el) { el = document.createElement("div"); el.id = "pbmConfirm"; el.className = "pbm-confirm"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Import roster from swgoh.gg"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
   const ok =p.items.map(x => `${escapeHtml(x.a.label)} ${escapeHtml(pbmGpM(x.gp))} GP`).join(" · ");
   const bad = p.bad.map(x => `<div class="pbm-confirm-bad">✗ ${escapeHtml(x.a.label)}: swgoh.gg's answer ${escapeHtml(x.why)} — not imported.</div>`).join("");
-  el.innerHTML = p.items.length ? `
-    <div class="pbm-confirm-t">Import roster from swgoh.gg: <b>${ok}</b></div>${bad}
-    <div class="pbm-confirm-n">Replaces this device's roster pull only — ticks, notes, the backup and Cloud Sync are untouched.</div>
+  const gac = p.gac ? gopConfirmLineHtml(p.gac) : "";   /* gop: "+ GAC bracket …" line, only when the payload carried one */
+  el.innerHTML = p.items.length || (p.gac && p.gac.playerN) ? `
+    <div class="pbm-confirm-t">${p.items.length ? `Import roster from swgoh.gg: <b>${ok}</b>` : "Import GAC bracket from swgoh.gg"}</div>${bad}${gac}
+    <div class="pbm-confirm-n">Replaces this device's roster pull${p.gac && p.gac.playerN ? " and its GAC opponent scouting data" : ""} only — ticks, notes, the backup and Cloud Sync are untouched.</div>
     <div class="pbm-confirm-b"><button type="button" class="pullbtn" id="pbmImportBtn" onclick="pbmImport()">Import</button>
       <button type="button" class="recbtn" id="pbmCancelBtn" onclick="pbmCancel()">Cancel</button></div>` : `
-    <div class="pbm-confirm-t">Nothing to import from swgoh.gg</div>${bad}
+    <div class="pbm-confirm-t">Nothing to import from swgoh.gg</div>${bad}${gac}
     <div class="pbm-confirm-b"><button type="button" class="recbtn" id="pbmCancelBtn" onclick="pbmCancel()">Close</button></div>`;
   el.hidden = false;
   gcfFocusConfirm(el);   // gcf: keyboard lands on Import (or Close); Escape cancels — see gcfConfirmKey
@@ -6710,6 +6782,9 @@ function pbmImport() {
     done.push(x.a);
   });
   if (done.length === ACCOUNTS.length && !failed.length && !p.bad.length) { state.lastPull = rpNum(p.at) ? Math.min(Date.now(), p.at) : Date.now(); store.write(state); }
+  /* gop: the GAC bracket half goes to its own device-local key (GOP_KEY), never into state or the synced blob. */
+  let gacNote = "";
+  if (p.gac && p.gac.playerN) { try { const g = gopImportParsed(p.gac); gacNote = g.ok ? ` · GAC bracket: ${g.playerN} player${g.playerN === 1 ? "" : "s"} scouted` : " · GAC bracket not saved (" + g.msg + ")"; } catch (e) { gacNote = " · GAC bracket not saved"; } }
   render();
   rpRefresh();
   const st = document.getElementById("pullStatus");
@@ -6717,6 +6792,7 @@ function pbmImport() {
     st.className = done.length && !failed.length && !p.bad.length ? "pullstatus ok" : "pullstatus";
     st.textContent = (done.length ? "✓ Imported from a swgoh.gg tab " + new Date().toLocaleString() + " — " + done.map(a => a.label).join(" & ") : "Nothing imported from swgoh.gg") +
       (failed.length || p.bad.length ? " · not imported: " + failed.concat(p.bad.map(b => b.a.label)).join(", ") : "") +
+      gacNote +
       (localWriteFail ? " — but this browser couldn't save it (storage full or blocked)" : "") + ".";
   }
   return done.length;
@@ -6844,6 +6920,7 @@ document.addEventListener("keydown", gcfConfirmKey);
 const GCF_OTHER_TAB_MSG = "Holotable was updated in another tab — reload before changing anything here.";
 function gcfOnStorage(e) {
   if (!e || (e.storageArea && e.storageArea !== localStorage)) return;
+  if (e.key === GOP_KEY) { gopCache = null; return; }   /* gop: another tab imported opponent data — just re-read it next time, no alert */
   if (e.key !== null && e.key !== PULLS_KEY && e.key !== "swgoh-tracker") return;
   const st = document.getElementById("pullStatus");
   if (!st) return;
@@ -11299,22 +11376,663 @@ function drrTip(acct, id) {
   const view = () => { try { return drrTipView(acct); } catch (e) { return { sev: "improve", t: "Droid Destruction: farm the 4★ floor", note: "See Game modes → Raids → Droid Destruction.", check: undefined }; } };
   return { id, chxRoute: true, get sev() { return view().sev; }, get t() { return view().t; }, get note() { return view().note; }, get check() { return view().check; } };
 }
+/* ===================== gop: GAC opponent scouting + offence-vs-THEIR-defence planner (16 Oct 2026) =====================
+   WHAT. The GAC Planner's "Opponent" view: the account's current GAC bracket (8 players), one picked as "this round's
+   opponent", their defence squads tapped in from THEIR pulled roster (leader first; 5v5 = 5 units, 3v3 = 3, a fleet =
+   capital ship + up to 7), with gear / relic / final Speed / mods / zetas / omicrons / datacrons auto-filled, danger and
+   advantage flags per squad, and a counter recommendation from this app's OWN offence data (GAC_COUNTERS → GOF_COUNTER_MAP
+   → gofPlanFor's bench + lookup). HEURISTIC throughout: nothing is simulated and no win rate is claimed.
+   WHAT IT CANNOT KNOW (said in the UI): swgoh.gg's public API gives the whole bracket and every player's roster, but NOT
+   which bracket player is this round's match-up and NOT their live defence layout — the owner picks both.
+   DATA. swgoh.gg (in the owner's Chrome, via the pbm bookmarklet or a file): /api/v2/gac/brackets/recent/<code>/ →
+   bracketPlayers[] {allyCode, playerName, playerPower, guildName, bracketRank, score…}; /api/player/<code>/ → {data, units,
+   mods, datacrons} (~470 KB each). Raw payloads are never stored: gopCompactPlayer() keeps a per-unit summary only, so a
+   whole bracket is ~150-250 KB (gop-check asserts 8 × 200-unit players < 600 KB).
+   STORAGE. One device-local localStorage key, GOP_KEY — the same split as PULLS_KEY, for the same reason: bulky, derived,
+   public data that must never ride in the synced blob, a backup or an export, and too big for DEVICE_KEY (which is
+   re-stringified on every store.write). Never read into `state`. The owner's picks (opponent + squads) are tiny and live
+   in the device-local state.views["gop-<acct>"] entry (DEVICE_UI_KEYS, never synced), like the gco pills.
+   SNAPSHOT FILE (for the phone — "Import opponent snapshot…"; "Export opponent snapshot" writes the same shape):
+     { kind: "holotable-opponent-snapshot", version: 1, exportedAt: "2026-10-16T09:00:00.000Z",
+       brackets: { "<own allyCode>": { own, id, league, season, event, start (ms|null), at (ms pulled),
+                                       players: [{ code, name, gp, guild, rank, score }] } },
+       players:  { "<allyCode>": { code, name, gp, gpChar, gpShip, guild, league, div, sr, lu (swgoh.gg last_updated, ms|null),
+                                   at (ms pulled), zetas, omis, dc: [{ t: tier, s: set, tg: [target names] }],
+                                   units: { "<base_id>": { n?: name, s: stars, p: power, g?: gear, r?: relic, sp?: speed,
+                                            z?: zeta count, o?: [omicron names], m?: [sixDotMods, speedSecondarySum,
+                                            speedSetMods, speedArrow 0|1], t?: "ship" } } } } }
+     Brackets are keyed by the OWN account's ally code (229917529 Ollie / 295352286 Tiny), players by their ally code.
+     gopImportParsed() merges by ally code and keeps the newer entry (players: swgoh.gg last_updated, then pull time;
+     brackets: start time, then pull time); a file that isn't exactly this shape is refused with a reason and nothing changes.
+   SAFETY. Public swgoh.gg data, stored on this device only, never sent anywhere; no new network calls from the app (the
+   bookmarklet runs on swgoh.gg, as before). Every rendered string goes through escapeHtml(); onclick arguments are ally
+   codes / base_ids validated by regex. Unit names resolve by exact match only (the opponent's own swgoh.gg names). */
+const GOP_KEY = "swgoh-holotable-opponents-v1";
+const GOP_SNAP_KIND = "holotable-opponent-snapshot", GOP_SNAP_VERSION = 1;
+const GOP_MAX_PLAYERS = 24, GOP_MAX_BRACKET = 16, GOP_MAX_UNITS = 600, GOP_FILE_MAX = 25 * 1024 * 1024;
+const GOP_STALE_MS = 24 * 3600 * 1000;
+const GOP_FLEET_MAX = 8;             /* capital ship + 3 starting + up to 4 reinforcements — a planning cap, not a game rule */
+const GOP_PICK_LIMIT = 40;           /* picker rows shown before "narrow the search" */
+const GOP_ALLY_RE = /^\d{9}$/, GOP_BID_RE = /^[A-Za-z0-9_\-]{1,48}$/;
+/* Opponent leader (exact in-game name, as swgoh.gg spells it) → GAC_COUNTERS defence row (by its exact `def` string).
+   Exact names only, per the app's rule (mglResolve): "Rey" is the Galactic Legend, "Rey (Scavenger)" is not; "Ahsoka Tano"
+   is the GL, "Ahsoka Tano (Snips)" is not. gop-check asserts every `def` here still names a GAC_COUNTERS row. */
+const GOP_DEF_LEADS = [
+  { names: ["Supreme Leader Kylo Ren"], def: "Supreme Leader Kylo Ren (GL)" },
+  { names: ["Rey"], def: "GL Rey (Rey Jedi Master)" },
+  { names: ["The Stranger"], def: "The Stranger" },
+  { names: ["Ahsoka Tano", "General Syndulla"], def: "Ahsoka Tano (GL) Rebels/Spectres" },
+  { names: ["Leia Organa"], def: "Leia Organa (GL) Rebels" },
+  { names: ["Lord Vader"], def: "Lord Vader (Empire)" },
+  { names: ["Rotta the Hutt"], def: "Rotta the Hutt (Hutt Cartel)" },
+  { names: ["Jabba the Hutt"], def: "Jabba the Hutt (GL) Hutt Cartel" },
+  { names: ["Bastila Shan"], def: "Bastila Shan Jedi Legacy" },
+  { names: ["Sith Eternal Emperor"], def: "Sith Eternal Emperor (GL)" },
+  { names: ["Great Mothers"], def: "Great Mothers (Nightsisters)" },
+  { names: ["Cassian Andor (Undercover)"], def: "Cassian Andor (Undercover) Rebel Cell" },
+  { names: ["Bo-Katan (Mand'alor)"], def: "Bo-Katan (Mand'alor) Mandalorians" },
+  { names: ["Jango Fett"], def: "Jango Fett Bounty Hunters" },
+  { names: ["Cere Junda"], def: "Cere Junda Jedi Survivor" }
+];
+const gopUi = { pick: {}, q: {}, msg: "", tone: "" };   /* session-only: open picker per account, its search text, one status line */
+let gopCache = null;
+
+/* ---- store (device-local) ---- */
+function gopEmpty() { return { v: 1, brackets: {}, players: {} }; }
+function gopRead() {
+  if (gopCache) return gopCache;
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(GOP_KEY) || "null"); } catch (e) { s = null; }
+  const out = gopEmpty();
+  if (isPlainObject(s) && s.v === 1) {
+    if (isPlainObject(s.brackets)) Object.entries(s.brackets).forEach(([k, b]) => { if (k !== "__proto__" && GOP_ALLY_RE.test(k) && gopBracketOk(b)) out.brackets[k] = b; });
+    if (isPlainObject(s.players)) Object.entries(s.players).forEach(([k, p]) => { if (k !== "__proto__" && GOP_ALLY_RE.test(k) && gopPlayerOk(p) && p.code === k) out.players[k] = p; });
+  }
+  gopCache = out;
+  return out;
+}
+function gopWrite(s) {
+  try { localStorage.setItem(GOP_KEY, JSON.stringify(s)); gopCache = s; return true; }
+  catch (e) { console.error("localStorage save of the GAC opponent data failed — not persisted:", e); gopCache = s; return false; }
+}
+function gopClear() { gopCache = gopEmpty(); try { localStorage.removeItem(GOP_KEY); } catch (e) {} }
+
+/* ---- compacting the raw swgoh.gg shapes (never throws; returns null for anything unusable) ---- */
+const gopDigits = v => (v == null ? "" : String(v)).replace(/\D/g, "");
+const gopInt = (v, lo, hi) => Math.min(hi, Math.max(lo, Math.round(hardNum(v))));
+const gopStr = (v, n) => (typeof v === "string" ? v : v == null ? "" : String(v)).slice(0, n);
+function gopMs(v) {
+  if (typeof v === "number" && Number.isFinite(v) && v > 0) return v < 1e11 ? v * 1000 : v;   /* seconds → ms */
+  if (typeof v === "string" && v) { const t = Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(v) ? v : v + "Z"); return Number.isFinite(t) ? t : null; }
+  return null;
+}
+/* A mod stat's numeric value: display_value ("11", "1.57%") first, else a numeric `value` (×100 fixed-point when large). */
+function gopStatVal(st) {
+  if (!isPlainObject(st)) return 0;
+  let v = parseFloat(st.display_value);
+  if (!Number.isFinite(v) && typeof st.value === "number") { v = st.value; if (v > 100) v = v / 100; }
+  return Number.isFinite(v) ? v : 0;
+}
+function gopCompactPlayer(raw, fetchedAt) {
+  try {
+    if (!isPlainObject(raw) || !isPlainObject(raw.data)) return null;
+    const d = raw.data, code = gopDigits(d.ally_code);
+    if (!GOP_ALLY_RE.test(code)) return null;
+    const modsBy = {};
+    (Array.isArray(raw.mods) ? raw.mods : []).forEach(m => {
+      if (!isPlainObject(m)) return;
+      const ch = gopStr(m.character, 48);
+      if (!ch || ch === "__proto__") return;
+      const e = modsBy[ch] || (modsBy[ch] = [0, 0, 0, 0]);
+      if (hardNum(m.rarity) === 6) e[0]++;
+      (Array.isArray(m.secondary_stats) ? m.secondary_stats : []).forEach(st => { if (isPlainObject(st) && /^speed$/i.test(gopStr(st.name, 20))) e[1] += gopStatVal(st); });
+      if (hardNum(m.set) === 4) e[2]++;
+      if (hardNum(m.slot) === 3 && isPlainObject(m.primary_stat) && /^speed$/i.test(gopStr(m.primary_stat.name, 20))) e[3] = 1;
+    });
+    const units = {};
+    let n = 0, zetas = 0, omis = 0;
+    (Array.isArray(raw.units) ? raw.units : []).forEach(w => {
+      const u = w && (isPlainObject(w.data) ? w.data : w);
+      if (!isPlainObject(u) || typeof u.base_id !== "string" || !GOP_BID_RE.test(u.base_id) || u.base_id === "__proto__") return;
+      if (++n > GOP_MAX_UNITS) return;
+      const isChar = !u.combat_type || hardNum(u.combat_type) === 1;
+      const c = { s: gopInt(u.rarity, 0, 7), p: gopInt(u.power, 0, 9e6) };
+      if (typeof u.name === "string" && u.name && u.name !== u.base_id) c.n = u.name.slice(0, 60);
+      if (!isChar) { c.t = "ship"; units[u.base_id] = c; return; }
+      c.g = gopInt(u.gear_level, 1, 13); c.r = gopInt(Math.max(0, hardNum(u.relic_tier) - 2), 0, 10);
+      const sp = u.stats && isPlainObject(u.stats) ? +u.stats["5"] : NaN;
+      if (Number.isFinite(sp) && sp > 0) c.sp = Math.round(sp);
+      const ab = Array.isArray(u.ability_data) ? u.ability_data.filter(isPlainObject) : [];
+      const z = Array.isArray(u.zeta_abilities) ? u.zeta_abilities.length : ab.filter(a => a.has_zeta_learned).length;
+      if (z) c.z = gopInt(z, 0, 9);
+      let o = ab.filter(a => a.has_omicron_learned).map(a => gopStr(a.name || a.id, 50)).filter(Boolean);
+      if (!o.length && Array.isArray(u.omicron_abilities)) o = u.omicron_abilities.map(x => gopStr(x, 50)).filter(Boolean);
+      if (o.length) c.o = o.slice(0, 6);
+      const m = modsBy[u.base_id];
+      if (m) c.m = [m[0], Math.round(m[1]), m[2], m[3]];
+      zetas += z; omis += o.length;
+      units[u.base_id] = c;
+    });
+    const dc = (Array.isArray(raw.datacrons) ? raw.datacrons : []).filter(isPlainObject).slice(0, 12).map(x => {
+      const tiers = Array.isArray(x.tiers) ? x.tiers.filter(isPlainObject) : [];
+      const tg = [...new Set(tiers.filter(t => t.ability_description && t.scope_target_name).map(t => gopStr(t.scope_target_name, 40)))];
+      return { t: gopInt(x.tier, 0, 9), s: gopInt(x.set_id, 0, 999), tg };
+    });
+    return { code, name: gopStr(d.name, 60), gp: gopInt(d.galactic_power, 0, 1e9), gpChar: gopInt(d.character_galactic_power, 0, 1e9), gpShip: gopInt(d.ship_galactic_power, 0, 1e9),
+      guild: gopStr(d.guild_name, 60), league: gopStr(d.league_name, 20), div: gopInt(d.division_number, 0, 9), sr: gopInt(d.skill_rating, 0, 99999),
+      lu: gopMs(d.last_updated), at: rpNum(fetchedAt) ? fetchedAt : Date.now(), zetas, omis, dc, units };
+  } catch (e) { return null; }
+}
+function gopCompactBracket(raw, ownCode, fetchedAt) {
+  try {
+    if (!isPlainObject(raw)) return null;
+    const src = isPlainObject(raw.data) && !Array.isArray(raw.bracketPlayers) ? raw.data : raw;
+    const list = [src.bracketPlayers, src.players, src.bracket_players].find(Array.isArray);
+    if (!list) return null;
+    const pick = (...vs) => vs.find(v => v !== undefined && v !== null && v !== "");
+    const players = list.filter(isPlainObject).map(p => ({
+      code: gopDigits(pick(p.allyCode, p.ally_code, p.allycode)), name: gopStr(pick(p.playerName, p.name, p.player_name), 60),
+      gp: gopInt(pick(p.playerPower, p.galactic_power, p.power), 0, 1e9), guild: gopStr(pick(p.guildName, p.guild_name, p.guild), 60),
+      rank: gopInt(pick(p.bracketRank, p.rank), 0, 99), score: gopInt(pick(p.score, p.bannerScore, p.banners), 0, 1e7)
+    })).filter(p => GOP_ALLY_RE.test(p.code)).slice(0, GOP_MAX_BRACKET);
+    if (!players.length) return null;
+    return { own: gopDigits(ownCode), id: gopStr(pick(src.bracketId, src.id, src.bracket), 40), league: gopStr(pick(src.league, src.leagueName, src.league_name), 20),
+      season: gopInt(pick(src.season, src.seasonId, src.season_id), 0, 999), event: gopInt(pick(src.week, src.event, src.eventIndex), 0, 99),
+      start: gopMs(pick(src.startTime, src.start_time)), at: rpNum(fetchedAt) ? fetchedAt : Date.now(), players };
+  } catch (e) { return null; }
+}
+/* Strict shape checks for what the store / a snapshot file may hold (every reader trusts these, so nothing else gets in). */
+function gopUnitOk(u) {
+  if (!isPlainObject(u) || !rvIntIn(u.s, 0, 7) || !rpNum(u.p)) return false;
+  if ("n" in u && typeof u.n !== "string") return false;
+  if (u.t === "ship") return true;
+  if (u.t !== undefined) return false;
+  return rvIntIn(u.g, 1, 13) && rvIntIn(u.r, 0, 10) && (!("sp" in u) || rpNum(u.sp)) && (!("z" in u) || rvIntIn(u.z, 0, 9)) && (!("o" in u) || rpStrArr(u.o)) &&
+    (!("m" in u) || (Array.isArray(u.m) && u.m.length === 4 && u.m.every(rpNum)));
+}
+function gopPlayerOk(p) {
+  if (!isPlainObject(p) || !GOP_ALLY_RE.test(String(p.code)) || typeof p.name !== "string" || !rpNum(p.gp) || !rpNum(p.at) || !isPlainObject(p.units)) return false;
+  if (!("lu" in p) || !(p.lu === null || rpNum(p.lu))) return false;
+  for (const k of ["guild", "league"]) if (k in p && typeof p[k] !== "string") return false;
+  for (const k of ["gpChar", "gpShip", "div", "sr", "zetas", "omis"]) if (k in p && !rpNum(p[k])) return false;
+  if ("dc" in p && !(Array.isArray(p.dc) && p.dc.every(d => isPlainObject(d) && rpNum(d.t) && rpNum(d.s) && rpStrArr(d.tg)))) return false;
+  const ids = Object.keys(p.units);
+  if (ids.length > GOP_MAX_UNITS) return false;
+  return ids.every(id => id !== "__proto__" && GOP_BID_RE.test(id) && gopUnitOk(p.units[id]));
+}
+function gopBracketOk(b) {
+  return isPlainObject(b) && GOP_ALLY_RE.test(String(b.own)) && typeof b.id === "string" && typeof b.league === "string" && rpNum(b.season) && rpNum(b.event) &&
+    (b.start === null || rpNum(b.start)) && rpNum(b.at) && Array.isArray(b.players) && b.players.length > 0 && b.players.length <= GOP_MAX_BRACKET &&
+    b.players.every(p => isPlainObject(p) && GOP_ALLY_RE.test(String(p.code)) && typeof p.name === "string" && rpNum(p.gp) && typeof p.guild === "string" && rpNum(p.rank) && rpNum(p.score));
+}
+/* The bookmarklet's `gac` half → compact brackets/players for the confirm card. `accounts` (the roster half) supplies
+   the owner's own compact entry so the bracket list can show "you" with data. Returns null when there is nothing in it. */
+function gopReceive(gac, atMs, accounts) {
+  const out = { brackets: {}, players: {}, playerN: 0, badN: 0, lines: [] };
+  if (!isPlainObject(gac)) return null;
+  ACCOUNTS.forEach(a => {
+    if (!Object.prototype.hasOwnProperty.call(gac, a.key)) return;
+    const g = gac[a.key];
+    if (!isPlainObject(g)) return;
+    const br = gopCompactBracket(g.bracket, a.code, atMs);
+    if (!br) { out.lines.push({ a, why: "no readable bracket" }); return; }
+    let n = 0, bad = 0;
+    if (isPlainObject(g.players)) Object.entries(g.players).slice(0, GOP_MAX_BRACKET).forEach(([code, raw]) => {
+      const c = gopCompactPlayer(raw, atMs);
+      if (c && c.code === gopDigits(code) && br.players.some(p => p.code === c.code)) { out.players[c.code] = c; n++; } else bad++;
+    });
+    if (isPlainObject(accounts) && isPlainObject(accounts[a.key])) { const me = gopCompactPlayer(accounts[a.key], atMs); if (me && me.code === a.code) out.players[me.code] = me; }
+    out.brackets[a.code] = br;
+    out.playerN += n; out.badN += bad;
+    out.lines.push({ a, br, n, bad });
+  });
+  return Object.keys(out.brackets).length ? out : null;
+}
+function gopConfirmLineHtml(g) {
+  return g.lines.map(l => l.br
+    ? `<div class="pbm-confirm-n">+ GAC bracket for <b>${escapeHtml(l.a.label)}</b>: ${l.n} of ${Math.max(0, l.br.players.length - 1)} opponent${l.br.players.length === 2 ? "" : "s"} scouted${l.bad ? ` (${l.bad} unreadable)` : ""}${l.br.id ? ` · bracket ${escapeHtml(l.br.id)}` : ""}${l.br.start ? ` · started ${escapeHtml(pbmFmtDay(l.br.start))}` : ""}.</div>`
+    : `<div class="pbm-confirm-n">GAC bracket for ${escapeHtml(l.a.label)}: ${escapeHtml(l.why)} — nothing to scout (off-season, or swgoh.gg answered with a web page).</div>`).join("");
+}
+/* Rebuilt from the known keys only (like rvSnapClean for the roster): a file's unknown fields never reach the store. */
+function gopPlayerClean(p) {
+  const out = { code: p.code, name: p.name, gp: p.gp, lu: p.lu === null ? null : p.lu, at: p.at, units: {} };
+  for (const k of ["gpChar", "gpShip", "guild", "league", "div", "sr", "zetas", "omis"]) if (k in p) out[k] = p[k];
+  out.dc = Array.isArray(p.dc) ? p.dc.map(d => ({ t: d.t, s: d.s, tg: d.tg.slice() })) : [];
+  Object.entries(p.units).forEach(([id, u]) => {
+    if (id === "__proto__") return;
+    const c = { s: u.s, p: u.p };
+    for (const k of ["n", "g", "r", "sp", "z", "t"]) if (k in u) c[k] = u[k];
+    if ("o" in u) c.o = u.o.slice();
+    if ("m" in u) c.m = u.m.slice();
+    out.units[id] = c;
+  });
+  return out;
+}
+function gopBracketClean(b) {
+  return { own: b.own, id: b.id, league: b.league, season: b.season, event: b.event, start: b.start === null ? null : b.start, at: b.at,
+    players: b.players.map(p => ({ code: p.code, name: p.name, gp: p.gp, guild: p.guild, rank: p.rank, score: p.score })) };
+}
+/* Merge by ally code, STRICTLY newer wins (players: swgoh.gg last_updated, then pull time; brackets: start, then pull
+   time — an identical re-import changes nothing); players nobody's bracket lists any more are dropped; the store stays bounded. */
+function gopMerge(cur, inc) {
+  const out = { v: 1, brackets: Object.assign({}, cur.brackets), players: Object.assign({}, cur.players) };
+  let bracketsTaken = 0, playersTaken = 0;
+  Object.entries(inc.brackets || {}).forEach(([k, b]) => {
+    if (k === "__proto__" || !GOP_ALLY_RE.test(k) || !gopBracketOk(b)) return;
+    const ex = out.brackets[k];
+    if (!ex || (b.start || 0) > (ex.start || 0) || ((b.start || 0) === (ex.start || 0) && b.at > ex.at)) { out.brackets[k] = gopBracketClean(b); bracketsTaken++; }
+  });
+  Object.entries(inc.players || {}).forEach(([k, p]) => {
+    if (k === "__proto__" || !GOP_ALLY_RE.test(k) || !gopPlayerOk(p) || p.code !== k) return;
+    const ex = out.players[k];
+    if (!ex || (p.lu || 0) > (ex.lu || 0) || ((p.lu || 0) === (ex.lu || 0) && p.at > ex.at)) { out.players[k] = gopPlayerClean(p); playersTaken++; }
+  });
+  const keep = new Set(ACCOUNTS.map(a => a.code));
+  Object.values(out.brackets).forEach(b => b.players.forEach(p => keep.add(p.code)));
+  Object.keys(out.players).forEach(k => { if (!keep.has(k)) delete out.players[k]; });
+  const codes = Object.keys(out.players);
+  if (codes.length > GOP_MAX_PLAYERS) codes.sort((a, b) => out.players[a].at - out.players[b].at).slice(0, codes.length - GOP_MAX_PLAYERS).forEach(k => delete out.players[k]);
+  return { store: out, bracketsTaken, playersTaken };
+}
+function gopImportParsed(parsed) {
+  const m = gopMerge(gopRead(), parsed);
+  const playerN = Object.keys(parsed.players || {}).length;
+  if (!gopWrite(m.store)) return { ok: false, playerN, taken: 0, msg: "this browser couldn't save it (storage full or blocked)" };
+  return { ok: true, playerN, taken: m.playersTaken, bracketsTaken: m.bracketsTaken, msg: "" };
+}
+
+/* ---- snapshot file: export / validate / import ---- */
+function gopSnapshotText() {
+  const s = gopRead();
+  return JSON.stringify({ kind: GOP_SNAP_KIND, version: GOP_SNAP_VERSION, exportedAt: new Date().toISOString(), brackets: s.brackets, players: s.players });
+}
+function gopExport() {
+  const s = gopRead();
+  if (!Object.keys(s.brackets).length) { gopSay("Nothing to export — no GAC bracket on this device yet.", "bad"); renderGac(); return; }
+  const d = new Date(), p = n => String(n).padStart(2, "0"), name = `holotable-opponent-snapshot-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+  const text = gopSnapshotText();
+  try { downloadText(name, text); gopSay(`Saved ${name} (${Math.max(1, Math.round(text.length / 1024))} KB) — ${Object.keys(s.players).length} players across ${Object.keys(s.brackets).length} bracket${Object.keys(s.brackets).length === 1 ? "" : "s"}. Public swgoh.gg data from this device only.`, "good"); }
+  catch (e) { gopSay("Export failed: " + String((e && e.message) || e), "bad"); }
+  renderGac();
+}
+function gopValidateSnapshot(text) {
+  try {
+    let s;
+    try { s = JSON.parse(String(text)); } catch (e) { return { ok: false, msg: "That file isn't valid JSON, so nothing was changed — " + e.message }; }
+    if (!isPlainObject(s)) return { ok: false, msg: `That file is a JSON ${Array.isArray(s) ? "array" : s === null ? "null" : typeof s}, not a Holotable opponent snapshot — nothing was changed.` };
+    if (s.kind !== GOP_SNAP_KIND) return { ok: false, msg: s.kind === RP_SNAP_KIND ? "That's a roster snapshot — use ☁ Sync → ⬆ Import roster snapshot for it. Nothing was changed."
+      : typeof s.stateVersion === "number" ? "That's a Holotable backup, not an opponent snapshot — use ⬆ Import backup… for it. Nothing was changed."
+      : `That JSON isn't a Holotable opponent snapshot (no kind: "${GOP_SNAP_KIND}") — nothing was changed.` };
+    if (s.version !== GOP_SNAP_VERSION) return { ok: false, msg: `That opponent snapshot is format v${String(s.version).slice(0, 20)}, and this build reads only v${GOP_SNAP_VERSION} — nothing was changed.` };
+    if (typeof s.exportedAt !== "string" || !Number.isFinite(Date.parse(s.exportedAt))) return { ok: false, msg: "That opponent snapshot has no valid exportedAt date — nothing was changed." };
+    if (!isPlainObject(s.brackets) || !isPlainObject(s.players)) return { ok: false, msg: "That opponent snapshot has no brackets/players objects — nothing was changed." };
+    const brackets = {}, players = {};
+    for (const [k, b] of Object.entries(s.brackets)) {
+      if (k === "__proto__" || !GOP_ALLY_RE.test(k)) return { ok: false, msg: `That opponent snapshot has a bracket under an invalid key ("${String(k).slice(0, 20)}") — nothing was changed.` };
+      if (!gopBracketOk(b) || b.own !== k) return { ok: false, msg: `That opponent snapshot's bracket for ${k} is malformed — nothing was changed.` };
+      brackets[k] = b;
+    }
+    let n = 0;
+    for (const [k, p] of Object.entries(s.players)) {
+      if (k === "__proto__" || !GOP_ALLY_RE.test(k)) return { ok: false, msg: `That opponent snapshot has a player under an invalid key ("${String(k).slice(0, 20)}") — nothing was changed.` };
+      if (!gopPlayerOk(p) || p.code !== k) return { ok: false, msg: `That opponent snapshot's player ${k} is malformed — nothing was changed.` };
+      if (++n > GOP_MAX_PLAYERS * 2) return { ok: false, msg: `That opponent snapshot holds more than ${GOP_MAX_PLAYERS * 2} players — nothing was changed.` };
+      players[k] = p;
+    }
+    if (!Object.keys(brackets).length) return { ok: false, msg: "That opponent snapshot holds no bracket — nothing was changed." };
+    const known = Object.keys(brackets).filter(k => ACCOUNTS.some(a => a.code === k));
+    if (!known.length) return { ok: false, msg: `That opponent snapshot's brackets belong to ally code${Object.keys(brackets).length === 1 ? "" : "s"} ${Object.keys(brackets).join(", ")}, not to an account this app tracks — nothing was changed.` };
+    return { ok: true, parsed: { brackets, players, playerN: Object.keys(players).length, exportedAt: Date.parse(s.exportedAt) } };
+  } catch (e) { return { ok: false, msg: "That file couldn't be checked (" + String((e && e.message) || e) + ") — nothing was changed." }; }
+}
+function gopImportPick() { const el = document.getElementById("gopSnapFile"); if (el) { el.value = ""; el.click(); } }
+function gopImportChosen(input) {
+  const f = input && input.files && input.files[0];
+  if (!f) return;
+  if (f.size > GOP_FILE_MAX) { gopSay(`${f.name} is far too big to be an opponent snapshot — nothing was changed.`, "bad"); renderGac(); return; }
+  const r = new FileReader();
+  r.onerror = () => { gopSay(`Couldn't read ${f.name} — nothing was changed.`, "bad"); renderGac(); };
+  r.onload = () => { gopImportText(String(r.result || ""), f.name); renderGac(); };
+  r.readAsText(f);
+}
+/* Shared by the file input and tests: validate → merge → one status line. Never throws. */
+function gopImportText(text, label) {
+  try {
+    const v = gopValidateSnapshot(text);
+    if (!v.ok) { gopSay(v.msg, "bad"); return v; }
+    const r = gopImportParsed(v.parsed);
+    if (!r.ok) { gopSay(`Read ${label}, but ${r.msg}.`, "bad"); return { ok: false, msg: r.msg }; }
+    const newer = r.taken;
+    const accts = Object.keys(v.parsed.brackets).map(k => (ACCOUNTS.find(a => a.code === k) || {}).label).filter(Boolean);
+    gopSay(`Imported ${label}: ${accts.join(" & ")} bracket${accts.length === 1 ? "" : "s"}, ${v.parsed.playerN} players (${newer} new or newer, ${v.parsed.playerN - newer} kept as this device already had newer data). Saved on this device only.`, "good");
+    return { ok: true, newer, playerN: v.parsed.playerN };
+  } catch (e) { gopSay("Import failed (" + String((e && e.message) || e) + ") — nothing was changed.", "bad"); return { ok: false, msg: String(e && e.message) }; }
+}
+function gopSay(msg, tone) { gopUi.msg = String(msg || ""); gopUi.tone = tone || ""; }
+
+/* ---- the owner's picks: opponent + squads, device-local in state.views["gop-<acct>"] ---- */
+function gopSel(acct) {
+  let s = null;
+  try { s = JSON.parse((state.views || {})["gop-" + acct] || "null"); } catch (e) { s = null; }
+  const out = { opp: "", squads: [] };
+  if (isPlainObject(s)) {
+    if (GOP_ALLY_RE.test(String(s.opp))) out.opp = String(s.opp);
+    if (Array.isArray(s.squads)) out.squads = s.squads.slice(0, 14).map(q => Array.isArray(q) ? q.filter(x => typeof x === "string" && GOP_BID_RE.test(x)).slice(0, GOP_FLEET_MAX) : []);
+  }
+  return out;
+}
+function gopSelWrite(acct, sel) {
+  if (!isPlainObject(state.views)) state.views = {};
+  if (!sel.opp && !sel.squads.length) delete state.views["gop-" + acct]; else state.views["gop-" + acct] = JSON.stringify({ opp: sel.opp, squads: sel.squads });
+  store.write(state);
+}
+function gopBracketFor(acct) { const a = ACCOUNTS.find(x => x.key === acct); return a ? gopRead().brackets[a.code] || null : null; }
+function gopOppOf(acct) { const sel = gopSel(acct); return sel.opp ? gopRead().players[sel.opp] || null : null; }
+function gopPickOpp(acct, code) {
+  if (acct !== current || !GOP_ALLY_RE.test(String(code))) return;
+  const sel = gopSel(acct);
+  if (sel.opp === code) return;
+  gopSelWrite(acct, { opp: String(code), squads: [] });   /* a different opponent: their squads are theirs, not carried over */
+  delete gopUi.pick[acct]; gopUi.q[acct] = "";
+  renderGac();
+}
+function gopFormat(acct) { return gcoFormat(acct); }
+/* Layout caps come from the opponent's league when their pull names one (it equals yours inside a bracket), else yours. */
+function gopLayout(acct) {
+  const fmt = gopFormat(acct), opp = gopOppOf(acct);
+  const tag = String((opp && opp.league) || "").slice(0, 4).toLowerCase();
+  const league = (tag.length === 4 && GCO_FORMATS.leagues.find(l => l.key.startsWith(tag))) || gcoLeague(acct).league;
+  const slots = gcoSlots(fmt, league);
+  return { fmt, league, squads: slots.squads.length, fleets: slots.fleets.length, size: fmt === "3v3" ? 3 : 5 };
+}
+function gopSquadKind(sq, opp) { const l = sq[0] && opp && opp.units[sq[0]]; return l && l.t === "ship" ? "fleet" : "squad"; }
+function gopSquadAdd(acct) {
+  if (acct !== current) return;
+  const sel = gopSel(acct), lay = gopLayout(acct);
+  if (!sel.opp || sel.squads.length >= lay.squads + lay.fleets) return;
+  sel.squads.push([]);
+  gopSelWrite(acct, sel);
+  gopUi.pick[acct] = sel.squads.length - 1; gopUi.q[acct] = "";
+  renderGac();
+}
+function gopSquadDel(acct, i) {
+  if (acct !== current) return;
+  const sel = gopSel(acct);
+  if (!sel.squads[i]) return;
+  sel.squads.splice(i, 1);
+  gopSelWrite(acct, sel);
+  delete gopUi.pick[acct];
+  renderGac();
+}
+function gopPickOpen(acct, i) { if (acct !== current) return; gopUi.pick[acct] = gopUi.pick[acct] === i ? null : i; gopUi.q[acct] = ""; renderGac(); }
+function gopUnitAdd(acct, i, bid) {
+  if (acct !== current || !GOP_BID_RE.test(String(bid))) return;
+  const sel = gopSel(acct), opp = gopOppOf(acct), sq = sel.squads[i];
+  if (!sq || !opp || !opp.units[bid] || sel.squads.some(q => q.includes(bid))) return;
+  const lay = gopLayout(acct), kind = sq.length ? gopSquadKind(sq, opp) : (opp.units[bid].t === "ship" ? "fleet" : "squad");
+  if (sq.length && (opp.units[bid].t === "ship") !== (kind === "fleet")) return;   /* no ships in a squad, no characters in a fleet */
+  const max = kind === "fleet" ? GOP_FLEET_MAX : lay.size;
+  if (sq.length >= max) return;
+  sq.push(String(bid));
+  gopSelWrite(acct, sel);
+  if (sq.length >= max) delete gopUi.pick[acct];
+  gopUi.q[acct] = "";
+  renderGac();
+}
+function gopUnitDel(acct, i, j) {
+  if (acct !== current) return;
+  const sel = gopSel(acct), sq = sel.squads[i];
+  if (!sq || j < 0 || j >= sq.length) return;
+  sq.splice(j, 1);
+  gopSelWrite(acct, sel);
+  renderGac();
+}
+function gopQ(acct, i, v) {
+  gopUi.q[acct] = String(v || "").slice(0, 40);
+  const el = document.getElementById(`gopPickList-${acct}`);
+  if (el) el.innerHTML = gopPickerListHtml(acct, i);
+}
+function gopAfterRender() {
+  const i = gopUi.pick[current];
+  if (i === null || i === undefined) return;
+  const el = document.getElementById(`gopQ-${current}`);
+  if (el && document.activeElement !== el) { try { el.focus({ preventScroll: true }); el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} }
+}
+
+/* ---- analysis: their squad, flags, our counter (all heuristic) ---- */
+const gopAgo = ms => { const d = Math.max(0, Date.now() - ms), h = d / 36e5; return h < 1 ? `${Math.max(1, Math.round(d / 6e4))} min ago` : h < 48 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`; };
+function gopAge(p) {
+  const lu = rpNum(p.lu) ? p.lu : null, at = rpNum(p.at) ? p.at : null;
+  const ref = lu || at;
+  const stale = ref ? Date.now() - ref > GOP_STALE_MS : true;
+  const text = (lu ? `swgoh.gg updated ${pbmFmtDay(lu)} (${gopAgo(lu)})` : "swgoh.gg update time unknown") + (at ? ` · pulled ${gopAgo(at)}` : "");
+  return { stale, text, ref };
+}
+/* Is this bracket the live event's, a previous round's, or unplaceable? */
+function gopBracketRound(br, nowMs) {
+  const ev = gcfEventNow(nowMs);
+  if (!br || !rpNum(br.start)) return { cls: "watch", text: "bracket start time unknown — make sure it is this round's" };
+  if (ev && ev.gcfLive && br.start >= ev.startMs - PBM_DAY && br.start < ev.endMs) return { cls: "done", text: `this round (${pbmGacEvLabel(ev)}${ev.est ? ", dates estimated" : ""})` };
+  if (ev && br.start < ev.startMs - PBM_DAY) return { cls: "grind", text: `previous round's bracket (started ${pbmFmtDay(br.start)}) — re-pull once the new round's matchmaking is done` };
+  if (!ev) return { cls: "watch", text: `started ${pbmFmtDay(br.start)} — the app's GAC schedule has run out, so it can't say which round this is` };
+  return { cls: "watch", text: `started ${pbmFmtDay(br.start)} — next event in the app's schedule is ${pbmGacEvLabel(ev)}` };
+}
+function gopUnitName(bid, u) { return (u && u.n) || bid; }
+function gopUnitStat(u) {
+  if (!u) return "not in their pull";
+  if (u.t === "ship") return `${u.s}★ ship · ${Math.round(u.p / 1000)}k GP`;
+  const bits = [`${u.s}★`, u.r ? `R${u.r}` : `G${u.g}`, rpNum(u.sp) ? `${u.sp} spd` : "spd ?"];
+  if (u.z) bits.push(`${u.z}z`);
+  if (u.o && u.o.length) bits.push(`${u.o.length} omi`);
+  if (u.m) bits.push(`mods ${u.m[0]}×6● +${u.m[1]} spd${u.m[2] >= 4 ? " · speed set" : ""}${u.m[3] ? " · spd arrow" : ""}`);
+  return bits.join(" · ");
+}
+function gopAnalyse(acct, sq, opp) {
+  const bids = sq.filter(b => opp && opp.units[b]), units = bids.map(b => Object.assign({ bid: b }, opp.units[b]));
+  const missing = sq.length - bids.length;
+  const kind = units.length && units[0].t === "ship" ? "fleet" : "squad";
+  const chars = units.filter(u => u.t !== "ship");
+  const leader = units[0] || null, leadName = leader ? gopUnitName(leader.bid, leader) : "";
+  const lead = kind === "squad" && leader ? GOP_DEF_LEADS.find(x => x.names.includes(leadName)) : null;
+  const ref = lead ? GAC_COUNTERS.find(c => c.def === lead.def) || null : null;
+  const relics = chars.map(u => u.r), avgRelic = relics.length ? relics.reduce((a, b) => a + b, 0) / relics.length : 0;
+  const fast = chars.filter(u => rpNum(u.sp)).sort((a, b) => b.sp - a.sp)[0] || null;
+  const glN = units.filter(u => GL_IDS.includes(u.bid)).length;
+  const omiUnits = chars.filter(u => u.o && u.o.length), zetaN = chars.reduce((s, u) => s + (u.z || 0), 0);
+  const names = new Set(units.map(u => gopUnitName(u.bid, u)));
+  const dcHits = (opp && Array.isArray(opp.dc) ? opp.dc : []).filter(d => d.tg.some(t => names.has(t))).map(d => ({ d, on: d.tg.filter(t => names.has(t)) }));
+  const modded = chars.filter(u => u.m), six = modded.reduce((s, u) => s + u.m[0], 0), spdSec = modded.reduce((s, u) => s + u.m[1], 0), spdSets = modded.filter(u => u.m[2] >= 4).length;
+  return { bids, units, missing, kind, leader, leadName, ref, avgRelic, fast, glN, omiUnits, zetaN, dcHits, mods: { n: modded.length, six, spdSec, spdSets } };
+}
+/* Our side: the best counter this roster can field for their squad, from the offence optimiser's own candidates. */
+function gopCounterFor(acct, an) {
+  const fmt = gopFormat(acct), reqs = (accountView(acct).src || {}).reqs || {};
+  let plan = null;
+  try { plan = gofPlanFor(acct); } catch (e) { plan = null; }
+  if (!plan) return { kind: "none", note: "offence plan unavailable" };
+  if (an.kind === "fleet") return { kind: "fleet", fleet: plan.fleet, plan };
+  if (!an.ref) return { kind: "bench", plan, bench: plan.picked.slice(0, 3) };
+  const look = plan.lookup.find(r => r.def === an.ref.def), opts = look ? look.opts : [];
+  const order = { off: 0, other: 1, unit: 2, def: 3 };
+  const best = opts.slice().sort((a, b) => (order[a.kind] || 0) - (order[b.kind] || 0))[0] || null;
+  const seen = new Set(), want = [];
+  gofOptions(an.ref).forEach(t => gofMapOptions(t).forEach(m => {
+    const name = gofSquadNameOf(m);
+    if (seen.has(name)) return;
+    seen.add(name);
+    const sq = META_SQUADS.find(s => s.name === name) || gofRefSquads().find(s => s.name === name) || null;
+    if (!sq) { const u = findUnitByName(reqs, m.lead); want.push({ name: m.lead, cand: null, unit: u || null, gaps: u ? [] : [`${m.lead}: not owned`] }); return; }
+    const src = sq.gofRef ? Object.assign({}, sq, { members: sq.members.map(([bid, n]) => [bid || gcfBaseIdOf(reqs, findUnitByName(reqs, n)) || null, n]) }) : sq;
+    const c = gcoSquadCandidate(src, fmt, reqs);
+    want.push({ name, cand: c, gaps: c.rows.filter(r => !r.ready).map(r => `${r.name}: ${r.gaps.join(", ") || "below battle-ready"}`), blocked: c.blocked });
+  }));
+  const bestW = best ? want.find(w => w.name === best.label) || null : null;
+  const mine = bestW && bestW.cand ? gopMine(bestW.cand, reqs) : null;
+  return { kind: "ref", plan, opts, best, want, bestW, mine };
+}
+function gopMine(cand, reqs) {
+  const us = cand.members.map(([bid, name]) => (bid ? reqs[bid] : null) || findUnitByName(reqs, name)).filter(Boolean);
+  const relics = us.map(u => hardNum(u.r)), sps = us.filter(u => rpNum(u.sp)).map(u => u.sp);
+  return { n: us.length, avgRelic: relics.length ? relics.reduce((a, b) => a + b, 0) / relics.length : 0, maxSp: sps.length ? Math.max(...sps) : null, spKnown: sps.length, of: cand.members.length };
+}
+function gopFlags(an, ctr) {
+  const f = [];
+  const mine = ctr && ctr.mine;
+  if (an.kind === "fleet") { f.push({ cls: "info", t: `fleet · ${an.units.length} ship${an.units.length === 1 ? "" : "s"} picked` }); return f; }
+  if (an.leader && GL_IDS.includes(an.leader.bid)) f.push({ cls: "danger", t: `Galactic Legend lead (${an.leadName})` });
+  else if (an.glN) f.push({ cls: "danger", t: `${an.glN} Galactic Legend${an.glN === 1 ? "" : "s"} in the squad` });
+  if (an.units.length) {
+    const r = an.avgRelic.toFixed(1);
+    if (mine && mine.n) {
+      const diff = an.avgRelic - mine.avgRelic;
+      f.push(diff >= 1.5 ? { cls: "danger", t: `relic gap: theirs avg R${r} vs your counter's R${mine.avgRelic.toFixed(1)}` }
+        : diff <= -1.5 ? { cls: "edge", t: `relic edge: your counter averages R${mine.avgRelic.toFixed(1)} vs their R${r}` }
+        : { cls: "info", t: `relics even: theirs R${r}, your counter R${mine.avgRelic.toFixed(1)}` });
+    } else f.push({ cls: "info", t: `avg R${r}` });
+  }
+  if (an.fast) {
+    const ours = mine && rpNum(mine.maxSp) ? mine.maxSp : null;
+    if (ours === null) f.push({ cls: "info", t: `fastest: ${gopUnitName(an.fast.bid, an.fast)} ${an.fast.sp} spd${mine ? " (your speeds arrive with your next roster pull)" : ""}` });
+    else f.push(an.fast.sp > ours + 10 ? { cls: "danger", t: `speed: their ${gopUnitName(an.fast.bid, an.fast)} ${an.fast.sp} outpaces your fastest counter unit (${ours})` }
+      : ours > an.fast.sp + 10 ? { cls: "edge", t: `speed edge: your fastest counter unit ${ours} vs their ${an.fast.sp}` }
+      : { cls: "info", t: `speed close: their fastest ${an.fast.sp}, yours ${ours}` });
+  }
+  if (an.omiUnits.length) f.push({ cls: "danger", t: `omicrons on ${an.omiUnits.map(u => gopUnitName(u.bid, u)).join(", ")} — mode not in the data, may be TB/TW-only` });
+  if (an.zetaN) f.push({ cls: "info", t: `${an.zetaN} zeta${an.zetaN === 1 ? "" : "s"}` });
+  an.dcHits.forEach(h => f.push({ cls: "danger", t: `datacron T${h.d.t}${h.d.s ? ` (set ${h.d.s})` : ""} names ${h.on.join(", ")}` }));
+  if (an.mods.n) {
+    const avgSpd = an.mods.spdSec / an.mods.n;
+    f.push({ cls: avgSpd >= 50 || an.mods.spdSets >= 3 ? "danger" : "info", t: `mods: ${an.mods.six}×6● · +${Math.round(avgSpd)} spd/unit from secondaries · ${an.mods.spdSets} speed set${an.mods.spdSets === 1 ? "" : "s"}${an.mods.n < an.units.filter(u => u.t !== "ship").length ? ` (${an.mods.n} of ${an.units.filter(u => u.t !== "ship").length} modded in their pull)` : ""}` });
+  }
+  if (an.missing) f.push({ cls: "info", t: `${an.missing} picked unit${an.missing === 1 ? "" : "s"} no longer in their pull` });
+  return f;
+}
+
+/* ---- rendering ---- */
+function gopPlayersSorted(br) { return br.players.slice().sort((a, b) => (a.rank || 99) - (b.rank || 99) || b.gp - a.gp || a.name.localeCompare(b.name)); }
+function gopBracketHtml(acct, a, br, sel, store) {
+  const round = gopBracketRound(br);
+  const rows = gopPlayersSorted(br).map(p => {
+    const me = p.code === a.code, data = store.players[p.code], picked = sel.opp === p.code;
+    const age = data ? gopAge(data) : null;
+    const scout = me ? `<span class="chip watch">you</span>` : data ? `<span class="chip ${age.stale ? "grind" : "done"}">${age.stale ? "⚠ " : "✓ "}scouted · ${Object.keys(data.units).length} units</span>` : `<span class="chip stargate">not scouted</span>`;
+    const body = `<span class="gop-pname">${escapeHtml(p.name || p.code)}</span><span class="gop-pmeta">${escapeHtml(pbmGpM(p.gp))} GP${p.guild ? ` · ${escapeHtml(p.guild)}` : ""}${p.rank ? ` · #${p.rank}` : ""}${p.score ? ` · ${p.score.toLocaleString()} banners` : ""}</span>${scout}${age ? `<span class="gop-page">${escapeHtml(age.text)}</span>` : ""}`;
+    return me ? `<div class="gop-prow me">${body}</div>`
+      : `<button type="button" class="gop-prow${picked ? " on" : ""}" aria-pressed="${picked}" onclick="gopPickOpp('${jsAttr(acct)}','${jsAttr(p.code)}')" ${data ? "" : 'title="No roster pulled for this player yet — pick them anyway to note it; re-pull to scout"'}>${body}</button>`;
+  }).join("");
+  return `<div class="gop-sec">
+    <div class="gop-h">Your bracket <span class="sub">— ${escapeHtml(a.label)}${br.id ? ` · bracket ${escapeHtml(br.id)}` : ""}${br.league ? ` · ${escapeHtml(br.league)}` : ""}${br.season ? ` · season ${br.season}${br.event ? ` week ${br.event}` : ""}` : ""} · pulled ${escapeHtml(gopAgo(br.at))}</span></div>
+    <div class="gop-round"><span class="chip ${round.cls}">${escapeHtml(round.text)}</span> <span class="gop-fine">Tap this round's opponent — the API lists the bracket, not who you were matched with.</span></div>
+    <div class="gop-plist" role="list">${rows}</div>
+  </div>`;
+}
+function gopPickerListHtml(acct, i) {
+  const sel = gopSel(acct), opp = gopOppOf(acct), sq = sel.squads[i];
+  if (!opp || !sq) return "";
+  const used = new Set(sel.squads.flat()), q = String(gopUi.q[acct] || "").trim().toLowerCase();
+  const kind = sq.length ? gopSquadKind(sq, opp) : null;
+  const all = Object.entries(opp.units).map(([bid, u]) => ({ bid, u, name: gopUnitName(bid, u) }))
+    .filter(x => !used.has(x.bid) && (kind === null || (x.u.t === "ship") === (kind === "fleet")) && (!q || x.name.toLowerCase().includes(q) || x.bid.toLowerCase().includes(q)))
+    .sort((a, b) => b.u.p - a.u.p || a.name.localeCompare(b.name));
+  const shown = all.slice(0, GOP_PICK_LIMIT);
+  if (!all.length) return `<div class="gop-empty">No ${kind === "fleet" ? "ship" : kind === "squad" ? "character" : "unit"} in their pull matches “${escapeHtml(q)}”.</div>`;
+  return shown.map(x => `<button type="button" class="gop-urow" onclick="gopUnitAdd('${jsAttr(acct)}',${i},'${jsAttr(x.bid)}')"><span class="gop-uname">${escapeHtml(x.name)}${x.u.t === "ship" ? ' <span class="chip watch">ship</span>' : ""}</span><span class="gop-ustat">${escapeHtml(gopUnitStat(x.u))}</span></button>`).join("")
+    + (all.length > shown.length ? `<div class="gop-empty">…and ${all.length - shown.length} more — narrow the search.</div>` : "");
+}
+function gopCounterHtml(acct, an, ctr) {
+  const H = `<span class="chip grind" title="No battle is simulated and no win rate is claimed — this is this app's counters reference crossed with your last roster pull">HEURISTIC</span>`;
+  if (ctr.kind === "none") return `<div class="gop-ctr">${H} <span class="gop-fine">Counter suggestion unavailable (${escapeHtml(ctr.note)}).</span></div>`;
+  if (ctr.kind === "fleet") return `<div class="gop-ctr">${H} <b>Fleet:</b> ${ctr.fleet ? `your offence plan's fleet is <b>${escapeHtml(ctr.fleet.name)}</b> — ${escapeHtml(gcfOwnedList(ctr.fleet, " · ") + gcfFillText(ctr.fleet))}.` : "no eligible tracked fleet left after your defence plan — fly your best remaining fleet in game."} <span class="gop-fine">Fleet match-ups aren't scored by this app; only ship stars are compared.</span></div>`;
+  if (ctr.kind === "bench") {
+    const bench = ctr.bench.map((c, i) => `#${i + 1} ${c.name} (${gcfOwnedList(c, ", ")})`).join(" · ");
+    return `<div class="gop-ctr">${H} <b>No reference row</b> for a ${escapeHtml(an.leadName || "this")} lead in this app's counters table (${GAC_COUNTERS.length} common defences), so no counter is claimed. Your offence bench, best first: ${bench ? escapeHtml(bench) : "empty"} — pick by what you know of the match-up.</div>`;
+  }
+  const ref = an.ref;
+  const best = ctr.best;
+  const mine = ctr.mine;
+  const missing = ctr.bestW && ctr.bestW.gaps && ctr.bestW.gaps.length ? ctr.bestW.gaps : [];
+  const alt = ctr.want.filter(w => !best || w.name !== best.label);
+  const altHtml = alt.length ? `<div class="gop-fine">Other reference answers: ${alt.map(w => `<b>${escapeHtml(w.name)}</b> — ${escapeHtml(w.blocked || (w.gaps.length ? "missing: " + w.gaps.join("; ") : "ready"))}`).join(" · ")}</div>` : "";
+  return `<div class="gop-ctr">${H} <b>${escapeHtml(ref.def)}</b> — reference answer: <span class="gop-ref">${escapeHtml(ref.counter)}</span>.
+    ${best ? `<div class="gop-best">→ Use <b>${escapeHtml(best.label)}</b> <span class="st ${escapeHtml(best.kind)}">— ${escapeHtml(best.status)}${best.kind === "def" ? " (to attack with it, hold its leader back with a Keep-for-offence chip on the Defense view and re-plan)" : ""}</span>${mine && mine.n ? ` <span class="gop-fine">(${mine.n}/${mine.of} owned · avg R${mine.avgRelic.toFixed(1)}${rpNum(mine.maxSp) ? ` · fastest ${mine.maxSp}` : mine.of ? " · speeds unknown until your next pull" : ""})</span>` : ""}</div>`
+      : `<div class="gop-best none">→ No ready answer on this roster yet.${ctr.want.length ? ` Closest: ${ctr.want.map(w => `<b>${escapeHtml(w.name)}</b> — ${escapeHtml(w.blocked || (w.gaps.length ? "missing: " + w.gaps.join("; ") : "eligible but not on the bench"))}`).join(" · ")}` : ""}</div>`}
+    ${best && missing.length ? `<div class="gop-fine">Still missing for ${escapeHtml(best.label)}: ${escapeHtml(missing.join("; "))}.</div>` : ""}
+    ${best ? altHtml : ""}
+    <div class="gop-fine">Why (reference): ${escapeHtml(ref.why)}</div>
+  </div>`;
+}
+function gopSquadHtml(acct, i, sq, opp, lay) {
+  const an = gopAnalyse(acct, sq, opp), ctr = gopCounterFor(acct, an), flags = gopFlags(an, ctr);
+  const max = an.kind === "fleet" ? GOP_FLEET_MAX : lay.size, open = gopUi.pick[acct] === i;
+  const units = an.units.map((u, j) => `<div class="gop-u"><span class="gop-uname">${j === 0 ? `<span class="gop-lead">(${an.kind === "fleet" ? "capital" : "L"})</span> ` : ""}${escapeHtml(gopUnitName(u.bid, u))}${GL_IDS.includes(u.bid) ? ' <span class="chip fixnow">GL</span>' : ""}</span><span class="gop-ustat">${escapeHtml(gopUnitStat(u))}${u.o && u.o.length ? ` <span class="gop-omi" title="${escapeHtml(u.o.join(", "))}">omi: ${escapeHtml(u.o.join(", "))}</span>` : ""}</span><button type="button" class="gop-x" title="Remove ${escapeHtml(gopUnitName(u.bid, u))}" aria-label="Remove ${escapeHtml(gopUnitName(u.bid, u))}" onclick="gopUnitDel('${jsAttr(acct)}',${i},${j})">✕</button></div>`).join("");
+  const canAdd = sq.length < max;
+  return `<div class="gop-sq" data-gop-squad="${i}">
+    <div class="gop-sq-head"><span class="gof-num" aria-label="Defence squad ${i + 1}">${i + 1}</span><span class="gco-name">${an.kind === "fleet" ? "Fleet" : an.leadName ? `${escapeHtml(an.leadName)} lead` : "Defence squad"}</span>
+      <span class="gop-fine">${sq.length}/${max} ${an.kind === "fleet" ? "ships" : "units"}${an.kind === "squad" && !sq.length ? " · tap + add, leader first" : ""}</span>
+      <button type="button" class="gop-x" title="Remove this squad" aria-label="Remove defence squad ${i + 1}" onclick="gopSquadDel('${jsAttr(acct)}',${i})">✕</button></div>
+    ${units ? `<div class="gop-units">${units}</div>` : ""}
+    ${canAdd ? `<button type="button" class="gco-btn gop-add" aria-expanded="${open}" onclick="gopPickOpen('${jsAttr(acct)}',${i})">${open ? "Close picker" : sq.length ? "+ add unit" : "+ add leader"}</button>` : ""}
+    ${open && canAdd ? `<div class="gop-picker"><input type="search" class="gop-q" id="gopQ-${escapeHtml(acct)}" placeholder="Search their roster (name or id)…" aria-label="Search the opponent's roster" value="${escapeHtml(gopUi.q[acct] || "")}" oninput="gopQ('${jsAttr(acct)}',${i},this.value)" autocomplete="off"><div class="gop-plist2" id="gopPickList-${escapeHtml(acct)}">${gopPickerListHtml(acct, i)}</div></div>` : ""}
+    ${an.units.length ? `<div class="gop-flags">${flags.map(f => `<span class="gop-flag ${escapeHtml(f.cls)}">${escapeHtml(f.t)}</span>`).join("")}</div>${gopCounterHtml(acct, an, ctr)}` : ""}
+  </div>`;
+}
+function gopOppHtml(acct, a, opp, sel, lay) {
+  if (!sel.opp) return `<div class="gop-sec"><div class="gop-empty">Pick your opponent above to build their defence.</div></div>`;
+  if (!opp) return `<div class="gop-sec"><div class="gop-empty">No roster pulled for ${escapeHtml(((gopBracketFor(acct) || { players: [] }).players.find(p => p.code === sel.opp) || {}).name || sel.opp)} yet — re-run the swgoh.gg bookmark (desktop) or import a newer opponent snapshot, then their units appear here.</div></div>`;
+  const age = gopAge(opp);
+  const dc = (opp.dc || []).length ? `<div class="gop-dc">Datacrons: ${opp.dc.map(d => `T${d.t}${d.s ? ` set ${d.s}` : ""}${d.tg.length ? ` → ${escapeHtml(d.tg.join(" / "))}` : ""}`).join(" · ")} <span class="gop-fine">(targets as swgoh.gg names them; faction/alignment effects aren't matched to units by this app)</span></div>` : `<div class="gop-dc gop-fine">No datacrons in their pull.</div>`;
+  const used = sel.squads.length, cap = lay.squads + lay.fleets;
+  return `<div class="gop-sec">
+    <div class="gop-h">Opponent: ${escapeHtml(opp.name || opp.code)} <span class="sub">— ${escapeHtml(pbmGpM(opp.gp))} GP${opp.guild ? ` · ${escapeHtml(opp.guild)}` : ""}${opp.league ? ` · ${escapeHtml(opp.league)}${opp.div ? ` ${opp.div}` : ""}` : ""}${opp.sr ? ` · ${opp.sr} SR` : ""} · ${opp.zetas} zetas · ${opp.omis} omis</span></div>
+    <div class="gop-age ${age.stale ? "stale" : ""}">${age.stale ? "⚠ " : ""}${escapeHtml(age.text)}${age.stale ? " — more than 24 h old: their roster may have changed since; refresh on swgoh.gg before trusting relics/mods" : ""}.</div>
+    ${dc}
+    <div class="gop-h2">Their defence — as you see it in game <span class="sub">${used}/${cap} (${escapeHtml(lay.league.label)} ${escapeHtml(lay.fmt)}: ${lay.squads} squad${lay.squads === 1 ? "" : "s"} + ${lay.fleets} fleet${lay.fleets === 1 ? "" : "s"})</span></div>
+    ${sel.squads.map((sq, i) => gopSquadHtml(acct, i, sq, opp, lay)).join("") || `<div class="gop-empty">No squads yet — add one per defence slot you can see, leader first. Units come only from their pulled roster.</div>`}
+    <div class="gco-actions"><button type="button" class="gco-btn primary" onclick="gopSquadAdd('${jsAttr(acct)}')" ${used >= cap ? "disabled" : ""}>+ Add defence squad</button></div>
+  </div>`;
+}
+function gopCardHtml(acct) {
+  const a = ACCOUNTS.find(x => x.key === acct) || ACCOUNTS[0];
+  const store = gopRead(), br = store.brackets[a.code] || null, sel = gopSel(acct), opp = gopOppOf(acct), lay = gopLayout(acct);
+  const msg = gopUi.msg ? `<div class="gop-msg ${escapeHtml(gopUi.tone)}" role="status" aria-live="polite">${escapeHtml(gopUi.msg)}</div>` : "";
+  const hosted = !!pbmAppUrl();
+  const ctl = `<div class="gco-actions gop-ctl">
+      <button type="button" class="gco-btn" onclick="pbmShowBmHelp()" ${hosted ? "" : 'disabled title="Needs the hosted copy, not a local file"'}>⟳ Refresh from swgoh.gg (bookmarklet)</button>
+      <button type="button" class="gco-btn" onclick="gopImportPick()">⬆ Import opponent snapshot…</button>
+      <button type="button" class="gco-btn" onclick="gopExport()" ${br ? "" : "disabled"}>⬇ Export opponent snapshot</button>
+      <input type="file" id="gopSnapFile" accept="application/json,.json" hidden onchange="gopImportChosen(this)" aria-label="Import opponent snapshot file">
+    </div>${msg}`;
+  const empty = `<div class="gop-sec"><div class="gop-h">No GAC bracket on this device for ${escapeHtml(a.label)} yet <span class="sub">— two ways to get one</span></div>
+    <ol class="pbm-bm-steps gop-steps">
+      <li><b>Desktop Chrome:</b> ☁ Sync → drag the <b>⟳ Holotable pull</b> bookmark to your bar again (it now also reads the GAC bracket), open swgoh.gg, click it, press Import.</li>
+      <li><b>Phone:</b> on the desktop copy press <b>⬇ Export opponent snapshot</b>, send the file here, then <b>⬆ Import opponent snapshot…</b>.</li>
+    </ol></div>`;
+  return `<div class="cardtitle">Opponent scouting &amp; counter plan <span class="sub">— ${escapeHtml(a.label)} · ${escapeHtml(lay.fmt)} · heuristic</span></div>
+    <div class="mnote">Pick this round's opponent from your bracket, then tap in each defence squad you see in game from <b>their</b> pulled roster — gear, relic, speed, mods, zetas/omicrons and datacrons fill in automatically. The app can't see which opponent you were matched with or their live defence: swgoh.gg's public API lists the bracket and each player's roster, not the match-up. Counter picks come from this app's counters reference crossed with your last roster pull — a heuristic, no win rate is simulated.</div>
+    ${ctl}
+    ${br ? gopBracketHtml(acct, a, br, sel, store) : empty}
+    ${br ? gopOppHtml(acct, a, opp, sel, lay) : ""}
+    <div class="gco-fine">Opponent data is public swgoh.gg data kept on this device only (never synced or exported with your backup). Stats are theirs at pull time; a unit's final Speed is what swgoh.gg reports for that unit (mods included), omicron game modes aren't in the data, and datacron faction/alignment bonuses aren't matched to units here. Pick one defence squad per slot (${lay.squads} + ${lay.fleets} fleet for ${escapeHtml(lay.league.label)} ${escapeHtml(lay.fmt)}; layout per the Optimise-defence card's sources).</div>`;
+}
+/* ===================== /gop ===================== */
 function renderGac() {
   const grid = document.getElementById("gacGrid");
   if (!grid) return;
   const acct = ACCOUNTS.find(a => a.key === current);
   document.getElementById("gacTitle").innerHTML = `Grand Arena Championships — counter &amp; offense planner <span class="account-context">${escapeHtml(acct.label)}</span>`;
-  sectionNav("gacNav", "gac", [["plan", "Scout & plan"], ["defense", "Defense"], ["counters", "Counters"], ["career", "Career totals"]]);
+  sectionNav("gacNav", "gac", [["plan", "Scout & plan"], ["opponent", "Opponent"], ["defense", "Defense"], ["counters", "Counters"], ["career", "Career totals"]]);   /* gop: + Opponent view */
   const view = state.views.gac || "plan";
   const add = document.getElementById("gacAddZone");
   if (add) add.style.display = view === "plan" ? "" : "none";
   const seasonHtml = gacSeasonHtml();
   const cards = view === "defense" ? [{ id: "gco", w: 12, html: gcoCardHtml(current) }, { id: "defense", w: 12, html: gacDefenseHtml() }]
+    : view === "opponent" ? [{ id: "gop", w: 12, html: gopCardHtml(current) }]   /* gop: opponent scouting + counter plan */
     : view === "counters" ? [{ id: "counters", w: 12, html: gacCountersHtml() }]
     : view === "career" ? [{ id: "season", w: 12, html: seasonHtml || `<div class="emptystate">Career totals need a live data pull.</div>` }]
     : [{ id: "zones", w: 6, html: gacZonesHtml() }, { id: "offense", w: 6, html: gacOffenseHtml() }];
   grid.innerHTML = wrapCards("gac", cards);
   gcoAfterRender();   /* gco: format pills for the Optimise-defence card (no-op on other views) */
+  gopAfterRender();   /* gop: restores focus to an open unit picker's search box */
 }
 
 /* ===================== Roster Intelligence ===================== */

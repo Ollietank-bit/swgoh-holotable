@@ -4412,7 +4412,12 @@ function nxtCard(acct) {
    It never says an item is on sale now.
 
    What is static and what is live, on purpose (same split as GL_QUEUE above):
-     • STATIC (hand-researched 3 Oct 2026, second-hand via swgoh.wiki + swgoh.gg — several wiki store pages
+     • STATIC (hand-researched 3 Oct 2026, re-read 18 Oct 2026 — every unit's swgoh.gg 'Shard Sources' section re-read
+       from the unit page in a real browser (nodes, Featured/Weekly/Episode/guild/Legend/Conquest offers with 'last seen'
+       dates) and the live rosters pulled from /api/player/<code>/ for both accounts; the 3 Oct sources marked 'not
+       researched' were filled in, the Episode store is now sourced; the store-by-store refresh rules for stores no
+       wanted unit sells in were NOT re-read on 18 Oct. Mandalorian & Grogu still shows 'COMING SOON' on swgoh.gg, so the
+       ranking tiers were left as decided on 3 Oct — second-hand via swgoh.wiki + swgoh.gg — several wiki store pages
        carry 'outdated' banners and swgoh.gg calls its offers "player-reported recently, not a guarantee";
        registered in SNAPSHOTS as "ship-guide" so it ages honestly): the 14 stores and their refresh rules,
        each unit's shard sources with a per-shard price in that store's currency (computed from the
@@ -4428,12 +4433,12 @@ function nxtCard(acct) {
    Hand ticks ("done in-game, swgoh.gg hasn't caught up") live in state.ticks under derived keys
    (shpKey: `${acct}-p:shp:${id}`), never positional; "-p" makes tick() do a full render. No new state. */
 const SHIP_DATA = {
-  asOf: "2026-10-03",
-  basis: "store rules and shard sources from swgoh.wiki and swgoh.gg (second-hand; offers are player-reported and rotate), ranked against the 1 Oct 2026 roster pull and the GL order",
+  asOf: "2026-10-18",
+  basis: "store rules and shard sources from swgoh.wiki and swgoh.gg (second-hand; offers are player-reported and rotate), re-read on swgoh.gg 18 Oct 2026 (every shard-source section below, per unit page) and ranked against the 18 Oct 2026 roster pull and the GL order",
   stores: [
     { id: "featured", name: "Featured Shipment", cur: "Crystals", conf: "CONFIRMED", refresh: "every 6 h (swgoh.gg); random on reset, free + paid refreshes, level-dependent (wiki)" },
     { id: "weekly", name: "Weekly Shipment", cur: "Crystals", conf: "CONFIRMED", refresh: "resets Fridays (7 days); mostly random, some offers persist" },
-    { id: "episode", name: "Episode Shipment", cur: "not researched", conf: "UNCONFIRMED", refresh: "not fetched in the 3 Oct pass", note: "Not researched — check it in-game against the Buy-first list." },
+    { id: "episode", name: "Episode Shipment", cur: "Episode Currency", conf: "CONFIRMED", refresh: "every 7 days (swgoh.gg)", note: "Seen on swgoh.gg 18 Oct for R5-D4 and Captain Carson Teva only (20 shards for 4,000 Episode Currency = 200 a shard) — other offers may rotate through; check it in-game." },
     { id: "guildEvents", name: "Guild Events Store", cur: "Mk I / II / III Guild Event Tokens (Raids, TB, TW)", conf: "CONFIRMED", refresh: "every 6 h, rotating", gear: true },
     { id: "guildActivity", name: "Guild Activity Store", cur: "Guild Tokens + Mk I / II / III Raid Tokens", conf: "CONFIRMED", refresh: "every 6 h, 23 slots with appearance-rate tiers (the wiki's 'Guild Store')", gear: true },
     { id: "legend", name: "Legend Tokens Store", cur: "Legend Tokens (Ultimate journey, after Conquest)", conf: "CONFIRMED", refresh: "weekly, no paid refresh; shard offers of 2 / 8 / 20 — 30 shards a week only if each offer can be bought once (inferred; the wiki states no cap)" },
@@ -4458,17 +4463,22 @@ const SHIP_DATA = {
     BOBAFETTSCION: { name: "Boba Fett, Scion of Jango", act: 330, src: [
       { store: "legend", text: "2 for 300 · 8 for 1,200 · 20 for 3,000 (weekly)", perShard: 150, cur: "Legend Tokens", conf: "CONFIRMED", weekCap: 30 },
       { store: "guildEvents", text: "5 for 1,750 Mk III tokens", perShard: 350, cur: "Mk III Guild Event tokens", conf: "CONFIRMED" }] },
-    R5D4: { name: "R5-D4", act: null, src: [
-      { other: "Shard source not verified in the 3 Oct pass — check Find Shards on the unit in-game", conf: "UNCONFIRMED" }] },
+    R5D4: { name: "R5-D4", act: 25, src: [
+      { node: "Light Side Battles (Hard) 9-E", energy: "20 energy", drop: 1, conf: "CONFIRMED" },
+      { store: "featured", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "episode", text: "20 for 4,000 Episode Currency", perShard: 200, cur: "Episode Currency", conf: "CONFIRMED" }] },
     CARSONTEVA: { name: "Captain Carson Teva", act: null, src: [
       { node: "Dark Side Battles (Hard) 8-F", energy: "20 energy", drop: 1, conf: "CONFIRMED" },
       { store: "featured", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
-      { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
-    REMNANTSNOWCOMMANDER: { name: "Snowtrooper Commander", act: null, src: [
-      { store: "featured", text: "same bundles as Grogu & Anzellans (no farming node)", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
+      { store: "episode", text: "20 for 4,000 Episode Currency", perShard: 200, cur: "Episode Currency", conf: "CONFIRMED" }] },
+    REMNANTSNOWCOMMANDER: { name: "Snowtrooper Commander", act: 25, src: [
+      { node: "Fleet Battles (Hard) 5-D", energy: "20 ship energy", drop: 1, conf: "CONFIRMED" },
+      { store: "featured", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
       { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
     BISHOP: { name: "Colonel Ward", act: 25, src: [
-      { node: "Dark Side Battles 7-H / 7-E (farmable since Aug 2026)", energy: "20 energy", drop: 1, conf: "CONFIRMED" },
+      { node: "Dark Side Battles (Hard) 7-E (farmable since Aug 2026)", energy: "20 energy", drop: 1, conf: "CONFIRMED" },
       { store: "featured", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" },
       { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
     RANGERZEB: { name: "Zeb Orrelios (New Republic Pilot)", act: null, src: [
@@ -4477,18 +4487,20 @@ const SHIP_DATA = {
       { store: "weekly", text: "same bundles as Grogu & Anzellans", perShard: 80, cur: "crystals", conf: "CONFIRMED" }] },
     CAPTAINSILVO: { name: "Captain Silvo", act: 25, src: [
       { node: "Cantina Battles 6-A", energy: "12 cantina energy", drop: 2, conf: "CONFIRMED" },
-      { store: "featured", text: "4 / 8 / 16 / 32 shards for 320–1,280 crystals (which size costs what is unclear in the source)", perShard: 40, perShardMax: 80, cur: "crystals", conf: "UNCONFIRMED" },
+      { store: "featured", text: "8 for 320 · 16 for 640 · 32 for 1,280", perShard: 40, cur: "crystals", conf: "CONFIRMED" },
       { other: "packs", conf: "CONFIRMED" }] },
     VANE: { name: "Vane", act: 25, src: [
       { node: "Cantina Battles 3-B", energy: "10 cantina energy", drop: 2, conf: "CONFIRMED" },
-      { store: "featured", text: "8 for 320 (and larger bundles)", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
+      { store: "featured", text: "8 for 320 · 16 for 640 · 32 for 1,280", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
     TUSKENHUNTRESS: { name: "Tusken Warrior", act: 25, src: [
       { node: "Cantina Battles 2-D", energy: "8 cantina energy", drop: 2, conf: "CONFIRMED" },
-      { store: "featured", text: "8 for 320 (and larger bundles)", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
-    HUYANG: { name: "Huyang", act: null, src: [
-      { other: "Shard source not researched in the 3 Oct pass — check Find Shards on the unit in-game", conf: "UNCONFIRMED" }] },
-    GENERALSYNDULLA: { name: "General Syndulla", act: null, src: [
-      { other: "Shard source not researched in the 3 Oct pass — check Find Shards on the unit in-game", conf: "UNCONFIRMED" }] },
+      { store: "featured", text: "8 for 320 · 16 for 640 · 32 for 1,280", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
+    HUYANG: { name: "Huyang", act: 25, src: [
+      { node: "Light Side Battles (Hard) 3-F", energy: "12 energy", drop: 2, conf: "CONFIRMED" },
+      { store: "featured", text: "8 for 320 · 16 for 640 · 32 for 1,280", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
+    GENERALSYNDULLA: { name: "General Syndulla", act: 25, src: [
+      { node: "Cantina Battles 3-G", energy: "10 cantina energy", drop: 2, conf: "CONFIRMED" },
+      { store: "featured", text: "8 for 320 · 16 for 640 · 32 for 1,280", perShard: 40, cur: "crystals", conf: "CONFIRMED" }] },
     DARTHMALAK: { name: "Darth Malak", act: 145, src: [
       { store: "guildActivity", text: "5 for 1,750 Mk II Raid Tokens", perShard: 350, cur: "Mk II Raid Tokens", conf: "CONFIRMED" },
       { store: "guildEvents", text: "5 for 1,900 · 10 for 3,800 · 15 for 5,700 Mk I tokens", perShard: 380, cur: "Mk I Guild Event tokens", conf: "CONFIRMED" },
@@ -4506,9 +4518,9 @@ const SHIP_DATA = {
     BENSOLO: { name: "Ben Solo", act: 330, src: [
       { store: "legend", text: "2 for 300 · 8 for 1,200 · 20 for 3,000 (weekly)", perShard: 150, cur: "Legend Tokens", conf: "CONFIRMED" }] },
     SATELESHAN: { name: "Satele Shan", act: 330, src: [
-      { store: "conquest", text: "5 for 475 Conquest Credits", perShard: 95, cur: "Conquest Credits", conf: "CONFIRMED" }] },
+      { store: "conquest", text: "5 for 475 Conquest Credits (also seen: 5 for 600 crystals = 120 a shard)", perShard: 95, cur: "Conquest Credits", conf: "CONFIRMED" }] },
     MAULHATEFUELED: { name: "Maul (Hate-Fueled)", act: 80, src: [
-      { other: "Shard source not researched in the 3 Oct pass", conf: "UNCONFIRMED" }] }
+      { other: "swgoh.gg lists no shipment or node for him (18 Oct) — he is a solo-journey unit; check the journey in-game", conf: "UNCONFIRMED" }] }
   },
   /* Not owned and not sold in any shipment per the sources (UNCONFIRMED: "no shipment seen", not "proven
      absent"). Listed only while the account doesn't own them. */
@@ -4531,23 +4543,23 @@ const SHP_WHY = {
   hondo: "Pirate King Hondo asks for it at R7 — Hondo is a 'later' Legend in your GL order. The Cantina node is the cheap route; no crystals until Hondo is the target.",
   ahsoka: "A GL Ahsoka requirement — the furthest Legend in your GL order, so not yet.",
   p3When: "Only when that Legend becomes the active target in the GL order.",
-  srcUnknown: "Its shard sources weren't researched in the 3 Oct pass — check Find Shards on the unit in-game before spending anything."
+  srcUnknown: "Cheap either way: its node drops 2 shards a run and Featured bundles are 40 crystals a shard (swgoh.gg, 18 Oct) — still verify the live offer in-game before spending crystals."
 };
-/* Per-account ranking (expert, 3 Oct 2026). star = the star the plan needs (✓ when the roster reaches it). */
+/* Per-account ranking (expert, 3 Oct 2026; source routes re-read 18 Oct 2026 — tiers and reasoning not re-decided). star = the star the plan needs (✓ when the roster reaches it). */
 const SHIP_PLAN = {
   ollie: [
     { id: "GOPHERANTS", tier: "P1", star: 7, prep: true, why: SHP_WHY.ga, when: SHP_WHY.gaWhen, flag: SHP_WHY.mgFlag },
     { id: "BOBAFETTSCION", tier: "P1", star: 7, prep: true, why: SHP_WHY.scion, when: SHP_WHY.scionWhen, flag: SHP_WHY.mgFlag },
     { id: "R5D4", tier: "P2", star: 4, rotta: true, why: "Rotta journey Tier I gate (R5-D4 4★ per swgoh.gg's event page). 30 shards from 3★.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
     { id: "CARSONTEVA", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit (Tier II gate is 5★ per swgoh.gg). 30 shards from 3★ to 4★; Dark Side Hard 8-F is the free route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
-    { id: "REMNANTSNOWCOMMANDER", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit (Tier III gate is 6★ per swgoh.gg). No farming node, so Featured / Weekly bundles are the only route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
-    { id: "BISHOP", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit. 30 shards from 3★ to 4★; Dark Side 7-H / 7-E is the free route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
+    { id: "REMNANTSNOWCOMMANDER", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit (Tier III gate is 6★ per swgoh.gg). Fleet Battles Hard 5-D is the free route (1 shard for 20 ship energy); Featured / Weekly bundles are the crystal route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
+    { id: "BISHOP", tier: "P2", star: 4, rotta: true, why: "Rotta journey unit. 30 shards from 3★ to 4★; Dark Side Hard 7-E is the free route.", when: SHP_WHY.rottaWhen, flag: SHP_WHY.rottaFlag },
     { id: "CAPTAINSILVO", tier: "P3", star: 7, why: SHP_WHY.hondo, when: SHP_WHY.p3When },
     { id: "VANE", tier: "P3", star: 7, why: SHP_WHY.hondo, when: SHP_WHY.p3When },
     { id: "HUYANG", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
     { id: "GENERALSYNDULLA", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
     { id: "TUSKENHUNTRESS", tier: "P3", star: 7, why: "Not a requirement for any Legend in this app's roadmap. Cheap on its Cantina node (2 shards a drop) if you want the Tusken squad — not a crystal buy.", when: "Whenever spare cantina energy is free.", flag: "Ranked P3 in the 3 Oct brief without a stated reason." },
-    { id: "RANGERZEB", tier: "P3", star: 7, why: "5★ today; worth 7★ if the Rotta or Hondo squads end up needing him. Cantina 9-F is the free route.", when: SHP_WHY.p3When, flag: "Whether Rotta or Hondo content needs him at 7★ is unverified." },
+    { id: "RANGERZEB", tier: "P3", star: 7, why: "6★ today; worth 7★ if the Rotta or Hondo squads end up needing him. Cantina 9-F is the free route.", when: SHP_WHY.p3When, flag: "Whether Rotta or Hondo content needs him at 7★ is unverified." },
     { id: "GENERALSKYWALKER", tier: "SKIP", star: 7, route: "Clash on Kamino journey",
       why: "Don't spend shipment currency: the permanent Clash on Kamino journey gives 150 shards (50 each for the first clears of Tiers I, II and IV) against the 145 he needs. He only matters for GL Ahsoka, Lord Vader and Hondo, and none of those is near." },
     { id: "KIADIMUNDI", tier: "SKIP", star: 7, cost: true, why: "Not in any plan here, and his Mk III Guild Event tokens (425 a shard) compete with Scion of Jango. Only a cheap completionist add." },
@@ -4564,7 +4576,7 @@ const SHIP_PLAN = {
     { id: "HUYANG", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
     { id: "GENERALSYNDULLA", tier: "P3", star: 7, why: SHP_WHY.ahsoka + " " + SHP_WHY.srcUnknown, when: SHP_WHY.p3When },
     { id: "TUSKENHUNTRESS", tier: "P3", star: 7, why: "Not a requirement for any Legend in this app's roadmap. Cheap on its Cantina node (2 shards a drop) if you want the Tusken squad — not a crystal buy.", when: "Whenever spare cantina energy is free.", flag: "Ranked P3 in the 3 Oct brief without a stated reason." },
-    { id: "RANGERZEB", tier: "P3", star: 7, why: "5★ today; worth 7★ if the Rotta or Hondo squads end up needing him. Cantina 9-F is the free route.", when: SHP_WHY.p3When, flag: "Whether Rotta or Hondo content needs him at 7★ is unverified." },
+    { id: "RANGERZEB", tier: "P3", star: 7, why: "6★ today; worth 7★ if the Rotta or Hondo squads end up needing him. Cantina 9-F is the free route.", when: SHP_WHY.p3When, flag: "Whether Rotta or Hondo content needs him at 7★ is unverified." },
     { id: "DARTHMALAK", tier: "P3", star: 7, why: "Not on this account. Only if a Sith Empire squad starts to matter — guild currencies first, crystals last.", when: "Only once a Sith Empire squad is a goal." },
     { id: "R5D4", tier: "SKIP", star: 4, why: SHP_WHY.tinyRotta },
     { id: "CARSONTEVA", tier: "SKIP", star: 4, why: SHP_WHY.tinyRotta },

@@ -3,7 +3,11 @@
    flags + HEURISTIC counter, staleness, per-account separation, escapeHtml, 390/1280 no overflow, SNAPSHOTS consistency,
    the old bookmarklet behaviour unchanged, zero page errors. Fixtures are synthetic and built here in BOTH the raw
    swgoh.gg shapes (/api/player/, /api/v2/gac/brackets/recent/) and the compact shape, so the raw parser is exercised.
-   Run WITHOUT SNAP_DATE (the pinned 7 Oct roster fixture is fine; nothing here depends on it). */
+   Run WITHOUT SNAP_DATE (the pinned 7 Oct roster fixture is fine; nothing here depends on it).
+   22 Oct 2026 (real-site fixes): REAL_BRACKETS below is shaped exactly like the live /api/v2/gac/brackets/recent/
+   answer ({data:[…newest first], message, totalCount, errorKey}, bracketScore/leagueId/seasonNumber/weekNumber,
+   UTC startTime without a zone suffix); the e2e (section 7) runs under Cross-Origin-Opener-Policy: same-origin,
+   captures the bookmarklet's pull FILE and imports it with "⬆ Import pull file…", in Australia/Sydney time. */
 const L = require("./lib.js");
 const { ck, REAL, PULLS } = L;
 const SHOTS = L.path.join(L.ROOT, "shots");
@@ -64,6 +68,23 @@ function rawBracket(ownCode, startTime, codes) {
 const RAW_OPPS = { [OPP.slkr.code]: rawPlayer(OPP.slkr.code, OPP.slkr.name, OPP.slkr), [OPP.evil.code]: rawPlayer(OPP.evil.code, OPP.evil.name, OPP.evil), [OPP.weak.code]: rawPlayer(OPP.weak.code, OPP.weak.name, OPP.weak) };
 const BRACKET = rawBracket(CODES.ollie, "2026-10-14T21:00:00", [OPP.slkr, OPP.evil, OPP.weak, { code: "444444444", name: "Unscouted Guy", gp: 7000000, guild: "G4" }]);
 const GAC = { ollie: { bracket: BRACKET, players: RAW_OPPS } };
+/* ---------- REAL-shaped /api/v2/gac/brackets/recent/<code>/ answer (22 Oct 2026, verified live by the orchestrator) ---------- */
+function realBracket(id, startTime, week, ownCode, ownName, opps, ownAt) {
+  const players = opps.map((c, i) => ({ allyCode: +c.code, playerLevel: 85, playerName: c.name, playerRating: null, playerPower: c.gp, playerIsFake: false,
+    guildId: "g" + i, guildName: (c.guild || "Wracker") + " ", bracketRank: i + 1, bracketScore: c.score || 0 }));
+  players.splice(ownAt == null ? 1 : ownAt, 0, { allyCode: +ownCode, playerLevel: 85, playerName: ownName, playerRating: null, playerPower: 8183401, playerIsFake: false, guildId: "own", guildName: "Our Guild", bracketRank: 0, bracketScore: 0 });
+  return { startTime, leagueId: "CARBONITE", seasonId: "CHAMPIONSHIPS_GRAND_ARENA_GA2_EVENT_SEASON_84", eventId: "O" + Date.parse(startTime + "Z"), seasonNumber: 84, weekNumber: week, bracketId: id, bracketPlayers: players };
+}
+const realOpps = (base, n, prefix) => Array.from({ length: n }, (_, i) => ({ code: String(base + i), name: `${prefix} ${i + 1}`, gp: 7000000 + i * 10000, guild: "Wracker", score: 0 }));
+const R_OLLIE = realOpps(500000001, 7, "Ollie opp"), R_TINY = realOpps(600000001, 7, "Tiny opp");
+/* Ollie: current round #8236 (21 Oct, own code 2nd in the list), then two previous rounds; Tiny: #4395, same start. */
+const REAL_BRACKETS = {
+  [CODES.ollie]: { data: [realBracket(8236, "2026-10-21T21:00:00", 3, CODES.ollie, "Ollietank", R_OLLIE), realBracket(8101, "2026-10-14T21:00:00", 2, CODES.ollie, "Ollietank", realOpps(510000001, 7, "Old opp")), realBracket(7990, "2026-10-07T21:00:00", 1, CODES.ollie, "Ollietank", realOpps(520000001, 7, "Older opp"))],
+    message: null, totalCount: 3, errorKey: null },
+  [CODES.tiny]: { data: [realBracket(4395, "2026-10-21T21:00:00", 3, CODES.tiny, "Tiny", R_TINY, 4), realBracket(4300, "2026-10-14T21:00:00", 2, CODES.tiny, "Tiny", realOpps(610000001, 7, "Old tiny opp"))], message: null, totalCount: 2, errorKey: null }
+};
+const REAL_RAW_OPPS = {};
+R_OLLIE.concat(R_TINY).forEach((c, i) => { REAL_RAW_OPPS[c.code] = rawPlayer(c.code, c.name, { gp: c.gp, guild: "Wracker ", lu: "2026-10-21T22:00:00", units: [["GLREY", "Rey", { r: 7, sp: 300 + i, z: 3 }], ["SUPREMELEADERKYLOREN", "Supreme Leader Kylo Ren", { r: 8, sp: 320 }]], extraN: 30, shipN: 4 }); });
 /* the owner's own raw roster (so gopReceive can add a "you" entry), same builder pbm-check uses — minimal here */
 const MY_RAW = { ollie: { data: { ally_code: +CODES.ollie, name: "Ollietank", galactic_power: 8183401, league_name: "Carbonite", division_number: 5, skill_rating: 1500, last_updated: "2026-10-16T02:00:00" }, units: [rawUnit("GLREY", "Rey", { r: 8, sp: 318, z: 3 })], mods: [], datacrons: [] } };
 
@@ -110,7 +131,8 @@ const card = p => p.evaluate(() => { const c = document.querySelector('#gacGrid 
     ck("GAC format is 5v5 for Season 84 (schedule + constant agree)", r.fmt === "5v5" && r.now === "5v5", r.now);
     const code = r.href ? decodeURIComponent(r.href.replace(/^javascript:/, "")) : "";
     let parses = false; try { new Function(code); parses = true; } catch (e) {}
-    ck("bookmarklet still valid JS, still posts holotable-pull v1 with the same gate (old behaviour kept)", parses && code.includes("type:'holotable-pull',v:1") && code.includes("'/api/player/'") && code.includes("Accept:'application/json'") && code.includes("e.origin===O") && code.includes("e.source===w"), code.slice(0, 120));
+    ck("bookmarklet still valid JS, still builds the holotable-pull v1 payload (now saved as a pull file — COOP, see pbm-check)", parses && code.includes("type:'holotable-pull',v:1") && code.includes("'/api/player/'") && code.includes("Accept:'application/json'") && code.includes("'holotable-swgoh-pull-'") && !code.includes("postMessage"), code.slice(0, 120));
+    ck("bookmarklet reads the REAL bracket shape: data[] array → newest by startTime that lists the own code, else data[0]; old object shapes still accepted", code.includes("Array.isArray(B)") && code.includes("x.startTime<y.startTime") && code.includes("String(p.allyCode)===A[k]") && code.includes("[0]||B[0]") && code.includes("B&&B.bracketPlayers?B:j"), "");
     ck("bookmarklet now also fetches /api/v2/gac/brackets/recent/<code>/ and every bracketPlayer's roster (best effort, own codes skipped) and sends it as `gac`", code.includes("'/api/v2/gac/brackets/recent/'") && code.includes("bracketPlayers") && code.includes("gac:g") && code.includes("Object.values(A).indexOf(c)>=0"), "");
     ck("bookmarklet stays under the 2000-char budget pbm-check enforces", code.length < 2000, String(code.length));
     ck("GAC nav gained an 'Opponent' view between Scout & plan and Defense", r.nav.join("|") === "Scout & plan|Opponent|Defense|Counters|Career totals", r.nav.join("|"));
@@ -140,6 +162,27 @@ const card = p => p.evaluate(() => { const c = document.querySelector('#gacGrid 
     ck("one realistic 219-unit opponent compacts to under 30 KB (raw is ~470 KB)", r.size < 30 * 1024, `${r.size} bytes`);
     ck("bracket: id/league/season/week/start + 5 players (code, name, gp, guild, rank, score), own code recorded", r.b && r.b.id === "9320" && r.b.league === "CARBONITE" && r.b.season === 84 && r.b.event === 2 && r.b.start === Date.UTC(2026, 9, 14, 21) && r.b.own === CODES.ollie && r.b.players.length === 5 && r.b.players[1].code === OPP.slkr.code && r.b.players[1].gp === 7900000 && r.b.players[1].score === 1500 && r.bOk === true, JSON.stringify(r.b).slice(0, 300));
     ck("bracket: alternative key spellings (data.{id, league_name, start_time seconds, players[].ally_code}) still parse; junk → null", r.bAlt && r.bAlt.id === "77" && r.bAlt.league === "KYBER" && r.bAlt.start === 1760475600000 && r.bAlt.players[0].code === "555555555" && r.bBad.every(x => x === null), JSON.stringify(r.bAlt));
+    /* REAL shape: data[] array, newest first, own code 2nd in the list */
+    const rs = await p.evaluate(([real, own, tiny]) => {
+      const A = real[own], scr = JSON.parse(JSON.stringify(A)), out = {};
+      out.b = gopCompactBracket(A, own, Date.now());
+      out.ok = gopBracketOk(out.b);
+      scr.data = [scr.data[2], scr.data[0], scr.data[1]]; out.scrambled = gopCompactBracket(scr, own, Date.now()).id;   /* order doesn't matter: newest startTime wins */
+      const notMine = JSON.parse(JSON.stringify(A)); notMine.data[0].bracketPlayers = notMine.data[0].bracketPlayers.filter(x => String(x.allyCode) !== own); out.notMine = gopCompactBracket(notMine, own, Date.now()).id;   /* newest that LISTS you */
+      out.none = gopCompactBracket(A, "999999999", Date.now()).id;   /* nobody matches → data[0] */
+      out.bare = gopCompactBracket(A.data, own, Date.now()).id;     /* a bare array */
+      out.empty = [gopCompactBracket({ data: [] }, own), gopCompactBracket({ data: [{ startTime: "x" }] }, own), gopCompactBracket({ data: null }, own)];
+      out.seasonIdOnly = (() => { const x = JSON.parse(JSON.stringify(A)); delete x.data[0].seasonNumber; return gopCompactBracket(x, own, Date.now()).season; })();
+      out.tiny = gopCompactBracket(real[tiny], tiny, Date.now());
+      out.round = gopBracketRound(out.b, Date.UTC(2026, 9, 21, 23)).text;
+      return out;
+    }, [REAL_BRACKETS, CODES.ollie, CODES.tiny]);
+    ck("REAL bracket shape ({data:[…]}): picks the newest round #8236, maps bracketId/leagueId/seasonNumber/weekNumber/bracketScore, guild trimmed", rs.b && rs.b.id === "8236" && rs.b.league === "CARBONITE" && rs.b.season === 84 && rs.b.event === 3 && rs.b.players.length === 8 && rs.b.players[1].code === CODES.ollie && rs.b.players[0].guild === "Wracker" && rs.b.players.every(x => x.score === 0) && rs.ok === true, JSON.stringify(rs.b).slice(0, 300));
+    ck("REAL bracket shape: startTime '2026-10-21T21:00:00' (no zone) is read as UTC → Date.UTC(2026,9,21,21) = 22 Oct 08:00 AEDT", rs.b && rs.b.start === Date.UTC(2026, 9, 21, 21), String(rs.b && rs.b.start));
+    ck("REAL bracket shape: order-independent (newest startTime wins), skips a newer round that doesn't list you, falls back to data[0] when none does, accepts a bare array", rs.scrambled === "8236" && rs.notMine === "8101" && rs.none === "8236" && rs.bare === "8236", JSON.stringify([rs.scrambled, rs.notMine, rs.none, rs.bare]));
+    ck("REAL bracket shape: empty data[] / brackets without players / null data → null; season from seasonId's trailing number when seasonNumber is missing", rs.empty.every(x => x === null) && rs.seasonIdOnly === 84, JSON.stringify([rs.empty, rs.seasonIdOnly]));
+    ck("REAL bracket shape: Tiny's own bracket #4395 (own code 5th in its list) is a different bracket with the same start", rs.tiny && rs.tiny.id === "4395" && rs.tiny.players.length === 8 && rs.tiny.players[4].code === CODES.tiny && rs.tiny.start === rs.b.start, JSON.stringify(rs.tiny).slice(0, 200));
+    ck("round chip from the bracket's own season/week: 'this round (Season 84 Event 3)' — no 'dates estimated' (swgoh.gg names the event)", rs.round === "this round (Season 84 Event 3)", rs.round);
     /* size budget: 8 opponents × ~200 units (+20 ships) with mods on 30 units each */
     const big = [];
     for (let i = 0; i < 8; i++) {
@@ -265,7 +308,7 @@ const card = p => p.evaluate(() => { const c = document.querySelector('#gacGrid 
     ck(`[${w}] seeded through the raw parser: 3 opponents + you`, s.g && s.g.playerN === 3 && s.r && s.r.ok, JSON.stringify(s));
     await p.waitForTimeout(250);
     let c = await card(p);
-    ck(`[${w}] Opponent view renders the card with the honesty line and the three data buttons`, !!c && /can't see which opponent you were matched with/.test(c.txt) && /Refresh from swgoh\.gg \(bookmarklet\)/.test(c.txt) && /Import opponent snapshot/.test(c.txt) && /Export opponent snapshot/.test(c.txt), c && c.txt.slice(0, 200));
+    ck(`[${w}] Opponent view renders the card with the honesty line and the four data buttons (incl. ⬆ Import pull file…)`, !!c && /can't see which opponent you were matched with/.test(c.txt) && /Refresh from swgoh\.gg \(bookmarklet\)/.test(c.txt) && /Import pull file…/.test(c.txt) && /Import opponent snapshot/.test(c.txt) && /Export opponent snapshot/.test(c.txt), c && c.txt.slice(0, 200));
     const list = await p.evaluate(() => ({ rows: [...document.querySelectorAll(".gop-prow")].map(e => ({ me: e.classList.contains("me"), btn: e.tagName === "BUTTON", t: e.textContent })), round: document.querySelector(".gop-round .chip").textContent, img: !!document.querySelector('#gacGrid .card[data-card="gop"] img, #gacGrid .card[data-card="gop"] svg'), head: document.querySelector(".gop-h").textContent }));
     ck(`[${w}] bracket list: 5 rows sorted by rank — 'you' (#2) is a plain row, the 4 opponents are buttons, each with GP, guild, rank, banners`, list.rows.length === 5 && list.rows.filter(r => r.me).length === 1 && !list.rows[1].btn && list.rows[1].me && list.rows.filter(r => !r.me).every(r => r.btn) && /7\.90M GP · First Order Guild · #3 · 1,500 banners/.test(list.rows.find(r => /Kylo Fan/.test(r.t)).t) && /#1 · 1,400 banners/.test(list.rows[0].t), JSON.stringify(list.rows.map(r => r.t.slice(0, 60))));
     ck(`[${w}] scouted / not scouted status per row, data age shown; the un-pulled player reads 'not scouted'`, list.rows.filter(r => /✓ scouted · \d+ units/.test(r.t)).length === 2 && list.rows.filter(r => /⚠ scouted/.test(r.t)).length === 1 && /not scouted/.test(list.rows.find(r => /Unscouted Guy/.test(r.t)).t) && /swgoh\.gg updated/.test(list.rows.find(r => /Kylo Fan/.test(r.t)).t), JSON.stringify(list.rows.map(r => r.t.slice(0, 80))));
@@ -368,7 +411,7 @@ const card = p => p.evaluate(() => { const c = document.querySelector('#gacGrid 
     const { ctx, p, errs } = await openX(b, { tag: "round", pin: T(2026, 9, 23, 12) });   /* 23 Oct: inside the ESTIMATED Season 84 Event 3 */
     await seed(p, "ollie", GAC, MY_RAW); await p.waitForTimeout(200);
     const r1 = await p.evaluate(() => ({ chip: document.querySelector(".gop-round .chip").textContent, cls: document.querySelector(".gop-round .chip").className, unit: gopBracketRound({ start: null }).text, future: gopBracketRound({ start: Date.now() + 30 * 86400e3 }).text, ranOut: gopBracketRound({ start: Date.now() }, new Date(2027, 5, 1).getTime()).text }));
-    ck("a 14 Oct bracket viewed on 23 Oct reads 'previous round's bracket (started Wed 14 Oct) — re-pull…' (amber)", /previous round's bracket \(started Wed(, Oct 14| 14 Oct)\)/.test(r1.chip) && /grind/.test(r1.cls), r1.chip);
+    ck("a 14 Oct bracket viewed on 23 Oct reads 'previous round's bracket (Season 84 Event 2, started Wed 14 Oct) — re-pull…' (amber; the label is now the bracket's own)", /previous round's bracket \(Season 84 Event 2, started Wed(, Oct 14| 14 Oct)\) — re-pull/.test(r1.chip) && /grind/.test(r1.cls), r1.chip);
     ck("round detection: unknown start → asks you to check; schedule run out → says so honestly", /start time unknown/.test(r1.unit) && /schedule has run out/.test(r1.ranOut), JSON.stringify(r1));
     await p.evaluate(() => { gopPickOpp("ollie", "111111111"); gopSquadAdd("ollie"); gopUnitAdd("ollie", 0, "GLREY"); });
     await p.reload({ waitUntil: "domcontentloaded" }); await p.waitForTimeout(900);
@@ -382,23 +425,29 @@ const card = p => p.evaluate(() => { const c = document.querySelector('#gacGrid 
     allErrs.push(...errs); await ctx.close();
   });
 
-  /* ---------- 7. END-TO-END bookmarklet: fake swgoh.gg serves rosters + Ollie's bracket + opponent rosters (Tiny's bracket 404s) ---------- */
-  await sec(async () => {
+  /* ---------- 7. END-TO-END under COOP, REAL bracket shape, Australia/Sydney clock (Thu 22 Oct 2026 10:00 AEDT):
+     fake swgoh.gg serves both rosters, BOTH accounts' real-shaped brackets (Ollie #8236, Tiny #4395, 8 players each incl.
+     you) and the 14 opponents' rosters (one of Ollie's 404s) → the bookmarklet's pull FILE → "⬆ Import pull file…" on
+     the Opponent card → confirm → Import → both brackets render with 'this round (Season 84 Event 3)'. ---------- */
+  for (const w of [1280, 390]) await sec(async () => {
     const SNAP = L.SNAP;
-    const rawFrom = (pl, code) => ({ data: { ally_code: +code, name: "Fixture", galactic_power: pl.gp, character_galactic_power: pl.gpChar || 0, ship_galactic_power: pl.gpShip || 0, skill_rating: 1500, league_name: "Carbonite", division_number: 5, last_updated: "2026-10-16T01:00:00", arena: { rank: 1, leader: "" }, fleet_arena: { rank: 1, leader: "" } },
+    const PIN = Date.UTC(2026, 9, 21, 23);   /* = Thu 22 Oct 2026 10:00 AEDT */
+    const rawFrom = (pl, code) => ({ data: { ally_code: +code, name: "Fixture", galactic_power: pl.gp, character_galactic_power: pl.gpChar || 0, ship_galactic_power: pl.gpShip || 0, skill_rating: 1500, league_name: "Carbonite", division_number: 5, last_updated: "2026-10-21T22:30:00", arena: { rank: 1, leader: "" }, fleet_arena: { rank: 1, leader: "" } },
       units: Object.entries(pl.reqs).map(([id, u]) => ({ data: { base_id: id, name: u.name || id, rarity: u.s, gear_level: u.g, relic_tier: u.r ? u.r + 2 : 1, combat_type: u.t === "ship" ? 2 : 1, era_level: u.el || 0, stats: { "5": 210 }, ability_data: [] } })), mods: [], datacrons: [] });
     const OWN = { [CODES.ollie]: rawFrom(SNAP.accounts.ollie, CODES.ollie), [CODES.tiny]: rawFrom(SNAP.accounts.tiny, CODES.tiny) };
-    const ctx = await b.newContext({ viewport: { width: 1280, height: 1000 } });
-    await ctx.addInitScript(([s, pl, seedKey]) => { try { if (location.protocol !== "https:" && !sessionStorage.getItem(seedKey)) { localStorage.clear(); localStorage.setItem("swgoh-tracker", s); localStorage.setItem("swgoh-holotable-pulls-v1", pl); sessionStorage.setItem(seedKey, "1"); } } catch (e) {} }, [REAL, PULLS, "seeded-e2e"]);
+    const MISSING = R_OLLIE[6].code;   /* swgoh.gg 404s this one */
+    const ctx = await b.newContext({ viewport: { width: w, height: w === 390 ? 844 : 1000 }, timezoneId: "Australia/Sydney", acceptDownloads: true });
+    await ctx.addInitScript(([s, pl, seedKey, pin]) => { const real = Date.now.bind(Date), s0 = real(); Date.now = () => pin + (real() - s0);
+      try { if (location.protocol !== "https:" && !sessionStorage.getItem(seedKey)) { localStorage.clear(); localStorage.setItem("swgoh-tracker", s); localStorage.setItem("swgoh-holotable-pulls-v1", pl); sessionStorage.setItem(seedKey, "1"); } } catch (e) {} }, [REAL, PULLS, "seeded-e2e", PIN]);
     await ctx.route(/fonts\.g|corsproxy|allorigins|codetabs|api\.github/, r => r.abort());
-    const hits = [];
+    const hits = [], COOP = { "Cross-Origin-Opener-Policy": "same-origin" };
     await ctx.route(/^https:\/\/swgoh\.gg\//, r => {
       const u = r.request().url(); hits.push(u.replace("https://swgoh.gg", ""));
       let m = /\/api\/player\/(\d+)\/$/.exec(u);
-      if (m) { const body = OWN[m[1]] || RAW_OPPS[m[1]]; return r.fulfill({ status: body ? 200 : 404, contentType: "application/json", body: JSON.stringify(body || { detail: "nope" }) }); }
+      if (m) { const body = m[1] === MISSING ? null : OWN[m[1]] || REAL_RAW_OPPS[m[1]]; return r.fulfill({ status: body ? 200 : 404, headers: COOP, contentType: "application/json", body: JSON.stringify(body || { detail: "nope" }) }); }
       m = /\/api\/v2\/gac\/brackets\/recent\/(\d+)\/$/.exec(u);
-      if (m) return m[1] === CODES.ollie ? r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(BRACKET) }) : r.fulfill({ status: 404, contentType: "application/json", body: "{}" });
-      return r.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>swgoh.gg (fake)</title><p>fake</p>" });
+      if (m) return r.fulfill({ status: REAL_BRACKETS[m[1]] ? 200 : 404, headers: COOP, contentType: "application/json", body: JSON.stringify(REAL_BRACKETS[m[1]] || {}) });
+      return r.fulfill({ status: 200, headers: COOP, contentType: "text/html", body: "<!doctype html><title>swgoh.gg (fake)</title><p>fake</p>" });
     });
     const errs = [];
     ctx.on("page", pg => { pg.on("pageerror", e => errs.push(String(e).slice(0, 300))); });
@@ -408,18 +457,46 @@ const card = p => p.evaluate(() => { const c = document.querySelector('#gacGrid 
     const code = decodeURIComponent(href.replace(/^javascript:/, ""));
     const sw = await ctx.newPage();
     await sw.goto("https://swgoh.gg/", { waitUntil: "domcontentloaded" });
-    const [pop] = await Promise.all([ctx.waitForEvent("page", { timeout: 20000 }), sw.evaluate(c => { (0, eval)(c); }, code)]);
-    await pop.waitForLoadState("domcontentloaded");
+    const [dl] = await Promise.all([sw.waitForEvent("download", { timeout: 30000 }), sw.evaluate(c => { (0, eval)(c); }, code)]);
+    const fdir = L.path.join(SHOTS, "pull-gop-" + w); try { L.fs.mkdirSync(fdir, { recursive: true }); } catch (e) {}
+    const fpath = L.path.join(fdir, dl.suggestedFilename()); await dl.saveAs(fpath);
+    const pl = JSON.parse(require("zlib").gunzipSync(L.fs.readFileSync(fpath)).toString("utf8"));
+    /* only Date.now is pinned, so the file's date is the REAL day — in Australia/Sydney local time */
+    const FNAME = await sw.evaluate(() => "holotable-swgoh-pull-" + new Date().toLocaleDateString("sv") + ".json.gz");
+    const FN = FNAME.replace(/\./g, "\\.");
+    const aedtDay = new Intl.DateTimeFormat("sv", { timeZone: "Australia/Sydney" }).format(new Date());
+    const oppHits = hits.filter(h => /\/api\/player\//.test(h) && !h.includes(CODES.ollie) && !h.includes(CODES.tiny));
+    if (w === 1280) {
+      ck("e2e: the bookmarklet picked each account's CURRENT bracket from the real data[] array and fetched exactly its 7 other players (14 opponents; own codes and older rounds' players skipped)", oppHits.length === 14 && R_OLLIE.concat(R_TINY).every(c => oppHits.includes(`/api/player/${c.code}/`)) && !oppHits.some(h => /\/api\/player\/5[12]/.test(h) || /\/api\/player\/61/.test(h)) && hits.includes(`/api/v2/gac/brackets/recent/${CODES.ollie}/`) && hits.includes(`/api/v2/gac/brackets/recent/${CODES.tiny}/`), JSON.stringify(oppHits));
+      ck("e2e: the pull file is named by the LOCAL (Australia/Sydney) date — holotable-swgoh-pull-<AEDT day>.json.gz — and carries both raw bracket answers + 13 opponent rosters", dl.suggestedFilename() === FNAME && FNAME === `holotable-swgoh-pull-${aedtDay}.json.gz` && Array.isArray(pl.gac.ollie.bracket.data) && Array.isArray(pl.gac.tiny.bracket.data) && Object.keys(pl.gac.ollie.players).length === 6 && Object.keys(pl.gac.tiny.players).length === 7, dl.suggestedFilename() + " " + JSON.stringify(Object.keys(pl.gac)));
+    }
+    /* import in the app tab through the Opponent card's button */
+    await p.evaluate(() => { gopClear(); switchAcct("ollie"); switchTab("gac"); sectionView("gac", "opponent"); }); await p.waitForTimeout(250);
+    const [fc] = await Promise.all([p.waitForEvent("filechooser", { timeout: 5000 }), p.click(`.card[data-card="gop"] button:has-text("Import pull file")`)]);
+    await fc.setFiles(fpath);
     let shown = false;
-    try { await pop.waitForSelector("#pbmConfirm:not([hidden]) #pbmImportBtn", { timeout: 20000 }); shown = true; } catch (e) {}
-    const txt = shown ? await pop.textContent("#pbmConfirm") : "";
-    ck("e2e: the real bookmarklet on a (fake) swgoh.gg tab fetched both rosters, Ollie's bracket and its 4 other players' rosters, skipped Tiny's 404 bracket", hits.filter(h => /\/api\/player\//.test(h)).length === 6 && hits.includes(`/api/v2/gac/brackets/recent/${CODES.ollie}/`) && hits.includes(`/api/v2/gac/brackets/recent/${CODES.tiny}/`) && !hits.some(h => h === `/api/player/${CODES.ollie}/` && false), JSON.stringify(hits));
-    ck("e2e: the opened app tab shows the classic roster confirm PLUS the bracket line (3 of 4 scouted — 'Unscouted Guy' 404s)", shown && /Import roster from swgoh\.gg: Ollietank 8\.20M GP · Tiny 7\.89M GP/.test(txt) && /\+ GAC bracket for Ollietank: 3 of 4 opponents scouted · bracket 9320/.test(txt) && !/GAC bracket for Tiny/.test(txt), txt.slice(0, 300));
-    await pop.screenshot({ path: L.path.join(SHOTS, "gop-confirm-1280.png") });
-    if (shown) await pop.click("#pbmImportBtn");
-    await pop.waitForTimeout(400);
-    const after = await pop.evaluate(() => ({ players: Object.keys(gopRead().players).sort(), br: gopRead().brackets[ACCOUNTS[0].code] && gopRead().brackets[ACCOUNTS[0].code].id, st: document.getElementById("pullStatus").textContent, gp: state.pulls.ollie.gp, sp: Object.values(state.pulls.ollie.reqs).some(u => u.sp === 210) }));
-    ck("e2e: Import stores the bracket + 4 players (3 opponents + you) in GOP_KEY, the rosters as before (with `sp`), and the status says so", after.br === "9320" && after.players.length === 4 && after.players.includes(OPP.slkr.code) && after.players.includes(CODES.ollie) && /Imported from a swgoh\.gg tab/.test(after.st) && /GAC bracket: 4 players scouted/.test(after.st) && after.gp === SNAP.accounts.ollie.gp && after.sp, JSON.stringify(after).slice(0, 300));
+    try { await p.waitForSelector("#pbmConfirm:not([hidden]) #pbmImportBtn", { timeout: 15000 }); shown = true; } catch (e) {}
+    const txt = shown ? await p.textContent("#pbmConfirm") : "";
+    ck(`[${w}] e2e: confirm card = roster line + 'From <file> · pulled 22/10 10:00 (AEDT)' + both bracket lines (Ollie 6 of 7 scouted · bracket 8236 · started Thu 22 Oct; Tiny 7 of 7 · bracket 4395)`, shown && /Import roster from swgoh\.gg: Ollietank 8\.20M GP · Tiny 7\.89M GP/.test(txt) && new RegExp("From " + FN + " · pulled 10/22/2026, 10:00:\\d\\d AM").test(txt) && /\+ GAC bracket for Ollietank: 6 of 7 opponents scouted · bracket 8236 · started Thu(, Oct 22| 22 Oct)/.test(txt) && /\+ GAC bracket for Tiny: 7 of 7 opponents scouted · bracket 4395/.test(txt), txt.slice(0, 400));
+    const box = await p.evaluate(() => { const r = document.getElementById("pbmConfirm").getBoundingClientRect(); return { l: r.left, r: r.right, w: innerWidth }; });
+    ck(`[${w}] e2e: confirm card fits the viewport`, box.l >= 0 && box.r <= box.w, JSON.stringify(box));
+    await p.screenshot({ path: L.path.join(SHOTS, `gop-confirm-${w}.png`) });
+    if (shown) await p.click("#pbmImportBtn");
+    await p.waitForTimeout(400);
+    const after = await p.evaluate(() => { const st = gopRead(); return { brO: st.brackets[ACCOUNTS[0].code], brT: st.brackets[ACCOUNTS[1].code], players: Object.keys(st.players).length, st: document.getElementById("pullStatus").textContent, msg: (document.querySelector(".gop-msg") || {}).textContent, rows: document.querySelectorAll(".gop-prow").length, chip: (document.querySelector(".gop-round .chip") || {}).textContent, head: (document.querySelector(".gop-h") || {}).textContent, gp: state.pulls.ollie.gp }; });
+    ck(`[${w}] e2e: Import stores BOTH brackets (8 players each, season 84 week 3, start 21 Oct 21:00 UTC) + 13 opponents + you two in GOP_KEY, rosters as before`, after.brO && after.brO.id === "8236" && after.brO.players.length === 8 && after.brO.event === 3 && after.brO.start === Date.UTC(2026, 9, 21, 21) && after.brT && after.brT.id === "4395" && after.brT.players.length === 8 && after.players === 15 && after.gp === SNAP.accounts.ollie.gp, JSON.stringify({ o: after.brO && after.brO.id, t: after.brT && after.brT.id, n: after.players }));
+    ck(`[${w}] e2e: status (header + Opponent card) says 'Imported swgoh.gg pull file … · GAC bracket: 15 players scouted'`, new RegExp("✓ Imported swgoh\\.gg pull file " + FN).test(after.st) && /GAC bracket: 15 players scouted/.test(after.st) && /Imported swgoh\.gg pull file/.test(after.msg || ""), after.st + " | " + after.msg);
+    ck(`[${w}] e2e: Opponent view lists Ollie's 8 (you included), header 'bracket 8236 · CARBONITE · season 84 week 3', chip 'this round (Season 84 Event 3)' at 22 Oct 10:00 AEDT`, after.rows === 8 && /bracket 8236 · CARBONITE · season 84 week 3/.test(after.head) && after.chip === "this round (Season 84 Event 3)", JSON.stringify([after.rows, after.head, after.chip]));
+    const un = await p.evaluate(m => { gopPickOpp("ollie", m); return (document.querySelector(".gop-sec + .gop-sec .gop-empty") || document.querySelector(".gop-empty") || {}).textContent; }, MISSING);
+    ck(`[${w}] e2e: the opponent swgoh.gg refused reads 'not scouted' with the real re-pull steps (bookmark → Import pull file…)`, /No roster pulled for Ollie opp 7 yet/.test(un || "") && /Import pull file…/.test(un || ""), un);
+    await p.evaluate(() => { gopPickOpp("ollie", "500000001"); });
+    await p.evaluate(() => document.querySelector('#gacGrid .card[data-card="gop"]').scrollIntoView({ block: "start" })); await p.waitForTimeout(150);
+    let o = await L.overflow(p); ck(`[${w}] e2e: no horizontal overflow (real bracket imported)`, o.doc <= o.inner + 1, JSON.stringify(o));
+    await p.screenshot({ path: L.path.join(SHOTS, `gop-real-bracket-${w}.png`), fullPage: false });
+    await L.go(p, "tiny", "gac"); await p.waitForTimeout(200);
+    const ti = await p.evaluate(() => ({ rows: document.querySelectorAll(".gop-prow").length, chip: (document.querySelector(".gop-round .chip") || {}).textContent, head: (document.querySelector(".gop-h") || {}).textContent, me: [...document.querySelectorAll(".gop-prow.me")].map(e => e.textContent) }));
+    ck(`[${w}] e2e: Tiny's own bracket #4395 renders separately (8 rows, Tiny is 'you'), same 'this round (Season 84 Event 3)' chip`, ti.rows === 8 && /bracket 4395/.test(ti.head) && ti.chip === "this round (Season 84 Event 3)" && ti.me.length === 1 && /Tiny/.test(ti.me[0]), JSON.stringify(ti).slice(0, 200));
+    o = await L.overflow(p); ck(`[${w}] e2e: no horizontal overflow (Tiny)`, o.doc <= o.inner + 1, JSON.stringify(o));
     allErrs.push(...errs); await ctx.close();
   });
 

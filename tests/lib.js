@@ -14,9 +14,14 @@ const SNAP = JSON.parse(fs.readFileSync(path.join(ROOT, snapName), "utf8"));
 const PULLS = JSON.stringify(SNAP.accounts);
 const R = []; const ck = (n, p, d) => R.push({ check: n, pass: !!p, detail: d });
 function serve() { const srv = http.createServer((q, s) => { s.setHeader("content-type", "text/html"); fs.createReadStream(FILE).pipe(s); }); return new Promise(r => srv.listen(PORT, () => r(srv))); }
+/* rv31 1 Nov 2026: optional pinned clock for suites whose expectations are tied to a calendar day (they used the REAL clock, so they rotted the day the real date
+   crossed a season boundary). Set PIN_NOW (any Date.parse-able string; a suite may set process.env.PIN_NOW before requiring this file) or pass {now: ms} to open();
+   both Date.now() and new Date() are then fixed via Playwright's context.clock. No effect when neither is given. */
+const PIN = process.env.PIN_NOW ? Date.parse(process.env.PIN_NOW) : null;
 async function open(b, o) {
   o = o || {};
   const ctx = await b.newContext({ viewport: { width: o.width || 1280, height: o.height || 1000 } });
+  if (o.now || PIN) await ctx.clock.setFixedTime(o.now || PIN);
   await ctx.addInitScript(([s, pl, withPulls, seedKey]) => {
     try { if (sessionStorage.getItem(seedKey)) return;
       localStorage.clear(); localStorage.setItem("swgoh-tracker", s);

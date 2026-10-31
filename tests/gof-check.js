@@ -6,6 +6,7 @@
    Apply/confirm/replace/Reset with user-edited rows, pristine grammar, cross-account isolation, copy text, Cloud
    Sync row semantics (uniqueRows/threeWayRows), legacy-migration refusal, performance, 390 px no overflow, zero
    page errors, screenshots. */
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it rotted when the real date crossed a season boundary
 const L = require("./lib.js");
 const { ck } = L;
 const SHOTS = L.path.join(L.ROOT, "shots");
@@ -217,7 +218,7 @@ const PLAN = ([a, f]) => { switchAcct(a); state.views["gco-" + a] = f; const def
     await openBoth(p, "ollie");
     const text = await p.evaluate(() => ({ t: gcfPlanText(gcoPlanFor("ollie"), "ollie"), ta: document.getElementById("gfCopyText-ollie") ? 1 : (document.getElementById("gcfCopyText-ollie") || {}).value, rows: +document.getElementById("gcfCopyText-ollie").getAttribute("rows"), n: gofPlanFor("ollie").picked.length, fleet: !!gofPlanFor("ollie").fleet }));
     const lines = text.t.split("\n");
-    ck("copy text: defence lines, then 'Offence order (… bench, best first — not an attack count):' and numbered attack lines + fleet", lines.length === 5 + 1 + text.n + (text.fleet ? 1 : 0) && /^Offence order \(5v5 bench, best first — not an attack count\):$/.test(lines[5]) && /^1\. .+ \(L\)/.test(lines[6]) && (!text.fleet || /^Fleet attack: /.test(lines[lines.length - 1])), text.t);
+    ck("copy text: defence lines, then 'Offence order (… bench, best first — not an attack count):' and numbered attack lines + fleet", lines.length === 5 + 1 + text.n + (text.fleet ? 1 : 0) && /^Offence order \(3v3 bench, best first — not an attack count\):$/.test(lines[5]) && /^1\. .+ \(L\)/.test(lines[6]) && (!text.fleet || /^Fleet attack: /.test(lines[lines.length - 1])), text.t);
     ck("the plain-text fold's textarea carries the same text with enough rows", text.ta === text.t && text.rows === lines.length, String(text.rows));
     await p.evaluate(() => { window.__copied = null; Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: t => { window.__copied = t; return Promise.resolve(); } } }); });
     await p.click('[data-card="gco"] .gcf-copy-btn'); await p.waitForTimeout(200);

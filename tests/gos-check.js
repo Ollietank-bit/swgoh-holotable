@@ -5,7 +5,12 @@
    accounts × both formats from fixtures: defence plan identical to the pre-change plan, legal offence bench (no unit
    twice across defence + offence, leaders owned 7★ ≥ G10, ≥ 3 owned 7★, 3v3 = 3 units), bench counts, planner rows
    pristine (no comma-split names), defence-side views never take the new entries, UI at 1280/390 with no overflow and
-   zero page errors, screenshots. */
+   zero page errors, screenshots.
+   rf22 22 Oct 2026 — DELIBERATE updates (4 tier-list assertions): TIER_LIST was re-read in full on 22 Oct (5v5 Season 84, 3v3 Season 83
+   at 3.98M, fleet Season 84), so the 5v5/3v3 values these leaders read now are the 22 Oct ones (Commander Luke C → B), TIER_LIST.updated
+   is "22 Oct 2026", and the 5v5/3v3 top-10s are the new boards. Hera 3v3 / CLS 3v3 still have no row (not in the top 40).
+   rv31 1 Nov 2026 — DELIBERATE (2 assertions): the 5v5 rows read for Bo-Katan (B 76.1 55.2K -> B 76.2 80.1K) and General Skywalker (B 80.4 55.2K -> B 80.6 81K) moved with the 1 Nov tier-list re-read; TIER_LIST.updated "25 Oct 2026" -> "1 Nov 2026".
+   rv25b 25 Oct 2026 — DELIBERATE (1 assertion): TIER_LIST.updated "22 Oct 2026" -> "25 Oct 2026" (the tier lists were re-verified unchanged live that day; no row, tier or percentage moved). */
 const L = require("./lib.js");
 const { ck } = L;
 const SHOTS = L.path.join(L.ROOT, "shots");
@@ -82,10 +87,10 @@ const PLAN = ([a, f, NEWN]) => { switchAcct(a); state.views["gco-" + a] = f; con
         r3: ["Darth Revan", "Emperor Palpatine", "General Skywalker", "Stormtrooper Luke", "Padmé Amidala", "Bo-Katan (Mand'alor)"].map(n => get("3v3", n)),
         none3: [get("3v3", "Hera Syndulla"), get("3v3", "Commander Luke Skywalker")], top10: TIER_LIST.categories.map(c => c.squads.slice(0, 10).map(s => s.leader).join("|")) };
     });
-    ck("tier list: 5v5 rows for the five 5v5 leaders as read (B/B/B/B/C), no duplicate leaders", JSON.stringify(tl.r5) === JSON.stringify(["B 80.3 90.5K", "B 84.5 82.7K", "B 72.1 10K", "B 76.4 7,771", "C 77.3 36.8K"]) && !tl.dup5, JSON.stringify(tl.r5));
-    ck("tier list: 3v3 rows as read (DR A, Palpatine B, GAS B, STL B, Padmé B; Bo-Katan's existing A row untouched), no duplicates", JSON.stringify(tl.r3) === JSON.stringify(["A 84.5 21.8K", "B 79.4 36.3K", "B 83.8 64.8K", "B 77.1 4,330", "B 80.3 3,524", "A 84.2 68.5K"]) && !tl.dup3, JSON.stringify(tl.r3));
-    ck("tier list: no invented row for Hera 3v3 / CLS 3v3 (neutral 50); TIER_LIST.updated not bumped", tl.none3.every(x => x === null) && tl.updated === "30 Sep 2026", JSON.stringify(tl.none3));
-    ck("tier list: the visible top-10 of each category is unchanged by the appended rows", tl.top10[0].startsWith("Leia Organa|Supreme Leader Kylo Ren|The Stranger") && tl.top10[1].startsWith("Sith Eternal Emperor|The Stranger|Lord Vader"), JSON.stringify(tl.top10));
+    ck("tier list (rv31: Season 84 5v5 board, Bo-Katan and General Skywalker re-read 1 Nov; Palpatine, Hera and Commander Luke are below rank 30 and keep the 22 Oct read): rows for the five 5v5 leaders as read (B/B/B/B/B — Commander Luke C → B), no duplicate leaders", JSON.stringify(tl.r5) === JSON.stringify(["B 76.2 80.1K", "B 80.6 81K", "B 74.4 6,264", "B 76 5,556", "B 75.5 22.3K"]) && !tl.dup5, JSON.stringify(tl.r5));
+    ck("tier list (rf22: Season 83 3v3 board re-read at 3.98M): rows as read (DR A, Palpatine B, GAS B, STL B, Padmé B — the last two kept from 7 Oct; Bo-Katan A 84.7), no duplicates", JSON.stringify(tl.r3) === JSON.stringify(["A 84.5 21.8K", "B 79.4 36.3K", "B 83.8 64.8K", "B 77.1 4,330", "B 80.3 3,524", "A 84.7 104K"]) && !tl.dup3, JSON.stringify(tl.r3));
+    ck("tier list: no invented row for Hera 3v3 / CLS 3v3 (neutral 50); TIER_LIST.updated is the rv31 re-read (1 Nov 2026; the 3v3 rows these checks read are rank 13+ or unchanged)", tl.none3.every(x => x === null) && tl.updated === "1 Nov 2026", JSON.stringify(tl.none3));
+    ck("tier list (rf22): the visible top-10s are the new boards — 5v5 SLKR | Stranger | Leia, 3v3 Stranger | SEE | Lord Vader", tl.top10[0].startsWith("Supreme Leader Kylo Ren|The Stranger|Leia Organa|Cere Junda") && tl.top10[1].startsWith("The Stranger|Sith Eternal Emperor|Lord Vader"), JSON.stringify(tl.top10));
     const misc = await p.evaluate((NEWN) => ({
       fmtOk: [gosFmtOk({}, "5v5"), gosFmtOk({ gosOnly: "3v3" }, "3v3"), gosFmtOk({ gosOnly: "3v3" }, "5v5")],
       leiaTrio: JSON.stringify(GCO_TRIOS["Leia Organa (GL) Rebels"]),

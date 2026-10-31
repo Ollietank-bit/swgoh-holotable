@@ -349,10 +349,10 @@ const packCheck = (p, pane) => p.evaluate(pn => {
         return { first: first.dataset.card, st, tiles: document.getElementById("tiles").innerHTML.trim(), tilesShown: getComputedStyle(document.getElementById("tiles")).display, y: first.getBoundingClientRect().top, strip: document.getElementById("nxtStrip").getBoundingClientRect().bottom }; });
       const lbl = ks.st.map(x => x.l).join("|");
       L.ck(`${acct}: Overview's first card is Key stats, right under the Next up strip`, ks.first === "keystats" && ks.y >= ks.strip && ks.y - ks.strip < 60, JSON.stringify({ first: ks.first, y: ks.y, strip: ks.strip }));
-      L.ck(`${acct}: Key stats shows Galactic power, GL readiness, GLs owned, Fleet arena and GAC, each with a value`,
-        /Galactic power/i.test(lbl) && /readiness/i.test(lbl) && /GLs owned/i.test(lbl) && /Fleet arena/i.test(lbl) && /GAC/.test(lbl) && ks.st.every(x => x.v.length > 0), JSON.stringify(ks.st));
-      const gl = ks.st.find(x => /readiness/i.test(x.l));
-      L.ck(`${acct}: the GL tracker value is a percentage or 'Owned ✓'`, gl && (/^~?\d+%$/.test(gl.v) || gl.v === "Owned ✓"), JSON.stringify(gl));
+      L.ck(`${acct}: Key stats shows Galactic power, GL readiness (or, rv25c, "build-up" for an owned Legend), GLs owned, Fleet arena and GAC, each with a value`,
+        /Galactic power/i.test(lbl) && /readiness|build-up/i.test(lbl) && /GLs owned/i.test(lbl) && /Fleet arena/i.test(lbl) && /GAC/.test(lbl) && ks.st.every(x => x.v.length > 0), JSON.stringify(ks.st));
+      const gl = ks.st.find(x => /readiness|build-up/i.test(x.l));
+      L.ck(`${acct}: the GL tracker value is a percentage, or (rv25c, owned Legend) its relic step "R6 → R7" / "G12 → R7" / "R10 ✓" — was a percentage or 'Owned ✓'`, gl && (/^~?\d+%$/.test(gl.v) || /^[RG]\d+ (→ R\d+|✓)$/.test(gl.v)), JSON.stringify(gl));
       L.ck(`${acct}: the old stat strip at the bottom of Overview is gone (no duplicate)`, ks.tiles === "" && ks.tilesShown === "none", JSON.stringify({ t: ks.tiles.slice(0, 60), d: ks.tilesShown }));
     }
     /* pack stays right after opening a fold, a tab switch, and 1280 → 390 → 1280 */

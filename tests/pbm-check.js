@@ -7,7 +7,14 @@
    https://swgoh.gg page + API via ctx.route, the generated bookmarklet runs there, window.open()s the app
    and the two windows really talk (event.origin is genuinely "https://swgoh.gg"); (2) synthetic
    MessageEvents dispatched in a popup (wrong origin / wrong source / right origin+source) through the real
-   window listener; (3) pbmGate() and the handler pbmReceive() unit-tested directly. */
+   window listener; (3) pbmGate() and the handler pbmReceive() unit-tested directly.
+   COOP (22 Oct 2026, deliberate update): the REAL swgoh.gg sends Cross-Origin-Opener-Policy: same-origin, so the
+   window it opens has window.opener === null and the handshake can never complete. The fake swgoh.gg now sends that
+   header, the bookmarklet saves a pull FILE instead (captured with page.waitForEvent("download")) and the app imports
+   it through "⬆ Import pull file…" (#pbmPullFile) → the same confirm card → Import. Section 2b keeps the OLD
+   bookmarklet (verbatim copy below) as a regression: under COOP its handshake does NOT complete and the orphaned
+   app tab says so; without COOP the old postMessage path still works end to end (receive side unchanged).
+   rv25 25 Oct 2026 — DELIBERATE: the ☁ Sync file input check now asserts NO accept filter (mobile pickers grey out .json.gz). */
 const L = require("./lib.js");
 const { ck, SNAP, REAL, PULLS } = L;
 const SHOTS = L.path.join(L.ROOT, "shots");
@@ -43,11 +50,13 @@ async function openX(b, o) {
   }, [o.state || REAL, o.pulls || PULLS, o.withPulls !== false, "seeded-" + (o.tag || "x"), o.pin || null]);
   await ctx.route(/fonts\.g|corsproxy|allorigins|codetabs|api\.github/, r => r.abort());
   if (o.fakeSwgoh) {
+    /* coop (default ON, like the real site): every fake swgoh.gg response carries Cross-Origin-Opener-Policy: same-origin */
+    const H = o.coop === false ? {} : { "Cross-Origin-Opener-Policy": "same-origin" };
     await ctx.route(/^https:\/\/swgoh\.gg\//, r => {
       const m = /\/api\/player\/(\d+)\/$/.exec(r.request().url());
       if (m) { const k = Object.keys(CODES).find(x => CODES[x] === m[1]);
-        return r.fulfill({ status: k ? 200 : 404, contentType: "application/json", body: JSON.stringify(k ? RAW[k] : { detail: "nope" }) }); }
-      return r.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>swgoh.gg (fake)</title><p>fake swgoh.gg</p>" });
+        return r.fulfill({ status: k ? 200 : 404, headers: H, contentType: "application/json", body: JSON.stringify(k ? RAW[k] : { detail: "nope" }) }); }
+      return r.fulfill({ status: 200, headers: H, contentType: "text/html", body: "<!doctype html><title>swgoh.gg (fake)</title><p>fake swgoh.gg</p>" });
     });
   } else await ctx.route(/swgoh\.gg/, r => r.abort());
   const errs = [];
@@ -56,6 +65,21 @@ async function openX(b, o) {
   const p = await ctx.newPage();
   if (o.url !== false) { await p.goto(o.url || `${BASE}/x.html`, { waitUntil: "domcontentloaded" }); await p.waitForTimeout(o.settle || 900); }
   return { ctx, p, errs };
+}
+/* The pre-22-Oct bookmarklet, verbatim (window.open + holotable-ready/holotable-pull handshake), for section 2b. */
+function oldBookmarkletCode(appUrl) {
+  const A = JSON.stringify(CODES), U = JSON.stringify(String(appUrl));
+  return "(async()=>{var A=" + A + ",U=" + U + ",O=new URL(U).origin,o={},g={},k,r,w,t,f,j,q,H={headers:{Accept:'application/json'}};" +
+    "if(location.origin!=='https://swgoh.gg'){alert('Holotable: open swgoh.gg first, then use this bookmark.');return}" +
+    "try{for(k in A){r=await fetch('/api/player/'+A[k]+'/',{headers:{Accept:'application/json'}});" +
+    "if(!r.ok)throw Error('HTTP '+r.status);o[k]=await r.json()}}catch(e){alert('Holotable: swgoh.gg sent no roster data ('+e.message+'). Reload swgoh.gg, let its check finish, then try again.');return}" +
+    "for(k in A){try{r=await fetch('/api/v2/gac/brackets/recent/'+A[k]+'/',H);if(!r.ok)continue;j=await r.json();q={};" +
+    "await Promise.all((j.bracketPlayers||[]).map(async function(p){var c=String(p.allyCode||'').replace(/\\D/g,'');if(!c||Object.values(A).indexOf(c)>=0)return;" +
+    "try{var x=await fetch('/api/player/'+c+'/',H);if(x.ok)q[c]=await x.json()}catch(e){}}));g[k]={bracket:j,players:q}}catch(e){}}" +
+    "w=window.open(U+'#pbm=1');if(!w){alert('Holotable: pop-up blocked. Allow pop-ups for swgoh.gg and try again.');return}" +
+    "f=function(e){if(e.source===w&&e.origin===O&&e.data&&e.data.type==='holotable-ready'){removeEventListener('message',f);clearTimeout(t);" +
+    "w.postMessage({type:'holotable-pull',v:1,accounts:o,gac:g},O)}};addEventListener('message',f);" +
+    "t=setTimeout(function(){removeEventListener('message',f);alert('Holotable: the app tab never answered. Use Export / Import roster snapshot instead.')},60000)})()";
 }
 const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); return !!(e && !e.hidden && e.offsetParent !== null); }, sel);
 
@@ -75,12 +99,18 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     let parses = false; try { new Function(code); parses = true; } catch (e) {}
     ck("decoded bookmarklet is valid JavaScript", parses, code.slice(0, 80));
     ck("bookmarklet carries both ally codes and this app's own URL", code.includes(CODES.ollie) && code.includes(CODES.tiny) && code.includes(`"${BASE}/x.html"`), code.slice(0, 200));
-    ck("bookmarklet fetches same-origin /api/player/ with Accept: application/json and posts holotable-pull v1",
-      code.includes("'/api/player/'") && code.includes("Accept:'application/json'") && code.includes("type:'holotable-pull',v:1") && code.includes("e.origin===O") && code.includes("e.source===w"), "");
+    ck("bookmarklet fetches same-origin /api/player/ with Accept: application/json and builds holotable-pull v1 (with its own `at` pull time)",
+      code.includes("'/api/player/'") && code.includes("Accept:'application/json'") && code.includes("type:'holotable-pull',v:1,at:Date.now()"), "");
+    ck("COOP: bookmarklet saves the payload as a gzip FILE (holotable-swgoh-pull-<date>.json[.gz]) — no window.open / postMessage handshake, one alert only (not on swgoh.gg)",
+      code.includes("CompressionStream('gzip')") && code.includes("'holotable-swgoh-pull-'") && code.includes(".download=n") && !/window\.open|postMessage/.test(code) && (code.match(/alert\(/g) || []).length === 1, "");
+    ck("bookmarklet shows its result in a toast on the swgoh.gg page with an 'Open Holotable' link to <app>#pbm=file", code.includes("Open Holotable") && code.includes("U+'#pbm=file'") && code.includes("textContent=m"), "");
     ck("bookmarklet is short and dependency-free (< 2000 chars, no script tags / imports)", code.length < 2000 && !/<script|import\(|require\(/.test(code), String(code.length));
     await p.evaluate(() => openSyncModal()); await p.waitForTimeout(200);
     const hasCopy = await p.evaluate(() => [...document.querySelectorAll("#pbmBmBox button")].some(x => /Copy bookmarklet/.test(x.textContent)));
     ck("'Copy bookmarklet' button present", hasCopy, "");
+    const box = await p.evaluate(() => ({ t: document.getElementById("pbmBmBox").textContent, imp: !!document.querySelector("#pbmBmBox #pbmPullBtn"), inp: (document.getElementById("pbmPullFile") || {}).accept }));
+    ck("☁ Sync box: '⬆ Import pull file…' button + an UNFILTERED file input (rv25: no accept — mobile pickers grey out .json.gz); steps describe the real flow (re-drag once, file downloads, Import pull file…) and say why (COOP)",
+      box.imp && box.inp === "" && /Re-drag it once/.test(box.t) && /holotable-swgoh-pull-<date>\.json\.gz/.test(box.t) && /Import pull file…/.test(box.t) && /Cross-Origin-Opener-Policy/.test(box.t) && !/opens in a new tab and shows what it got/.test(box.t), box.t.slice(0, 300));
     await p.evaluate(() => { try { Object.defineProperty(navigator, "clipboard", { value: { writeText: t => { window.__copied = t; return Promise.resolve(); } }, configurable: true }); } catch (e) {} pbmBmCopy(); });
     await p.waitForTimeout(150);
     const copied = await p.evaluate(() => ({ t: window.__copied || "", msg: document.getElementById("pbmBmMsg").textContent }));
@@ -89,31 +119,143 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     allErrs.push(...errs); await ctx.close();
   });
 
-  /* ---------- 2. END-TO-END: fake swgoh.gg tab runs the bookmarklet → app tab → confirm → Import ---------- */
+  /* ---------- 2. END-TO-END under COOP: fake swgoh.gg tab runs the bookmarklet → pull FILE → Import pull file… → confirm → Import ---------- */
   await sec(async () => {
     const { ctx, p, errs } = await openX(b, { tag: "e2e", fakeSwgoh: true });
     const href = await p.evaluate(() => document.getElementById("pbmBmLink").getAttribute("href"));
     const code = decodeURIComponent(href.replace(/^javascript:/, ""));
     const before = await p.evaluate(() => ({ o: state.pulls.ollie.fetchedAt, t: state.pulls.tiny.fetchedAt }));
     const sw = await ctx.newPage();
+    const coop = await sw.goto("https://swgoh.gg/", { waitUntil: "domcontentloaded" }).then(r => r.headers()["cross-origin-opener-policy"]);
+    ck("e2e: the fake swgoh.gg sends Cross-Origin-Opener-Policy: same-origin, like the real one", coop === "same-origin", String(coop));
+    const t0 = Date.now();
+    let popped = false; ctx.once("page", () => { popped = true; });
+    const [dl] = await Promise.all([sw.waitForEvent("download", { timeout: 20000 }), sw.evaluate(c => { (0, eval)(c); }, code)]);
+    const fname = dl.suggestedFilename(), fdir = L.path.join(SHOTS, "pull-pbm"), fpath = L.path.join(fdir, fname);
+    try { L.fs.mkdirSync(fdir, { recursive: true }); } catch (e) {}
+    await dl.saveAs(fpath);
+    const buf = L.fs.readFileSync(fpath);
+    const today = await sw.evaluate(() => new Date().toLocaleDateString("sv"));
+    ck("e2e: the bookmarklet downloads holotable-swgoh-pull-<today>.json.gz, gzip-compressed (magic 1f 8b)", fname === `holotable-swgoh-pull-${today}.json.gz` && buf[0] === 0x1f && buf[1] === 0x8b, fname + " " + buf.length);
+    const payload = JSON.parse(require("zlib").gunzipSync(buf).toString("utf8"));
+    ck("e2e: the file holds {type:'holotable-pull', v:1, at, accounts:{ollie,tiny}, gac:{}} — same payload the handshake carried, plus its pull time",
+      payload.type === "holotable-pull" && payload.v === 1 && payload.at >= t0 - 5000 && payload.at <= Date.now() && payload.accounts.ollie.data.ally_code === +CODES.ollie && payload.accounts.tiny.data.ally_code === +CODES.tiny && JSON.stringify(payload.gac) === "{}", JSON.stringify(Object.keys(payload)));
+    await sw.waitForTimeout(200);
+    const toast = await sw.evaluate(() => { const d = [...document.querySelectorAll("body > div")].pop(); const a = d && d.querySelector("a"); return d ? { t: d.textContent, href: a && a.getAttribute("href"), target: a && a.target, fixed: getComputedStyle(d).position } : null; });
+    ck("e2e: swgoh.gg shows a toast (no alert) naming the file and size, with 'Open Holotable ↗' → <app>#pbm=file in a new tab; no popup was opened", !!toast && /✓ Holotable: saved holotable-swgoh-pull-.*\.json\.gz \(\d+ KB\)/.test(toast.t) && /Import pull file/.test(toast.t) && toast.href === `${BASE}/x.html#pbm=file` && toast.target === "_blank" && toast.fixed === "fixed" && !popped, JSON.stringify(toast));
+    await sw.screenshot({ path: L.path.join(SHOTS, "pbm-swgoh-toast-1280.png") });
+    /* the toast's link opens the app with the landing card; its button opens the file chooser */
+    const [land] = await Promise.all([ctx.waitForEvent("page", { timeout: 15000 }), sw.click("body > div a")]);
+    await land.waitForLoadState("domcontentloaded"); await land.waitForTimeout(900);
+    const lc = await land.evaluate(() => { const el = document.getElementById("pbmConfirm"); return { vis: !!(el && !el.hidden), kind: el && el.dataset.pbmLanding, t: el ? el.textContent : "", focus: document.activeElement && document.activeElement.id, opener: window.opener === null, hash: location.hash }; });
+    ck("e2e: 'Open Holotable' lands on a card '⬆ Import pull file…' (focused), the #pbm=file hash is gone", lc.vis && lc.kind === "file" && /Import the pull file the swgoh\.gg bookmark just saved/.test(lc.t) && lc.focus === "pbmLandBtn" && !/pbm=/.test(lc.hash), JSON.stringify(lc));
+    await land.screenshot({ path: L.path.join(SHOTS, "pbm-landing-1280.png") });
+    const [fc] = await Promise.all([land.waitForEvent("filechooser", { timeout: 5000 }), land.click("#pbmLandBtn")]);
+    await fc.setFiles(fpath);
+    let shown = false;
+    try { await land.waitForSelector("#pbmConfirm:not([hidden]) #pbmImportBtn", { timeout: 10000 }); shown = true; } catch (e) {}
+    const txt = shown ? await land.textContent("#pbmConfirm") : "";
+    ck("e2e: the file's confirm card reads 'Import roster from swgoh.gg: Ollietank 8.20M GP · Tiny 7.89M GP' and 'From <file> · pulled …'", shown && /Import roster from swgoh\.gg: Ollietank 8\.20M GP · Tiny 7\.89M GP/.test(txt) && new RegExp("From " + fname.replace(/\./g, "\\.") + " · pulled").test(txt), txt.slice(0, 200));
+    const pre = await land.evaluate(() => ({ wrote: (JSON.parse(localStorage.getItem("swgoh-holotable-pulls-v1") || "{}").ollie || {}).fetchedAt, st: document.getElementById("pullStatus").textContent, armed: pbmArmed }));
+    ck("e2e: nothing written before Import, nothing armed (no opener), no proxy auto-pull", pre.wrote === before.o && pre.armed === false && !/Pull failed/.test(pre.st), JSON.stringify(pre));
+    await land.screenshot({ path: L.path.join(SHOTS, "pbm-confirm-1280.png") });
+    if (shown) await land.click("#pbmImportBtn");
+    await land.waitForTimeout(300);
+    const after = await land.evaluate(() => { const pl = JSON.parse(localStorage.getItem("swgoh-holotable-pulls-v1") || "{}");
+      return { o: pl.ollie && pl.ollie.fetchedAt, gp: pl.ollie && pl.ollie.gp, tgp: pl.tiny && pl.tiny.gp, hist: pl.ollie && pl.ollie.gacHist, last: state.lastPull, st: document.getElementById("pullStatus").textContent, card: !!document.querySelector("#pbmConfirm:not([hidden])") }; });
+    ck("e2e: Import writes both pulls to PULLS_KEY (fetchedAt = the file's pull time, not the Import press), raw GP", after.o > before.o && after.o <= payload.at && after.gp === SNAP.accounts.ollie.gp && after.tgp === SNAP.accounts.tiny.gp, JSON.stringify({ o: after.o, at: payload.at, gp: after.gp }));
+    ck("e2e: imported pull carries gacHist seeded from the previous pull + the new rating", Array.isArray(after.hist) && after.hist.length === 2 && after.hist[0].sr === 1467 && after.hist[1].sr === 1500 && after.hist[1].league === "Carb 5", JSON.stringify(after.hist));
+    ck("e2e: status says 'Imported swgoh.gg pull file …', card closed, lastPull stamped with the pull time", /✓ Imported swgoh\.gg pull file holotable-swgoh-pull-/.test(after.st) && !after.card && after.last > 0 && after.last <= payload.at, after.st);
+    /* the same file through ☁ Sync's button in the first tab */
+    await p.evaluate(() => openSyncModal());
+    const [fc2] = await Promise.all([p.waitForEvent("filechooser", { timeout: 5000 }), p.click("#pbmPullBtn")]);
+    await fc2.setFiles(fpath);
+    await p.waitForSelector("#pbmConfirm:not([hidden]) #pbmImportBtn", { timeout: 10000 });
+    const sy = await p.evaluate(() => ({ msg: document.getElementById("pbmBmMsg").textContent }));
+    ck("e2e: ☁ Sync → ⬆ Import pull file… reads the same file into the same confirm card and says so in the box", /Read holotable-swgoh-pull-.*\(pulled .*\) — check the card/.test(sy.msg), sy.msg);
+    await p.evaluate(() => pbmCancel());
+    ck("e2e: Cancel says nothing was imported", /Cancelled — nothing was imported from holotable-swgoh-pull-/.test(await p.evaluate(() => document.getElementById("pbmBmMsg").textContent)), "");
+    await p.evaluate(() => closeSyncModal());
+    allErrs.push(...errs); await ctx.close();
+  });
+
+  /* ---------- 2b. REGRESSION: the OLD handshake bookmarklet under COOP never completes; without COOP it still does ---------- */
+  await sec(async () => {
+    const { ctx, p, errs } = await openX(b, { tag: "old-coop", fakeSwgoh: true });
+    const sw = await ctx.newPage();
     await sw.goto("https://swgoh.gg/", { waitUntil: "domcontentloaded" });
-    const [pop] = await Promise.all([ctx.waitForEvent("page", { timeout: 15000 }), sw.evaluate(c => { (0, eval)(c); }, code)]);
+    sw.on("dialog", d => d.dismiss().catch(() => {}));
+    const [pop] = await Promise.all([ctx.waitForEvent("page", { timeout: 15000 }), sw.evaluate(c => { (0, eval)(c); }, oldBookmarkletCode(`${BASE}/x.html`))]);
+    await pop.waitForLoadState("domcontentloaded"); await pop.waitForTimeout(3000);
+    const r = await pop.evaluate(() => { const el = document.getElementById("pbmConfirm"); return { opener: window.opener, viaBm: PBM_VIA_BM, armed: pbmArmed, importBtn: !!document.querySelector("#pbmConfirm:not([hidden]) #pbmImportBtn"), kind: el && el.dataset.pbmLanding, t: el ? el.textContent : "" }; });
+    ck("COOP regression: the old bookmarklet's app tab has window.opener === null, never arms, and no import card ever appears", r.opener === null && r.viaBm === false && r.armed === false && !r.importBtn, JSON.stringify(r).slice(0, 200));
+    ck("COOP regression: that orphaned tab says it was opened by an older bookmark, why (COOP), and to re-drag it", r.kind === "orphan" && /older Holotable bookmark/.test(r.t) && /Cross-Origin-Opener-Policy/.test(r.t) && /Re-drag/.test(r.t), r.t.slice(0, 200));
+    await pop.screenshot({ path: L.path.join(SHOTS, "pbm-orphan-1280.png") });
+    await pop.click("#pbmLandBtn"); await pop.waitForTimeout(300);
+    ck("COOP regression: its 'Set it up →' opens ☁ Sync at the new bookmark", await vis(pop, "#pbmBmLink") && await pop.evaluate(() => document.getElementById("pbmConfirm").hidden), "");
+    allErrs.push(...errs); await ctx.close();
+  });
+  await sec(async () => {
+    const { ctx, p, errs } = await openX(b, { tag: "old-nocoop", fakeSwgoh: true, coop: false });
+    const sw = await ctx.newPage();
+    await sw.goto("https://swgoh.gg/", { waitUntil: "domcontentloaded" });
+    const [pop] = await Promise.all([ctx.waitForEvent("page", { timeout: 15000 }), sw.evaluate(c => { (0, eval)(c); }, oldBookmarkletCode(`${BASE}/x.html`))]);
     await pop.waitForLoadState("domcontentloaded");
     let shown = false;
     try { await pop.waitForSelector("#pbmConfirm:not([hidden]) #pbmImportBtn", { timeout: 15000 }); shown = true; } catch (e) {}
-    ck("e2e: real swgoh.gg-origin postMessage shows the confirm card in the opened app tab", shown, "");
     const txt = shown ? await pop.textContent("#pbmConfirm") : "";
-    ck("e2e: confirm reads 'Import roster from swgoh.gg: Ollietank 8.20M GP · Tiny 7.89M GP'", /Import roster from swgoh\.gg: Ollietank 8\.20M GP · Tiny 7\.89M GP/.test(txt), txt.slice(0, 160));
-    const pre = await pop.evaluate(() => ({ armed: pbmArmed, wrote: (JSON.parse(localStorage.getItem("swgoh-holotable-pulls-v1") || "{}").ollie || {}).fetchedAt, st: document.getElementById("pullStatus").textContent }));
-    ck("e2e: nothing written before Import, listener disarmed, no proxy auto-pull", pre.wrote === before.o && pre.armed === false && !/Pull failed/.test(pre.st), JSON.stringify(pre));
-    await pop.screenshot({ path: L.path.join(SHOTS, "pbm-confirm-1280.png") });
+    ck("no COOP (old fake): the kept postMessage receive side still completes the old handshake with a real swgoh.gg-origin message", shown && /Import roster from swgoh\.gg: Ollietank 8\.20M GP · Tiny 7\.89M GP/.test(txt) && !/From /.test(txt), txt.slice(0, 160));
     if (shown) await pop.click("#pbmImportBtn");
     await pop.waitForTimeout(300);
-    const after = await pop.evaluate(() => { const pl = JSON.parse(localStorage.getItem("swgoh-holotable-pulls-v1") || "{}");
-      return { o: pl.ollie && pl.ollie.fetchedAt, gp: pl.ollie && pl.ollie.gp, tgp: pl.tiny && pl.tiny.gp, hist: pl.ollie && pl.ollie.gacHist, last: state.lastPull, st: document.getElementById("pullStatus").textContent, card: !!document.querySelector("#pbmConfirm:not([hidden])") }; });
-    ck("e2e: Import writes both pulls to PULLS_KEY (fresh fetchedAt, raw GP)", after.o > before.o && after.gp === SNAP.accounts.ollie.gp && after.tgp === SNAP.accounts.tiny.gp, JSON.stringify({ o: after.o, gp: after.gp }));
-    ck("e2e: imported pull carries gacHist seeded from the previous pull + the new rating", Array.isArray(after.hist) && after.hist.length === 2 && after.hist[0].sr === 1467 && after.hist[1].sr === 1500 && after.hist[1].league === "Carb 5", JSON.stringify(after.hist));
-    ck("e2e: status says imported, card closed, lastPull stamped", /Imported from a swgoh\.gg tab/.test(after.st) && !after.card && after.last > 0, after.st);
+    const st = await pop.evaluate(() => document.getElementById("pullStatus").textContent);
+    ck("no COOP (old fake): Import status still reads 'Imported from a swgoh.gg tab'", /Imported from a swgoh\.gg tab/.test(st), st);
+    allErrs.push(...errs); await ctx.close();
+  });
+
+  /* ---------- 2c. pull-file reader: plain .json, garbage, other Holotable files, version, clock, gzip cap, no DecompressionStream ---------- */
+  await sec(async () => {
+    const { ctx, p, errs } = await openX(b, { tag: "pfile" });
+    const plain = JSON.stringify({ type: "holotable-pull", v: 1, at: Date.now() - 3 * 3600e3, accounts: { ollie: RAW.ollie }, gac: {} });
+    await p.evaluate(() => openSyncModal());
+    await p.setInputFiles("#pbmPullFile", { name: "pull.json", mimeType: "application/json", buffer: Buffer.from(plain) });
+    await p.waitForTimeout(500);
+    const r1 = await p.evaluate(() => ({ card: !!document.querySelector("#pbmConfirm:not([hidden]) #pbmImportBtn"), t: (document.getElementById("pbmConfirm") || {}).textContent, at: pbmPending && pbmPending.at, src: pbmPending && pbmPending.src }));
+    ck("pull file: a plain (un-gzipped) .json is read too; the card says 'From pull.json · pulled … (3 h ago)'", r1.card && r1.src === "file" && /From pull\.json · pulled .*\(3 h ago\)/.test(r1.t), (r1.t || "").slice(0, 200));
+    await p.evaluate(() => pbmCancel());
+    const r = await p.evaluate(async raw => {
+      const out = {};
+      const say = () => document.getElementById("pbmBmMsg").textContent;
+      const T = (t, n) => { pbmPending = null; const ret = pbmPullText(t, n || "f.json"); return { ret, msg: say(), card: !!document.querySelector("#pbmConfirm:not([hidden]) #pbmImportBtn") }; };
+      out.notJson = T("{nope");
+      out.roster = T(JSON.stringify({ kind: "holotable-roster-snapshot", version: 1 }));
+      out.opp = T(JSON.stringify({ kind: "holotable-opponent-snapshot", version: 1 }));
+      out.backup = T(JSON.stringify({ stateVersion: 7 }));
+      out.other = T(JSON.stringify({ hello: 1 }));
+      out.v2 = T(JSON.stringify({ type: "holotable-pull", v: 2, accounts: {} }));
+      out.empty = T(JSON.stringify({ type: "holotable-pull", v: 1, accounts: {}, gac: {} }));
+      const fut = T(JSON.stringify({ type: "holotable-pull", v: 1, at: Date.now() + 86400e3, accounts: { ollie: raw } })); out.future = { ret: fut.ret, at: pbmPending && pbmPending.at, now: Date.now() }; pbmCancel();
+      const noAt = T(JSON.stringify({ type: "holotable-pull", v: 1, accounts: { ollie: raw } })); out.noAt = { ret: noAt.ret, age: Date.now() - (pbmPending ? pbmPending.at : 0) }; pbmCancel();
+      /* an OLDER file than this device's pull is refused at Import with the file wording */
+      const old = T(JSON.stringify({ type: "holotable-pull", v: 1, at: state.pulls.ollie.fetchedAt - 60000, accounts: { ollie: raw } }));
+      out.oldRet = pbmImport(); out.oldSt = document.getElementById("pullStatus").textContent;
+      /* gzip size cap while unpacking (a 2 MB run of zeros, 64 KB cap) */
+      const bomb = new Blob([new Uint8Array(2 * 1024 * 1024)]).stream().pipeThrough(new CompressionStream("gzip"));
+      const gz = await new Response(bomb).blob();
+      try { await pbmGunzip(gz.stream(), 64 * 1024); out.cap = "no throw"; } catch (e) { out.cap = e.message; }
+      out.gzSize = gz.size;
+      /* no DecompressionStream → a clear message, nothing changes */
+      const DS = window.DecompressionStream; window.DecompressionStream = undefined;
+      try { pbmPending = null; out.noDs = { ret: await pbmPullFile(new File([gz], "x.json.gz")), msg: say() }; } finally { window.DecompressionStream = DS; }
+      out.big = { ret: await pbmPullFile({ name: "huge.json.gz", size: 50 * 1024 * 1024 }), msg: say() };
+      return out;
+    }, RAW.ollie);
+    const R2 = r;
+    ck("pull file: garbage / other Holotable files are refused with a reason that names the right button, no card", !R2.notJson.ret && /isn't valid JSON/.test(R2.notJson.msg) && /roster snapshot — use ⬆ Import roster snapshot/.test(R2.roster.msg) && /opponent snapshot — use GAC Planner › Opponent/.test(R2.opp.msg) && /Holotable backup — use ⬆ Import backup/.test(R2.backup.msg) && /isn't a Holotable pull file/.test(R2.other.msg) && [R2.notJson, R2.roster, R2.opp, R2.backup, R2.other].every(x => !x.card), JSON.stringify(R2).slice(0, 400));
+    ck("pull file: unknown version and an empty payload are refused", !R2.v2.ret && /format v2/.test(R2.v2.msg) && !R2.empty.ret && /holds no roster or GAC bracket/.test(R2.empty.msg), JSON.stringify([R2.v2, R2.empty]));
+    ck("pull file: a future `at` is clamped to now; no `at` means now", R2.future.ret === true && R2.future.at <= R2.future.now && R2.future.at > R2.future.now - 5000 && R2.noAt.ret === true && R2.noAt.age < 5000, JSON.stringify([R2.future, R2.noAt]));
+    ck("pull file: a file OLDER than this device's pull is not imported ('this device already has a newer pull')", R2.oldRet === 0 && /this device already has a newer pull/.test(R2.oldSt), R2.oldSt);
+    ck("pull file: gunzip stops at the size cap (hostile .gz can't balloon)", /unpacks to more than/.test(R2.cap) && R2.gzSize < 20000, JSON.stringify([R2.cap, R2.gzSize]));
+    ck("pull file: no DecompressionStream → says which browsers can, nothing changes; an oversize file is refused unread", R2.noDs.ret === false && /can't unpack \.gz files/.test(R2.noDs.msg) && R2.big.ret === false && /far too big/.test(R2.big.msg), JSON.stringify([R2.noDs, R2.big]));
     allErrs.push(...errs); await ctx.close();
   });
 
@@ -208,7 +350,7 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     await p.waitForFunction(() => !rpPullBusy, null, { timeout: 120000 });
     const st = await p.evaluate(() => ({ t: document.getElementById("pullStatus").textContent, cls: document.getElementById("pullStatus").className, btn: !!document.querySelector("#pullStatus .pbm-help-btn") }));
     ck("copy: network failure says swgoh.gg blocks direct requests and proxies are down", /Pull failed/.test(st.t) && /swgoh\.gg blocks direct requests from other websites/.test(st.t) && /free proxies this app falls back on are down/.test(st.t), st.t.slice(0, 300));
-    ck("copy: shows the 3-step swgoh.gg-tab route and the Export/Import alternative", /1\) ☁ Sync/.test(st.t) && /2\) open swgoh\.gg/.test(st.t) && /3\) click the bookmark/.test(st.t) && /Export \/ ⬆ Import roster snapshot/.test(st.t), "");
+    ck("copy: shows the 4-step swgoh.gg-tab route (bookmark saves a pull file → Import pull file…) and the Export/Import alternative", /1\) ☁ Sync/.test(st.t) && /2\) open swgoh\.gg/.test(st.t) && /3\) click the bookmark — it saves a pull file/.test(st.t) && /4\) ☁ Sync → ⬆ Import pull file…/.test(st.t) && /Export \/ ⬆ Import roster snapshot/.test(st.t), "");
     ck("copy: 'Ask Claude to pull fresh data' is gone", !/Ask Claude/.test(st.t), "");
     ck("copy: 'Set it up →' button present", st.btn, "");
     await p.screenshot({ path: L.path.join(SHOTS, "pbm-error-1280.png"), clip: { x: 0, y: 0, width: 1280, height: 260 } });
@@ -314,8 +456,11 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     ck("gacActivity: per-event tick → played; next event pending again; other account unaffected", r.tick.state === "played" && r.tick.how === "tick" && r.tickNextEvent.state === "pending" && r.tickNextEvent.roundId === "s84e2" && r.tinyUnaffected === "pending", JSON.stringify([r.tick.state, r.tickNextEvent.state, r.tinyUnaffected]));
     ck("gacActivity: schedule run out → unknown with honest text", r.ranOut.state === "unknown" && /run out/.test(r.ranOut.evidence), r.ranOut.evidence);
     const reg = await p.evaluate(() => ({ n: SNAPSHOTS.length, e: SNAP_BY_KEY["gac-schedule"], st: snapState(SNAP_BY_KEY["gac-schedule"], Date.now()).state, fmt: GAC_FORMAT, src: GAC_SCHEDULE.source, est: GAC_SCHEDULE.events.filter(e => e.est).map(e => e.id) }));
-    ck("GAC_SCHEDULE registered in SNAPSHOTS (24 entries incl. drr droid-raid, cap cap-journeys), dated 2026-10-12 (upd: gac-history re-read)", reg.n === 24 && reg.e && reg.e.asOf === "2026-10-12" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
-    ck("GAC_SCHEDULE: source recorded; estimates are S84E3 + Season 85 (S84E2 verified 12 Oct); GAC_FORMAT is 5v5 (dta refresh: Season 84)", reg.src === "swgoh.gg/p/<code>/gac-history/" && JSON.stringify(reg.est) === '["s84e3","s85e1","s85e2","s85e3"]' && reg.fmt === "5v5", JSON.stringify(reg));
+    /* rf22 22 Oct 2026 (deliberate, 2 assertions): Season 84 Event 3 was verified from both accounts' live brackets (startTime 21 Oct 21:00 UTC),
+       so GAC_SCHEDULE.asOf moved to 22 Oct and only Season 85's three events remain estimates. */
+    /* rv31 1 Nov 2026 (deliberate, 2 assertions): Season 85's start (Wed 4 Nov 09:00 AEDT, 3v3) is now on swgoh.gg/schedule/, so GAC_SCHEDULE.asOf moved to 1 Nov and only S85 events 2 and 3 remain estimates. */
+    ck("GAC_SCHEDULE registered in SNAPSHOTS (24 entries incl. drr droid-raid, cap cap-journeys), dated 2026-11-01 (rv31: S85 start sourced from swgoh.gg/schedule/)", reg.n === 24 && reg.e && reg.e.asOf === "2026-11-01" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
+    ck("GAC_SCHEDULE: source recorded; estimates are Season 85 events 2 and 3 only (S84E2 verified 12 Oct, S84E3 verified 22 Oct, S85E1 start sourced 1 Nov); GAC_FORMAT constant is still 5v5 (flips by hand on 4 Nov)", reg.src === "swgoh.gg/p/<code>/gac-history/" && JSON.stringify(reg.est) === '["s85e2","s85e3"]' && reg.fmt === "5v5", JSON.stringify(reg));
     allErrs.push(...errs); await ctx.close();
   });
 
@@ -383,6 +528,7 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     const { ctx, p, errs } = await openX(b, { tag: "file", url: "file://" + L.FILE });
     const r = await p.evaluate(() => ({ link: !!document.getElementById("pbmBmLink"), txt: (document.getElementById("pbmBmBox") || {}).textContent || "", alt: pbmPullAltText(true) }));
     ck("file://: no bookmarklet, says why, points at Export/Import", !r.link && /open as a local file/.test(r.txt) && /Export \/ ⬆ Import roster snapshot/.test(r.txt) && /hosted copy/.test(r.alt), r.txt.slice(0, 160));
+    ck("file://: '⬆ Import pull file…' still offered (a file saved by the hosted copy's bookmark imports here too)", await p.evaluate(() => !!document.querySelector("#pbmBmBox #pbmPullBtn") && !!document.getElementById("pbmPullFile")), "");
     allErrs.push(...errs); await ctx.close();
   });
 

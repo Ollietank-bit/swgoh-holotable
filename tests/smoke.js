@@ -1,5 +1,6 @@
 /* Boots the app with the real saved state + the newest roster snapshot; visits every tab for both accounts at
    1280 and 390 wide; no page errors, no horizontal overflow. The broad regression net for every change. */
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it could rot when the real date crossed a season boundary
 const L = require("./lib.js");
 (async () => {
   const srv = await L.serve(); const b = await L.chromium.launch({ headless: true });

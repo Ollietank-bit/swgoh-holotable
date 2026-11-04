@@ -1,0 +1,1148 @@
+{
+ "_note": "derived from real capture 1 Nov 2026 (holotable-capture-2026-11-01-0257.json.gz, swgoh.gg real DOM via tools/swgoh-capture.js): TRIMMED raw extractor rows, leaves unmodified. Squad rows + datacron-tooltip noise rows exactly as the generic extractor returned them (positional rankGuess). Used by capture-selftest.js 8a-8c.",
+ "boards": {
+  "tierGac": {
+   "side": "offence",
+   "season": "84",
+   "path": "/tier-list/gac/",
+   "rows": [
+    {
+     "rank": 1,
+     "tier": "S",
+     "units": [
+      "Supreme Leader Kylo Ren",
+      "Rey (Dark Side Vision)",
+      "Sith Trooper",
+      "General Hux",
+      "Kylo Ren (Unmasked)"
+     ],
+     "win": "91.4%",
+     "pcts": [
+      "91.4%"
+     ],
+     "nums": [
+      "2437",
+      "134K",
+      "#1"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "2437"
+      },
+      {
+       "label": "Win %",
+       "value": "91.4%"
+      },
+      {
+       "label": "Battles",
+       "value": "134K"
+      },
+      {
+       "label": "builds",
+       "value": "67"
+      }
+     ],
+     "trend": "▲1",
+     "dc": false,
+     "leaves": [
+      "[Supreme Leader Kylo Ren]",
+      "[Rey (Dark Side Vision)]",
+      "[Sith Trooper]",
+      "[General Hux]",
+      "[Kylo Ren (Unmasked)]",
+      "Elo",
+      "2437",
+      "Win %",
+      "91.4%",
+      "Battles",
+      "134K",
+      "67 builds",
+      "#1",
+      "▲1"
+     ],
+     "elo": 2437,
+     "battles": "134K",
+     "builds": "67",
+     "rankGuess": true
+    },
+    {
+     "rank": 2,
+     "tier": "S",
+     "units": [
+      "Kylo Ren (Unmasked)"
+     ],
+     "win": "93.3%",
+     "pcts": [
+      "93.3%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": null,
+     "dc": true,
+     "leaves": [
+      "L9",
+      "[Kylo Ren (Unmasked)]",
+      "Kylo Ren (Unmasked)",
+      "Whenever Kylo Ren (Unmasked) takes damage while Taunting, he gains 10% Defense (stacking, max 100%) and Max Health (stacking, max 100%) until the end of the encounter, and First Order allies gain 10% Offense (stacking, max 100%) until the end of the encounter. Whenever Kylo Ren (Unmasked) attacks out of turn, he inflicts Offense Down on target enemy for 2 turns. Whenever Kylo Ren (Unmasked) Stuns an enemy, increase that enemy's cooldowns by 1 and First Order allies gain Offense Up for 2 turns.",
+      "93.3%",
+      "· 50.6K"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 3,
+     "tier": "S",
+     "units": [
+      "Sample-size-adjusted win rate"
+     ],
+     "win": "92.2%",
+     "pcts": [
+      "92.2%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": null,
+     "dc": true,
+     "leaves": [
+      "L6",
+      "First Order",
+      "At the start of the encounter and at the end of their turn, First Order allies gain 1 stack of Retaliate (max 3) for 3 turns, which can't be copied, dispelled, or prevented. Retaliate: When damaged by an attack, deal 20% of the damage received per stack to the attacker; this damage can't defeat enemies.",
+      "92.2%",
+      "· 48.9K"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 4,
+     "tier": "S",
+     "units": [
+      "Sample-size-adjusted win rate"
+     ],
+     "win": "92.7%",
+     "pcts": [
+      "92.7%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": null,
+     "dc": true,
+     "leaves": [
+      "L3",
+      "Dark Side",
+      "The first time each Dark Side ally is defeated, remaining Dark Side allies gain 15% Offense and 20 Speed (stacking) for the rest of the encounter.",
+      "92.7%",
+      "· 46.6K"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 5,
+     "tier": "S",
+     "units": [
+      "The Stranger",
+      "Barriss Offee",
+      "Maul (Hate-Fueled)",
+      "Starkiller",
+      "Visas Marr"
+     ],
+     "win": "90.1%",
+     "pcts": [
+      "90.1%"
+     ],
+     "nums": [
+      "2340",
+      "35.1K",
+      "#2"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "2340"
+      },
+      {
+       "label": "Win %",
+       "value": "90.1%"
+      },
+      {
+       "label": "Battles",
+       "value": "35.1K"
+      },
+      {
+       "label": "builds",
+       "value": "193"
+      }
+     ],
+     "trend": "▲1",
+     "dc": false,
+     "leaves": [
+      "[The Stranger]",
+      "[Barriss Offee]",
+      "[Maul (Hate-Fueled)]",
+      "[Starkiller]",
+      "[Visas Marr]",
+      "Elo",
+      "2340",
+      "Win %",
+      "90.1%",
+      "Battles",
+      "35.1K",
+      "193 builds",
+      "#2",
+      "▲1"
+     ],
+     "elo": 2340,
+     "battles": "35.1K",
+     "builds": "193",
+     "rankGuess": true
+    },
+    {
+     "rank": 13,
+     "tier": "S",
+     "units": [
+      "Cere Junda",
+      "Cal Kestis",
+      "Maul",
+      "Ninth Sister",
+      "Taron Malicos"
+     ],
+     "win": "88.4%",
+     "pcts": [
+      "88.4%"
+     ],
+     "nums": [
+      "2132",
+      "16.5K",
+      "#4"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "2132"
+      },
+      {
+       "label": "Win %",
+       "value": "88.4%"
+      },
+      {
+       "label": "Battles",
+       "value": "16.5K"
+      },
+      {
+       "label": "builds",
+       "value": "334"
+      }
+     ],
+     "trend": "▲5",
+     "dc": false,
+     "leaves": [
+      "[Cere Junda]",
+      "[Cal Kestis]",
+      "[Maul]",
+      "[Ninth Sister]",
+      "[Taron Malicos]",
+      "Elo",
+      "2132",
+      "Win %",
+      "88.4%",
+      "Battles",
+      "16.5K",
+      "334 builds",
+      "#4",
+      "▲5",
+      "A→S"
+     ],
+     "elo": 2132,
+     "battles": "16.5K",
+     "builds": "334",
+     "rankGuess": true
+    },
+    {
+     "rank": 25,
+     "tier": "A",
+     "units": [
+      "Baylan Skoll",
+      "Dash Rendar",
+      "Hondo Ohnaka",
+      "Marrok",
+      "Shin Hati"
+     ],
+     "win": "86.5%",
+     "pcts": [
+      "86.5%"
+     ],
+     "nums": [
+      "1993",
+      "13.7K",
+      "#7"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "1993"
+      },
+      {
+       "label": "Win %",
+       "value": "86.5%"
+      },
+      {
+       "label": "Battles",
+       "value": "13.7K"
+      },
+      {
+       "label": "builds",
+       "value": "122"
+      },
+      {
+       "label": "Datacron dependent",
+       "value": "#7"
+      }
+     ],
+     "trend": "NEW",
+     "dc": true,
+     "leaves": [
+      "[Baylan Skoll]",
+      "[Dash Rendar]",
+      "[Hondo Ohnaka]",
+      "[Marrok]",
+      "[Shin Hati]",
+      "Elo",
+      "1993",
+      "Win %",
+      "86.5%",
+      "Battles",
+      "13.7K",
+      "122 builds",
+      "Datacron dependent",
+      "#7",
+      "NEW"
+     ],
+     "elo": 1993,
+     "battles": "13.7K",
+     "builds": "122",
+     "rankGuess": true
+    },
+    {
+     "rank": 29,
+     "tier": "A",
+     "units": [
+      "Darth Bane",
+      "Count Dooku"
+     ],
+     "win": "85.0%",
+     "pcts": [
+      "85.0%"
+     ],
+     "nums": [
+      "1965",
+      "96K",
+      "#8"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "1965"
+      },
+      {
+       "label": "Win %",
+       "value": "85.0%"
+      },
+      {
+       "label": "Battles",
+       "value": "96K"
+      },
+      {
+       "label": "builds",
+       "value": "28"
+      }
+     ],
+     "trend": "—",
+     "dc": false,
+     "leaves": [
+      "[Darth Bane]",
+      "[Count Dooku]",
+      "Elo",
+      "1965",
+      "Win %",
+      "85.0%",
+      "Battles",
+      "96K",
+      "28 builds",
+      "#8",
+      "—"
+     ],
+     "elo": 1965,
+     "battles": "96K",
+     "builds": "28",
+     "rankGuess": true
+    },
+    {
+     "rank": 81,
+     "tier": "B",
+     "units": [
+      "Rotta the Hutt"
+     ],
+     "win": "82.3%",
+     "pcts": [
+      "82.3%"
+     ],
+     "nums": [
+      "1674",
+      "27K",
+      "#21"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "1674"
+      },
+      {
+       "label": "Win %",
+       "value": "82.3%"
+      },
+      {
+       "label": "Battles",
+       "value": "27K"
+      },
+      {
+       "label": "builds",
+       "value": "30"
+      },
+      {
+       "label": "Datacron dependent",
+       "value": "#21"
+      }
+     ],
+     "trend": "▲9",
+     "dc": true,
+     "leaves": [
+      "[Rotta the Hutt]",
+      "Elo",
+      "1674",
+      "Win %",
+      "82.3%",
+      "Battles",
+      "27K",
+      "30 builds",
+      "Datacron dependent",
+      "#21",
+      "▲9"
+     ],
+     "elo": 1674,
+     "battles": "27K",
+     "builds": "30",
+     "rankGuess": true
+    },
+    {
+     "rank": 332,
+     "tier": "D",
+     "units": [
+      "Kylo Ren"
+     ],
+     "win": "57.8%",
+     "pcts": [
+      "57.8%"
+     ],
+     "nums": [
+      "68",
+      "#84"
+     ],
+     "stats": [
+      {
+       "label": "Win %",
+       "value": "57.8%"
+      },
+      {
+       "label": "Battles",
+       "value": "68"
+      }
+     ],
+     "trend": "-6",
+     "dc": false,
+     "leaves": [
+      "[Kylo Ren]",
+      "Elo",
+      "-6",
+      "Win %",
+      "57.8%",
+      "Battles",
+      "68",
+      "#84",
+      "▲8"
+     ],
+     "battles": "68",
+     "builds": null,
+     "rankGuess": true
+    }
+   ]
+  },
+  "tierGacDef": {
+   "side": "defence",
+   "season": "84",
+   "path": "/tier-list/gac/?side=defense",
+   "rows": [
+    {
+     "rank": 1,
+     "tier": "S",
+     "units": [
+      "The Stranger",
+      "Barriss Offee",
+      "Maul (Hate-Fueled)",
+      "Starkiller",
+      "Visas Marr"
+     ],
+     "win": null,
+     "pcts": [
+      "53.2%"
+     ],
+     "nums": [
+      "1944",
+      "51K",
+      "#1"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "1944"
+      },
+      {
+       "label": "Hold %",
+       "value": "53.2%"
+      },
+      {
+       "label": "Battles",
+       "value": "51K"
+      },
+      {
+       "label": "builds",
+       "value": "221"
+      }
+     ],
+     "trend": "—",
+     "dc": false,
+     "leaves": [
+      "[The Stranger]",
+      "[Barriss Offee]",
+      "[Maul (Hate-Fueled)]",
+      "[Starkiller]",
+      "[Visas Marr]",
+      "Elo",
+      "1944",
+      "Hold %",
+      "53.2%",
+      "Battles",
+      "51K",
+      "221 builds",
+      "#1",
+      "—"
+     ],
+     "elo": 1944,
+     "battles": "51K",
+     "builds": "221",
+     "rankGuess": true
+    },
+    {
+     "rank": 2,
+     "tier": "S",
+     "units": [
+      "Starkiller"
+     ],
+     "win": "52.0%",
+     "pcts": [
+      "52.0%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": null,
+     "dc": true,
+     "leaves": [
+      "L9",
+      "[Starkiller]",
+      "Starkiller",
+      "Starkiller has +200% Critical Chance and Critical Damage while he is buffed. Whenever another ally uses a Special ability, Starkiller assists. Whenever Starkiller gains a stack of Force Energy, he gains an additional stack of Force Energy.",
+      "52.0%",
+      "· 71.1K"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 3,
+     "tier": "S",
+     "units": [
+      "Sample-size-adjusted win rate"
+     ],
+     "win": "53.7%",
+     "pcts": [
+      "53.7%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": null,
+     "dc": true,
+     "leaves": [
+      "L6",
+      "Unaligned Force User",
+      "Unaligned Force User allies are immune to Max Health and Turn Meter reduction. Whenever an Unaligned Force User ally uses an ability, they recover 10% Health and Protection, and dispel all debuffs on all Unaligned Force User allies.",
+      "53.7%",
+      "· 18.9K"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 4,
+     "tier": "S",
+     "units": [
+      "Sample-size-adjusted win rate"
+     ],
+     "win": "53.7%",
+     "pcts": [
+      "53.7%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": null,
+     "dc": true,
+     "leaves": [
+      "L3",
+      "Dark Side",
+      "At the start of the encounter, Dark Side allies gain 15% Max Health and Max Protection for each other Dark Side ally until the end of the encounter.",
+      "53.7%",
+      "· 15.5K"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 5,
+     "tier": "S",
+     "units": [
+      "Supreme Leader Kylo Ren",
+      "Rey (Dark Side Vision)",
+      "Sith Trooper",
+      "General Hux",
+      "Kylo Ren (Unmasked)"
+     ],
+     "win": null,
+     "pcts": [
+      "46.3%"
+     ],
+     "nums": [
+      "1860",
+      "10.8K",
+      "#2"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "1860"
+      },
+      {
+       "label": "Hold %",
+       "value": "46.3%"
+      },
+      {
+       "label": "Battles",
+       "value": "10.8K"
+      },
+      {
+       "label": "builds",
+       "value": "23"
+      }
+     ],
+     "trend": "▲1",
+     "dc": false,
+     "leaves": [
+      "[Supreme Leader Kylo Ren]",
+      "[Rey (Dark Side Vision)]",
+      "[Sith Trooper]",
+      "[General Hux]",
+      "[Kylo Ren (Unmasked)]",
+      "Elo",
+      "1860",
+      "Hold %",
+      "46.3%",
+      "Battles",
+      "10.8K",
+      "23 builds",
+      "#2",
+      "▲1"
+     ],
+     "elo": 1860,
+     "battles": "10.8K",
+     "builds": "23",
+     "rankGuess": true
+    },
+    {
+     "rank": 382,
+     "tier": "D",
+     "units": [
+      "Geonosian Brood Alpha",
+      "Geonosian Soldier",
+      "Geonosian Spy",
+      "Poggle the Lesser",
+      "Sun Fac"
+     ],
+     "win": null,
+     "pcts": [
+      "4.1%"
+     ],
+     "nums": [
+      "16.6K",
+      "#97"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "4.1%"
+      },
+      {
+       "label": "Hold %",
+       "value": "16.6K"
+      },
+      {
+       "label": "Battles",
+       "value": "#97"
+      }
+     ],
+     "trend": "-188",
+     "dc": false,
+     "leaves": [
+      "[Geonosian Brood Alpha]",
+      "[Geonosian Soldier]",
+      "[Geonosian Spy]",
+      "[Poggle the Lesser]",
+      "[Sun Fac]",
+      "Elo",
+      "-188",
+      "Hold %",
+      "4.1%",
+      "Battles",
+      "16.6K",
+      "#97",
+      "▼3"
+     ],
+     "elo": null,
+     "battles": "#97",
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 383,
+     "tier": "D",
+     "units": [
+      "Sample-size-adjusted win rate"
+     ],
+     "win": "1.7%",
+     "pcts": [
+      "1.7%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": "–",
+     "dc": true,
+     "leaves": [
+      "L9",
+      "–",
+      "Unactivated affix",
+      "Doesn't apply to this squad's units",
+      "1.7%",
+      "· 566"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 384,
+     "tier": "D",
+     "units": [
+      "Sample-size-adjusted win rate"
+     ],
+     "win": "1.6%",
+     "pcts": [
+      "1.6%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": "–",
+     "dc": true,
+     "leaves": [
+      "L6",
+      "–",
+      "Unactivated affix",
+      "Doesn't apply to this squad's units",
+      "1.6%",
+      "· 566"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 385,
+     "tier": "D",
+     "units": [
+      "Sample-size-adjusted win rate"
+     ],
+     "win": "3.5%",
+     "pcts": [
+      "3.5%"
+     ],
+     "nums": [],
+     "stats": [],
+     "trend": null,
+     "dc": true,
+     "leaves": [
+      "L3",
+      "Dark Side",
+      "Whenever Dark Side allies use a Basic ability, they gain Critical Chance Up, Critical Damage Up, and Offense Up for 2 turns.",
+      "3.5%",
+      "· 90"
+     ],
+     "battles": null,
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 386,
+     "tier": "D",
+     "units": [
+      "50R-T",
+      "BB-8",
+      "Threepio & Chewie",
+      "L3-37",
+      "T3-M4"
+     ],
+     "win": null,
+     "pcts": [
+      "1.0%"
+     ],
+     "nums": [
+      "237",
+      "#99"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "1.0%"
+      },
+      {
+       "label": "Hold %",
+       "value": "237"
+      },
+      {
+       "label": "Battles",
+       "value": "#99"
+      }
+     ],
+     "trend": "-219",
+     "dc": false,
+     "leaves": [
+      "[50R-T]",
+      "[BB-8]",
+      "[Threepio & Chewie]",
+      "[L3-37]",
+      "[T3-M4]",
+      "Elo",
+      "-219",
+      "Hold %",
+      "1.0%",
+      "Battles",
+      "237",
+      "25 builds",
+      "#99",
+      "▼26",
+      "C→D"
+     ],
+     "elo": null,
+     "battles": "#99",
+     "builds": null,
+     "rankGuess": true
+    },
+    {
+     "rank": 407,
+     "tier": "D",
+     "units": [
+      "Captain Silvo",
+      "Brutus",
+      "Kix",
+      "Quiggold",
+      "Vane"
+     ],
+     "win": null,
+     "pcts": [
+      "0.0%"
+     ],
+     "nums": [
+      "93",
+      "#105"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "93"
+      },
+      {
+       "label": "Hold %",
+       "value": "#105"
+      },
+      {
+       "label": "Battles",
+       "value": "0.0%"
+      }
+     ],
+     "trend": "-314",
+     "dc": true,
+     "leaves": [
+      "[Captain Silvo]",
+      "[Brutus]",
+      "[Kix]",
+      "[Quiggold]",
+      "[Vane]",
+      "Elo",
+      "-314",
+      "Hold %",
+      "-0.0%",
+      "Battles",
+      "93",
+      "4 builds",
+      "#105",
+      "NEW",
+      "Meta Explorer",
+      "— Captain Silvo builds, datacrons & counters",
+      "L9",
+      "[Kix]",
+      "Kix",
+      "Whenever Kix gains Retribution, they also gain 10% Defense and 10% Health Steal (stacking, max 200%), and 10 Speed (stacking, max 200) until the end of encounter.",
+      "-0.0%",
+      "· 13",
+      "L6",
+      "Clone Trooper",
+      "Whenever Clone Trooper allies damage all enemies with an ability, they grant Tenacity Up for 2 turns to all allies.",
+      "0.0%",
+      "· 6",
+      "L3",
+      "Light Side",
+      "Whenever Light Side allies use a Special ability they gain 15% Turn Meter.",
+      "-0.0%",
+      "· 9"
+     ],
+     "elo": 93,
+     "battles": "0.0%",
+     "builds": null,
+     "rankGuess": true
+    }
+   ]
+  },
+  "tierFleet": {
+   "side": "offence",
+   "season": "84",
+   "path": "/tier-list/fleet/",
+   "rows": [
+    {
+     "rank": 1,
+     "tier": "S",
+     "units": [
+      "Leviathan",
+      "Fury-class Interceptor",
+      "B-28 Extinction-class Bomber",
+      "TIE Dagger"
+     ],
+     "win": "96.6%",
+     "pcts": [
+      "96.6%"
+     ],
+     "nums": [
+      "3110",
+      "44.7K",
+      "#1"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "3110"
+      },
+      {
+       "label": "Win %",
+       "value": "96.6%"
+      },
+      {
+       "label": "Battles",
+       "value": "44.7K"
+      },
+      {
+       "label": "builds",
+       "value": "80"
+      }
+     ],
+     "trend": "—",
+     "dc": true,
+     "leaves": [
+      "S",
+      "tier",
+      "S",
+      "[Leviathan]",
+      "[Fury-class Interceptor]",
+      "[B-28 Extinction-class Bomber]",
+      "[TIE Dagger]",
+      "Elo",
+      "3110",
+      "Win %",
+      "96.6%",
+      "Battles",
+      "44.7K",
+      "80 builds",
+      "#1",
+      "—",
+      "Meta Explorer",
+      "— Leviathan builds, datacrons & counters",
+      "L9",
+      "No character-specific datacron is commonly run on this build."
+     ],
+     "elo": 3110,
+     "battles": "44.7K",
+     "builds": "80",
+     "rankGuess": true
+    },
+    {
+     "rank": 2,
+     "tier": "A",
+     "units": [
+      "Profundity",
+      "Han's Millennium Falcon",
+      "Outrider",
+      "Rebel Y-wing"
+     ],
+     "win": "98.6%",
+     "pcts": [
+      "98.6%"
+     ],
+     "nums": [
+      "3034",
+      "50.6K",
+      "#2"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "3034"
+      },
+      {
+       "label": "Win %",
+       "value": "98.6%"
+      },
+      {
+       "label": "Battles",
+       "value": "50.6K"
+      },
+      {
+       "label": "builds",
+       "value": "138"
+      }
+     ],
+     "trend": "—",
+     "dc": true,
+     "leaves": [
+      "A",
+      "tier",
+      "A",
+      "[Profundity]",
+      "[Han's Millennium Falcon]",
+      "[Outrider]",
+      "[Rebel Y-wing]",
+      "Elo",
+      "3034",
+      "Win %",
+      "98.6%",
+      "Battles",
+      "50.6K",
+      "138 builds",
+      "#2",
+      "—",
+      "Meta Explorer",
+      "— Profundity builds, datacrons & counters",
+      "L9",
+      "No character-specific datacron is commonly run on this build."
+     ],
+     "elo": 3034,
+     "battles": "50.6K",
+     "builds": "138",
+     "rankGuess": true
+    },
+    {
+     "rank": 3,
+     "tier": "B",
+     "units": [
+      "Executor",
+      "Hound's Tooth",
+      "Punishing One",
+      "Razor Crest"
+     ],
+     "win": "93.3%",
+     "pcts": [
+      "93.3%"
+     ],
+     "nums": [
+      "2216",
+      "26.5K",
+      "#3"
+     ],
+     "stats": [
+      {
+       "label": "Elo",
+       "value": "2216"
+      },
+      {
+       "label": "Win %",
+       "value": "93.3%"
+      },
+      {
+       "label": "Battles",
+       "value": "26.5K"
+      },
+      {
+       "label": "builds",
+       "value": "84"
+      }
+     ],
+     "trend": "—",
+     "dc": true,
+     "leaves": [
+      "[Executor]",
+      "[Hound's Tooth]",
+      "[Punishing One]",
+      "[Razor Crest]",
+      "Elo",
+      "2216",
+      "Win %",
+      "93.3%",
+      "Battles",
+      "26.5K",
+      "84 builds",
+      "#3",
+      "—",
+      "Meta Explorer",
+      "— Executor builds, datacrons & counters",
+      "L9",
+      "No character-specific datacron is commonly run on this build."
+     ],
+     "elo": 2216,
+     "battles": "26.5K",
+     "builds": "84",
+     "rankGuess": true
+    }
+   ]
+  }
+ }
+}

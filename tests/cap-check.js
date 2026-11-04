@@ -11,6 +11,7 @@
    check reads the "All events" view (the 2 base-build failures: after 20 Oct the stale seed's Dark Sovereign row was past, so the
    "Current & next" lookup fell through to page source), fleet tier data Season 84 (Leviathan 96.6% → 96.5%, "Season 83" → "Season 84").
    rv25 25 Oct 2026 — DELIBERATE: EVENTS_SEED_VERSION 10.
+   rv34 4 Nov 2026 — DELIBERATE (1 assertion): EVENTS_SEED_VERSION 12 -> 13 (the 4 Nov schedule diff).
    rv31 1 Nov 2026 — DELIBERATE (3 assertions): EVENTS_SEED_VERSION 11 -> 12 (the 1 Nov schedule re-seed); the per-account "event lines" check (x2) expects the fleet tier chips at the 1 Nov values
    (Leviathan S 96.5% -> 96.6%, Profundity A 98.5% -> 98.6% WR; the 1 Nov fleet read moved win rates and battle counts, not tiers).
    rv25b 25 Oct 2026 (live swgoh.gg schedule read) — DELIBERATE, 3 assertions changed (old -> new, why): EVENTS_SEED_VERSION 10 -> 11; the "honest unknowns" check and the per-account
@@ -18,6 +19,7 @@
    (31 Oct 6:00 PM -> 1 Nov 18:00 AEDT), so they expect the 15 Oct in-game screen text AND the dated schedule line, and that the Leviathan unknowns are unchanged. CAP_OPINION is untouched
    (the owner-requested sentence still says Profundity "has no date"; flagged in the rv25b report, not edited). */
 process.env.SNAP_DATE = process.env.SNAP_DATE || "2026-10-12";
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it could rot when the real date crossed a season boundary
 const L = require("./lib.js");
 const ck = L.ck;
 const LEV = [["Darth Revan", "r", 9], ["Darth Malak", "r", 9], ["Sith Empire Trooper", "r", 7], ["Sith Trooper", "r", 7], ["Darth Maul", "r", 7], ["HK-47", "r", 7], ["Bastila Shan", "r", 7], ["Sith Assassin", "r", 5], ["50R-T", "r", 5],
@@ -93,7 +95,7 @@ const ACCOUNTS_LABEL = { ollie: "Ollietank", tiny: "Tiny" };
     ck("capEval: relic met only at relic >= need; ship met at stars >= 4 (exactly 4★ counts, 3★ does not); G12 without relic = 1 gear step + all tiers; 4★ character 'needs 7★ first'; not owned = whole requirement; no relic counts below G13",
       c.unit.relicMet === true && c.unit.relicShort === false && c.unit.shipExact4 === true && c.unit.ship3 === false && /1 gear step to G13 \(G12 → G13\) · \+7 relic tiers \(R0 → R7\)/.test(c.unit.relicG12) && /^needs 7★ first \(4★ → 7★\)/.test(c.unit.lowStar)
       && c.unit.unowned.gap === "not owned" && c.unit.unowned.tiers === 9 && c.unit.unownedShip.gap === "not owned" && c.unit.relicOnlyCountsAtG13 === false, JSON.stringify(c.unit));
-    ck("EVENTS_SEED_VERSION is 12 (rv31 re-seed, was 11) and the saved state was reseeded to it", c.seedVer === 12 && c.stateVer === 12, JSON.stringify([c.seedVer, c.stateVer]));
+    ck("EVENTS_SEED_VERSION is 13 (rv34 4 Nov re-seed, was 12) and the saved state was reseeded to it", c.seedVer === 13 && c.stateVer === 13, JSON.stringify([c.seedVer, c.stateVer]));
     ck("no page errors (pure)", errs.length === 0, errs.join(" | "));
     await ctx.close();
   }

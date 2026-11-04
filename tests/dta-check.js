@@ -12,10 +12,16 @@
      fleet asOf "22 Oct 2026" -> "25 Oct 2026" (re-verified live); seed v10 / CAPTURED 22 Oct -> v11 / 25 Oct; registry: datacrons, meta-fleets 22 Oct -> 25 Oct and
      tierlist, events 22 Oct -> 25 Oct (the other rf22 entries keep 22 Oct); reseed 5 -> 10 -> 5 -> 11; 24 rows -> 38 rows (ids seed0..seed37); the idempotent-reload row count
      26 -> 40 (38 + 2 user rows) and v10 -> v11; the real 20 Sep state upgrades to v11; the Conquest seed row was renamed "... — run 26 Oct -> 9 Nov" (sourced run, not the listed end).
-     The datacron-expiry rows check (Set 33..36 dates) is UNCHANGED (the AEDT clock times are asserted in rv25b-check.js). The reseed row-name list also gained the new TB / TW rows. */
-process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it rotted when the real date crossed a season boundary
+     The datacron-expiry rows check (Set 33..36 dates) is UNCHANGED (the AEDT clock times are asserted in rv25b-check.js). The reseed row-name list also gained the new TB / TW rows.    rv31b 1 Nov 2026 — DELIBERATE (1 assertion): era hard end 2026-10-20 -> 2026-11-17 (Era 10's last live day; the entry now tracks Era 10).
+   rv34 4 Nov 2026 — DELIBERATE (9 assertions + the pinned clock): PIN_NOW 1 Nov 12:00 AEDT -> 4 Nov 15:00 AEDT and TODAY 1 Nov -> 4 Nov (the refresh
+     dated four registry entries 4 Nov); seed v12 / CAPTURED 1 Nov -> v13 / 4 Nov; registry datacrons + gac-schedule 1 Nov -> 4 Nov, events 1 Nov -> 4 Nov (meta-fleets,
+     tierlist stay 1 Nov); reseed 5 -> 13; 40 -> 39 rows (seed0..seed38); idempotent reload 42 -> 41 rows, v13; 20 Sep state upgrades to v13; the reseed row-name
+     list swaps the dropped Territory Battle / 2 Nov TW sign-up rows for the next-war sign-up and GAC Season 85 Week 1 rows.
+*/
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-04T04:00:00Z";   // rv34: Wed 4 Nov 2026 15:00 AEDT (the 4 Nov capture day; Season 85 Event 1 live). Was 2026-11-01T01:00:00Z.
+//   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it rotted when the real date crossed a season boundary
 const L = require("./lib.js");
-const TODAY = "2026-11-01";   // rv25: gac-format + droid-raid re-checked 25 Oct. rf22: every SNAPSHOTS date re-read in the 22 Oct refresh is now <= this   // upd 12 Oct: the SNAPSHOTS dates of the entries re-read on 12 Oct are now <= this; cap 15 Oct: cap-journeys is dated 2026-10-15 (the in-game screenshots), so the bound moved to 15 Oct
+const TODAY = "2026-11-04";   // rv34: the 4 Nov refresh moved events / datacrons / gac-schedule / coach-tips to 4 Nov.   // rv25: gac-format + droid-raid re-checked 25 Oct. rf22: every SNAPSHOTS date re-read in the 22 Oct refresh is now <= this   // upd 12 Oct: the SNAPSHOTS dates of the entries re-read on 12 Oct are now <= this; cap 15 Oct: cap-journeys is dated 2026-10-15 (the in-game screenshots), so the bound moved to 15 Oct
 /* Rendered "Season 83" mentions that are legitimately about Season 83 DATA (a swgoh.gg tier-list / usage citation or the previous
    format), not a claim that Season 83 / 3v3 is the current GAC season. Anything else that matches /Season 83/ fails the check. */
 const ALLOWED_S83 = [
@@ -74,14 +80,14 @@ const ALLOWED_S83 = [
     L.ck("Seed datacron rows (rv31): Set 33 EXPIRED 29 Oct (past record row), Set 34 expires 26 Nov, Set 35 24 Dec 2026, Set 36 20 Jan 2027", JSON.stringify(c.seedDc) === JSON.stringify([["Datacron Set 33 expired", "2026-10-29", "2026-10-29"], ["Datacron Set 34 expires", "2026-11-26", "2026-11-26"], ["Datacron Set 35 expires", "2026-12-24", "2026-12-24"], ["Datacron Set 36 expires", "2027-01-20", "2027-01-20"]]), JSON.stringify(c.seedDc));
     const real = d => /^\d{4}-\d{2}-\d{2}$/.test(d) && !isNaN(Date.parse(d + "T00:00:00Z")) && new Date(d + "T00:00:00Z").toISOString().slice(0, 10) === d;
     L.ck("every EVENTS_SEED date/ends is a real calendar date, ends >= date", c.seedAll.every(([d, e]) => real(d) && (!e || (real(e) && e >= d))), JSON.stringify(c.seedAll.filter(([d, e]) => !(real(d) && (!e || (real(e) && e >= d))))));
-    L.ck("EVENTS_SEED_VERSION is 12 (rv31 re-seed from swgoh.gg/schedule/); CAPTURED '1 Nov 2026'", c.seedVer === 12 && c.seedCaptured === "1 Nov 2026", c.seedVer + " / " + c.seedCaptured);
+    L.ck("EVENTS_SEED_VERSION is 13 (rv34 4 Nov diff against swgoh.gg/schedule/); CAPTURED '4 Nov 2026'", c.seedVer === 13 && c.seedCaptured === "4 Nov 2026", c.seedVer + " / " + c.seedCaptured);
     L.ck("SNAPSHOTS registry now 24 unique keys (drr: + droid-raid, cap: + cap-journeys)", c.snaps.length === 24 && new Set(c.snaps.map(s => s.key)).size === 24, String(c.snaps.length));
     L.ck(`every SNAPSHOTS asOf parses and is <= ${TODAY}`, c.snaps.every(s => s.iso && s.iso <= TODAY), JSON.stringify(c.snaps.filter(s => !(s.iso && s.iso <= TODAY))));
     L.ck("every SNAPSHOTS expires parses and is >= its asOf", c.snaps.filter(s => s.exp).every(s => s.expIso && s.expIso >= s.iso), JSON.stringify(c.snaps.filter(s => s.exp)));
     const asOf = k => c.snaps.find(s => s.key === k).iso;
-    L.ck("rv31: executor-event stays 2026-10-22 (not re-read) and gac-format stays 2026-10-25 (the season selector was not re-read); datacrons, meta-fleets and gac-schedule (Season 85 start sourced) re-read 1 Nov = 2026-11-01", asOf("executor-event") === "2026-10-22" && asOf("gac-format") === "2026-10-25" && ["datacrons", "meta-fleets", "gac-schedule"].every(k => asOf(k) === "2026-11-01"), JSON.stringify(["datacrons", "gac-format", "meta-fleets", "executor-event", "gac-schedule"].map(k => [k, asOf(k)])));
-    L.ck("rv31: tierlist (re-read, rows updated) and events (schedule rebuilt) = 1 Nov; NOT re-verified, so NOT bumped: conquest 27 Sep; gl-queue = 1 Nov since rv25c (Ollie's order re-derived from the 31 Oct roster; was 3 Oct)", asOf("tierlist") === "2026-11-01" && asOf("events") === "2026-11-01" && asOf("conquest") === "2026-09-27" && asOf("gl-queue") === "2026-11-01", JSON.stringify(["tierlist", "events", "conquest", "gl-queue"].map(k => [k, asOf(k)])));
-    L.ck("expiry-bearing entries still parse: era 20 Oct, conquest 7 Dec, gl-queue/ship-guide/nxt-queue 14 Nov", ["era:2026-10-20", "conquest:2026-12-07", "gl-queue:2026-11-14", "ship-guide:2026-11-14", "nxt-queue:2026-11-14"].every(x => { const [k, d] = x.split(":"); return c.snaps.find(s => s.key === k).expIso === d; }));
+    L.ck("rv31: executor-event stays 2026-10-22 (not re-read) and gac-format stays 2026-10-25 (the season selector was not re-read); meta-fleets re-read 1 Nov = 2026-11-01; rv34: datacrons and gac-schedule (Season 85 Week 1) re-read 4 Nov = 2026-11-04", asOf("executor-event") === "2026-10-22" && asOf("gac-format") === "2026-10-25" && asOf("meta-fleets") === "2026-11-01" && ["datacrons", "gac-schedule"].every(k => asOf(k) === "2026-11-04"), JSON.stringify(["datacrons", "gac-format", "meta-fleets", "executor-event", "gac-schedule"].map(k => [k, asOf(k)])));
+    L.ck("rv31: tierlist (re-read, rows updated) = 1 Nov; rv34: events (schedule diffed 4 Nov) = 4 Nov; NOT re-verified, so NOT bumped: conquest 27 Sep; gl-queue = 1 Nov since rv25c (Ollie's order re-derived from the 31 Oct roster; was 3 Oct)", asOf("tierlist") === "2026-11-01" && asOf("events") === "2026-11-04" && asOf("conquest") === "2026-09-27" && asOf("gl-queue") === "2026-11-01", JSON.stringify(["tierlist", "events", "conquest", "gl-queue"].map(k => [k, asOf(k)])));
+    L.ck("expiry-bearing entries still parse: era 17 Nov (rv31: Era 10's last live day; was Era 09's 20 Oct), conquest 7 Dec, gl-queue/ship-guide/nxt-queue 14 Nov", ["era:2026-11-17", "conquest:2026-12-07", "gl-queue:2026-11-14", "ship-guide:2026-11-14", "nxt-queue:2026-11-14"].every(x => { const [k, d] = x.split(":"); return c.snaps.find(s => s.key === k).expIso === d; }));
     L.ck("zero page errors (pure)", errs.length === 0, JSON.stringify(errs));
     await ctx.close();
   }
@@ -100,9 +106,9 @@ const ALLOWED_S83 = [
     const { ctx, p, errs } = await L.open(b, { tag: "reseed", state: JSON.stringify(st) });
     const r = await p.evaluate(() => ({ v: state.eventsSeedVersion, items: state.events.items, n: EVENTS_SEED.length }));
     const seedRows = r.items.filter(e => /^seed\d+$/.test(e.id));
-    L.ck("reseed: version bumped 5 -> 12 (rv31: current seed version)", r.v === 12, String(r.v));
-    L.ck("reseed: seed rows now equal EVENTS_SEED (40 rows after the rv31 rebuild), ids seed0..seed39 unique", seedRows.length === r.n && r.n === 40 && new Set(seedRows.map(e => e.id)).size === r.n && seedRows.every((e, i) => e.id === "seed" + i), r.n + "/" + seedRows.length);
-    L.ck("reseed: the new Mini-Era / conquest / Dark Sovereign / datacron rows are present (rf22)", ["Era 10 — The Mandalorian and Grogu (Mini-Era)", "Conquest 25 (Embo & Keibu) — run 26 Oct → 9 Nov", "Territory Battle — Rise of the Empire", "Territory War — attack phase", "Territory War — sign-up", "GAC Season 85 (3v3)", "Dark Sovereign", "Datacron Set 33 expired", "Datacron Set 34 expires", "Datacron Set 35 expires", "Datacron Set 36 expires"].every(n => seedRows.some(e => e.name === n)));
+    L.ck("reseed: version bumped 5 -> 13 (rv34: current seed version)", r.v === 13, String(r.v));
+    L.ck("reseed: seed rows now equal EVENTS_SEED (39 rows after the rv34 diff), ids seed0..seed38 unique", seedRows.length === r.n && r.n === 39 && new Set(seedRows.map(e => e.id)).size === r.n && seedRows.every((e, i) => e.id === "seed" + i), r.n + "/" + seedRows.length);
+    L.ck("reseed: the new Mini-Era / conquest / Dark Sovereign / datacron rows are present (rf22)", ["Era 10 — The Mandalorian and Grogu (Mini-Era)", "Conquest 25 (Embo & Keibu) — run 26 Oct → 9 Nov", "Territory War — attack phase", "Territory War — sign-up (next war)", "GAC Season 85 (3v3)", "GAC Season 85 — Week 1 (3v3)", "Dark Sovereign", "Datacron Set 33 expired", "Datacron Set 34 expires", "Datacron Set 35 expires", "Datacron Set 36 expires"].every(n => seedRows.some(e => e.name === n)));
     const k1 = r.items.find(e => e.id === "e1790000000001"), k2 = r.items.find(e => e.id === "e1790000000002");
     L.ck("reseed: user-added event 1 survives byte-for-byte", k1 && JSON.stringify(k1) === JSON.stringify(mine[0]), JSON.stringify(k1));
     L.ck("reseed: user-added event 2 (with markup in its name) survives byte-for-byte", k2 && JSON.stringify(k2) === JSON.stringify(mine[1]), JSON.stringify(k2));
@@ -118,13 +124,13 @@ const ALLOWED_S83 = [
     await p.evaluate(() => { const e = state.events.items.find(x => x.id === "e1790000000001"); e.note = "edited after the bump"; store.write(state); });
     await p.reload({ waitUntil: "domcontentloaded" }); await p.waitForTimeout(900);
     const r2 = await p.evaluate(() => ({ v: state.eventsSeedVersion, n: state.events.items.length, note: (state.events.items.find(x => x.id === "e1790000000001") || {}).note }));
-    L.ck("reseed: idempotent on reload — still 42 rows (40 seed + 2 user), v12, edit made after the bump kept", r2.v === 12 && r2.n === 42 && r2.note === "edited after the bump", JSON.stringify(r2));
+    L.ck("reseed: idempotent on reload — still 41 rows (39 seed + 2 user), v13, edit made after the bump kept", r2.v === 13 && r2.n === 41 && r2.note === "edited after the bump", JSON.stringify(r2));
     L.ck("zero page errors (reseed)", errs.length === 0, JSON.stringify(errs));
     await ctx.close();
     /* A pre-existing saved state (the real 20 Sep one, seed version 3, no user rows) also upgrades cleanly. */
     const o2 = await L.open(b, { tag: "reseed3" });
     const r3 = await o2.p.evaluate(() => ({ v: state.eventsSeedVersion, n: state.events.items.length, n2: EVENTS_SEED.length }));
-    L.ck("reseed: the real 20 Sep state (seed v3) upgrades to v12 with exactly the seed rows", r3.v === 12 && r3.n === r3.n2, JSON.stringify(r3));
+    L.ck("reseed: the real 20 Sep state (seed v3) upgrades to v13 with exactly the seed rows", r3.v === 13 && r3.n === r3.n2, JSON.stringify(r3));
     await o2.ctx.close();
   }
 

@@ -13,6 +13,7 @@
    rv25 25 Oct 2026 — DELIBERATE: watch / MGL_ASOF and droid-raid asOf 25 Oct (re-checked, nothing else changed).
    rv31 1 Nov 2026 — DELIBERATE (1 assertion): droid-raid registry asOf 2026-10-25 -> 2026-11-01 (swgoh.gg raid page re-checked, unchanged); MGL_ASOF / watch asOf stay 2026-10-25 (the Mandalorian & Grogu posts were not re-read). */
 process.env.SNAP_DATE = process.env.SNAP_DATE || "2026-10-12";
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it could rot when the real date crossed a season boundary
 const L = require("./lib.js");
 const ck = L.ck;
 /* [id, exact name, need, set, ollie "S G R" | null, tiny "S G R" | null] — values read from the 12 Oct pulls */

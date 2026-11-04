@@ -11,6 +11,7 @@
    is "22 Oct 2026", and the 5v5/3v3 top-10s are the new boards. Hera 3v3 / CLS 3v3 still have no row (not in the top 40).
    rv31 1 Nov 2026 — DELIBERATE (2 assertions): the 5v5 rows read for Bo-Katan (B 76.1 55.2K -> B 76.2 80.1K) and General Skywalker (B 80.4 55.2K -> B 80.6 81K) moved with the 1 Nov tier-list re-read; TIER_LIST.updated "25 Oct 2026" -> "1 Nov 2026".
    rv25b 25 Oct 2026 — DELIBERATE (1 assertion): TIER_LIST.updated "22 Oct 2026" -> "25 Oct 2026" (the tier lists were re-verified unchanged live that day; no row, tier or percentage moved). */
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it could rot when the real date crossed a season boundary
 const L = require("./lib.js");
 const { ck } = L;
 const SHOTS = L.path.join(L.ROOT, "shots");
@@ -22,9 +23,13 @@ const NEW = ["Bo-Katan (Mand'alor) Mandalorians (offence)", "Commander Luke Skyw
 /* Defence plans recorded on the unmodified build (7 Oct 2026, fixtures): the gos change must not move them. */
 const DEF_BASE = {
   "ollie/5v5": ["Supreme Leader Kylo Ren (GL)", "Jabba the Hutt (GL) Bounty Hunters", "Rey (GL) Jedi", "Executor (flagship only)"],
-  "ollie/3v3": ["Supreme Leader Kylo Ren (GL)", "Jabba the Hutt (GL) Bounty Hunters", "Rey (GL) Jedi", "Executor (flagship only)"],
+  /* rv34 4 Nov 2026 — DELIBERATE (2 entries): the 3v3 defence planner gained ONE candidate, the Bo-Katan (Mand'alor) + IG-12 & Grogu + Paz Vizsla trio from swgoh.gg's
+     3v3 DEFENCE board (GCO_DEF_BOARD, 3v3 only). On these fixtures it takes a Carbonite slot in 3v3 (Ollie: in place of Rey; Tiny: in place of Rey). The 5v5 plans
+     are unchanged, and the gos entries are still all excluded from defence — this record moves only by that one new candidate.
+     old ollie/3v3: SLKR | Jabba | Rey | Executor      old tiny/3v3: SLKR | Leia | Rey | Negotiator */
+  "ollie/3v3": ["Supreme Leader Kylo Ren (GL)", "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", "Jabba the Hutt (GL) Bounty Hunters", "Executor (flagship only)"],
   "tiny/5v5": ["Supreme Leader Kylo Ren (GL)", "Leia Organa (GL) Rebels", "Rey (GL) Jedi", "Negotiator (flagship only)"],
-  "tiny/3v3": ["Supreme Leader Kylo Ren (GL)", "Leia Organa (GL) Rebels", "Rey (GL) Jedi", "Negotiator (flagship only)"]
+  "tiny/3v3": ["Supreme Leader Kylo Ren (GL)", "Leia Organa (GL) Rebels", "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", "Negotiator (flagship only)"]
 };
 /* Offence bench sizes before gos (2 each) — the floor the change must beat. */
 const MIN_BENCH = 4;

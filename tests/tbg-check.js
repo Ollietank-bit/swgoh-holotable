@@ -10,6 +10,7 @@
    legacy tracker inside a collapsed <details> whose tick persists across a reload, the layout editor on the legacy
    card, the crystal-budget link in Events → Executor, the #tab=tb deep link, no horizontal overflow at 390/1280 on
    both accounts and every section, zero page errors. Screenshots go to ../shots/. */
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it could rot when the real date crossed a season boundary
 const L = require("./lib.js");
 const ck = L.ck;
 const fs = L.fs, path = L.path;
@@ -27,6 +28,7 @@ const cspOf = html => (html.match(/<meta http-equiv="Content-Security-Policy" co
 async function openT(b, o) {
   o = o || {};
   const ctx = await b.newContext({ viewport: { width: o.width || 1280, height: o.height || 1000 } });
+  if (process.env.PIN_NOW) await ctx.clock.setFixedTime(Date.parse(process.env.PIN_NOW));   // rv31: same pinned clock as L.open (this local copy of open() bypasses lib.js)
   if (o.clipboard) await ctx.grantPermissions(["clipboard-read", "clipboard-write"], { origin: `http://127.0.0.1:${L.PORT}` });
   await ctx.addInitScript(([s, pl, seedKey]) => {
     try { if (sessionStorage.getItem(seedKey)) return;

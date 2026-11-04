@@ -1,4 +1,5 @@
 /* pbm-check — proxy-free roster pull through a swgoh.gg tab (bookmarklet + postMessage), the failed-pull
+   rv34 4 Nov 2026 — DELIBERATE (1 assertion): gac-schedule asOf 2026-11-01 -> 2026-11-04 (Season 85 Week 1 read on the 4 Nov schedule).
    copy, gacHist, gacActivity() and the "GAC this round" strip / Re-enter-GAC flag retirement.
    chx (7 Oct 2026): the GAC flag is now derived and reads "Set GAC defence — …" while an event is live, so the
    flag matchers accept either headline (/Re-enter GAC|Set GAC defence/); nothing else here changed.
@@ -459,7 +460,7 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     /* rf22 22 Oct 2026 (deliberate, 2 assertions): Season 84 Event 3 was verified from both accounts' live brackets (startTime 21 Oct 21:00 UTC),
        so GAC_SCHEDULE.asOf moved to 22 Oct and only Season 85's three events remain estimates. */
     /* rv31 1 Nov 2026 (deliberate, 2 assertions): Season 85's start (Wed 4 Nov 09:00 AEDT, 3v3) is now on swgoh.gg/schedule/, so GAC_SCHEDULE.asOf moved to 1 Nov and only S85 events 2 and 3 remain estimates. */
-    ck("GAC_SCHEDULE registered in SNAPSHOTS (24 entries incl. drr droid-raid, cap cap-journeys), dated 2026-11-01 (rv31: S85 start sourced from swgoh.gg/schedule/)", reg.n === 24 && reg.e && reg.e.asOf === "2026-11-01" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
+    ck("GAC_SCHEDULE registered in SNAPSHOTS (24 entries incl. drr droid-raid, cap cap-journeys), dated 2026-11-04 (rv34: S85 Week 1 read on swgoh.gg/schedule/ 4 Nov; rv31: S85 start sourced 1 Nov)", reg.n === 24 && reg.e && reg.e.asOf === "2026-11-04" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
     ck("GAC_SCHEDULE: source recorded; estimates are Season 85 events 2 and 3 only (S84E2 verified 12 Oct, S84E3 verified 22 Oct, S85E1 start sourced 1 Nov); GAC_FORMAT constant is still 5v5 (flips by hand on 4 Nov)", reg.src === "swgoh.gg/p/<code>/gac-history/" && JSON.stringify(reg.est) === '["s85e2","s85e3"]' && reg.fmt === "5v5", JSON.stringify(reg));
     allErrs.push(...errs); await ctx.close();
   });

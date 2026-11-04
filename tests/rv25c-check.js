@@ -1,4 +1,5 @@
 /* rv25c-check — the 1 Nov 2026 GL-order re-derivation for Ollietank (agent team on the 31 Oct roster: ref31/team/*.md) and the
+   rv34 4 Nov 2026 — DELIBERATE (1 assertion): coach-tips asOf 2026-11-01 -> 2026-11-04 (TIPS re-derived against the 4 Nov pulls).
    "owned Legend is not being unlocked" fix. New behaviour only:
      1. Pure data: GL_QUEUE.asOf + Ollie's asOf = 2026-11-01, Tiny keeps 2026-10-03; basis names the 31 Oct roster agent-team analysis; SNAPSHOTS is
         exactly 24 entries, gl-queue = 2026-11-01 (re-derived), gl-roadmap / nxt-queue / coach-tips NOT bumped; Ollie's order is
@@ -13,7 +14,8 @@
         baseline Leia (G9) → "G9 → R7".
      6. escapeHtml on the dynamic strings (a hostile GL name / why / prep text renders as text); no new localStorage key; zero page errors; no overflow;
         390 / 1280 screenshots of the GL order card and Key stats in ../shots/.
-   Run: NODE_PATH=... FILE=DIR/index.html PORT=9xxx node tests/rv25c-check.js */
+   Run: NODE_PATH=... FILE=DIR/index.html PORT=9xxx node tests/rv25c-check.js    rv31b 1 Nov 2026 — DELIBERATE (1 assertion): nxt-queue 2026-10-04 -> 2026-11-01 and coach-tips 2026-09-27 -> 2026-11-01 (both re-derived from the 31 Oct pulls); gl-roadmap still 2026-08-08.
+*/
 const L = require("./lib.js");
 const { ck } = L;
 const AEDT = (mo, d, h, m) => Date.UTC(2026, mo - 1, d, h - 11, m || 0);
@@ -89,7 +91,7 @@ const readAll = (p, acct) => p.evaluate(a => {
         key: glqPrepKey("ollie", { id: "jml-gear" }), tkey: glqPrepKey("tiny", { id: "luke-gear" }), fin: GLQ_STATUS.finishing };
     });
     ck("asOf: GL_QUEUE 2026-11-01 (Ollie re-derived), Ollie 2026-11-01, Tiny keeps 2026-10-03; basis = agent-team analysis of the 31 Oct 2026 roster (Ollie) + Tiny's 3 Oct basis kept", c.asOf === "2026-11-01" && c.oAs === "2026-11-01" && c.tAs === "2026-10-03" && /agent-team analysis of the 31 Oct 2026 roster/.test(c.basis) && /Tiny: .*1 Oct 2026 roster pull.*not re-ranked/.test(c.basis), c.basis);
-    ck("SNAPSHOTS: exactly 24 unique entries; gl-queue 2026-11-01; NOT bumped: gl-roadmap 2026-08-08, nxt-queue 2026-10-04, coach-tips 2026-09-27", c.n === 24 && c.keys === 24 && c.reg["gl-queue"] === "2026-11-01" && c.reg["gl-roadmap"] === "2026-08-08" && c.reg["nxt-queue"] === "2026-10-04" && c.reg["coach-tips"] === "2026-09-27", JSON.stringify([c.n, c.reg["gl-queue"], c.reg["gl-roadmap"], c.reg["nxt-queue"], c.reg["coach-tips"]]));
+    ck("SNAPSHOTS: exactly 24 unique entries; gl-queue 2026-11-01; NOT bumped: gl-roadmap 2026-08-08; rv31: nxt-queue re-derived on 1 Nov → 2026-11-01; rv34: coach-tips re-derived again against the 4 Nov pulls → 2026-11-04 (was 2026-11-01)", c.n === 24 && c.keys === 24 && c.reg["gl-queue"] === "2026-11-01" && c.reg["gl-roadmap"] === "2026-08-08" && c.reg["nxt-queue"] === "2026-11-01" && c.reg["coach-tips"] === "2026-11-04", JSON.stringify([c.n, c.reg["gl-queue"], c.reg["gl-roadmap"], c.reg["nxt-queue"], c.reg["coach-tips"]]));
     ck("Ollie order: Leia (finishing) → JML (next) → SEE (then, checkpoint) → JMK (then, checkpoint) → M&G watch → Lord Vader → GL Ahsoka → Hondo",
       JSON.stringify(c.oq) === JSON.stringify([["GLLEIA", "finishing", ""], ["GRANDMASTERLUKE", "next", ""], ["SITHPALPATINE", "then", "Then — decide at checkpoint"], ["JEDIMASTERKENOBI", "then", "Or — decide at checkpoint"], ["MANDOGROGU", "watch", ""], ["LORDVADER", "later", ""], ["GLAHSOKATANO", "later", ""], ["GLHONDO", "later", ""]]), JSON.stringify(c.oq));
     ck("Ollie Leia: doneWhen unchanged (Leia R7, Drogan R7, R2-D2 R8); why says UNLOCKED G13 R6 on 31 Oct; trigger = R7 then JML; 'finishing' label exists", JSON.stringify(c.oLeia.doneWhen) === JSON.stringify([{ id: "GLLEIA", type: "relic", min: 7 }, { id: "CAPTAINDROGAN", type: "relic", min: 7 }, { id: "R2D2_LEGENDARY", type: "relic", min: 8 }]) && /UNLOCKED — 7★ G13 R6 on the 31 Oct/.test(c.oLeia.why) && /Leia R7/.test(c.oLeia.trigger) && /Drogan R7 and R2-D2 R8/.test(c.oLeia.trigger) && /Jedi Master Luke/.test(c.oLeia.trigger) && c.fin[1] === "Unlocked — finishing", c.oLeia.trigger);

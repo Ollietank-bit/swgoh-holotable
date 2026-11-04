@@ -3,6 +3,7 @@
    counts per league/format match GCO_FORMATS; Apply writes planner rows through the planner state, survives
    a reload, keeps user rows and needs a confirm; refused while legacy migration is pending; Reset removes
    only optimiser rows; unowned-unit scenario changes the plan; escaping; 390 px; zero page errors. */
+process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it could rot when the real date crossed a season boundary
 const L = require("./lib.js");
 const PLAN = ([a, f]) => { switchAcct(a); state.views["gco-" + a] = f; const p = gcoPlanFor(a);
   return { fmt: p.fmt, league: p.league.key, slots: [...p.squadSlots, ...p.fleetSlots].map(x => ({ key: x.slot.key, kind: x.slot.kind, name: x.cand ? x.cand.name : null, units: x.cand ? x.cand.rows.map(r => r.name) : [] })),
@@ -29,7 +30,11 @@ const PLAN = ([a, f]) => { switchAcct(a); state.views["gco-" + a] = f; const p =
       L.ck(`[${tag}] no squad appears twice`, new Set(names).size === names.length, names.join("|"));
       /* gcf (deliberate change): offence-only now also covers "GAC offense…", "counter-offense", "offense counter". */
       const exclBad = await p.evaluate(([f]) => META_SQUADS.filter(sq => GCF_OFFENCE_ONLY_RE.test(sq.mode || "") || sq.raidTier || /raid/i.test(sq.mode || "")).map(sq => sq.name), [fmt]);
-      L.ck(`[${tag}] excluded (offense-only / raid) squads never chosen`, !names.some(n => exclBad.includes(n)) && a.excluded.length === exclBad.length, `${a.excluded.length} excluded`);
+      /* rv34 4 Nov 2026 — DELIBERATE: the excluded list also carries GCO_DEF_BOARD trios outside their format (the 3v3-only Bo-Katan defence trio in 5v5), so the
+         expected count is the offence-only / raid list PLUS exactly those format exclusions — checked by name, not loosened. */
+      const exclFmt = await p.evaluate(([f]) => GCO_DEF_BOARD.filter(sq => sq.fmtOnly && sq.fmtOnly !== f).map(sq => sq.name), [fmt]);
+      const exclNames = await p.evaluate(([aa]) => gcoPlanFor(aa).excluded.map(e => e.name), [acct]);
+      L.ck(`[${tag}] excluded (offense-only / raid) squads never chosen`, !names.some(n => exclBad.includes(n) || exclFmt.includes(n)) && a.excluded.length === exclBad.length + exclFmt.length && exclFmt.every(n => exclNames.includes(n)) && exclBad.every(n => exclNames.includes(n)), `${a.excluded.length} excluded (${exclBad.length} offence/raid + ${exclFmt.length} format)`);
       L.ck(`[${tag}] every chosen squad's leader is owned at 7★`, await p.evaluate(([aa, f]) => { const pl = gcoPlanFor(aa); return pl.squadSlots.every(x => !x.cand || (x.cand.rows[0].owned && x.cand.rows[0].stars >= 7)); }, [acct, fmt]));
       L.ck(`[${tag}] no chosen squad lists two Galactic Legends`, await p.evaluate(([aa]) => gcoPlanFor(aa).squadSlots.every(x => !x.cand || x.cand.members.filter(m => GL_IDS.includes(m[0])).length <= 1), [acct]));
       const counts = await p.evaluate(([aa, f]) => { const lg = gcoLeague(aa).league[f]; return { sq: lg.ft + lg.fb + lg.bk, fl: lg.fl, league: gcoLeague(aa).league.key }; }, [acct, fmt]);

@@ -17,6 +17,15 @@
         "Import pull file…" input (#pbmPullFile → pbmPullFile → pbmReceive → confirm card → pbmImport) on top of the 7 Oct fixture pulls: both accounts import, Leia R7
         (Ollie) / R10 (Tiny), label "Live pull · 4 Nov 2026" dated at the capture, the extra capture keys cause no errors, and the Carbonite 3v3 plan on the imported rosters.
         A missing capture file is a FAILED check, not a skip.
+   rv40 10 Nov 2026 — DELIBERATE (21 assertions + the capture path; the clock stays 4 Nov 15:00 and the rosters stay the 4 Nov pulls): every value the 10 Nov refresh moved —
+   registry events / coach-tips / datacrons / gac-schedule 4 Nov -> 10 Nov, droid-raid 1 Nov/recheck 8 Nov -> 10 Nov/17 Nov, nxt-queue / gl-queue / ship-guide 1 Nov -> 10 Nov; s85e2 est -> sourced;
+   seed v13/39/'4 Nov' -> v14/43/'10 Nov'; the 4 Nov read's added rows present -> ABSENT (ended before 10 Nov; the only Contraband Cargo is the 10 Nov run); 'only the Set 33 record row ends
+   before 4 Nov' -> 'no row ends before 10 Nov' (TB / Credit Heist allowed only as the new runs); 'no Forest Moon / Fanatical Devotion row' -> both present as SCHEDULED rows, no predicted
+   assault rows; Set 36 source 'read 1 Nov and 4 Nov' -> 'read 1 Nov, 4 Nov and 10 Nov'; TERRITORY asOf/tbAsOf 4 Nov/1 Nov -> 10 Nov/10 Nov; TW note 'read 4 Nov … read to 8 Nov' ->
+   'read 10 Nov … read to 28 Nov' and the TB note 'read 1 Nov' -> 'read 10 Nov'; Events subtitle 'read 4 Nov' -> 'read 10 Nov'; Leia flag note 'Week 1 opens (Thu 5 Nov' -> 'Week 2 opens (Thu 12 Nov';
+   JML step 3 'G8 → G12' + 'Wedge and Biggs G12 → G13' -> 'Biggs is G12' + 'Biggs G12 → G13 (Princess Leia and Wedge done)'; Tiny's Jabba flag 4 Nov numbers -> 10 Nov (11/14, 6 tiers) with
+   4 Nov / 31 Oct kept (x3: data + 2 widths); B1 / Bane / S85 board / Leia / GP claims re-checked on 10 Nov (8.49M -> 8.50M); NXT JML cost 17/7 -> 14/6 with 17/7 kept; Coach source line
+   'as of 4 Nov … 4 Nov pulls' -> 'as of 10 Nov … 4 Nov and 10 Nov pulls' (x2). P2: the capture path falls back to ref40/ (the same unmodified 4 Nov file); a missing file still FAILS.
    Run: NODE_PATH=... FILE=DIR/index.html PORT=9xxx node tests/rv34-check.js */
 const L = require("./lib.js");
 const { ck } = L;
@@ -80,36 +89,34 @@ const BOK_DEF = "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", BOK_OFF = "Bo-K
         tb: territoryNoteHtml("tb").replace(/<[^>]+>/g, ""), sub: document.querySelector('[data-pane="events"] .h2sub, #events .h2sub') ? document.querySelector('[data-pane="events"] .h2sub, #events .h2sub').textContent : [...document.querySelectorAll(".h2sub")].map(x => x.textContent).find(t => /Upcoming game-wide events/.test(t)) || "" };
     });
     ck("registry: exactly 24 unique entries", c.n === 24 && c.keys === 24, `${c.n}/${c.keys}`);
-    ck("bumped to 2026-11-04 (re-derived from the 4 Nov capture): events, coach-tips, datacrons, gac-schedule (= GAC_SCHEDULE.asOf)",
-      c.reg.events[0] === "2026-11-04" && c.reg["coach-tips"][0] === "2026-11-04" && c.reg.datacrons[0] === "2026-11-04" && c.reg["gac-schedule"][0] === "2026-11-04" && c.gacAs === "2026-11-04",
+    ck("bumped to 2026-11-10 by rv40 (re-derived from the 10 Nov capture; were 4 Nov): events, coach-tips, datacrons, gac-schedule (= GAC_SCHEDULE.asOf)",
+      c.reg.events[0] === "2026-11-10" && c.reg["coach-tips"][0] === "2026-11-10" && c.reg.datacrons[0] === "2026-11-10" && c.reg["gac-schedule"][0] === "2026-11-10" && c.gacAs === "2026-11-10",
       JSON.stringify([c.reg.events[0], c.reg["coach-tips"][0], c.reg.datacrons[0], c.reg["gac-schedule"][0]]));
-    ck("NOT bumped (the capture's boards were identical to 1 Nov, or the source was not re-read): tierlist 1 Nov (TIER_LIST.updated), meta-fleets 1 Nov, gac-counters / meta-squads / conquest 27 Sep, droid-raid 1 Nov (recheck 8 Nov), era, nxt-queue, gl-queue, ship-guide 1 Nov",
+    ck("NOT bumped (the capture's boards were identical to 1 Nov, or the source was not re-read): tierlist 1 Nov (TIER_LIST.updated), meta-fleets 1 Nov, gac-counters / meta-squads / conquest 27 Sep, era 1 Nov; rv40 re-read / re-derived on 10 Nov: droid-raid 10 Nov (recheck 17 Nov), nxt-queue, gl-queue, ship-guide 10 Nov",
       c.reg.tierlist[0] === "2026-11-01" && c.tlUpd === "1 Nov 2026" && c.reg["meta-fleets"][0] === "2026-11-01" && c.reg["gac-counters"][0] === "2026-09-27" && c.reg["meta-squads"][0] === "2026-09-27" && c.reg.conquest[0] === "2026-09-27"
-      && c.reg["droid-raid"][0] === "2026-11-01" && c.dr.join() === "2026-11-01,2026-11-08" && c.reg.era[0] === "2026-11-01" && c.reg["nxt-queue"][0] === "2026-11-01" && c.reg["gl-queue"][0] === "2026-11-01" && c.reg["ship-guide"][0] === "2026-11-01",
+      && c.reg["droid-raid"][0] === "2026-11-10" && c.dr.join() === "2026-11-10,2026-11-17" && c.reg.era[0] === "2026-11-01" && c.reg["nxt-queue"][0] === "2026-11-10" && c.reg["gl-queue"][0] === "2026-11-10" && c.reg["ship-guide"][0] === "2026-11-10",
       JSON.stringify(Object.fromEntries(Object.entries(c.reg).map(([k, v]) => [k, v[0]]))));
-    ck("GAC_SCHEDULE: s85e1 2026-11-04 sourced (no est), s85e2 / s85e3 11 / 18 Nov still est", JSON.stringify(c.s85) === JSON.stringify([["s85e1", "2026-11-04", false], ["s85e2", "2026-11-11", true], ["s85e3", "2026-11-18", true]]), JSON.stringify(c.s85));
-    ck("EVENTS_SEED v13, CAPTURED '4 Nov 2026', 39 rows in date order; saved state reseeded to 13 with exactly the seed rows", c.ver === 13 && c.cap === "4 Nov 2026" && c.len === 39 && c.sorted && c.stateVer === 13 && c.stateSeed === 39, JSON.stringify([c.ver, c.cap, c.len, c.sorted, c.stateVer, c.stateSeed]));
+    ck("GAC_SCHEDULE: s85e1 2026-11-04 sourced (no est), s85e2 11 Nov sourced by rv40 (Week 2 read 10 Nov), s85e3 18 Nov still est", JSON.stringify(c.s85) === JSON.stringify([["s85e1", "2026-11-04", false], ["s85e2", "2026-11-11", false], ["s85e3", "2026-11-18", true]]), JSON.stringify(c.s85));
+    ck("EVENTS_SEED v14 (rv40), CAPTURED '10 Nov 2026', 43 rows in date order; saved state reseeded to 14 with exactly the seed rows", c.ver === 14 && c.cap === "10 Nov 2026" && c.len === 43 && c.sorted && c.stateVer === 14 && c.stateSeed === 43, JSON.stringify([c.ver, c.cap, c.len, c.sorted, c.stateVer, c.stateSeed]));
     ck("Season 85 rows: the season 4 Nov → 26 Nov (09:00 close = same day, re-confirmed 4 Nov) and Week 1 5 Nov → 11 Nov ('Thu 5 Nov 09:00 → ENDS Wed 11 Nov 09:00'), both Grand Arena",
       c.season && c.season.date === "2026-11-04" && c.season.ends === "2026-11-26" && /re-confirmed 4 Nov/.test(c.season.note) && /Week 1/.test(c.season.note)
       && c.wk1 && c.wk1.cat === "Grand Arena" && c.wk1.date === "2026-11-05" && c.wk1.ends === "2026-11-11" && /Thu 5 Nov 09:00 → ENDS Wed 11 Nov 09:00/.test(c.wk1.note) && /read 4 Nov/.test(c.wk1.note), JSON.stringify([c.season && c.season.ends, c.wk1]));
-    ck("rows added from the 4 Nov read: Smuggler's Run II 4→5 Nov, Contraband Cargo 5→6 Nov, Smuggler's Run III 6→7 Nov, next TW sign-up 6→7 Nov and attack phase 8 Nov, bonus drops wave 7 6→9 Nov",
-      c.sr2 && c.sr2.date === "2026-11-04" && c.sr2.ends === "2026-11-05" && c.cc && c.cc.date === "2026-11-05" && c.cc.ends === "2026-11-06" && c.sr3 && c.sr3.date === "2026-11-06" && c.sr3.ends === "2026-11-07"
-      && c.twNextS && c.twNextS.date === "2026-11-06" && c.twNextS.ends === "2026-11-07" && /Fri 6 Nov 06:00 AEDT/.test(c.twNextS.note) && /Sun 8 Nov 05:00 AEDT/.test(c.twNextS.note)
-      && c.twNextA && c.twNextA.date === "2026-11-08" && c.twNextA.ends === "2026-11-08" && /Mon 9 Nov 05:00 AEDT/.test(c.twNextA.note) && c.w7 && c.w7.date === "2026-11-06" && c.w7.ends === "2026-11-09", "");
+    ck("rows added from the 4 Nov read are gone again in v14 (rv40: all ended before the 10 Nov read): Smuggler's Run II / III, the 5 Nov Contraband Cargo, the next war's TW sign-up and attack phase, bonus drops wave 7; the only Contraband Cargo row is the 10 Nov one",
+      !c.sr2 && !c.sr3 && !c.twNextS && !c.twNextA && !c.w7 && c.cc && c.cc.date === "2026-11-10" && c.cc.ends === "2026-11-11", JSON.stringify([c.sr2, c.cc && c.cc.date, c.sr3, c.twNextS, c.twNextA, c.w7]).slice(0, 200));
     const gone = ["Territory Battle — Rise of the Empire", "Adelphi Ranger Era Challenge", "Places of Power", "Stardust Transmission", "Credit Heist", "Territory War — sign-up", "Bespin", "Echoes of Legend"];
-    ck("ended rows dropped (last live day before 4 Nov): TB, Adelphi Era Challenge, first Places of Power, Stardust, Credit Heist, 2 Nov TW sign-up, Bespin, Echoes of Legend; only the Set 33 record row ends before 4 Nov",
-      gone.every(n => !c.seed.some(r => r[0] === n)) && c.seed.filter(r => (r[2] || r[1]) < "2026-11-04").map(r => r[0]).join() === "Datacron Set 33 expired" && !!c.set33, JSON.stringify(c.seed.filter(r => (r[2] || r[1]) < "2026-11-04")));
+    ck("ended rows stay dropped (Adelphi Era Challenge, first Places of Power, Stardust, 2 Nov TW sign-up, Bespin, Echoes of Legend); rv40: the Territory Battle and Credit Heist names are back only as the NEW 10 Nov / 12 Nov runs, and no row (not even the Set 33 record row, now dropped) ends before 10 Nov",
+      gone.filter(n => n !== "Territory Battle — Rise of the Empire" && n !== "Credit Heist").every(n => !c.seed.some(r => r[0] === n)) && c.seed.filter(r => /^(Territory Battle — Rise of the Empire|Credit Heist)$/.test(r[0])).every(r => r[1] >= "2026-11-10") && c.seed.filter(r => (r[2] || r[1]) < "2026-11-10").length === 0 && !c.set33, JSON.stringify(c.seed.filter(r => (r[2] || r[1]) < "2026-11-10")));
     ck("B1 row: released 4 Nov 05:00, marquee 06:00 → 11 Nov 06:00 (last live day 10 Nov), CG's 4 Nov data-error post (R5-D4 progress, fixed, rewards not reverted)",
       c.b1 && c.b1.date === "2026-11-04" && c.b1.ends === "2026-11-10" && /RELEASED Wed 4 Nov 05:00 AEDT/.test(c.b1.note) && /R5-D4 progress/.test(c.b1.note) && /will not be reverted/.test(c.b1.note), c.b1 && c.b1.note.slice(0, 160));
-    ck("no recurring predicted assault row (Forest Moon) was added; the Mini-Era row (not re-read 4 Nov) is unchanged at 20 Oct → 17 Nov", !c.seed.some(r => /Forest Moon|Fanatical Devotion/.test(r[0])) && c.mini && c.mini.date === "2026-10-20" && c.mini.ends === "2026-11-17", "");
-    ck("Set 36: '10 focused variants' in DATACRON_SETS and its seed row (the 25 Oct read's 9 is corrected; source dated)", /10 character datacrons, 10 focused variants/.test(c.dc36) && /10 focused variants — swgoh\.gg\/datacrons\/ read 1 Nov and 4 Nov/.test(c.dcRow36), c.dc36);
-    ck("TERRITORY (rv34): asOf 4 Nov, TB part 1 Nov; next war sign-up 2026-11-05T19:00Z (6 Nov 06:00 AEDT), attack 2026-11-07T18:00Z → 2026-11-08T18:00Z; current war still ends 2026-11-04T19:00Z",
-      JSON.stringify(c.terr) === JSON.stringify(["2026-11-04", "2026-11-01", "2026-11-05T19:00:00.000Z", "2026-11-07T18:00:00.000Z", "2026-11-08T18:00:00.000Z", "2026-11-04T19:00:00.000Z"]), JSON.stringify(c.terr));
-    ck("TW note at 4 Nov 15:00: attack phase live, ends in 15h 0m; 'Next: sign-up opens Fri 6 Nov 06:00 AEDT; attack phase opens Sun 8 Nov 05:00 AEDT, ends Mon 9 Nov 05:00 AEDT'; read 4 Nov",
-      /attack phase live, ends in 15h 0m/.test(c.twNow) && /Next: sign-up opens Fri 6 Nov 06:00 AEDT; attack phase opens Sun 8 Nov 05:00 AEDT, ends Mon 9 Nov 05:00 AEDT/.test(c.twNow) && /read 4 Nov 2026/.test(c.twNow) && /read to 8 Nov/.test(c.twNow), c.twNow);
-    ck("TW note on 6 Nov 12:00 AEDT shows the next war (sign-up open), and after 9 Nov 05:00 says over with no later war listed; TB note still reads 1 Nov",
-      /Territory War \(next war\)/.test(c.twLater) && /sign-up is open; the attack phase opens in 1d 17h/.test(c.twLater) && /over/.test(c.twGone) && /lists no later Territory War/.test(c.twGone) && /read 1 Nov 2026/.test(c.tb), c.twLater + " || " + c.twGone);
-    ck("Events tab subtitle no longer claims a live Territory Battle and names the 4 Nov read", /read 4 Nov/.test(c.sub) && !/live Territory Battle/.test(c.sub) && /Week 1/.test(c.sub), c.sub.slice(0, 200));
+    ck("no recurring PREDICTED assault row was added (rv40: Forest Moon and Fanatical Devotion are now SCHEDULED rows from the 10 Nov read, named without '(predicted)'; the predicted Military Might / Rebel Roundup / Ground War / Places of Power / Duel of the Fates rows stay off); the Mini-Era row is unchanged at 20 Oct → 17 Nov", c.seed.filter(r => /Forest Moon|Fanatical Devotion/.test(r[0])).length === 2 && c.seed.filter(r => /Forest Moon|Fanatical Devotion/.test(r[0])).every(r => !/predicted/i.test(r[0]) && r[1] >= "2026-11-11") && !c.seed.some(r => /Military Might|Rebel Roundup|Ground War|Places of Power|Duel of the Fates|Defense of Dathomir|Coven of Shadows/.test(r[0])) && c.mini && c.mini.date === "2026-10-20" && c.mini.ends === "2026-11-17", "");
+    ck("Set 36: '10 focused variants' in DATACRON_SETS and its seed row (the 25 Oct read's 9 is corrected; source dated)", /10 character datacrons, 10 focused variants/.test(c.dc36) && /10 focused variants — swgoh\.gg\/datacrons\/ read 1 Nov, 4 Nov and 10 Nov/.test(c.dcRow36), c.dc36);   // rv40: "read 1 Nov and 4 Nov" -> "read 1 Nov, 4 Nov and 10 Nov"
+    ck("TERRITORY (rv34; rv40: asOf and the TB part both 10 Nov — the new TB was read then): next war sign-up 2026-11-05T19:00Z (6 Nov 06:00 AEDT), attack 2026-11-07T18:00Z → 2026-11-08T18:00Z; current war still ends 2026-11-04T19:00Z",
+      JSON.stringify(c.terr) === JSON.stringify(["2026-11-10", "2026-11-10", "2026-11-05T19:00:00.000Z", "2026-11-07T18:00:00.000Z", "2026-11-08T18:00:00.000Z", "2026-11-04T19:00:00.000Z"]), JSON.stringify(c.terr));
+    ck("TW note at 4 Nov 15:00: attack phase live, ends in 15h 0m; 'Next: sign-up opens Fri 6 Nov 06:00 AEDT; attack phase opens Sun 8 Nov 05:00 AEDT, ends Mon 9 Nov 05:00 AEDT'; rv40: read 10 Nov, read to 28 Nov",
+      /attack phase live, ends in 15h 0m/.test(c.twNow) && /Next: sign-up opens Fri 6 Nov 06:00 AEDT; attack phase opens Sun 8 Nov 05:00 AEDT, ends Mon 9 Nov 05:00 AEDT/.test(c.twNow) && /read 10 Nov 2026/.test(c.twNow) && /read to 28 Nov/.test(c.twNow), c.twNow);
+    ck("TW note on 6 Nov 12:00 AEDT shows the next war (sign-up open), and after 9 Nov 05:00 says over with no later war listed; rv40: the TB note reads 10 Nov",
+      /Territory War \(next war\)/.test(c.twLater) && /sign-up is open; the attack phase opens in 1d 17h/.test(c.twLater) && /over/.test(c.twGone) && /lists no later Territory War/.test(c.twGone) && /read 10 Nov 2026/.test(c.tb), c.twLater + " || " + c.twGone);
+    ck("Events tab subtitle no longer claims a live Territory Battle and names the schedule read (rv40: 10 Nov)", /read 10 Nov/.test(c.sub) && !/live Territory Battle/.test(c.sub) && /Week 1/.test(c.sub), c.sub.slice(0, 200));
     allErrs.push(...errs); await ctx.close();
   }
 
@@ -126,29 +133,29 @@ const BOK_DEF = "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", BOK_OFF = "Bo-K
     ck("Coach ids unchanged in order: ollie GAC chx first, index 1 = Set 33, Leia flag at index 2, chx Executor then drr last; tiny Leia keep first, chx GAC 1, drr last",
       c.oIds[0] === "re-enter-gac-three-built" && c.oIds[1] === "2-set-33-datacrons-built" && c.oIds[2] === "leia-r7-then-freeze" && c.oIds[c.oIds.length - 2] === "chx-executor-plan" && c.oIds[c.oIds.length - 1] === "drr-four-star-floor"
       && c.tIds[0] === "gl-leia-organa-is-unlocked" && c.tIds[1] === "re-enter-gac-rey-r8" && c.tIds[c.tIds.length - 1] === "drr-four-star-floor" && c.oIds.length === 14 && c.tIds.length === 13, c.oIds.join() + " | " + c.tIds.join());
-    ck("4 Nov rosters: Leia is R7, so the Leia R7 flag is DONE (auto check met, still fixnow, key format unchanged) and its note says so with the 4 Nov source",
-      c.leiaR === 7 && c.leia.done && c.leia.sev === "fixnow" && c.leia.key === "ollie-t:leia-r7-then-freeze" && /DONE on the 4 Nov pull/.test(c.leia.note) && /Week 1 opens \(Thu 5 Nov 09:00 AEDT/.test(c.leia.note), JSON.stringify([c.leiaR, c.leia.done]));
-    ck("JML step 1: 1/2 done on 4 Nov (Hermit Yoda R5), note '17 relic tiers with 9 of 14 … (31 Oct: 22 relic tiers with 7 of 14)' and the freeze rule; step 3: 1/4 done (Princess Leia G13), Wedge / Biggs G12",
+    ck("4 Nov rosters: Leia is R7, so the Leia R7 flag is DONE (auto check met, still fixnow, key format unchanged) and its note says so with the 4 Nov source (rv40: and names Week 2, Thu 12 Nov 09:00 AEDT, instead of Week 1)",
+      c.leiaR === 7 && c.leia.done && c.leia.sev === "fixnow" && c.leia.key === "ollie-t:leia-r7-then-freeze" && /DONE on the 4 Nov pull/.test(c.leia.note) && /Week 2 opens \(Thu 12 Nov 09:00 AEDT/.test(c.leia.note), JSON.stringify([c.leiaR, c.leia.done]));
+    ck("JML step 1: 1/2 done on 4 Nov (Hermit Yoda R5), note '17 relic tiers with 9 of 14 … (31 Oct: 22 relic tiers with 7 of 14)' and the freeze rule; step 3: 1/4 done (Princess Leia G13); rv40 title: Old Ben + Biggs left (Princess Leia and Wedge done on 10 Nov)",
       c.jml1.prog.doneCount === 1 && c.jml1.prog.total === 2 && /17 relic tiers with 9 of 14/.test(c.jml1.note) && /22 relic tiers with 7 of 14/.test(c.jml1.note) && /keep Leia's relics frozen at R7/.test(c.jml1.note)
-      && c.jml3.prog.doneCount === 1 && c.jml3.prog.total === 4 && /Princess Leia is G13 R3/.test(c.jml3.note) && /G8 → G12/.test(c.jml3.note) && /Wedge and Biggs G12 → G13/.test(c.jml3.t), JSON.stringify([c.jml1.prog, c.jml3.prog]));
-    ck("Tiny Jabba vs JML (tools/gl-readiness.js on the 4 Nov pull): Jabba 11 of 14, 12 relic tiers, Fennec the one G13, Han Solo R7 → R8; JML 6 of 14, 24 tiers; the 31 Oct reading is kept, dated",
-      /4 Nov pull: Jabba the Hutt 11 of 14 met, 12 relic tiers, 1 unit to G13 \(Fennec Shand, G12\), one R8 ask \(Han Solo R7 → R8\)/.test(c.jabba.note) && /6 of 14, 24 tiers/.test(c.jabba.note) && /10 of 14 met, 19 relic tiers/.test(c.jabba.note), c.jabba.note.slice(0, 200));
-    ck("other re-checked claims: B1 3★ G1 on the 4 Nov pull + the marquee data-error post; Bane / Rey (DSV) still unowned 4 Nov; S85 board still Season 83 (re-read 4 Nov); GP 8.49M; Tiny's 4 Nov datacron read = one Set 36 at tier 0",
-      /3★ G1 on your 4 Nov pull/.test(c.b1.note) && /R5-D4 progress/.test(c.b1.note) && /still unowned on the 4 Nov pull/.test(c.b1.note) && /Season 83 3v3 DEFENCE board \(still the latest — read 1 Nov and again 4 Nov/.test(c.s85.note) && /Leia is R7 on the 4 Nov pull/.test(c.s85.note)
-      && /8\.49M GP/.test(c.gs.t) && /Set 36 datacron at tier 0/.test(c.t33.note), "");
-    ck("NXT (ollie): 'do this week' says Leia R7 is done; the JML row is re-costed to 17 tiers / 7 gear levels (31 Oct figures kept, dated)", /Leia is R7 on the 4 Nov pull/.test(c.nxtDo) && /17 tiers/.test(c.nxtJml.cost) && /7 levels/.test(c.nxtJml.cost) && /22 on 31 Oct/.test(c.nxtJml.cost), c.nxtDo);
+      && c.jml3.prog.doneCount === 1 && c.jml3.prog.total === 4 && /Princess Leia is G13 R3/.test(c.jml3.note) && /Biggs is G12/.test(c.jml3.note) && /Biggs G12 → G13 \(Princess Leia and Wedge done\)/.test(c.jml3.t), JSON.stringify([c.jml1.prog, c.jml3.prog]));
+    ck("Tiny's Jabba flag (rv40: now the Jabba build flag, tools/gl-readiness.js on the 10 Nov pull): 11 of 14 with 6 relic tiers, no G13s, Han Solo R7 → R8; the 4 Nov (12 tiers, Fennec at G12) and 31 Oct (19 tiers) readings kept, dated",
+      /11 of 14 met with 6 relic tiers left and no unit to take to G13/.test(c.jabba.note) && /4 Nov: 12 tiers, Fennec at G12/.test(c.jabba.note) && /31 Oct: 19 tiers/.test(c.jabba.note), c.jabba.note.slice(0, 200));
+    ck("other re-checked claims (rv40: re-checked again on the 10 Nov pulls): B1 3★ G1 on 4 Nov / 4★ G5 on 10 Nov + the marquee data-error post; Bane / Rey (DSV) still unowned 10 Nov; S85 board still Season 83 (re-read 1, 4 and 10 Nov); GP 8.50M; Tiny's 4 Nov datacron read = one Set 36 at tier 0",
+      /3★ G1 on 4 Nov/.test(c.b1.note) && /4★ G5 on your 10 Nov pull/.test(c.b1.note) && /R5-D4 progress/.test(c.b1.note) && /still unowned on the 10 Nov pull/.test(c.b1.note) && /Season 83 3v3 DEFENCE board \(still the latest — read 1 Nov, 4 Nov and again 10 Nov/.test(c.s85.note) && /Leia is R7 on the 10 Nov pull/.test(c.s85.note)
+      && /8\.50M GP/.test(c.gs.t) && /Set 36 datacron at tier 0/.test(c.t33.note), "");
+    ck("NXT (ollie): 'do this week' says Leia is held at R7 (rv40: still R7 on the 10 Nov pull); the JML row is re-costed (rv40: 14 tiers / 6 gear levels; the 4 Nov 17 / 7 and 31 Oct figures kept, dated)", /still R7 on the 10 Nov pull/.test(c.nxtDo) && /14 tiers/.test(c.nxtJml.cost) && /17 on 4 Nov/.test(c.nxtJml.cost) && /6 levels/.test(c.nxtJml.cost) && /7 levels on 4 Nov/.test(c.nxtJml.cost) && /22 on 31 Oct/.test(c.nxtJml.cost), c.nxtDo);
     for (const w of [1280, 390]) {
       await p.setViewportSize({ width: w, height: 1000 });
       await L.go(p, "ollie", "coach"); await p.evaluate(() => { state.views.coach = "priorities"; render(); }); await p.waitForTimeout(250);
       const co = await p.evaluate(() => ({ act: T0(document.querySelector('[data-card="action-flags"]')), all: T0(document.getElementById("tips")) }));
-      ck(`[${w}] Coach (ollie): the Leia R7 flag is not in Action flags (done); JML step 1 is, with '1/2 done'; source line 'as of 4 Nov 2026 … re-checked against the 4 Nov pulls'`,
-        !/Leia R6 → R7 by ~5 Nov/.test(co.act) && /Jedi Master Luke, step 1: Chewbacca R5 → R6/.test(co.act) && /1\/2 done/.test(co.act) && /Flags as of 4 Nov 2026/.test(co.all) && /re-checked against the 4 Nov pulls/.test(co.all), co.act.slice(0, 300));
+      ck(`[${w}] Coach (ollie): the Leia R7 flag is not in Action flags (done); JML step 1 is, with '1/2 done'; source line 'as of 10 Nov 2026 … re-checked against the 4 Nov and 10 Nov pulls' (rv40)`,
+        !/Leia R6 → R7 by ~5 Nov/.test(co.act) && /Jedi Master Luke, step 1: Chewbacca R5 → R6/.test(co.act) && /1\/2 done/.test(co.act) && /Flags as of 10 Nov 2026/.test(co.all) && /re-checked against the 4 Nov and 10 Nov pulls/.test(co.all), co.act.slice(0, 300));
       await p.screenshot({ path: L.path.join(SHOTS, `rv34-coach-ollie-${w}.png`), fullPage: false });
       const o1 = await L.overflow(p);
       ck(`[${w}] no horizontal overflow (Coach, ollie)`, o1.doc <= o1.inner + 1, JSON.stringify(o1));
       await L.go(p, "tiny", "coach"); await p.evaluate(() => { state.views.coach = "priorities"; render(); }); await p.waitForTimeout(250);
       const ct = await p.evaluate(() => T0(document.getElementById("tips")));
-      ck(`[${w}] Coach (tiny): the Jabba flag reads 'Jabba is now clearly closer' with the 4 Nov numbers`, /Jabba is now clearly closer than Jedi Master Luke/.test(ct) && /11 of 14 met, 12 relic tiers/.test(ct), ct.slice(0, 200));
+      ck(`[${w}] Coach (tiny): the Jabba flag (rv40: was 'Jabba is now clearly closer') reads 'Jabba the Hutt next' with the 10 Nov numbers`, /Jabba the Hutt next: Han Solo R7 → R8, C-3PO R3 → R7, Fennec Shand R6 → R7/.test(ct) && /11 of 14 met with 6 relic tiers left/.test(ct), ct.slice(0, 200));
       await p.screenshot({ path: L.path.join(SHOTS, `rv34-coach-tiny-${w}.png`), fullPage: false });
     }
     allErrs.push(...errs); await ctx.close();
@@ -248,7 +255,7 @@ const BOK_DEF = "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", BOK_OFF = "Bo-K
 
   /* ---------- 6. P2 acceptance: the 4 Nov one-click capture (.json.gz, unmodified) through the real "Import pull file…" input ---------- */
   {
-    const GZ = process.env.RV34_CAPTURE || "/home/claude/work/ref34/holotable-capture-2026-11-04-1438.json.gz";
+    const GZ = process.env.RV34_CAPTURE || ["/home/claude/work/ref34/holotable-capture-2026-11-04-1438.json.gz", "/home/claude/work/ref40/holotable-capture-2026-11-04-1438.json.gz"].find(f => L.fs.existsSync(f)) || "/home/claude/work/ref34/holotable-capture-2026-11-04-1438.json.gz";   // rv40: ref34/ is gone from this workspace; the same 4 Nov capture file sits in ref40/ — still a FAILED check if neither exists
     const have = L.fs.existsSync(GZ);
     ck("P2: the 4 Nov capture file is present (" + L.path.basename(GZ) + ")", have, GZ);
     if (have) {

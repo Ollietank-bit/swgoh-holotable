@@ -12,6 +12,7 @@
    "Current & next" lookup fell through to page source), fleet tier data Season 84 (Leviathan 96.6% → 96.5%, "Season 83" → "Season 84").
    rv25 25 Oct 2026 — DELIBERATE: EVENTS_SEED_VERSION 10.
    rv34 4 Nov 2026 — DELIBERATE (1 assertion): EVENTS_SEED_VERSION 12 -> 13 (the 4 Nov schedule diff).
+   rv40 10 Nov 2026 — DELIBERATE (2 assertions): gl-queue asOf 2026-11-01 -> 2026-11-10 (both GL orders re-derived from the 10 Nov pulls); EVENTS_SEED_VERSION 13 -> 14 (the 10 Nov schedule diff).
    rv31 1 Nov 2026 — DELIBERATE (3 assertions): EVENTS_SEED_VERSION 11 -> 12 (the 1 Nov schedule re-seed); the per-account "event lines" check (x2) expects the fleet tier chips at the 1 Nov values
    (Leviathan S 96.5% -> 96.6%, Profundity A 98.5% -> 98.6% WR; the 1 Nov fleet read moved win rates and battle counts, not tiers).
    rv25b 25 Oct 2026 (live swgoh.gg schedule read) — DELIBERATE, 3 assertions changed (old -> new, why): EVENTS_SEED_VERSION 10 -> 11; the "honest unknowns" check and the per-account
@@ -88,14 +89,14 @@ const ACCOUNTS_LABEL = { ollie: "Ollietank", tiny: "Tiny" };
     ck("tier context is NOT duplicated: Leviathan S / Profundity A come from META_FLEET_TIER; the journeys carry no tier letters of their own", JSON.stringify(c.meta) === '[["Leviathan","S"],["Profundity","A"]]' && c.j.every(j => !("tier" in j)), JSON.stringify(c.meta));
     /* rf22 22 Oct (deliberate): the block was refreshed (third-party recurrence, Journey Guide caveat, Fury confirmed) so CAP_ASOF / the
        registry moved to 2026-10-22; the in-game screenshot date the prerequisites come from is now its own constant, CAP_INGAME (15 Oct). */
-    ck("SNAPSHOTS: cap-journeys registered (asOf 2026-10-22 since rf22, half-life 14, tab arena, honest hint, no hard expiry); in-game read date CAP_INGAME stays 2026-10-15; registry is 24 unique keys; gl-queue = 2026-11-01 (rv25c re-derived Ollie's order; was 2026-10-03)", c.reg.n === 24 && c.reg.keys === 24 && c.reg.e && c.reg.e.asOf === "2026-10-22" && c.reg.e.halfLife === 14 && c.reg.e.tab === "arena" && /re-check in-game: prerequisites and dates are read off the user's screenshots/.test(c.reg.e.hint) && !c.reg.e.expires && c.asOf === "2026-10-22" && c.ingame === "2026-10-15" && c.glqAsOf === "2026-11-01", JSON.stringify(c.reg));
+    ck("SNAPSHOTS: cap-journeys registered (asOf 2026-10-22 since rf22, half-life 14, tab arena, honest hint, no hard expiry); in-game read date CAP_INGAME stays 2026-10-15; registry is 24 unique keys; gl-queue = 2026-11-10 (rv40 re-derived both orders; rv25c 2026-11-01; was 2026-10-03)", c.reg.n === 24 && c.reg.keys === 24 && c.reg.e && c.reg.e.asOf === "2026-10-22" && c.reg.e.halfLife === 14 && c.reg.e.tab === "arena" && /re-check in-game: prerequisites and dates are read off the user's screenshots/.test(c.reg.e.hint) && !c.reg.e.expires && c.asOf === "2026-10-22" && c.ingame === "2026-10-15" && c.glqAsOf === "2026-11-10", JSON.stringify(c.reg));
     ck("none of the 30 prerequisite names is one of Droid Destruction's 33 eligible units (exact names; 'Cassian Andor (Undercover)' and 'Maul (Hate-Fueled)' are different units)", c.raidClash.length === 0, JSON.stringify(c.raidClash));
     ck("exact-name resolution: a wrong name under an id is rejected; Sith Empire Trooper (SITHTROOPER) and Sith Trooper (FOSITHTROOPER) stay apart; a null id resolves by exact name; nameless baseline entries still resolve by id",
       c.unit.wrongNameRejected && c.unit.byIdRightName && c.unit.troopersApart && c.unit.nullIdByName && c.unit.baselineNoName, JSON.stringify(c.unit));
     ck("capEval: relic met only at relic >= need; ship met at stars >= 4 (exactly 4★ counts, 3★ does not); G12 without relic = 1 gear step + all tiers; 4★ character 'needs 7★ first'; not owned = whole requirement; no relic counts below G13",
       c.unit.relicMet === true && c.unit.relicShort === false && c.unit.shipExact4 === true && c.unit.ship3 === false && /1 gear step to G13 \(G12 → G13\) · \+7 relic tiers \(R0 → R7\)/.test(c.unit.relicG12) && /^needs 7★ first \(4★ → 7★\)/.test(c.unit.lowStar)
       && c.unit.unowned.gap === "not owned" && c.unit.unowned.tiers === 9 && c.unit.unownedShip.gap === "not owned" && c.unit.relicOnlyCountsAtG13 === false, JSON.stringify(c.unit));
-    ck("EVENTS_SEED_VERSION is 13 (rv34 4 Nov re-seed, was 12) and the saved state was reseeded to it", c.seedVer === 13 && c.stateVer === 13, JSON.stringify([c.seedVer, c.stateVer]));
+    ck("EVENTS_SEED_VERSION is 14 (rv40 10 Nov re-seed, was 13) and the saved state was reseeded to it", c.seedVer === 14 && c.stateVer === 14, JSON.stringify([c.seedVer, c.stateVer]));
     ck("no page errors (pure)", errs.length === 0, errs.join(" | "));
     await ctx.close();
   }

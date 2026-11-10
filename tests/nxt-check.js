@@ -4,6 +4,8 @@
    accounts at 7 Oct 2026 12:00 local, urgency colours, est./unverified tags, tap + keyboard navigation,
    dismiss / reset persisting across reload, GAC tick hiding the defence tile, the empty strip rendering
    nothing, 390px without horizontal overflow, zero page errors, and the 30 Oct / 11 Oct clocks.
+   rv40 10 Nov 2026 — DELIBERATE (1 assertion): the 19 Nov stale tile's count '>= 4' (Era 10 + gl-queue / ship-guide / nxt-queue past their 14 Nov hard ends) -> '=== 3' (conquest past
+   its new 9 Nov hard end, Era 10 past 17 Nov, cap-journeys at 2x half-life). gl-queue / ship-guide / nxt-queue were re-derived 10 Nov and now end 28 Nov; the count must still equal dataHealthRows'.
    rf22 22 Oct 2026 — DELIBERATE change (fixture, no assertion edited): every clock in this suite is 7–30 Oct and its tile expectations
    were written against the 12 Oct calendar seed (v8). The app's seed is now v9 (re-seeded 22 Oct; nothing in it is dated before 20 Oct),
    so this suite now boots a saved state that already carries the CURRENT seed version with the 12 Oct rows as its seed rows (ids
@@ -201,7 +203,7 @@ const OCT7 = [2026, 9, 7, 12];
     await L.go(p, "ollie", "overview");
     const t = await tiles(p);
     const stale = t.find(x => /^stale-/.test(x.id));
-    L.ck("19 Nov: one 'Data is stale' tile, last, info-coloured, count matches dataHealthRows (Era 10, gl-queue, ship-guide, nxt-queue past their hard ends)", stale && t[t.length - 1] === stale && stale.urg === "stale" && +stale.cd.replace(/\D/g, "") === (await p.evaluate(() => dataHealthRows(nxtNow()).filter(r => r.st.state === "stale").length)) && +stale.cd.replace(/\D/g, "") >= 4, JSON.stringify(stale));
+    L.ck("19 Nov: one 'Data is stale' tile, last, info-coloured, count matches dataHealthRows (rv40: conquest and Era 10 past their hard ends, cap-journeys at 2x its half-life — exactly 3)", stale && t[t.length - 1] === stale && stale.urg === "stale" && +stale.cd.replace(/\D/g, "") === (await p.evaluate(() => dataHealthRows(nxtNow()).filter(r => r.st.state === "stale").length)) && +stale.cd.replace(/\D/g, "") === 3, JSON.stringify(stale));
     await p.click(`#nxtStrip .nxt-tile[data-nxt="${stale ? stale.id : "none"}"] .nxt-go`); await p.waitForTimeout(1400);   /* smooth scroll */
     const dh = await p.evaluate(() => ({ tab: curTab, card: !!document.querySelector('[data-card="datahealth"]'), top: (document.querySelector('[data-card="datahealth"]') || { getBoundingClientRect: () => ({ top: 9e9 }) }).getBoundingClientRect().top }));
     L.ck("tap stale tile → Overview's Data health card scrolled into view", dh.tab === "overview" && dh.card && dh.top < 200, JSON.stringify(dh));

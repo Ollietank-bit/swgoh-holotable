@@ -271,11 +271,26 @@ function datacronSets(page, capturedAtMs) {
   });
   return { ok: true, source: page.source, sections: page.sections || [], count: sets.length, active: sets.filter(s => !s.expired).map(s => s.name), nextToExpire: sets.filter(s => !s.expired && s.expiresDate).sort((a, b) => a.expiresDate.localeCompare(b.expiresDate))[0] || null, sets };
 }
+/* rv48 18 Nov 2026: the released raid page. swgoh.gg's raid page became "Best Squads by Tier" once the raid went live: "N posted runs — Squads players posted
+   in the SWGoH Raid Server through <date>" is the RELEASED signal (status "released", postedRuns, postedThrough), and the page's "Shared loadouts: Coming soon"
+   line is a SEPARATE feature — the in-page extractor's releaseText picked that "Coming soon" leaf on 18 Nov and read it as the raid's release status. Here a
+   "Coming soon" that the page text pairs with "Shared loadouts" is reported as sharedLoadouts, never as releaseText. Duration / launch cost / entry come from the
+   page text when present. A pre-release page (no posted runs) is parsed exactly as before. */
 function raidFacts(page) {
   if (!page) return { ok: false };
   const facts = page.facts || [], find = re => { const f = facts.find(x => re.test(x.t)); return f ? (f.t + (f.next && !/\d/.test(f.t) ? " " + f.next : "")).trim() : null; };
-  return { ok: true, source: page.source, title: page.title, banner: (page.banner || []).join(" · ") || null, releaseText: page.releaseText || find(/release|target|expected|in development/i), allowedUnits: page.allowedUnits || null,
-    maxScore: find(/max score/i), status: find(/^status/i), tiers: (page.rows || []).map(r => ({ tier: r[0], requirement: r[1], score: r[2], all: r[3], raw: r })), tierCount: (page.rows || []).length, facts: facts.slice(0, 40).map(f => f.t) };
+  const text = String(page.text || ""), m = re => { const x = re.exec(text); return x ? x[1].trim() : null; };
+  const posted = m(/(\d[\d,]*)\s+posted runs\b/i), postedRuns = posted ? +posted.replace(/,/g, "") : null;
+  const postedThrough = m(/posted runs\b[^\n]*?\bthrough\s+([A-Z][a-z]{2,8}\.? \d{1,2}, \d{4})/);
+  const sharedLoadouts = m(/Shared loadouts\s*:?\s*\n?\s*(Coming soon|[^\n]{1,40})/i);
+  let releaseText = page.releaseText || find(/release|target|expected|in development/i);
+  if (releaseText && /^\s*coming soon\s*$/i.test(releaseText) && (sharedLoadouts || postedRuns)) releaseText = null;   // the "Shared loadouts" leaf, not the raid
+  const released = !!(postedRuns && postedRuns > 0);
+  return { ok: true, source: page.source, title: page.title, banner: (page.banner || []).join(" · ") || null, releaseText, allowedUnits: page.allowedUnits || null,
+    maxScore: find(/max score/i), status: released ? "released" : find(/^status/i), released, postedRuns, postedThrough, sharedLoadouts,
+    duration: m(/\bDuration\s*\n\s*([^\n]{1,20})/), launchCost: m(/\bLaunch cost\s*\n\s*([^\n]{1,20})/), entry: m(/\bEntry\s*\n\s*([^\n]{1,60})/),
+    requirements: m(/\bRequirements:\s*([^\n]{1,240})/),
+    tiers: (page.rows || []).map(r => ({ tier: r[0], requirement: r[1], score: r[2], all: r[3], raw: r })), tierCount: (page.rows || []).length, facts: facts.slice(0, 40).map(f => f.t) };
 }
 
 /* ---------- top level ---------- */

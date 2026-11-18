@@ -2,7 +2,9 @@
 /* gl-readiness — readiness of every Galactic Legend the account does NOT own, from a compact roster file, using the app's own
    requirement data and helpers (GL_ROADMAP / GL_ORDER / MGL_REQ via GL_QUEUE.watch, unitProgress, glqTiersLeft, mglReqMap, accountView).
    Usage:  NODE_PATH=/home/claude/.npm-global/lib/node_modules node tools/gl-readiness.js <roster.txt> [--account ollie] [--json out.json]
-   Roster: optional '#' comment first line, then ID:stars.gear[rN][*] items, comma separated (see ref31/ollie-roster-31oct.txt). */
+   Roster: optional '#' comment first line, then ID:stars.gear[rN][*] items, comma separated (see ref31/ollie-roster-31oct.txt).
+   rv48 18 Nov 2026: "(unreleased)" is printed only for a watch entry whose `released` flag is not true (Mandalorian & Grogu is released); Mercenary Guard Droid (B1)
+   resolves by his id B1MERCDROID (see gl-lib.js). */
 const fs = require("fs");
 const { withApp, pageReadiness } = require("./gl-lib.js");
 

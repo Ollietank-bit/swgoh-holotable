@@ -1,0 +1,241 @@
+{
+  "when": "2026-11-18T10:07:44.539Z",
+  "file": "/home/claude/work/gaco12/index.html",
+  "md5": "22d37ab135984bfc5f762af3ef0858c1",
+  "suites": {
+    "cap": {
+      "pass": 88,
+      "fail": 0,
+      "failed": [],
+      "secs": 46.3,
+      "status": "ok",
+      "file": "cap-check.js",
+      "port": 9600
+    },
+    "chx": {
+      "pass": 84,
+      "fail": 0,
+      "failed": [],
+      "secs": 65.2,
+      "status": "ok",
+      "file": "chx-check.js",
+      "port": 9601
+    },
+    "drr": {
+      "pass": 99,
+      "fail": 0,
+      "failed": [],
+      "secs": 88.5,
+      "status": "ok",
+      "file": "drr-check.js",
+      "port": 9602
+    },
+    "dta": {
+      "pass": 52,
+      "fail": 0,
+      "failed": [],
+      "secs": 70.4,
+      "status": "ok",
+      "file": "dta-check.js",
+      "port": 9603
+    },
+    "gcf": {
+      "pass": 88,
+      "fail": 0,
+      "failed": [],
+      "secs": 69.4,
+      "status": "ok",
+      "file": "gcf-check.js",
+      "port": 9604
+    },
+    "gco": {
+      "pass": 95,
+      "fail": 0,
+      "failed": [],
+      "secs": 36.7,
+      "status": "ok",
+      "file": "gco-check.js",
+      "port": 9605
+    },
+    "gof": {
+      "pass": 111,
+      "fail": 0,
+      "failed": [],
+      "secs": 49.5,
+      "status": "ok",
+      "file": "gof-check.js",
+      "port": 9606
+    },
+    "gop": {
+      "pass": 134,
+      "fail": 0,
+      "failed": [],
+      "secs": 78.6,
+      "status": "ok",
+      "file": "gop-check.js",
+      "port": 9607
+    },
+    "gos": {
+      "pass": 107,
+      "fail": 0,
+      "failed": [],
+      "secs": 22,
+      "status": "ok",
+      "file": "gos-check.js",
+      "port": 9608
+    },
+    "lay": {
+      "pass": 258,
+      "fail": 0,
+      "failed": [],
+      "secs": 190.1,
+      "status": "ok",
+      "file": "lay-check.js",
+      "port": 9609
+    },
+    "mgl": {
+      "pass": 51,
+      "fail": 0,
+      "failed": [],
+      "secs": 45.5,
+      "status": "ok",
+      "file": "mgl-check.js",
+      "port": 9610
+    },
+    "nxt": {
+      "pass": 56,
+      "fail": 0,
+      "failed": [],
+      "secs": 42.8,
+      "status": "ok",
+      "file": "nxt-check.js",
+      "port": 9611
+    },
+    "pbm": {
+      "pass": 110,
+      "fail": 0,
+      "failed": [],
+      "secs": 93.5,
+      "status": "ok",
+      "file": "pbm-check.js",
+      "port": 9612
+    },
+    "rf22": {
+      "pass": 83,
+      "fail": 0,
+      "failed": [],
+      "secs": 60.8,
+      "status": "ok",
+      "file": "rf22-check.js",
+      "port": 9613
+    },
+    "rv25": {
+      "pass": 50,
+      "fail": 0,
+      "failed": [],
+      "secs": 47,
+      "status": "ok",
+      "file": "rv25-check.js",
+      "port": 9614
+    },
+    "rv25b": {
+      "pass": 91,
+      "fail": 0,
+      "failed": [],
+      "secs": 79.6,
+      "status": "ok",
+      "file": "rv25b-check.js",
+      "port": 9615
+    },
+    "rv25c": {
+      "pass": 32,
+      "fail": 0,
+      "failed": [],
+      "secs": 43,
+      "status": "ok",
+      "file": "rv25c-check.js",
+      "port": 9616
+    },
+    "rv31": {
+      "pass": 45,
+      "fail": 0,
+      "failed": [],
+      "secs": 43.3,
+      "status": "ok",
+      "file": "rv31-check.js",
+      "port": 9617
+    },
+    "rv34": {
+      "pass": 75,
+      "fail": 0,
+      "failed": [],
+      "secs": 44.6,
+      "status": "ok",
+      "file": "rv34-check.js",
+      "port": 9618
+    },
+    "rv40": {
+      "pass": 76,
+      "fail": 0,
+      "failed": [],
+      "secs": 51.3,
+      "status": "ok",
+      "file": "rv40-check.js",
+      "port": 9619
+    },
+    "rv48": {
+      "pass": 89,
+      "fail": 0,
+      "failed": [],
+      "secs": 57.8,
+      "status": "ok",
+      "file": "rv48-check.js",
+      "port": 9620
+    },
+    "rvf": {
+      "pass": 68,
+      "fail": 0,
+      "failed": [],
+      "secs": 59.5,
+      "status": "ok",
+      "file": "rvf-check.js",
+      "port": 9621
+    },
+    "smoke": {
+      "pass": 68,
+      "fail": 0,
+      "failed": [],
+      "secs": 43.8,
+      "status": "ok",
+      "file": "smoke.js",
+      "port": 9622
+    },
+    "tbg": {
+      "pass": 82,
+      "fail": 0,
+      "failed": [],
+      "secs": 57.2,
+      "status": "ok",
+      "file": "tbg-check.js",
+      "port": 9623
+    },
+    "upd": {
+      "pass": 111,
+      "fail": 0,
+      "failed": [],
+      "secs": 40.8,
+      "status": "ok",
+      "file": "upd-check.js",
+      "port": 9624
+    }
+  },
+  "totals": {
+    "suites": 25,
+    "pass": 2203,
+    "fail": 0,
+    "crashedOrTimedOut": 0,
+    "passedOnRetry": [],
+    "wallSecs": 402.2,
+    "ok": true
+  }
+}

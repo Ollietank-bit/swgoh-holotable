@@ -1,5 +1,7 @@
 /* pbm-check — proxy-free roster pull through a swgoh.gg tab (bookmarklet + postMessage), the failed-pull
    rv34 4 Nov 2026 — DELIBERATE (1 assertion): gac-schedule asOf 2026-11-01 -> 2026-11-04 (Season 85 Week 1 read on the 4 Nov schedule).
+   rv48 18 Nov 2026 — DELIBERATE (3 assertions): gac-schedule asOf 2026-11-10 -> 2026-11-18; the estimated events [s85e3] -> [s86e1] (Week 3 sourced on the 18 Nov schedule; s86e1 is a
+     new INFERRED row, 2 Dec 5v5); the 'schedule run out' probe moves 30 Nov -> 20 Dec because the estimated s86e1 now covers 2–9 Dec (30 Nov correctly names it as next).
    rv40 10 Nov 2026 — DELIBERATE (2 assertions): gac-schedule asOf 2026-11-04 -> 2026-11-10, and the estimated events [s85e2, s85e3] -> [s85e3] (Week 2, Thu 12 Nov 09:00 → Wed 18 Nov 09:00 AEDT,
    is a row on the 10 Nov schedule read, so s85e2 lost its est flag).
    copy, gacHist, gacActivity() and the "GAC this round" strip / Re-enter-GAC flag retirement.
@@ -449,7 +451,7 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
       out.tickNextEvent = gacActivity("ollie", T(9, 15));   // s84e2 (estimated) — the tick does not carry over
       out.tinyUnaffected = gacActivity("tiny", T(9, 8)).state;
       delete state.ticks["ollie-p:gac:s84e1"];
-      out.ranOut = gacActivity("ollie", T(10, 30));
+      out.ranOut = gacActivity("ollie", T(11, 20));   // rv48: probe 30 Nov -> 20 Dec (the schedule now carries an estimated s86e1 from 2 Dec, so it runs out after ~9 Dec)
       return out;
     });
     ck("gacActivity: between events → unknown, names the next event", r.offSeason.state === "unknown" && r.offSeason.roundId === null && /Season 84 Event 1/.test(r.offSeason.evidence), JSON.stringify(r.offSeason));
@@ -462,8 +464,8 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); r
     /* rf22 22 Oct 2026 (deliberate, 2 assertions): Season 84 Event 3 was verified from both accounts' live brackets (startTime 21 Oct 21:00 UTC),
        so GAC_SCHEDULE.asOf moved to 22 Oct and only Season 85's three events remain estimates. */
     /* rv31 1 Nov 2026 (deliberate, 2 assertions): Season 85's start (Wed 4 Nov 09:00 AEDT, 3v3) is now on swgoh.gg/schedule/, so GAC_SCHEDULE.asOf moved to 1 Nov and only S85 events 2 and 3 remain estimates. */
-    ck("GAC_SCHEDULE registered in SNAPSHOTS (24 entries incl. drr droid-raid, cap cap-journeys), dated 2026-11-10 (rv40: S85 Week 2 read on swgoh.gg/schedule/ 10 Nov; rv34: Week 1 4 Nov; rv31: S85 start sourced 1 Nov)", reg.n === 24 && reg.e && reg.e.asOf === "2026-11-10" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
-    ck("GAC_SCHEDULE: source recorded; the only estimate is Season 85 event 3 (S84E2 verified 12 Oct, S84E3 verified 22 Oct, S85E1 start sourced 1 Nov, S85E2 Week 2 sourced 10 Nov); GAC_FORMAT constant is still 5v5 (flips by hand on 4 Nov)", reg.src === "swgoh.gg/p/<code>/gac-history/" && JSON.stringify(reg.est) === '["s85e3"]' && reg.fmt === "5v5", JSON.stringify(reg));
+    ck("GAC_SCHEDULE registered in SNAPSHOTS (24 entries incl. drr droid-raid, cap cap-journeys), dated 2026-11-18 (rv48: S85 Week 3 read on swgoh.gg/schedule/ 18 Nov; rv40: Week 2 10 Nov; rv34: Week 1 4 Nov; rv31: S85 start sourced 1 Nov)", reg.n === 24 && reg.e && reg.e.asOf === "2026-11-18" && reg.e.tab === "coach", JSON.stringify(reg).slice(0, 200));
+    ck("GAC_SCHEDULE: source recorded; the only estimate is (rv48) Season 86 event 1 (inferred 2 Dec 5v5; S85E3 Week 3 sourced 18 Nov, S85E2 10 Nov, S85E1 1 Nov, S84E3 22 Oct, S84E2 12 Oct); GAC_FORMAT constant is still 5v5 (flips by hand on 4 Nov)", reg.src === "swgoh.gg/p/<code>/gac-history/" && JSON.stringify(reg.est) === '["s86e1"]' && reg.fmt === "5v5", JSON.stringify(reg));
     allErrs.push(...errs); await ctx.close();
   });
 

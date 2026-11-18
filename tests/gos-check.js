@@ -10,7 +10,11 @@
    at 3.98M, fleet Season 84), so the 5v5/3v3 values these leaders read now are the 22 Oct ones (Commander Luke C → B), TIER_LIST.updated
    is "22 Oct 2026", and the 5v5/3v3 top-10s are the new boards. Hera 3v3 / CLS 3v3 still have no row (not in the top 40).
    rv31 1 Nov 2026 — DELIBERATE (2 assertions): the 5v5 rows read for Bo-Katan (B 76.1 55.2K -> B 76.2 80.1K) and General Skywalker (B 80.4 55.2K -> B 80.6 81K) moved with the 1 Nov tier-list re-read; TIER_LIST.updated "25 Oct 2026" -> "1 Nov 2026".
-   rv25b 25 Oct 2026 — DELIBERATE (1 assertion): TIER_LIST.updated "22 Oct 2026" -> "25 Oct 2026" (the tier lists were re-verified unchanged live that day; no row, tier or percentage moved). */
+   rv25b 25 Oct 2026 — DELIBERATE (1 assertion): TIER_LIST.updated "22 Oct 2026" -> "25 Oct 2026" (the tier lists were re-verified unchanged live that day; no row, tier or percentage moved).
+   rv48 18 Nov 2026 — DELIBERATE (5 assertions): TIER_LIST 3v3 is now the full Season 85 board read 18 Nov (all 108 rows, season in progress), so the six 3v3 rows these leaders read are the S85
+   ones, Hera Syndulla and Commander Luke Skywalker now HAVE 3v3 rows (C — they are on the 108-row board; still no invented row), TIER_LIST.updated "1 Nov 2026" -> "18 Nov 2026", the 3v3 top-10
+   opens Stranger | SEE | Ahsoka | Lord Vader; meta-squads asOf 2026-09-27 -> 2026-11-18 (its 3v3 GAC entries were re-checked against the S85 boards); and the ollie/3v3 fixture defence plan
+   reorders to SLKR | Jabba | Bo-Katan trio | Executor (Jabba's S85 3v3 row A now outranks the Bo-Katan trio's re-read #17 / 23.7%) — same three squads, so only the record moves. */
 process.env.PIN_NOW = process.env.PIN_NOW || "2026-11-01T01:00:00Z";   // rv31: Sun 1 Nov 2026 12:00 AEDT (between Season 84 Event 3 and Season 85 Event 1) — this suite used the REAL clock before, so it could rot when the real date crossed a season boundary
 const L = require("./lib.js");
 const { ck } = L;
@@ -27,7 +31,8 @@ const DEF_BASE = {
      3v3 DEFENCE board (GCO_DEF_BOARD, 3v3 only). On these fixtures it takes a Carbonite slot in 3v3 (Ollie: in place of Rey; Tiny: in place of Rey). The 5v5 plans
      are unchanged, and the gos entries are still all excluded from defence — this record moves only by that one new candidate.
      old ollie/3v3: SLKR | Jabba | Rey | Executor      old tiny/3v3: SLKR | Leia | Rey | Negotiator */
-  "ollie/3v3": ["Supreme Leader Kylo Ren (GL)", "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", "Jabba the Hutt (GL) Bounty Hunters", "Executor (flagship only)"],
+  /* rv48 18 Nov 2026 — DELIBERATE: Jabba (S85 3v3 row A) now ranks above the Bo-Katan trio (S85 #17, 23.7%) — same three squads, new order.  old: SLKR | Bo-Katan trio | Jabba | Executor */
+  "ollie/3v3": ["Supreme Leader Kylo Ren (GL)", "Jabba the Hutt (GL) Bounty Hunters", "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", "Executor (flagship only)"],
   "tiny/5v5": ["Supreme Leader Kylo Ren (GL)", "Leia Organa (GL) Rebels", "Rey (GL) Jedi", "Negotiator (flagship only)"],
   "tiny/3v3": ["Supreme Leader Kylo Ren (GL)", "Leia Organa (GL) Rebels", "Bo-Katan (Mand'alor) trio (defence, 3v3 only)", "Negotiator (flagship only)"]
 };
@@ -93,9 +98,9 @@ const PLAN = ([a, f, NEWN]) => { switchAcct(a); state.views["gco-" + a] = f; con
         none3: [get("3v3", "Hera Syndulla"), get("3v3", "Commander Luke Skywalker")], top10: TIER_LIST.categories.map(c => c.squads.slice(0, 10).map(s => s.leader).join("|")) };
     });
     ck("tier list (rv31: Season 84 5v5 board, Bo-Katan and General Skywalker re-read 1 Nov; Palpatine, Hera and Commander Luke are below rank 30 and keep the 22 Oct read): rows for the five 5v5 leaders as read (B/B/B/B/B — Commander Luke C → B), no duplicate leaders", JSON.stringify(tl.r5) === JSON.stringify(["B 76.2 80.1K", "B 80.6 81K", "B 74.4 6,264", "B 76 5,556", "B 75.5 22.3K"]) && !tl.dup5, JSON.stringify(tl.r5));
-    ck("tier list (rf22: Season 83 3v3 board re-read at 3.98M): rows as read (DR A, Palpatine B, GAS B, STL B, Padmé B — the last two kept from 7 Oct; Bo-Katan A 84.7), no duplicates", JSON.stringify(tl.r3) === JSON.stringify(["A 84.5 21.8K", "B 79.4 36.3K", "B 83.8 64.8K", "B 77.1 4,330", "B 80.3 3,524", "A 84.7 104K"]) && !tl.dup3, JSON.stringify(tl.r3));
-    ck("tier list: no invented row for Hera 3v3 / CLS 3v3 (neutral 50); TIER_LIST.updated is the rv31 re-read (1 Nov 2026; the 3v3 rows these checks read are rank 13+ or unchanged)", tl.none3.every(x => x === null) && tl.updated === "1 Nov 2026", JSON.stringify(tl.none3));
-    ck("tier list (rf22): the visible top-10s are the new boards — 5v5 SLKR | Stranger | Leia, 3v3 Stranger | SEE | Lord Vader", tl.top10[0].startsWith("Supreme Leader Kylo Ren|The Stranger|Leia Organa|Cere Junda") && tl.top10[1].startsWith("The Stranger|Sith Eternal Emperor|Lord Vader"), JSON.stringify(tl.top10));
+    ck("tier list (rv48: the full Season 85 3v3 board read 18 Nov): rows as read (DR B 75.6, Palpatine B 76.6, GAS B 81.4, STL B 73.6, Padmé B 76.2, Bo-Katan A 79), no duplicates", JSON.stringify(tl.r3) === JSON.stringify(["B 75.6 7,444", "B 76.6 12.9K", "B 81.4 14.9K", "B 73.6 1,704", "B 76.2 922", "A 79 36.2K"]) && !tl.dup3, JSON.stringify(tl.r3));   // rv48: the S85 rows (read 18 Nov)
+    ck("tier list: Hera 3v3 / CLS 3v3 rows are the S85 board's own (rv48: C 68.4 / C 68.6 — read, not invented; they were absent from the old top-40); TIER_LIST.updated is the 18 Nov re-read", JSON.stringify(tl.none3) === '["C 68.4 1,182","C 68.6 10.3K"]' && tl.updated === "18 Nov 2026", JSON.stringify(tl.none3));   // rv48: both are on the 108-row S85 board (rows as read, not invented)
+    ck("tier list: the visible top-10s are the current boards — 5v5 SLKR | Stranger | Leia (S84), 3v3 Stranger | SEE | Ahsoka | Lord Vader (rv48: S85)", tl.top10[0].startsWith("Supreme Leader Kylo Ren|The Stranger|Leia Organa|Cere Junda") && tl.top10[1].startsWith("The Stranger|Sith Eternal Emperor|Ahsoka Tano|Lord Vader"), JSON.stringify(tl.top10));   // rv48: S85 3v3
     const misc = await p.evaluate((NEWN) => ({
       fmtOk: [gosFmtOk({}, "5v5"), gosFmtOk({ gosOnly: "3v3" }, "3v3"), gosFmtOk({ gosOnly: "3v3" }, "5v5")],
       leiaTrio: JSON.stringify(GCO_TRIOS["Leia Organa (GL) Rebels"]),
@@ -105,7 +110,7 @@ const PLAN = ([a, f, NEWN]) => { switchAcct(a); state.views["gco-" + a] = f; con
     ck("gosFmtOk: no gosOnly → every format; gosOnly 3v3 → 3v3 only", JSON.stringify(misc.fmtOk) === "[true,true,false]", JSON.stringify(misc.fmtOk));
     ck("existing GCO_TRIOS entry (Leia) untouched", misc.leiaTrio === '["GLLEIA","CAPTAINDROGAN","R2D2_LEGENDARY"]', misc.leiaTrio);
     ck("Recommended defense and Squad Arena never list a new offence-only entry", misc.recDef.length === 0 && misc.arena.length === 0, JSON.stringify([misc.recDef, misc.arena]));
-    ck("SNAPSHOTS: meta-squads asOf NOT bumped (the old entries were not re-read), registry size 24 (drr: + droid-raid, cap: + cap-journeys)", misc.snap === "2026-09-27" && misc.snapN === 24, `${misc.snap} / ${misc.snapN}`);
+    ck("SNAPSHOTS: meta-squads asOf 2026-11-18 (rv48: its 3v3 GAC entries re-checked against the S85 boards; was NOT bumped), registry size 24 (drr: + droid-raid, cap: + cap-journeys)", misc.snap === "2026-11-18" && misc.snapN === 24, `${misc.snap} / ${misc.snapN}`);   // rv48: the 3v3 GAC entries were re-checked 18 Nov
     ck("no page errors (data)", errs.length === 0, JSON.stringify(errs.slice(0, 3)));
     await ctx.close();
   }

@@ -6,6 +6,8 @@
    nothing, 390px without horizontal overflow, zero page errors, and the 30 Oct / 11 Oct clocks.
    rv40 10 Nov 2026 — DELIBERATE (1 assertion): the 19 Nov stale tile's count '>= 4' (Era 10 + gl-queue / ship-guide / nxt-queue past their 14 Nov hard ends) -> '=== 3' (conquest past
    its new 9 Nov hard end, Era 10 past 17 Nov, cap-journeys at 2x half-life). gl-queue / ship-guide / nxt-queue were re-derived 10 Nov and now end 28 Nov; the count must still equal dataHealthRows'.
+   rv48 18 Nov 2026 — DELIBERATE (2 assertions): the 19 Nov stale tile '=== 3' -> '=== 1' (conquest re-dated to Run 3, hard end 7 Dec; the era entry is Era of Rogue One to 9 Feb 2027;
+   only cap-journeys at 2x half-life remains; still must equal dataHealthRows'); the tap check accepts a page that bottoms out with the card in view (see the note at the check).
    rf22 22 Oct 2026 — DELIBERATE change (fixture, no assertion edited): every clock in this suite is 7–30 Oct and its tile expectations
    were written against the 12 Oct calendar seed (v8). The app's seed is now v9 (re-seeded 22 Oct; nothing in it is dated before 20 Oct),
    so this suite now boots a saved state that already carries the CURRENT seed version with the 12 Oct rows as its seed rows (ids
@@ -203,10 +205,13 @@ const OCT7 = [2026, 9, 7, 12];
     await L.go(p, "ollie", "overview");
     const t = await tiles(p);
     const stale = t.find(x => /^stale-/.test(x.id));
-    L.ck("19 Nov: one 'Data is stale' tile, last, info-coloured, count matches dataHealthRows (rv40: conquest and Era 10 past their hard ends, cap-journeys at 2x its half-life — exactly 3)", stale && t[t.length - 1] === stale && stale.urg === "stale" && +stale.cd.replace(/\D/g, "") === (await p.evaluate(() => dataHealthRows(nxtNow()).filter(r => r.st.state === "stale").length)) && +stale.cd.replace(/\D/g, "") === 3, JSON.stringify(stale));
+    L.ck("19 Nov: one 'Data is stale' tile, last, info-coloured, count matches dataHealthRows (rv48: conquest and the era were re-read 18 Nov, so only cap-journeys at 2x its half-life — exactly 1; rv40 had 3)", stale && t[t.length - 1] === stale && stale.urg === "stale" && +stale.cd.replace(/\D/g, "") === (await p.evaluate(() => dataHealthRows(nxtNow()).filter(r => r.st.state === "stale").length)) && +stale.cd.replace(/\D/g, "") === 1 && stale.id === "stale-cap-journeys", JSON.stringify(stale));
     await p.click(`#nxtStrip .nxt-tile[data-nxt="${stale ? stale.id : "none"}"] .nxt-go`); await p.waitForTimeout(1400);   /* smooth scroll */
-    const dh = await p.evaluate(() => ({ tab: curTab, card: !!document.querySelector('[data-card="datahealth"]'), top: (document.querySelector('[data-card="datahealth"]') || { getBoundingClientRect: () => ({ top: 9e9 }) }).getBoundingClientRect().top }));
-    L.ck("tap stale tile → Overview's Data health card scrolled into view", dh.tab === "overview" && dh.card && dh.top < 200, JSON.stringify(dh));
+    const dh = await p.evaluate(() => ({ tab: curTab, card: !!document.querySelector('[data-card="datahealth"]'), top: (document.querySelector('[data-card="datahealth"]') || { getBoundingClientRect: () => ({ top: 9e9 }) }).getBoundingClientRect().top,
+      ih: innerHeight, sy: scrollY, atEnd: scrollY + innerHeight >= document.documentElement.scrollHeight - 2 }));
+    /* rv48 18 Nov 2026 — DELIBERATE: the card is the last one on Overview; with a 1-row stale set the page can bottom out before the card reaches the top, so "in view" also accepts
+       "scrolled to the end with the card's top inside the viewport" (the old top < 200 still passes whenever the page is tall enough). */
+    L.ck("tap stale tile → Overview's Data health card scrolled into view", dh.tab === "overview" && dh.card && dh.sy > 0 && (dh.top < 200 || (dh.atEnd && dh.top >= 0 && dh.top < dh.ih - 150)), JSON.stringify(dh));
     L.ck("[19 Nov] no page errors", errs.length === 0, JSON.stringify(errs.slice(0, 5)));
     await ctx.close();
   }

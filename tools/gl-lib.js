@@ -2,6 +2,9 @@
    Loads index.html in headless Chromium (Playwright), injects a compact roster the same way tests/rv25c-check.js does
    (a pull in localStorage "swgoh-holotable-pulls-v1"), and runs the app's OWN helpers in the page. Requirement rows are
    never re-parsed: they come from GL_ROADMAP / GL_QUEUE.watch.MANDOGROGU.req as the page holds them.
+   rv48 18 Nov 2026: Mercenary Guard Droid (B1) now resolves — the app's MGL_SETS carries his base_id B1MERCDROID (it was null, and an exact-name
+   match never fires here because buildPulls gives roster-only units no name), so he is no longer counted "not owned" (both accounts own him at 4★).
+   Roster-only units also get a display name from the app's own requirement lists when one exists (see buildPulls' NAMES).
    Needs NODE_PATH to include the global playwright (e.g. /home/claude/.npm-global/lib/node_modules). */
 const fs = require("fs"), http = require("http"), path = require("path");
 let chromium;
@@ -29,6 +32,8 @@ function parseRoster(file) {
 /* Build the pull the app expects. Names/zetas/ships come from the newest holotable-roster-snapshot-*.json in the repo root
    (same fixture rv25c uses) when present; chars in that fixture that the roster does not list are dropped (the roster is complete
    for chars), so stale fixture gear can never leak in. */
+/* rv48: display names for ids the 7 Oct fixture predates (exact in-game names), so name-based lookups resolve too. */
+const NAMES = { B1MERCDROID: "Mercenary Guard Droid (B1)", ADELPHIRANGER: "Adelphi Ranger", GLLEIA: "Leia Organa", GENERALSKYWALKER: "General Skywalker", EDRIOTWOTUBES: "Edrio Two Tubes", CAPTAINSILVO: "Captain Silvo", VANE: "Vane" };
 function buildPulls(roster, acct, baseFile) {
   let acc = {};
   const snaps = fs.readdirSync(ROOT).filter(f => /^holotable-roster-snapshot-.*\.json$/.test(f)).sort();
@@ -38,7 +43,7 @@ function buildPulls(roster, acct, baseFile) {
   const reqs = {};
   for (const [id, u] of Object.entries(p.reqs || {})) if (u.t !== "char") reqs[id] = u;          // ships etc. kept as is
   for (const [id, u] of Object.entries(roster.units)) {
-    const prev = (p.reqs || {})[id] || { t: "char", z: [], o: [], el: 0 };
+    const prev = (p.reqs || {})[id] || Object.assign({ t: "char", z: [], o: [], el: 0 }, NAMES[id] ? { name: NAMES[id] } : {});
     reqs[id] = Object.assign({}, prev, u);
   }
   p.reqs = reqs;
@@ -109,7 +114,7 @@ function pageReadiness(acct) {
     const row = glqRows(acct).find(r => r.kind === "watch" && r.e.watchId === wid);
     o.appTiers = glqTiersLeft(wm, w.req);
     o.appMet = row ? row.doneCount : null; o.appTotal = row ? row.total : null;
-    out.push(Object.assign({ id: wid, name: w.name, released: false }, o));
+    out.push(Object.assign({ id: wid, name: w.name, released: w.released === true }, o));   // rv48: the watch entry says whether it is released (Mandalorian & Grogu: true since 18 Nov)
   });
   const owned = GL_ORDER.filter(g => reqs[g]).map(g => ({ id: g, name: GL_ROADMAP[g].name, r: hardNum(reqs[g].r) }));
   return { acct, live: base.live, owned, gls: out, asOf: GL_QUEUE.asOf };
